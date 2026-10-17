@@ -1,0 +1,174 @@
+# ==========================================
+# GitHub Wiki Sub-repository
+# ==========================================
+Gym-management.wiki/
+*.wiki/
+
+# ==========================================
+# Operating System Files
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ==========================================
+# IDEs, Editors & Tooling
+# ==========================================
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+.ionide/
+
+# JetBrains (IntelliJ, WebStorm, PyCharm, Rider, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Visual Studio / .NET
+.vs/
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.svclog
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# ==========================================
+# Environment Variables & Sensitive Data
+# ==========================================
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.cer
+*.crt
+*.pfx
+*.p12
+
+# ==========================================
+# Logs & Databases
+# ==========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local Databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ==========================================
+# Node.js / JavaScript / TypeScript / Web
+# ==========================================
+node_modules/
+jspm_packages/
+web_modules/
+dist/
+dist-ssr/
+build/
+.cache/
+.parcel-cache/
+.next/
+out/
+.nuxt/
+.output/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+storybook-static/
+
+# ==========================================
+# Java / Spring / Maven / Gradle
+# ==========================================
+*.class
+target/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# Temporary Files & Archives
+# ==========================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*.swo
+*.patch
