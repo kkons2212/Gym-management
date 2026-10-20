@@ -187,8 +187,8 @@ THEME 3: VẬN HÀNH CƠ SỞ & BÁO CÁO QUẢN TRỊ
 
 Epic 05: Quản lý Check-in & Kiểm soát Vào phòng (UC03)
 
-● User story 03.1: Điểm danh tự động bằng quét mã QR  từ (Automated Check-in)
-○ Mô tả: Là một Nhân viên Lễ tân, tôi cần quét mã QR trên điện thoại  của hội viên tại màn hình Quản lý Check-in để hệ thống tự động kiểm tra điều kiện và mở quyền vào phòng tập tức thì.
+● User story 03.1: Điểm danh tự động bằng quét mã QR từ (Automated Check-in)
+○ Mô tả: Là một Nhân viên Lễ tân, tôi cần quét mã QR trên điện thoại của hội viên tại màn hình Quản lý Check-in để hệ thống tự động kiểm tra điều kiện và mở quyền vào phòng tập tức thì.
 ○ Độ ưu tiên: Must have
 ○ Story point: 5
 ○ Tiêu chí chấp nhận:
@@ -202,7 +202,7 @@ Epic 05: Quản lý Check-in & Kiểm soát Vào phòng (UC03)
   ■ Task 3.1.3: (Database) Thiết kế bảng CHECKIN_LOGS lưu lịch sử: card_id, checkin_time, status, rejection_reason.
 
 ● User story 03.2: Check-in thủ công qua Số điện thoại / Mã hội viên (Manual Check-in)
-○ Mô tả: Là một Nhân viên Lễ tân, tôi cần nhập Số điện thoại hoặc Mã hội viên thủ công khi  điện thoại khách  hết pin để hỗ trợ khách vào phòng tập thuận tiện.
+○ Mô tả: Là một Nhân viên Lễ tân, tôi cần nhập Số điện thoại hoặc Mã hội viên thủ công khi khách quên mang thẻ hoặc điện thoại hết pin để hỗ trợ khách vào phòng tập thuận tiện.
 ○ Độ ưu tiên: Must have
 ○ Story point: 3
 ○ Tiêu chí chấp nhận:
