@@ -172,3 +172,10 @@ temp/
 *.swp
 *.swo
 *.patch
+
+# ==========================================
+# AI Agent Skills & Configs
+# ==========================================
+.agents/
+.agent/
+skills-lock.json
