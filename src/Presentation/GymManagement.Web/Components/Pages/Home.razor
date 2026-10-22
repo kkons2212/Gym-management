@@ -1,0 +1,206 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IMemberService MemberService
+@inject ICheckInService CheckInService
+@inject IPtService PtService
+
+<PageTitle>GYM HOUSE – Trang chủ</PageTitle>
+
+<div class="section animate-down">
+    <!-- Greeting Banner -->
+    <div class="card card-primary mb-md" style="background: linear-gradient(135deg, #1a4d3a 0%, #18336e 100%); border-color: rgba(36,185,138,0.4);">
+        <div class="d-flex items-center justify-between">
+            <div>
+                <div class="text-caption mb-sm" style="color:rgba(255,255,255,0.7);">Chào buổi sáng 👋</div>
+                <h1 style="font-size:1.3rem; color:#fff; margin-bottom:4px;">Hoàng Long</h1>
+                <span class="badge badge-success">Hội viên Premium ✓</span>
+            </div>
+            <div class="avatar avatar-lg animate-glow" style="font-size:1.6rem; background: linear-gradient(135deg,#24B98A,#3B82F6);">HL</div>
+        </div>
+    </div>
+
+    <!-- KPI Stats Row -->
+    <div class="grid-2 mb-md" style="gap:12px;">
+        <div class="stat-card animate-fade">
+            <div class="stat-label">Gói tập còn lại</div>
+            <div class="stat-value">@DaysRemaining</div>
+            <div class="text-caption">ngày · hết @ExpiryDate</div>
+            <div class="progress-bar mt-sm">
+                <div class="progress-fill @ProgressClass" style="width:@ProgressWidth%;"></div>
+            </div>
+        </div>
+        <div class="stat-card animate-fade">
+            <div class="stat-label">Buổi PT còn lại</div>
+            <div class="stat-value" style="background: linear-gradient(90deg, #3B82F6, #8B5CF6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">@PtSessionsLeft</div>
+            <div class="text-caption">trong @PtSessionsTotal buổi</div>
+            <div class="progress-bar mt-sm">
+                <div class="progress-fill" style="width:@PtProgressWidth%; background: linear-gradient(90deg,#3B82F6,#8B5CF6);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section" style="padding-top:0;">
+    <div class="section-header">
+        <div class="section-title">Truy cập nhanh</div>
+    </div>
+    <div class="grid-3" style="gap:10px;">
+        <a href="/digital-card" class="card" style="text-align:center; padding:16px 8px; text-decoration:none; color:inherit; cursor:pointer;">
+            <div style="font-size:1.8rem; margin-bottom:6px;">🪪</div>
+            <div style="font-size:0.75rem; font-weight:600;">Gói tập</div>
+        </a>
+        <a href="/pt-booking" class="card" style="text-align:center; padding:16px 8px; text-decoration:none; color:inherit;">
+            <div style="font-size:1.8rem; margin-bottom:6px;">📅</div>
+            <div style="font-size:0.75rem; font-weight:600;">Đặt PT</div>
+        </a>
+        <a href="/schedule" class="card" style="text-align:center; padding:16px 8px; text-decoration:none; color:inherit;">
+            <div style="font-size:1.8rem; margin-bottom:6px;">🗓️</div>
+            <div style="font-size:0.75rem; font-weight:600;">Lịch tập</div>
+        </a>
+        <a href="/inbody" class="card" style="text-align:center; padding:16px 8px; text-decoration:none; color:inherit;">
+            <div style="font-size:1.8rem; margin-bottom:6px;">📊</div>
+            <div style="font-size:0.75rem; font-weight:600;">InBody</div>
+        </a>
+        <a href="/profile" class="card" style="text-align:center; padding:16px 8px; text-decoration:none; color:inherit;">
+            <div style="font-size:1.8rem; margin-bottom:6px;">👤</div>
+            <div style="font-size:0.75rem; font-weight:600;">Hồ sơ</div>
+        </a>
+        <div class="card" style="text-align:center; padding:16px 8px; cursor:pointer; border-color:rgba(245,158,11,0.3);" @onclick="ShowRenewDialog">
+            <div style="font-size:1.8rem; margin-bottom:6px;">🔄</div>
+            <div style="font-size:0.75rem; font-weight:600; color:var(--clr-warning);">Gia hạn</div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming PT Sessions -->
+<div class="section" style="padding-top:0;">
+    <div class="section-header">
+        <div class="section-title">Lịch PT sắp tới</div>
+        <a href="/schedule" style="font-size:0.8rem; color:var(--clr-primary);">Xem tất cả →</a>
+    </div>
+    <div class="card" style="padding:0;">
+        @if (UpcomingSessions.Count == 0)
+        {
+            <div class="d-flex flex-col items-center justify-center" style="padding:32px; color:var(--clr-text-secondary);">
+                <div style="font-size:2rem; margin-bottom:8px;">📭</div>
+                <div class="text-caption">Chưa có lịch PT nào được đặt</div>
+                <a href="/pt-booking" class="btn btn-ghost btn-sm mt-md">Đặt lịch ngay</a>
+            </div>
+        }
+        else
+        {
+            @foreach (var s in UpcomingSessions)
+            {
+                <div class="list-item">
+                    <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);">PT</div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="fw-semibold" style="font-size:0.9rem;">@s.PtName</div>
+                        <div class="text-caption">@s.StartTime.ToString("dd/MM HH:mm")</div>
+                    </div>
+                    <span class="badge badge-info">@s.Status</span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Announcements / Packages -->
+<div class="section" style="padding-top:0; padding-bottom:0;">
+    <div class="section-header">
+        <div class="section-title">Gói dịch vụ</div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        @foreach (var pkg in Packages)
+        {
+            <div class="card" style="border-color:rgba(36,185,138,0.15);">
+                <div class="d-flex items-center justify-between mb-sm">
+                    <div class="fw-bold" style="font-size:0.95rem;">@pkg.Name</div>
+                    <span class="badge @(pkg.IsActive ? "badge-success" : "badge-warning")">@(pkg.IsActive ? "Đang bán" : "Ngừng")</span>
+                </div>
+                <div class="d-flex items-center justify-between">
+                    <div>
+                        <div style="font-size:1.1rem; font-weight:700; color:var(--clr-primary);">@pkg.Price.ToString("N0")₫</div>
+                        <div class="text-caption">@pkg.DurationDisplay · @pkg.SessionCount buổi PT</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm">Chi tiết</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (ShowRenew)
+{
+    <div class="modal-overlay" @onclick="HideRenewDialog">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.1rem; margin-bottom:16px;">🔄 Gia hạn gói tập</h2>
+            <div class="alert alert-info mb-md">
+                Gói tập hiện tại còn <strong>@DaysRemaining ngày</strong>. Gia hạn sớm để tiếp tục tập luyện không gián đoạn.
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                @foreach (var pkg in Packages.Where(p => p.IsActive))
+                {
+                    <label class="card" style="cursor:pointer; border-color: @(SelectedPackageId==pkg.PackageId?"var(--clr-primary)":"var(--clr-border)"); display:flex; align-items:center; gap:12px;">
+                        <input type="radio" name="renewPkg" value="@pkg.PackageId"
+                               checked="@(SelectedPackageId == pkg.PackageId)"
+                               @onchange="() => SelectedPackageId = pkg.PackageId"
+                               style="accent-color:var(--clr-primary);" />
+                        <div>
+                            <div class="fw-semibold">@pkg.Name</div>
+                            <div class="text-caption">@pkg.Price.ToString("N0")₫ · @pkg.DurationDisplay</div>
+                        </div>
+                    </label>
+                }
+            </div>
+            <button class="btn btn-primary btn-block" @onclick="ConfirmRenew">Xác nhận gia hạn</button>
+        </div>
+    </div>
+}
+
+@code {
+    private int DaysRemaining = 42;
+    private int PtSessionsLeft = 7;
+    private int PtSessionsTotal = 12;
+    private string ExpiryDate = "05/12/2026";
+    private bool ShowRenew = false;
+    private string SelectedPackageId = "";
+
+    private int ProgressWidth => Math.Max(5, (int)((double)DaysRemaining / 180 * 100));
+    private string ProgressClass => DaysRemaining <= 14 ? "danger" : DaysRemaining <= 30 ? "warning" : "";
+    private int PtProgressWidth => Math.Max(5, (int)((double)PtSessionsLeft / PtSessionsTotal * 100));
+
+    private List<PtSessionDto> UpcomingSessions = [];
+    private List<PackageDto> Packages = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var sessions = await PtService.GetMemberSessionsAsync("MB-0248");
+            UpcomingSessions = sessions
+                .Where(s => s.StartTime >= DateTime.Now && s.Status == BookingStatus.Confirmed)
+                .OrderBy(s => s.StartTime)
+                .Take(3)
+                .ToList();
+
+            // Packages sẽ được inject sau qua ISystemSettingService; dùng mock data tạm
+            Packages =
+            [
+                new PackageDto("PKG-01", "Gói Cơ Bản 1T", 1_200_000m, "1 tháng", 0, 0, "Tự do dụng cụ", 0, true),
+                new PackageDto("PKG-02", "Gói Premium 3T", 3_200_000m, "3 tháng", 4, 7, "Yoga + dụng cụ + 4 PT", 0, true),
+                new PackageDto("PKG-03", "Gói VIP 12T", 9_500_000m, "12 tháng", 12, 30, "Full quyền lợi + InBody miễn phí", 0, true),
+            ];
+        }
+        catch { /* Skeleton data giữ nguyên nếu service chưa sẵn sàng */ }
+    }
+
+    private void ShowRenewDialog() => ShowRenew = true;
+    private void HideRenewDialog() => ShowRenew = false;
+    private void ConfirmRenew()
+    {
+        // TODO: UC02 – gửi yêu cầu gia hạn
+        ShowRenew = false;
+    }
+}

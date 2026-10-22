@@ -1,0 +1,44 @@
+<Window
+    x:Class="GymManagement.Desktop.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:GymManagement.Desktop.ViewModels"
+    Title="Gym House Management"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView
+            x:Name="NavView"
+            PaneDisplayMode="Left"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            SelectionChanged="NavView_SelectionChanged">
+
+            <!-- Pane Header -->
+            <NavigationView.PaneHeader>
+                <StackPanel Orientation="Horizontal" Spacing="12" Margin="16,16,16,8">
+                    <FontIcon Glyph="&#xE945;" FontSize="24" Foreground="#24B98A" />
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="GYM HOUSE" FontWeight="Bold" FontSize="16" />
+                        <TextBlock Text="Hệ thống Vận hành" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </NavigationView.PaneHeader>
+
+            <!-- Menu Items -->
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Tổng quan" Tag="Dashboard" Icon="Home" />
+                <NavigationViewItem Content="Hội viên &amp; Gói tập" Tag="Members" Icon="Contact" />
+                <NavigationViewItem Content="Quầy Điểm danh" Tag="CheckIn" Icon="Scan" />
+                <NavigationViewItem Content="Điều phối &amp; Lịch PT" Tag="PtSchedule" Icon="Calendar" />
+                <NavigationViewItem Content="Thu ngân &amp; Hóa đơn" Tag="Billing" Icon="Shop" />
+                <NavigationViewItem Content="Cài đặt &amp; Gói tập" Tag="Settings" Icon="Setting" />
+            </NavigationView.MenuItems>
+
+            <!-- Main Content Frame -->
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+    </Grid>
+</Window>

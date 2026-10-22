@@ -1,0 +1,274 @@
+@page "/pt/schedule"
+@rendermode InteractiveServer
+@inject IPtService PtService
+
+<PageTitle>GYM HOUSE – Lịch dạy &amp; Lịch rảnh của PT</PageTitle>
+
+@if (!string.IsNullOrEmpty(Notice))
+{
+    <div class="section" style="padding-bottom:0;">
+        <div class="alert @NoticeClass animate-down">@Notice</div>
+    </div>
+}
+
+<div class="section animate-down">
+    <!-- Header -->
+    <div class="section-header mb-md">
+        <div>
+            <h1 class="section-title" style="font-size:1.1rem;">🧑‍🏫 Quản lý Lịch dạy &amp; Học viên</h1>
+            <div class="text-caption">@CurrentPtName · @CurrentPtSpecialty</div>
+        </div>
+    </div>
+
+    <!-- Điều hướng nội bộ khu vực PT -->
+    <div class="d-flex gap-sm mb-md">
+        <a href="/pt/schedule" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">📅 Lịch dạy &amp; Lịch rảnh</a>
+        <a href="/pt/students" class="btn btn-secondary btn-sm" style="flex:1; text-align:center;">👥 Học viên phụ trách</a>
+    </div>
+
+    <!-- Chọn tuần tra cứu (UC 8.1.2) -->
+    <div class="card mb-md">
+        <div class="d-flex items-center justify-between">
+            <button class="btn btn-ghost btn-sm" @onclick="() => MoveWeekAsync(-1)">‹ Tuần trước</button>
+            <div style="text-align:center;">
+                <div class="fw-semibold" style="font-size:0.9rem;">@WeekRangeLabel</div>
+                <div class="text-caption">Tuần @WeekNumberOfYear</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" @onclick="() => MoveWeekAsync(1)">Tuần sau ›</button>
+        </div>
+        <button class="btn btn-ghost btn-sm w-full mt-sm" @onclick="GoToCurrentWeekAsync">Về tuần hiện tại</button>
+    </div>
+
+    <!-- Danh sách ca dạy trong tuần (UC 8.1.2) -->
+    <div class="section-header mb-sm">
+        <h2 class="section-title" style="font-size:1rem;">📅 Ca dạy trong tuần</h2>
+        <span class="badge badge-info">@WeekSessions.Count ca</span>
+    </div>
+
+    @if (WeekSessions.Count == 0)
+    {
+        <div class="card mb-md" style="text-align:center; padding:32px 24px;">
+            <div style="font-size:2rem; margin-bottom:8px;">📭</div>
+            <div class="fw-semibold">Không có lịch dạy trong tuần này</div>
+        </div>
+    }
+    else
+    {
+        <div class="mb-md" style="display:flex; flex-direction:column; gap:10px;">
+            @foreach (var s in WeekSessions)
+            {
+                <div class="card animate-fade" style="border-left:3px solid @GetStatusColor(s.Status);">
+                    <div class="d-flex items-center justify-between mb-sm">
+                        <div class="fw-semibold" style="font-size:0.9rem;">@s.MemberName</div>
+                        <span class="badge @GetStatusBadge(s.Status)">@GetStatusLabel(s.Status)</span>
+                    </div>
+                    <div class="text-caption">
+                        🕐 @s.StartTime.ToString("ddd, dd/MM") · @s.StartTime.ToString("HH:mm") – @s.EndTime.ToString("HH:mm")
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(s.Note))
+                    {
+                        <div class="text-caption mt-sm">📝 @s.Note</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Lưới đăng ký lịch rảnh (UC 8.1.1) -->
+    <div class="section-header mb-sm">
+        <h2 class="section-title" style="font-size:1rem;">🕐 Đăng ký lịch rảnh</h2>
+        <span class="text-caption">@RegisteredCount khung đã đăng ký</span>
+    </div>
+
+    <div class="card mb-md">
+        <div class="text-caption mb-md">
+            Chạm vào khung giờ để đăng ký hoặc bỏ đăng ký rảnh. Khung giờ gạch ngang đã có hội viên đặt lịch nên không thể hủy.
+        </div>
+
+        @foreach (var day in WeekDays)
+        {
+            <div class="mb-md">
+                <div class="fw-semibold" style="font-size:0.83rem;">@day.Label</div>
+                <div class="slot-grid mt-sm" style="grid-template-columns:repeat(4,1fr);">
+                    @foreach (var slot in SlotsOf(day.Date))
+                    {
+                        <button class="slot-btn @SlotCssClass(slot)" @onclick="() => ToggleSlot(slot)">
+                            @slot.StartTime
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+
+        <button class="btn btn-primary btn-block" @onclick="SaveSlotsAsync" disabled="@(!_slotsDirty)">
+            💾 Lưu lịch rảnh
+        </button>
+    </div>
+</div>
+
+@code {
+    // TODO(UC01): chưa có màn hình đăng nhập nên tạm cố định PT đang thao tác
+    private const string CurrentPtId = "PT-01";
+
+    private string CurrentPtName = "Huấn luyện viên";
+    private string CurrentPtSpecialty = "";
+
+    private DateOnly _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
+    private List<PtSlotDto> _slots = [];
+    private List<PtSessionDto> WeekSessions = [];
+
+    private string Notice = "";
+    private string NoticeClass = "alert-info";
+    private bool _slotsDirty = true;
+
+    /// <summary>Trả về Thứ 2 của tuần chứa ngày truyền vào (DayOfWeek: Chủ nhật = 0).</summary>
+    private static DateOnly StartOfWeek(DateOnly date)
+    {
+        var offset = ((int)date.DayOfWeek + 6) % 7;
+        return date.AddDays(-offset);
+    }
+
+    private string WeekRangeLabel => $"{_weekStart:dd/MM} – {_weekStart.AddDays(6):dd/MM/yyyy}";
+
+    private int WeekNumberOfYear =>
+        System.Globalization.ISOWeek.GetWeekOfYear(_weekStart.ToDateTime(TimeOnly.MinValue));
+
+    private sealed record DayCell(DateOnly Date, string Label);
+
+    private List<DayCell> WeekDays => Enumerable.Range(0, 7)
+        .Select(offset => _weekStart.AddDays(offset))
+        .Select(date => new DayCell(date, $"{DayNameOf(date.DayOfWeek)}, {date:dd/MM}"))
+        .ToList();
+
+    private List<PtSlotDto> SlotsOf(DateOnly date) => _slots.Where(s => s.Date == date).ToList();
+
+    private int RegisteredCount => _slots.Count(s => s.Status == PtSlotStatus.Registered);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var me = (await PtService.GetTrainersAsync()).FirstOrDefault(t => t.PtId == CurrentPtId);
+        if (me != null)
+        {
+            CurrentPtName = me.FullName;
+            CurrentPtSpecialty = me.Specialty;
+        }
+
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        try
+        {
+            var from = _weekStart.ToDateTime(TimeOnly.MinValue);
+            var to = _weekStart.AddDays(7).ToDateTime(TimeOnly.MinValue);
+
+            WeekSessions = (await PtService.GetPtScheduleAsync(CurrentPtId, from, to))
+                .Where(s => s.Status != BookingStatus.Cancelled)
+                .OrderBy(s => s.StartTime)
+                .ToList();
+
+            _slots = (await PtService.GetPtSlotsAsync(CurrentPtId, _weekStart)).ToList();
+            _slotsDirty = false;
+        }
+        catch (Exception ex)
+        {
+            Notice = $"Không tải được dữ liệu lịch dạy: {ex.Message}";
+            NoticeClass = "alert-danger";
+        }
+    }
+
+    private async Task MoveWeekAsync(int deltaWeeks)
+    {
+        _weekStart = _weekStart.AddDays(deltaWeeks * 7);
+        await ReloadAsync();
+    }
+
+    private async Task GoToCurrentWeekAsync()
+    {
+        _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
+        await ReloadAsync();
+    }
+
+    private void ToggleSlot(PtSlotDto slot)
+    {
+        // UC 8.1.1 – phụ 5.1: từ chối hủy khung giờ đã có hội viên đặt lịch
+        if (slot.Status == PtSlotStatus.Booked)
+        {
+            Notice = "Khung giờ đã có hội viên đặt lịch, không thể hủy";
+            NoticeClass = "alert-danger";
+            return;
+        }
+
+        var index = _slots.FindIndex(s => s.SlotId == slot.SlotId);
+        if (index < 0) return;
+
+        _slots[index] = _slots[index] with
+        {
+            Status = _slots[index].Status == PtSlotStatus.Registered
+                ? PtSlotStatus.Free
+                : PtSlotStatus.Registered
+        };
+
+        _slotsDirty = true;
+        Notice = "";
+    }
+
+    private async Task SaveSlotsAsync()
+    {
+        try
+        {
+            await PtService.SavePtSlotsAsync(CurrentPtId, _slots);
+            await ReloadAsync();
+            Notice = "Cập nhật lịch rảnh thành công";
+            NoticeClass = "alert-success";
+        }
+        catch (Exception ex)
+        {
+            Notice = $"Lưu lịch rảnh thất bại: {ex.Message}";
+            NoticeClass = "alert-danger";
+        }
+    }
+
+    private static string SlotCssClass(PtSlotDto slot) => slot.Status switch
+    {
+        PtSlotStatus.Booked => "booked",
+        PtSlotStatus.Registered => "selected",
+        _ => "available"
+    };
+
+    private static string DayNameOf(DayOfWeek dayOfWeek) => dayOfWeek switch
+    {
+        DayOfWeek.Monday => "Thứ 2",
+        DayOfWeek.Tuesday => "Thứ 3",
+        DayOfWeek.Wednesday => "Thứ 4",
+        DayOfWeek.Thursday => "Thứ 5",
+        DayOfWeek.Friday => "Thứ 6",
+        DayOfWeek.Saturday => "Thứ 7",
+        _ => "Chủ nhật"
+    };
+
+    private static string GetStatusColor(BookingStatus status) => status switch
+    {
+        BookingStatus.Confirmed => "var(--clr-primary)",
+        BookingStatus.Completed => "var(--clr-accent)",
+        BookingStatus.Cancelled => "var(--clr-danger)",
+        _ => "var(--clr-border-strong)"
+    };
+
+    private static string GetStatusBadge(BookingStatus status) => status switch
+    {
+        BookingStatus.Confirmed => "badge-success",
+        BookingStatus.Completed => "badge-info",
+        BookingStatus.Cancelled => "badge-danger",
+        _ => "badge-warning"
+    };
+
+    private static string GetStatusLabel(BookingStatus status) => status switch
+    {
+        BookingStatus.Confirmed => "Đã xác nhận",
+        BookingStatus.Completed => "Đã hoàn tất",
+        BookingStatus.Cancelled => "Đã hủy",
+        _ => "Không đến"
+    };
+}

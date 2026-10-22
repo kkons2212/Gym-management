@@ -179,3 +179,49 @@ temp/
 .agents/
 .agent/
 skills-lock.json
+
+# ==========================================
+# .NET / C# / Blazor / WinUI 3
+# ==========================================
+# Build outputs
+src/**/bin/
+src/**/obj/
+src/**/*.user
+
+# NuGet packages (restored on build)
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# WinUI 3 / MSIX packaging artifacts
+AppPackages/
+BundleArtifacts/
+*.appx
+*.appxbundle
+*.appxupload
+*.msixbundle
+*.cer
+
+# Generated XAML code-behind
+*.g.cs
+*.g.i.cs
+
+# Blazor WASM publish artifacts (if switched to WASM later)
+**/publish/
+**/wwwroot/_framework/
+
+# Entity Framework migrations (keep source, ignore snapshots if preferred)
+# src/**/Migrations/
+
+# Rider / Visual Studio 2022 local
+.vs/
+*.rsuser
+*.DotSettings.user
+
+# ==========================================
+# Cloudflared tunnel (binary & config)
+# ==========================================
+cloudflared.exe
+cloudflared
+.cloudflared/

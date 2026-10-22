@@ -1,0 +1,233 @@
+@page "/schedule"
+@rendermode InteractiveServer
+@inject IPtService PtService
+
+<PageTitle>GYM HOUSE – Lịch tập của tôi</PageTitle>
+
+<div class="section animate-down">
+    <div class="section-header mb-md">
+        <h1 class="section-title" style="font-size:1.1rem;">🗓️ Lịch tập của tôi</h1>
+        <a href="/pt-booking" class="btn btn-ghost btn-sm">+ Đặt thêm</a>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="d-flex gap-sm mb-md" style="overflow-x:auto; padding-bottom:4px;">
+        @foreach (var tab in Tabs)
+        {
+            <button class="btn @(ActiveTab == tab ? "btn-primary" : "btn-secondary") btn-sm"
+                    style="flex-shrink:0;"
+                    @onclick="() => ActiveTab = tab">@tab</button>
+        }
+    </div>
+
+    @if (FilteredSessions.Count == 0)
+    {
+        <div class="card" style="text-align:center; padding:48px 24px; color:var(--clr-text-secondary);">
+            <div style="font-size:2.5rem; margin-bottom:12px;">📭</div>
+            <div class="fw-semibold mb-sm">Không có lịch nào</div>
+            <div class="text-caption mb-md">Chưa có buổi tập nào @ActiveTab.ToLower()</div>
+            <a href="/pt-booking" class="btn btn-primary btn-sm">Đặt lịch PT ngay</a>
+        </div>
+    }
+    else
+    {
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            @foreach (var s in FilteredSessions)
+            {
+                <div class="card animate-fade" style="border-left:3px solid @GetStatusColor(s.Status);">
+                    <div class="d-flex items-center justify-between mb-sm">
+                        <div class="d-flex items-center gap-sm">
+                            <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);">PT</div>
+                            <div>
+                                <div class="fw-semibold" style="font-size:0.9rem;">@s.PtName</div>
+                                <div class="text-caption">@s.StartTime.ToString("EEE, dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                        <span class="badge @GetStatusBadge(s.Status)">@GetStatusLabel(s.Status)</span>
+                    </div>
+                    <div class="d-flex items-center gap-md mb-sm" style="font-size:0.85rem; color:var(--clr-text-secondary);">
+                        <span>🕐 @s.StartTime.ToString("HH:mm") – @s.EndTime.ToString("HH:mm")</span>
+                        @if (!string.IsNullOrEmpty(s.Note))
+                        {
+                            <span>📝 @s.Note</span>
+                        }
+                    </div>
+
+                    @if (s.Status == BookingStatus.Confirmed)
+                    {
+                        <div class="d-flex gap-sm">
+                            <button class="btn btn-secondary btn-sm" @onclick="() => OpenReschedule(s)">
+                                🔄 Dời lịch
+                            </button>
+                            <button class="btn btn-sm" style="background:rgba(239,68,68,0.1); color:var(--clr-danger); border:1px solid rgba(239,68,68,0.3);"
+                                    @onclick="() => OpenCancel(s)">
+                                ✕ Hủy buổi
+                            </button>
+                        </div>
+                    }
+                    @if (s.Status == BookingStatus.Completed && s.Rating == null)
+                    {
+                        <button class="btn btn-ghost btn-sm" @onclick="() => OpenRating(s)">
+                            ⭐ Đánh giá buổi tập
+                        </button>
+                    }
+                    @if (s.Rating.HasValue)
+                    {
+                        <div class="d-flex items-center gap-xs" style="color:var(--clr-warning);">
+                            @for (int i = 1; i <= 5; i++)
+                            { <span>@(i <= s.Rating ? "⭐" : "☆")</span> }
+                            <span class="text-caption ml-sm">@s.FeedbackComment</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Cancel confirmation dialog -->
+@if (CancelTarget != null)
+{
+    <div class="modal-overlay" @onclick="() => CancelTarget = null">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.1rem; margin-bottom:8px;">✕ Hủy buổi PT</h2>
+            <div class="card mb-md" style="background:var(--clr-surface-alt);">
+                <div class="fw-semibold">@CancelTarget.PtName</div>
+                <div class="text-caption">@CancelTarget.StartTime.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            @{
+                var hoursUntil = (CancelTarget.StartTime - DateTime.Now).TotalHours;
+            }
+            @if (hoursUntil < 2)
+            {
+                <div class="alert alert-danger mb-md">
+                    ⚠️ Hủy trong vòng <strong>2 giờ</strong> trước buổi tập sẽ bị <strong>trừ 1 buổi PT</strong> theo chính sách.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-md">
+                    ✅ Hủy đúng hạn — buổi PT sẽ được hoàn trả vào tài khoản.
+                </div>
+            }
+            <div class="form-group mb-lg">
+                <label class="form-label">Lý do hủy (tuỳ chọn)</label>
+                <input class="form-control" type="text" @bind="CancelReason" placeholder="VD: bận việc đột xuất..." />
+            </div>
+            <div class="d-flex gap-sm">
+                <button class="btn btn-secondary" style="flex:1;" @onclick="() => CancelTarget = null">Giữ lịch</button>
+                <button class="btn btn-danger" style="flex:1;" @onclick="ConfirmCancel">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Rating Dialog (UC10) -->
+@if (RatingTarget != null)
+{
+    <div class="modal-overlay" @onclick="() => RatingTarget = null">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.1rem; margin-bottom:4px;">⭐ Đánh giá buổi tập</h2>
+            <div class="text-caption mb-md">Với @RatingTarget.PtName · @RatingTarget.StartTime.ToString("dd/MM/yyyy")</div>
+            <div class="star-rating justify-center d-flex mb-md">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    var starVal = i;
+                    <span class="star @(StarRating >= starVal ? "active" : "")"
+                          @onclick="() => StarRating = starVal"
+                          @onmouseover="() => HoverStar = starVal"
+                          @onmouseout="() => HoverStar = 0">
+                        ⭐
+                    </span>
+                }
+            </div>
+            <div class="form-group mb-lg">
+                <label class="form-label">Nhận xét (tuỳ chọn)</label>
+                <input class="form-control" type="text" @bind="RatingComment" placeholder="Buổi tập thế nào?" />
+            </div>
+            <button class="btn btn-primary btn-block" @onclick="SubmitRating">Gửi đánh giá</button>
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly string[] Tabs = ["Sắp tới", "Đã hoàn tất", "Đã hủy", "Tất cả"];
+    private string ActiveTab = "Sắp tới";
+
+    private List<PtSessionDto> AllSessions = [];
+    private List<PtSessionDto> FilteredSessions => ActiveTab switch
+    {
+        "Sắp tới"     => AllSessions.Where(s => s.Status == BookingStatus.Confirmed && s.StartTime >= DateTime.Now).ToList(),
+        "Đã hoàn tất" => AllSessions.Where(s => s.Status == BookingStatus.Completed).ToList(),
+        "Đã hủy"      => AllSessions.Where(s => s.Status == BookingStatus.Cancelled).ToList(),
+        _              => AllSessions,
+    };
+
+    private PtSessionDto? CancelTarget;
+    private PtSessionDto? RatingTarget;
+    private string CancelReason = "";
+    private int StarRating = 0;
+    private int HoverStar = 0;
+    private string RatingComment = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            AllSessions = (await PtService.GetMemberSessionsAsync("MB-0248")).ToList();
+        }
+        catch
+        {
+            var now = DateTime.Now;
+            AllSessions =
+            [
+                new PtSessionDto("BK-001","PT-01","Nguyễn Văn An","MB-0248","Hoàng Long",now.AddDays(2).AddHours(7),now.AddDays(2).AddHours(8),BookingStatus.Confirmed,"Tập giảm mỡ bụng",null,null),
+                new PtSessionDto("BK-002","PT-02","Trần Thị Bình","MB-0248","Hoàng Long",now.AddDays(4).AddHours(9),now.AddDays(4).AddHours(10),BookingStatus.Confirmed,"Yoga & giãn cơ",null,null),
+                new PtSessionDto("BK-003","PT-01","Nguyễn Văn An","MB-0248","Hoàng Long",now.AddDays(-5).AddHours(7),now.AddDays(-5).AddHours(8),BookingStatus.Completed,null,5,"PT rất nhiệt tình!"),
+                new PtSessionDto("BK-004","PT-03","Lê Văn Cường","MB-0248","Hoàng Long",now.AddDays(-10).AddHours(17),now.AddDays(-10).AddHours(18),BookingStatus.Cancelled,"CrossFit",null,null),
+            ];
+        }
+    }
+
+    private void OpenCancel(PtSessionDto s) => CancelTarget = s;
+    private void OpenReschedule(PtSessionDto s) { /* TODO: navigate to PT booking with pre-fill */ }
+    private void OpenRating(PtSessionDto s) { RatingTarget = s; StarRating = 0; }
+
+    private void ConfirmCancel()
+    {
+        // TODO: UC10 – call PtService.CancelSessionAsync
+        CancelTarget = null;
+    }
+
+    private void SubmitRating()
+    {
+        // TODO: UC10 – call PtService.RateSessionAsync
+        RatingTarget = null;
+    }
+
+    private string GetStatusColor(BookingStatus s) => s switch
+    {
+        BookingStatus.Confirmed  => "var(--clr-primary)",
+        BookingStatus.Completed  => "var(--clr-accent)",
+        BookingStatus.Cancelled  => "var(--clr-danger)",
+        _                        => "var(--clr-border-strong)"
+    };
+
+    private string GetStatusBadge(BookingStatus s) => s switch
+    {
+        BookingStatus.Confirmed  => "badge-success",
+        BookingStatus.Completed  => "badge-info",
+        BookingStatus.Cancelled  => "badge-danger",
+        _                        => "badge-warning"
+    };
+
+    private string GetStatusLabel(BookingStatus s) => s switch
+    {
+        BookingStatus.Confirmed  => "Đã xác nhận",
+        BookingStatus.Completed  => "Đã hoàn tất",
+        BookingStatus.Cancelled  => "Đã hủy",
+        _                        => s.ToString()
+    };
+}

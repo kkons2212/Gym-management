@@ -1,0 +1,57 @@
+/*
+ * MainLayout scoped CSS
+ * Handles NavLink active state and any layout-specific overrides
+ */
+
+/* NavLink active state – Blazor adds class "active" to active NavLink */
+::deep .nav-item.active {
+    color: var(--clr-primary);
+}
+
+::deep .nav-item.active .nav-icon {
+    transform: scale(1.15);
+}
+
+::deep .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: linear-gradient(90deg, #24B98A, #3B82F6);
+    border-radius: 0 0 9999px 9999px;
+}
+
+/* Tablet / desktop: switch to sidebar navigation */
+@media (min-width: 768px) {
+    .bottom-nav {
+        display: none;
+    }
+
+    .app-shell {
+        flex-direction: row;
+    }
+
+    /* Side nav becomes visible */
+    .app-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 240px;
+        min-height: 100dvh;
+        background: rgba(22, 27, 34, 0.95);
+        backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 24px 12px;
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        gap: 4px;
+    }
+
+    .app-content {
+        padding-bottom: 24px;
+        flex: 1;
+    }
+}

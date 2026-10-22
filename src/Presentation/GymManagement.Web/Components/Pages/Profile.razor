@@ -1,0 +1,200 @@
+@page "/profile"
+@rendermode InteractiveServer
+@inject IMemberService MemberService
+
+<PageTitle>GYM HOUSE – Hồ sơ cá nhân</PageTitle>
+
+<div class="section animate-down">
+
+    <!-- Profile Header -->
+    <div class="card mb-md" style="background:linear-gradient(145deg,#1a3a2e,#1e3a5f); border-color:rgba(36,185,138,0.3); text-align:center; padding:32px 20px;">
+        <div class="avatar avatar-lg" style="margin:0 auto 12px; font-size:1.8rem; background:linear-gradient(135deg,#24B98A,#3B82F6);">HL</div>
+        <h1 style="font-size:1.2rem; color:#fff; margin-bottom:4px;">@Member.FullName</h1>
+        <div style="font-size:0.8rem; color:rgba(255,255,255,0.6);">@Member.MemberCode</div>
+        <div class="d-flex gap-sm justify-center mt-sm">
+            <span class="badge badge-success">Hội viên Premium</span>
+            <span class="badge badge-info">@Member.Status</span>
+        </div>
+    </div>
+
+    <!-- Edit toggle -->
+    <div class="d-flex justify-between items-center mb-md">
+        <div class="section-title">Thông tin cá nhân</div>
+        <button class="btn btn-ghost btn-sm" @onclick="ToggleEdit">
+            @(IsEditing ? "✕ Hủy" : "✏️ Chỉnh sửa")
+        </button>
+    </div>
+
+    @if (!IsEditing)
+    {
+        <!-- View mode -->
+        <div class="card" style="padding:0;">
+            <div class="list-item">
+                <span style="font-size:1rem; width:24px; text-align:center;">📱</span>
+                <div style="flex:1;">
+                    <div class="text-caption">Số điện thoại</div>
+                    <div class="fw-semibold">@Member.Phone</div>
+                </div>
+            </div>
+            <div class="list-item">
+                <span style="font-size:1rem; width:24px; text-align:center;">📧</span>
+                <div style="flex:1;">
+                    <div class="text-caption">Email</div>
+                    <div class="fw-semibold">@Member.Email</div>
+                </div>
+            </div>
+            <div class="list-item">
+                <span style="font-size:1rem; width:24px; text-align:center;">🎂</span>
+                <div style="flex:1;">
+                    <div class="text-caption">Ngày sinh</div>
+                    <div class="fw-semibold">@Member.DateOfBirth.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+            <div class="list-item">
+                <span style="font-size:1rem; width:24px; text-align:center;">🪪</span>
+                <div style="flex:1;">
+                    <div class="text-caption">CCCD/CMND</div>
+                    <div class="fw-semibold" style="font-family:monospace; letter-spacing:0.08em;">@Member.CitizenId</div>
+                </div>
+            </div>
+            <div class="list-item" style="border-bottom:none;">
+                <span style="font-size:1rem; width:24px; text-align:center;">🏠</span>
+                <div style="flex:1;">
+                    <div class="text-caption">Địa chỉ</div>
+                    <div class="fw-semibold">@Member.Address</div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Edit mode -->
+        <div class="card" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="form-group">
+                <label class="form-label">Số điện thoại</label>
+                <input class="form-control" type="tel" @bind="EditPhone" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-control" type="email" @bind="EditEmail" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Địa chỉ</label>
+                <input class="form-control" type="text" @bind="EditAddress" />
+            </div>
+            @if (!string.IsNullOrEmpty(SaveMessage))
+            {
+                <div class="alert @(SaveSuccess ? "alert-success" : "alert-danger") animate-fade">
+                    @SaveMessage
+                </div>
+            }
+            <button class="btn btn-primary btn-block" @onclick="SaveProfile" disabled="@IsSaving">
+                @if (IsSaving) { <span class="animate-spin">⟳</span> } else { <span>💾 Lưu thay đổi</span> }
+            </button>
+        </div>
+    }
+
+    <!-- Account section -->
+    <div class="section-title mt-lg mb-md">Tài khoản</div>
+    <div class="card" style="padding:0;">
+        <button class="list-item" style="width:100%; background:transparent; border:none; color:inherit; cursor:pointer; text-align:left;" @onclick="() => ShowChangePassword = true">
+            <span style="font-size:1rem; width:24px; text-align:center;">🔑</span>
+            <div style="flex:1; font-weight:600; font-size:0.9rem;">Đổi mật khẩu</div>
+            <span style="color:var(--clr-text-tertiary);">›</span>
+        </button>
+        <button class="list-item" style="width:100%; background:transparent; border:none; color:inherit; cursor:pointer; text-align:left;">
+            <span style="font-size:1rem; width:24px; text-align:center;">🔔</span>
+            <div style="flex:1; font-weight:600; font-size:0.9rem;">Cài đặt thông báo</div>
+            <span style="color:var(--clr-text-tertiary);">›</span>
+        </button>
+        <button class="list-item" style="width:100%; background:transparent; border:none; cursor:pointer; text-align:left; border-bottom:none; color:var(--clr-danger);">
+            <span style="font-size:1rem; width:24px; text-align:center;">🚪</span>
+            <div style="flex:1; font-weight:600; font-size:0.9rem;">Đăng xuất</div>
+        </button>
+    </div>
+
+    <!-- App version -->
+    <div style="text-align:center; padding:24px 0 8px; color:var(--clr-text-tertiary); font-size:0.72rem;">
+        GYM HOUSE Member App v1.0.0 · &copy; 2026
+    </div>
+</div>
+
+<!-- Change password dialog -->
+@if (ShowChangePassword)
+{
+    <div class="modal-overlay" @onclick="() => ShowChangePassword = false">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.1rem; margin-bottom:16px;">🔑 Đổi mật khẩu</h2>
+            <div class="form-group mb-md">
+                <label class="form-label">Mật khẩu hiện tại</label>
+                <input class="form-control" type="password" @bind="OldPassword" />
+            </div>
+            <div class="form-group mb-md">
+                <label class="form-label">Mật khẩu mới</label>
+                <input class="form-control" type="password" @bind="NewPassword" />
+            </div>
+            <div class="form-group mb-lg">
+                <label class="form-label">Xác nhận mật khẩu mới</label>
+                <input class="form-control" type="password" @bind="ConfirmPassword" />
+            </div>
+            <button class="btn btn-primary btn-block" @onclick="ChangePassword">Xác nhận đổi mật khẩu</button>
+        </div>
+    </div>
+}
+
+@code {
+    private MemberDto Member = new(
+        "MB-0248", "Hoàng Long", "0901234567", "hoanglong@email.com",
+        "038123456789", new DateOnly(1995, 3, 15), "123 Nguyễn Huệ, Q.1, TP.HCM",
+        null, MemberStatus.Active, "Gói Premium 3 tháng",
+        DateOnly.FromDateTime(DateTime.Now.AddDays(40)), 7
+    );
+
+    private bool IsEditing = false;
+    private bool IsSaving = false;
+    private bool SaveSuccess = false;
+    private string SaveMessage = "";
+    private string EditPhone = "";
+    private string EditEmail = "";
+    private string EditAddress = "";
+    private bool ShowChangePassword = false;
+    private string OldPassword = "";
+    private string NewPassword = "";
+    private string ConfirmPassword = "";
+
+    private void ToggleEdit()
+    {
+        if (!IsEditing)
+        {
+            EditPhone   = Member.Phone;
+            EditEmail   = Member.Email;
+            EditAddress = Member.Address;
+            SaveMessage = "";
+        }
+        IsEditing = !IsEditing;
+    }
+
+    private async Task SaveProfile()
+    {
+        IsSaving = true;
+        await Task.Delay(800); // Simulate API
+        // TODO: UC09 – call MemberService.UpdateProfileAsync(...)
+        SaveSuccess = true;
+        SaveMessage = "✅ Đã lưu thông tin cá nhân thành công!";
+        Member = Member with { Phone = EditPhone, Email = EditEmail, Address = EditAddress };
+        IsSaving = false;
+        IsEditing = false;
+    }
+
+    private void ChangePassword()
+    {
+        if (NewPassword != ConfirmPassword)
+        {
+            // TODO: show error
+            return;
+        }
+        // TODO: UC01 – call AuthService.ChangePasswordAsync(...)
+        ShowChangePassword = false;
+    }
+}

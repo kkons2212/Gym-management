@@ -1,0 +1,7 @@
+@page "/counter"
+@rendermode InteractiveServer
+<p>Chuyển hướng...</p>
+@code {
+    [Microsoft.AspNetCore.Components.Inject] private Microsoft.AspNetCore.Components.NavigationManager Nav { get; set; } = default!;
+    protected override void OnInitialized() => Nav.NavigateTo("/");
+}

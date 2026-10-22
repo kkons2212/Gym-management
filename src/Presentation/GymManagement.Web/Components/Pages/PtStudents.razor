@@ -1,0 +1,454 @@
+@page "/pt/students"
+@rendermode InteractiveServer
+@using System.Globalization
+@inject IPtService PtService
+
+<PageTitle>GYM HOUSE – Học viên phụ trách (PT)</PageTitle>
+
+@if (!string.IsNullOrEmpty(Notice))
+{
+    <div class="section" style="padding-bottom:0;">
+        <div class="alert @NoticeClass animate-down">@Notice</div>
+    </div>
+}
+
+<div class="section animate-down">
+    <!-- Header -->
+    <div class="section-header mb-md">
+        <div>
+            <h1 class="section-title" style="font-size:1.1rem;">🧑‍🏫 Quản lý Lịch dạy &amp; Học viên</h1>
+            <div class="text-caption">@CurrentPtName · Học viên do tôi phụ trách</div>
+        </div>
+    </div>
+
+    <!-- Điều hướng nội bộ khu vực PT -->
+    <div class="d-flex gap-sm mb-md">
+        <a href="/pt/schedule" class="btn btn-secondary btn-sm" style="flex:1; text-align:center;">📅 Lịch dạy &amp; Lịch rảnh</a>
+        <a href="/pt/students" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">👥 Học viên phụ trách</a>
+    </div>
+
+    <!-- Tra cứu học viên (UC 8.2.1) -->
+    <div class="d-flex gap-sm mb-md">
+        <input class="form-control" placeholder="Tìm theo tên hoặc mã học viên..."
+               @bind="SearchKeyword" @bind:event="oninput" @onkeydown="HandleSearchKeyDown" />
+        <button class="btn btn-primary" @onclick="LoadStudentsAsync">Tìm</button>
+    </div>
+
+    @if (SearchPerformed && Students.Count == 0)
+    {
+        <div class="alert alert-warning mb-md">Không tìm thấy học viên phù hợp</div>
+    }
+
+    <!-- Danh sách học viên phụ trách (UC 8.2.1) -->
+    <div class="card">
+        @if (Students.Count == 0 && !SearchPerformed)
+        {
+            <div class="text-caption" style="text-align:center; padding:24px;">Bạn chưa được phân công học viên nào.</div>
+        }
+        else
+        {
+            @foreach (var member in Students)
+            {
+                <div class="list-item" style="cursor:pointer;" @onclick="() => OpenStudentAsync(member)">
+                    <div class="avatar">@InitialsOf(member.FullName)</div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="fw-semibold" style="font-size:0.9rem;">@member.FullName</div>
+                        <div class="text-caption">@member.MemberCode · @member.Phone</div>
+                        <div class="text-caption">@member.ActivePackageName</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge @(member.RemainingPtSessions > 0 ? "badge-success" : "badge-danger")">
+                            @member.RemainingPtSessions buổi
+                        </span>
+                        <div class="text-caption mt-sm">›</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Chi tiết học viên: lịch sử tập luyện, InBody, xác nhận ca tập -->
+@if (Selected != null)
+{
+    <div class="modal-overlay" @onclick="CloseStudent">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+
+            <div class="d-flex items-center justify-between mb-sm">
+                <div>
+                    <div class="fw-semibold" style="font-size:1rem;">@Selected.FullName</div>
+                    <div class="text-caption">@Selected.MemberCode · @Selected.Phone</div>
+                </div>
+                <span class="badge @MemberStatusBadge(Selected.Status)">@MemberStatusLabel(Selected.Status)</span>
+            </div>
+
+            <div class="card mb-md" style="background:var(--clr-surface-alt);">
+                <div class="d-flex justify-between mb-sm" style="font-size:0.85rem;">
+                    <span class="text-caption">Gói tập</span>
+                    <span class="fw-semibold">@Selected.ActivePackageName</span>
+                </div>
+                <div class="d-flex justify-between mb-sm" style="font-size:0.85rem;">
+                    <span class="text-caption">Buổi PT còn lại</span>
+                    <span class="fw-semibold">@Selected.RemainingPtSessions buổi</span>
+                </div>
+                <div class="d-flex justify-between" style="font-size:0.85rem;">
+                    <span class="text-caption">Hết hạn gói</span>
+                    <span class="fw-semibold">@(Selected.ExpirationDate?.ToString("dd/MM/yyyy") ?? "—")</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block mb-md" @onclick="OpenInBodyForm">
+                📝 Ghi chú tiến độ / Chỉ số
+            </button>
+
+            <!-- Lịch sử tập luyện (UC 8.2.1 + 8.2.3) -->
+            <div class="section-header mb-sm">
+                <h2 class="section-title" style="font-size:0.95rem;">📅 Lịch sử ca tập</h2>
+                <span class="badge badge-info">@SelectedSessions.Count ca</span>
+            </div>
+
+            @if (SelectedSessions.Count == 0)
+            {
+                <div class="text-caption mb-md">Chưa có ca tập nào với học viên này.</div>
+            }
+            else
+            {
+                foreach (var session in SelectedSessions)
+                {
+                    <div class="card mb-sm" style="background:var(--clr-surface-alt);">
+                        <div class="d-flex items-center justify-between mb-sm">
+                            <span class="fw-semibold" style="font-size:0.85rem;">
+                                @session.StartTime.ToString("ddd, dd/MM/yyyy")
+                            </span>
+                            <span class="badge @GetSessionBadge(session.Status)">@GetSessionLabel(session.Status)</span>
+                        </div>
+                        <div class="text-caption">
+                            🕐 @session.StartTime.ToString("HH:mm") – @session.EndTime.ToString("HH:mm")
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(session.Note))
+                        {
+                            <div class="text-caption">📝 @session.Note</div>
+                        }
+                        @if (session.Status == BookingStatus.Confirmed && session.StartTime <= DateTime.Now)
+                        {
+                            <button class="btn btn-sm mt-sm" style="background:rgba(36,185,138,0.12); color:var(--clr-primary); border:1px solid rgba(36,185,138,0.3);"
+                                    @onclick="() => ConfirmCompleteAsync(session)">
+                                ✅ Xác nhận hoàn thành ca tập
+                            </button>
+                        }
+                    </div>
+                }
+            }
+
+            <!-- Lịch sử chỉ số InBody (UC 8.2.2) -->
+            <div class="section-header mb-sm mt-md">
+                <h2 class="section-title" style="font-size:0.95rem;">📊 Chỉ số InBody</h2>
+                <span class="badge badge-info">@SelectedInBody.Count lần đo</span>
+            </div>
+
+            @if (SelectedInBody.Count == 0)
+            {
+                <div class="text-caption mb-md">Chưa có dữ liệu InBody cho học viên này.</div>
+            }
+            else
+            {
+                foreach (var record in SelectedInBody)
+                {
+                    <div class="card mb-sm" style="background:var(--clr-surface-alt);">
+                        <div class="d-flex justify-between mb-sm" style="font-size:0.85rem;">
+                            <span class="fw-semibold">@record.MeasuredDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            <span class="text-caption">@record.MeasuredByPtName</span>
+                        </div>
+                        <div class="d-flex gap-md" style="font-size:0.83rem;">
+                            <span>⚖️ @record.WeightKg.ToString("0.0") kg</span>
+                            <span>💧 @record.BodyFatPercent.ToString("0.0") % mỡ</span>
+                            <span>💪 @record.MuscleMassKg.ToString("0.0") kg cơ</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(record.Note))
+                        {
+                            <div class="text-caption mt-sm">📝 @record.Note</div>
+                        }
+                    </div>
+                }
+            }
+
+            <button class="btn btn-secondary btn-block mt-md" @onclick="CloseStudent">Đóng</button>
+        </div>
+    </div>
+}
+
+<!-- Biểu mẫu ghi chú tiến độ / chỉ số InBody (UC 8.2.2) -->
+@if (ShowInBodyForm && Selected != null)
+{
+    <div class="modal-overlay" @onclick="CloseInBodyForm">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.05rem; margin-bottom:4px;">📝 Ghi chú tiến độ / Chỉ số</h2>
+            <div class="text-caption mb-md">@Selected.FullName · @Selected.MemberCode</div>
+
+            @if (!string.IsNullOrEmpty(FormError))
+            {
+                <div class="alert alert-danger mb-md">@FormError</div>
+            }
+
+            <div class="form-group mb-md">
+                <label class="form-label">Cân nặng (kg) *</label>
+                <input class="form-control" inputmode="decimal" placeholder="VD: 62.5" @bind="WeightInput" />
+            </div>
+            <div class="form-group mb-md">
+                <label class="form-label">Tỷ lệ mỡ cơ thể (%) *</label>
+                <input class="form-control" inputmode="decimal" placeholder="VD: 18.5" @bind="FatInput" />
+            </div>
+            <div class="form-group mb-md">
+                <label class="form-label">Khối lượng cơ (kg) *</label>
+                <input class="form-control" inputmode="decimal" placeholder="VD: 30.1" @bind="MuscleInput" />
+            </div>
+            <div class="form-group mb-lg">
+                <label class="form-label">Ghi chú bài tập</label>
+                <input class="form-control" placeholder="VD: Buổi 6/12 – tập lưng &amp; vai" @bind="ProgressNote" />
+            </div>
+
+            <div class="d-flex gap-sm">
+                <button class="btn btn-secondary" style="flex:1;" @onclick="CloseInBodyForm">Hủy</button>
+                <button class="btn btn-primary" style="flex:1;" @onclick="SaveInBodyAsync">Hoàn tất</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // TODO(UC01): chưa có màn hình đăng nhập nên tạm cố định PT đang thao tác
+    private const string CurrentPtId = "PT-01";
+
+    private string CurrentPtName = "Huấn luyện viên";
+
+    private string SearchKeyword = "";
+    private List<MemberDto> Students = [];
+    private bool SearchPerformed;
+
+    private MemberDto? Selected;
+    private List<PtSessionDto> SelectedSessions = [];
+    private List<InBodyRecordDto> SelectedInBody = [];
+
+    private bool ShowInBodyForm;
+    private string WeightInput = "";
+    private string FatInput = "";
+    private string MuscleInput = "";
+    private string ProgressNote = "";
+    private string FormError = "";
+
+    private string Notice = "";
+    private string NoticeClass = "alert-info";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var me = (await PtService.GetTrainersAsync()).FirstOrDefault(t => t.PtId == CurrentPtId);
+        if (me != null)
+        {
+            CurrentPtName = me.FullName;
+        }
+
+        await LoadStudentsAsync();
+    }
+
+    private async Task LoadStudentsAsync()
+    {
+        SearchPerformed = !string.IsNullOrWhiteSpace(SearchKeyword);
+        Students = (await PtService.GetPtStudentsAsync(CurrentPtId, SearchKeyword)).ToList();
+
+        // UC 8.2.1 – phụ 3.1: giữ nguyên màn hình danh sách khi không tìm thấy
+        if (SearchPerformed && Students.Count == 0)
+        {
+            Notice = "Không tìm thấy học viên phù hợp";
+            NoticeClass = "alert-warning";
+        }
+        else if (SearchPerformed)
+        {
+            Notice = "";
+        }
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await LoadStudentsAsync();
+        }
+    }
+
+    private async Task OpenStudentAsync(MemberDto member)
+    {
+        Selected = member;
+        ShowInBodyForm = false;
+        Notice = "";
+
+        SelectedSessions = (await PtService.GetMemberSessionsAsync(member.MemberCode))
+            .OrderByDescending(s => s.StartTime)
+            .ToList();
+        SelectedInBody = (await PtService.GetInBodyHistoryAsync(member.MemberCode)).ToList();
+    }
+
+    private void CloseStudent()
+    {
+        Selected = null;
+        ShowInBodyForm = false;
+    }
+
+    private void OpenInBodyForm()
+    {
+        // Reset form mỗi lần mở để không lẫn dữ liệu của học viên trước đó
+        WeightInput = "";
+        FatInput = "";
+        MuscleInput = "";
+        ProgressNote = "";
+        FormError = "";
+        ShowInBodyForm = true;
+    }
+
+    private void CloseInBodyForm() => ShowInBodyForm = false;
+
+    private async Task SaveInBodyAsync()
+    {
+        if (Selected == null) return;
+
+        var error = ValidateInBody(out var weight, out var fatPercent, out var muscle);
+        if (!string.IsNullOrEmpty(error))
+        {
+            // UC 8.2.2 – phụ 5.1: giữ nguyên chỉ số PT vừa nhập để sửa lại
+            FormError = error;
+            return;
+        }
+
+        await PtService.RecordInBodyAsync(new InBodyRecordDto(
+            $"IB-{Guid.NewGuid():N}"[..8],
+            Selected.MemberCode,
+            DateTime.Now,
+            weight,
+            fatPercent,
+            muscle,
+            string.IsNullOrWhiteSpace(ProgressNote) ? null : ProgressNote.Trim(),
+            CurrentPtName));
+
+        ShowInBodyForm = false;
+        SelectedInBody = (await PtService.GetInBodyHistoryAsync(Selected.MemberCode)).ToList();
+        Notice = "Lưu thành công";
+        NoticeClass = "alert-success";
+    }
+
+    /// <summary>
+    /// Kiểm tra chỉ số InBody: bắt buộc nhập đủ, phải là số và không được là số âm (UC 8.2.2 – phụ 5.1).
+    /// </summary>
+    private string ValidateInBody(out decimal weight, out decimal fatPercent, out decimal muscle)
+    {
+        weight = 0;
+        fatPercent = 0;
+        muscle = 0;
+
+        if (string.IsNullOrWhiteSpace(WeightInput)
+            || string.IsNullOrWhiteSpace(FatInput)
+            || string.IsNullOrWhiteSpace(MuscleInput))
+        {
+            return "Vui lòng nhập đầy đủ Cân nặng, Tỷ lệ mỡ và Khối lượng cơ.";
+        }
+
+        if (!TryParseDecimal(WeightInput, out weight)
+            || !TryParseDecimal(FatInput, out fatPercent)
+            || !TryParseDecimal(MuscleInput, out muscle))
+        {
+            return "Chỉ số chỉ được nhập số. Vui lòng kiểm tra lại.";
+        }
+
+        if (weight <= 0 || muscle <= 0)
+        {
+            return "Cân nặng và Khối lượng cơ phải lớn hơn 0.";
+        }
+
+        if (fatPercent < 0)
+        {
+            return "Tỷ lệ mỡ cơ thể không được là số âm.";
+        }
+
+        return "";
+    }
+
+    /// <summary>Chấp nhận cả dấu phẩy thập phân (62,5) và dấu chấm (62.5).</summary>
+    private static bool TryParseDecimal(string raw, out decimal value)
+    {
+        value = 0;
+        var normalized = raw.Trim().Replace(',', '.');
+        return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+    }
+
+    private async Task ConfirmCompleteAsync(PtSessionDto session)
+    {
+        // UC 8.2.3 – phụ 4.1: chỉ xác nhận ca đã/đang diễn ra và chưa hoàn thành
+        if (session.Status != BookingStatus.Confirmed || session.StartTime > DateTime.Now)
+        {
+            Notice = "Ca tập chưa diễn ra hoặc đã hoàn thành";
+            NoticeClass = "alert-danger";
+            return;
+        }
+
+        var completed = await PtService.CompleteSessionAsync(session.BookingId);
+        if (!completed)
+        {
+            Notice = "Ca tập chưa diễn ra hoặc đã hoàn thành";
+            NoticeClass = "alert-danger";
+            return;
+        }
+
+        // Nạp lại để cập nhật trạng thái ca tập và số buổi PT còn lại của học viên
+        SelectedSessions = (await PtService.GetMemberSessionsAsync(session.MemberCode))
+            .OrderByDescending(s => s.StartTime)
+            .ToList();
+        await LoadStudentsAsync();
+
+        var refreshed = (await PtService.GetPtStudentsAsync(CurrentPtId))
+            .FirstOrDefault(m => m.MemberCode == session.MemberCode);
+        if (refreshed != null) Selected = refreshed;
+
+        Notice = "Xác nhận thành công";
+        NoticeClass = "alert-success";
+    }
+
+    private static string InitialsOf(string fullName)
+    {
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "HV";
+        if (parts.Length == 1) return parts[0][..1].ToUpper();
+        return $"{parts[0][..1]}{parts[^1][..1]}".ToUpper();
+    }
+
+    private static string MemberStatusBadge(MemberStatus status) => status switch
+    {
+        MemberStatus.Active => "badge-success",
+        MemberStatus.Frozen => "badge-info",
+        MemberStatus.Expired => "badge-warning",
+        _ => "badge-danger"
+    };
+
+    private static string MemberStatusLabel(MemberStatus status) => status switch
+    {
+        MemberStatus.Active => "Đang hoạt động",
+        MemberStatus.Frozen => "Đang bảo lưu",
+        MemberStatus.Expired => "Hết hạn",
+        _ => "Đã khóa"
+    };
+
+    private static string GetSessionBadge(BookingStatus status) => status switch
+    {
+        BookingStatus.Confirmed => "badge-success",
+        BookingStatus.Completed => "badge-info",
+        BookingStatus.Cancelled => "badge-danger",
+        _ => "badge-warning"
+    };
+
+    private static string GetSessionLabel(BookingStatus status) => status switch
+    {
+        BookingStatus.Confirmed => "Đã xác nhận",
+        BookingStatus.Completed => "Đã hoàn thành",
+        BookingStatus.Cancelled => "Đã hủy",
+        _ => "Không đến"
+    };
+}

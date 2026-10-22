@@ -1,0 +1,56 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon">💪</div>
+            <span class="brand-name">GYM HOUSE</span>
+        </div>
+        <div class="d-flex items-center gap-sm">
+            <a href="/notifications" aria-label="Thông báo" style="color:var(--clr-text-secondary); font-size:1.2rem; text-decoration:none;">🔔</a>
+            <a href="/profile">
+                <div class="avatar avatar-sm">HL</div>
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="app-content animate-fade">
+        @Body
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" aria-label="Điều hướng chính">
+        <NavLink href="/" class="nav-item" Match="NavLinkMatch.All">
+            <span class="nav-icon">🏠</span>
+            <span>Trang chủ</span>
+        </NavLink>
+        <NavLink href="/digital-card" class="nav-item">
+            <span class="nav-icon">🪪</span>
+            <span>Gói tập</span>
+        </NavLink>
+        <NavLink href="/pt-booking" class="nav-item">
+            <span class="nav-icon">🏋️</span>
+            <span>Đặt PT</span>
+        </NavLink>
+        <NavLink href="/pt/schedule" class="nav-item">
+            <span class="nav-icon">🧑‍🏫</span>
+            <span>PT</span>
+        </NavLink>
+        <NavLink href="/inbody" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>InBody</span>
+        </NavLink>
+        <NavLink href="/profile" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>Tôi</span>
+        </NavLink>
+    </nav>
+</div>
+
+<div id="blazor-error-ui">
+    Đã xảy ra lỗi không mong muốn.
+    <a href="" class="reload">Tải lại</a>
+    <a class="dismiss">🗙</a>
+</div>

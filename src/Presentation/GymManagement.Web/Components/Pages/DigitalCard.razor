@@ -1,0 +1,238 @@
+@page "/digital-card"
+@rendermode InteractiveServer
+@inject IMemberService MemberService
+
+<PageTitle>GYM HOUSE – Gói tập số</PageTitle>
+
+<div class="section animate-down">
+    <div class="section-header">
+        <h1 class="section-title" style="font-size:1.1rem;">🪪 Gói tập số của tôi</h1>
+        <button class="btn btn-ghost btn-sm" @onclick="RefreshCard">↻ Làm mới</button>
+    </div>
+
+    <!-- Membership Card (UC09, UC03) -->
+    <div class="membership-card mb-lg animate-glow">
+        <div class="d-flex items-center justify-between mb-md">
+            <div class="card-chip"></div>
+            <div style="font-size:0.7rem; font-weight:700; letter-spacing:0.1em; color:rgba(255,255,255,0.6);">GYM HOUSE MEMBER</div>
+        </div>
+
+        <div class="d-flex items-center justify-between" style="align-items:flex-end;">
+            <div style="flex:1;">
+                <div class="card-member-name mb-sm">@Card.MemberName</div>
+                <div class="d-flex gap-sm flex-wrap" style="margin-bottom:12px;">
+                    <span class="card-package-badge">@Card.PackageName</span>
+                    <span class="card-package-badge" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.5); color:#93C5FD;">@Card.Status</span>
+                </div>
+                <div style="font-size:0.72rem; color:rgba(255,255,255,0.5); letter-spacing:0.08em;">MÃ GÓI</div>
+                <div style="font-family:monospace; font-size:0.85rem; color:rgba(255,255,255,0.85); letter-spacing:0.12em;">@FormatCardCode(Card.CardCode)</div>
+            </div>
+
+            <!-- QR Code placeholder (thay bằng thư viện QR thực) -->
+            <div class="qr-box" style="margin-left:16px; flex-shrink:0;">
+                <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Simulated QR pattern -->
+                    <rect width="100" height="100" fill="white"/>
+                    <!-- Finder patterns -->
+                    <rect x="5" y="5" width="30" height="30" fill="black"/>
+                    <rect x="8" y="8" width="24" height="24" fill="white"/>
+                    <rect x="11" y="11" width="18" height="18" fill="black"/>
+                    <rect x="65" y="5" width="30" height="30" fill="black"/>
+                    <rect x="68" y="8" width="24" height="24" fill="white"/>
+                    <rect x="71" y="11" width="18" height="18" fill="black"/>
+                    <rect x="5" y="65" width="30" height="30" fill="black"/>
+                    <rect x="8" y="68" width="24" height="24" fill="white"/>
+                    <rect x="11" y="71" width="18" height="18" fill="black"/>
+                    <!-- Data modules (simulated) -->
+                    @foreach (var m in QrModules)
+                    {
+                        <rect x="@m.x" y="@m.y" width="5" height="5" fill="black"/>
+                    }
+                </svg>
+                <div style="font-size:0.55rem; text-align:center; color:#666; margin-top:2px;">Quét để check-in</div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-between" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+            <div>
+                <div style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.07em;">Hiệu lực từ</div>
+                <div style="font-size:0.85rem; font-weight:600; color:rgba(255,255,255,0.9);">@Card.StartDate.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.07em;">Còn lại</div>
+                <div style="font-size:0.85rem; font-weight:600; color:var(--clr-primary);">@DaysLeft ngày</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.07em;">Hết hạn</div>
+                <div style="font-size:0.85rem; font-weight:600; color:@(DaysLeft <= 14 ? "var(--clr-danger)" : "rgba(255,255,255,0.9)");">@(Card.EndDate?.ToString("dd/MM/yyyy") ?? "—")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiry warning -->
+    @if (DaysLeft <= 14 && DaysLeft > 0)
+    {
+        <div class="alert alert-warning mb-md animate-fade">
+            ⚠️ Gói tập sắp hết hạn sau <strong>@DaysLeft ngày</strong>. Gia hạn ngay để không mất quyền tập luyện!
+            <a href="/" style="font-weight:700; color:var(--clr-warning); display:block; margin-top:6px;">Gia hạn ngay →</a>
+        </div>
+    }
+    @if (DaysLeft <= 0)
+    {
+        <div class="alert alert-danger mb-md animate-fade">
+            ❌ Gói tập đã <strong>hết hạn</strong>. Vui lòng gia hạn tại quầy lễ tân hoặc liên hệ nhân viên.
+        </div>
+    }
+
+    <!-- Card Details -->
+    <div class="section-header">
+        <div class="section-title">Thông tin chi tiết</div>
+    </div>
+
+    <div class="card" style="padding:0;">
+        <div class="list-item">
+            <span style="font-size:1rem;">📋</span>
+            <div style="flex:1;">
+                <div class="text-caption">Số buổi PT</div>
+                <div class="fw-semibold">@Card.RemainingSessions / @Card.TotalSessions buổi</div>
+            </div>
+            <div class="progress-bar" style="width:80px;">
+                <div class="progress-fill" style="width:@PtProgress%; background:linear-gradient(90deg,#8B5CF6,#3B82F6);"></div>
+            </div>
+        </div>
+        <div class="list-item">
+            <span style="font-size:1rem;">🔑</span>
+            <div style="flex:1;">
+                <div class="text-caption">Mã QR check-in</div>
+                <div class="fw-semibold" style="font-family:monospace; font-size:0.85rem;">@Card.QrCodeString</div>
+            </div>
+        </div>
+        <div class="list-item">
+            <span style="font-size:1rem;">📦</span>
+            <div style="flex:1;">
+                <div class="text-caption">Gói tập</div>
+                <div class="fw-semibold">@Card.PackageName</div>
+            </div>
+        </div>
+        <div class="list-item" style="border-bottom:none;">
+            <span style="font-size:1rem;">📊</span>
+            <div style="flex:1;">
+                <div class="text-caption">Trạng thái gói</div>
+                <div class="fw-semibold">
+                    <span class="badge @StatusBadgeClass">@Card.Status</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-sm mt-md" style="flex-wrap:wrap;">
+        <button class="btn btn-secondary" style="flex:1;" @onclick="() => ShowFreezeDialog = true">
+            ❄️ Bảo lưu gói
+        </button>
+    </div>
+</div>
+
+<!-- Freeze Dialog (UC06) -->
+@if (ShowFreezeDialog)
+{
+    <div class="modal-overlay" @onclick="() => ShowFreezeDialog = false">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            <h2 style="font-size:1.1rem; margin-bottom:8px;">❄️ Bảo lưu gói tập</h2>
+            <p class="text-caption mb-md">Bảo lưu cho phép tạm dừng thời hạn gói khi bạn không thể tập luyện. Tối đa <strong>30 ngày/năm</strong>.</p>
+            <div class="form-group mb-md">
+                <label class="form-label">Số ngày bảo lưu</label>
+                <input type="number" class="form-control" @bind="FreezeDays" min="1" max="30" />
+            </div>
+            <div class="form-group mb-lg">
+                <label class="form-label">Lý do</label>
+                <input type="text" class="form-control" @bind="FreezeReason" placeholder="VD: đi công tác, ốm bệnh..." />
+            </div>
+            <div class="alert alert-warning mb-md">
+                ⚠️ Yêu cầu bảo lưu sẽ được gửi đến Admin phê duyệt trong vòng 24h.
+            </div>
+            <button class="btn btn-primary btn-block" @onclick="SubmitFreeze">Gửi yêu cầu bảo lưu</button>
+        </div>
+    </div>
+}
+
+@code {
+    private MembershipCardDto Card = new(
+        "CARD-0248", "MB-0248", "Hoàng Long",
+        "Gói Premium 3 tháng",
+        DateOnly.FromDateTime(DateTime.Now.AddDays(-50)),
+        DateOnly.FromDateTime(DateTime.Now.AddDays(40)),
+        12, 7, CardStatus.Active, "GH-MB0248-2026"
+    );
+
+    private bool ShowFreezeDialog = false;
+    private int FreezeDays = 7;
+    private string FreezeReason = "";
+
+    private int DaysLeft => Card.EndDate.HasValue
+        ? (Card.EndDate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Today).Days
+        : 0;
+
+    private int PtProgress => Card.TotalSessions > 0
+        ? (int)((double)Card.RemainingSessions / Card.TotalSessions * 100)
+        : 0;
+
+    private string StatusBadgeClass => Card.Status switch
+    {
+        CardStatus.Active   => "badge-success",
+        CardStatus.Frozen   => "badge-info",
+        CardStatus.Expired  => "badge-danger",
+        _                   => "badge-warning"
+    };
+
+    // Simulated QR modules for SVG decoration
+    private List<(int x, int y)> QrModules = [];
+
+    protected override void OnInitialized()
+    {
+        // Generate pseudo-random QR modules for demonstration
+        var rng = new Random(42);
+        for (int r = 0; r < 10; r++)
+        {
+            for (int c = 0; c < 10; c++)
+            {
+                if (rng.NextDouble() > 0.5)
+                {
+                    int x = 40 + c * 5;
+                    int y = 5 + r * 5;
+                    if (x < 65 || y > 35) // avoid top-right finder pattern
+                        QrModules.Add((x, y));
+                }
+            }
+        }
+        // Rows 8-10 for bottom section
+        for (int r = 0; r < 4; r++)
+        {
+            for (int c = 7; c < 19; c++)
+            {
+                if (rng.NextDouble() > 0.5)
+                    QrModules.Add((5 + c * 5, 40 + r * 5));
+            }
+        }
+    }
+
+    private string FormatCardCode(string code)
+    {
+        if (code.Length >= 12)
+            return $"{code[..4]} {code[4..8]} {code[8..12]}";
+        return code;
+    }
+
+    private async Task RefreshCard()
+    {
+        // TODO: reload from service
+        await Task.CompletedTask;
+    }
+
+    private void SubmitFreeze()
+    {
+        // TODO: UC06 – gửi yêu cầu bảo lưu
+        ShowFreezeDialog = false;
+    }
+}
