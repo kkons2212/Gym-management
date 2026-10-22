@@ -130,6 +130,7 @@ dotnet build .\src\GymManagement.slnx
 | PT Schedule | UC04/10 – Lịch PT |
 | Billing | UC05 – Thu tiền/hóa đơn |
 | Settings | UC07 – Cài đặt hệ thống |
+| Reports | UC06 – Báo cáo & Thống kê |
 
 ---
 

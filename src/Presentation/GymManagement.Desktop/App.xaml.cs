@@ -40,6 +40,7 @@ public partial class App : Application
         services.AddTransient<PtScheduleViewModel>();
         services.AddTransient<BillingViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<ReportsViewModel>();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

@@ -29,6 +29,7 @@ public sealed partial class MainWindow : Window
                 "PtSchedule" => typeof(PtSchedulePage),
                 "Billing" => typeof(BillingPage),
                 "Settings" => typeof(SettingsPage),
+                "Reports" => typeof(ReportsPage),
                 _ => typeof(DashboardPage)
             };
 
