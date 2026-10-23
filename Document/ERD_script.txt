@@ -1,0 +1,166 @@
+// ==============================================================================
+// Schema DBML: Cu Chi Tunnels Smart Multilingual Guide
+// Generated for dbdiagram.io
+// ==============================================================================
+
+Table User {
+  UserName varchar(20) [pk, note: 'Tài khoản Quản trị & Nhân sự nội bộ']
+  Email varchar(255) [not null, unique]
+  Password_hash varchar(255) [not null]
+  FullName nvarchar(255)
+  Is_Active boolean [not null, default: true]
+  FalsedAttempts int [not null, default: 0]
+  Lockeduntil datetime
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table Audit {
+  AuditID varchar(20) [pk]
+  Status nvarchar(255) [not null]
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  UserName varchar(255) [not null]
+
+  indexes {
+    UserName [name: 'idx_Audit_UserName']
+    Create_at [name: 'idx_Audit_Create_at']
+  }
+}
+
+Table LanguageCode {
+  LanguageID varchar(20) [pk, note: 'Mã ngôn ngữ: vi, en, ja, ko, zh']
+  LanguageName varchar(255) [not null]
+}
+
+Table POI {
+  PoiID varchar(20) [pk, note: 'Điểm Di tích / Hiện vật Lịch sử Địa đạo']
+  Title nvarchar(255) [not null]
+  Short_Description nvarchar(255)
+  Description nvarchar(255)
+  Image_Url varchar(255)
+  Latitude "decimal(10, 7)" [not null, note: 'Vĩ độ']
+  Longitude "decimal(10, 7)" [not null, note: 'Kinh độ']
+  Radius int [not null, default: 30, note: 'Bán kính (m) > 0']
+  Area_zone varchar(255) [not null, default: 'GROUND']
+  Is_Active boolean [not null, default: true]
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Create_by varchar(255)
+
+  indexes {
+    Create_by [name: 'idx_POI_Create_by']
+    (Latitude, Longitude) [name: 'idx_POI_Coordinates']
+  }
+}
+
+Table POITranslation {
+  StranID varchar(20) [pk, note: 'Bản dịch Đa ngôn ngữ của Di tích']
+  Title nvarchar(255) [not null]
+  Short_Description nvarchar(255)
+  Description nvarchar(255)
+  Status nvarchar(255) [not null, default: 'PENDING']
+  Review_at datetime
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Review_by varchar(20)
+  PoiID varchar(20) [not null]
+  LanguageID varchar(20) [not null]
+  UserName varchar(20)
+
+  indexes {
+    (PoiID, LanguageID) [unique, name: 'UQ_POITranslation_PoiID_LanguageID']
+    PoiID [name: 'idx_POITranslation_PoiID']
+    LanguageID [name: 'idx_POITranslation_LanguageID']
+    UserName [name: 'idx_POITranslation_UserName']
+    Status [name: 'idx_POITranslation_Status']
+  }
+}
+
+Table POIAudio {
+  AudioID varchar(20) [pk, note: 'Tệp Âm thanh Thuyết minh AI - Neural TTS']
+  Audio_url text [not null]
+  Duration "decimal(6, 1)"
+  File_size bigint
+  Status nvarchar(255) [not null, default: 'READY']
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  StranID varchar(20) [not null]
+
+  indexes {
+    StranID [name: 'idx_POIAudio_StranID']
+  }
+}
+
+Table VisitorSession {
+  SessionID varchar(20) [pk, note: 'Phiên Tham quan 24h & Khôi phục Đa thiết bị']
+  SessionCode varchar(255) [not null, unique]
+  SessionToken varchar(255) [not null, unique]
+  DeviceFingerPrint varchar(255)
+  Status nvarchar(255) [not null, default: 'ACTIVE']
+  Activate_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Expire_at datetime [not null]
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  PreferredLanguage varchar(20) [not null]
+
+  indexes {
+    PreferredLanguage [name: 'idx_VisitorSession_PreferredLanguage']
+    (Status, Expire_at) [name: 'idx_VisitorSession_Status_Expire']
+  }
+}
+
+Table Transaction {
+  TransactionID varchar(20) [pk, note: 'Giao dịch Thanh toán dịch vụ Số']
+  PayAmount int [not null, note: 'Số tiền thanh toán >= 0']
+  Currency varchar(20) [not null, default: 'VND']
+  PaymentGateway varchar(255) [not null]
+  PaymentMethod varchar(255)
+  Status nvarchar(255) [not null, default: 'PENDING']
+  GatewayTransactionID varchar(MAX)
+  GatewayPayload text
+  Paid_at datetime
+  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  SessionID varchar(20)
+
+  indexes {
+    SessionID [name: 'idx_Transaction_SessionID']
+    (Status, Create_at) [name: 'idx_Transaction_Status_Create_at']
+  }
+}
+
+Table POITrigger {
+  TriggerID varchar(20) [pk, note: 'Sự kiện Kích hoạt Thuyết minh & Thời gian dừng chân']
+  DwellTime int [not null, default: 0, note: 'Thời gian dừng chân (giây) >= 0']
+  Trigger_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  SessionID varchar(20) [not null]
+  PoiID varchar(20) [not null]
+
+  indexes {
+    SessionID [name: 'idx_POITrigger_SessionID']
+    PoiID [name: 'idx_POITrigger_PoiID']
+    Trigger_at [name: 'idx_POITrigger_Trigger_at']
+  }
+}
+
+// ==============================================================================
+// Foreign Key Relationships (Mối quan hệ giữa các bảng)
+// ==============================================================================
+
+Ref FK_Audit_User: Audit.UserName > User.UserName [delete: cascade]
+
+Ref FK_POI_User: POI.Create_by > User.UserName [delete: set null]
+
+Ref FK_POITranslation_POI: POITranslation.PoiID > POI.PoiID [delete: cascade]
+
+Ref FK_POITranslation_LanguageCode: POITranslation.LanguageID > LanguageCode.LanguageID [delete: restrict]
+
+Ref FK_POITranslation_User: POITranslation.UserName > User.UserName [delete: set null]
+
+Ref FK_POIAudio_POITranslation: POIAudio.StranID > POITranslation.StranID [delete: cascade]
+
+Ref FK_VisitorSession_LanguageCode: VisitorSession.PreferredLanguage > LanguageCode.LanguageID [delete: restrict]
+
+Ref FK_Transaction_VisitorSession: Transaction.SessionID > VisitorSession.SessionID [delete: set null]
+
+Ref FK_POITrigger_VisitorSession: POITrigger.SessionID > VisitorSession.SessionID [delete: cascade]
+
+Ref FK_POITrigger_POI: POITrigger.PoiID > POI.PoiID [delete: cascade]
