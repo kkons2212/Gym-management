@@ -137,6 +137,21 @@
   * **Task 2.4.2:** *(Frontend)* Thiết kế Modal xác nhận khóa/hủy thẻ có cảnh báo rủi ro màu đỏ và bắt buộc chọn lý do.
   * **Task 2.4.3:** *(Database)* Cập nhật trường `card_status` trong bảng `MEMBERSHIP_CARDS` và lưu biên bản vào `AUDIT_LOGS`.
 
+#### ● User story 02.5: Tra cứu và cập nhật thông tin cá nhân hội viên (UC02.2 - Member Profile Update)
+* **Mô tả:** Là một Admin, tôi cần tra cứu hội viên theo từ khóa (SĐT, Họ tên, Mã hội viên) và chỉnh sửa thông tin cá nhân của hội viên (SĐT, Email, Địa chỉ...) để đảm bảo dữ liệu luôn chính xác và cập nhật.
+* **Độ ưu tiên:** `Must have`
+* **Story point:** `3`
+* **Tiêu chí chấp nhận:**
+  * Admin nhập từ khóa tìm kiếm (SĐT, Họ tên, Mã hội viên); hệ thống hiển thị danh sách kết quả trùng khớp trong < 1 giây.
+  * Khi bấm "Cập nhật", hệ thống hiển thị biểu mẫu chứa đầy đủ thông tin hiện tại của hội viên.
+  * Admin sửa các thông tin cần thiết và bấm "Lưu thay đổi". Hệ thống kiểm tra tính hợp lệ dữ liệu (định dạng SĐT, Email).
+  * Nếu dữ liệu sai định dạng: Hệ thống hiển thị thông báo lỗi chi tiết, khoanh đỏ trường lỗi và chờ Admin chỉnh sửa lại.
+  * Nếu dữ liệu hợp lệ: Hệ thống cập nhật CSDL, ghi log hệ thống và hiển thị: *"Cập nhật thành công"*.
+* **Danh sách task:**
+  * **Task 2.5.1:** *(Backend)* Xây dựng API tìm kiếm hội viên và API cập nhật hồ sơ hội viên `PUT /api/v1/members/{id}` có validate dữ liệu.
+  * **Task 2.5.2:** *(Frontend)* Thiết kế màn hình tra cứu danh sách hội viên và form popup chỉnh sửa hồ sơ hội viên.
+  * **Task 2.5.3:** *(Database)* Viết procedure cập nhật bảng `MEMBERS` và ghi vết vào `AUDIT_LOGS`.
+
 ---
 
 ### Epic 04: Quản lý Thanh toán & Hóa đơn Dòng tiền (UC05)
@@ -314,6 +329,20 @@
   * **Task 4.4.2:** *(Frontend)* Thiết kế giao diện xác nhận ca tập trong ngày có các nút hành động nhanh.
   * **Task 4.4.3:** *(Database)* Cập nhật trạng thái trong bảng `SESSION_BOOKINGS` và cập nhật trường `remaining_sessions` trong `MEMBERSHIP_CARDS`.
 
+#### ● User story 04.5: Tra cứu lịch làm việc và tình trạng ca dạy của PT (UC 4.2 - PT Schedule Inquiry)
+* **Mô tả:** Là một Admin, tôi cần tra cứu lịch làm việc và các ca dạy của từng PT theo các tiêu chí (tên PT, khoảng thời gian, ca dạy, trạng thái) để nắm bắt lịch trình và hỗ trợ điều phối ca dạy khi cần.
+* **Độ ưu tiên:** `Should have`
+* **Story point:** `3`
+* **Tiêu chí chấp nhận:**
+  * Cung cấp bộ lọc: Tên PT, Khoảng thời gian (Ngày / Tuần / Tháng), Ca dạy (Sáng / Chiều / Tối), Trạng thái ca (Trống / Đã đặt / Đã hoàn thành).
+  * Khi bấm "Tìm kiếm", hệ thống truy vấn CSDL và hiển thị danh sách lịch dạy chi tiết gồm: Tên PT, Ngày, Ca dạy, Trạng thái ca, Tên hội viên đặt lịch (nếu có).
+  * Nếu không nhập tiêu chí: Hệ thống mặc định hiển thị toàn bộ lịch dạy trong tuần hiện tại.
+  * Nếu không tìm thấy kết quả: Hiển thị thông báo: *"Không có lịch dạy phù hợp với tiêu chí tìm kiếm"*.
+* **Danh sách task:**
+  * **Task 4.5.1:** *(Backend)* Xây dựng API tra cứu lịch làm việc của PT `/api/v1/admin/pt/schedules` với các tham số lọc động.
+  * **Task 4.5.2:** *(Frontend)* Thiết kế màn hình tra cứu lịch dạy của PT với bộ lọc thời gian và thanh trạng thái phân biệt màu sắc.
+  * **Task 4.5.3:** *(Database)* Tạo view kết nối `PT_PROFILES`, `PT_AVAILABILITY` và `SESSION_BOOKINGS`.
+
 ---
 
 ### Epic 08: Cổng Tác nghiệp dành cho Huấn luyện viên (UC08)
@@ -374,6 +403,19 @@
   * **Task 9.2.1:** *(Backend)* Xây dựng API tra cứu chi tiết gói tập của hội viên đang đăng nhập.
   * **Task 9.2.2:** *(Frontend)* Thiết kế thẻ hiển thị gói tập (Membership Digital Card) đẹp mắt trên ứng dụng di động.
   * **Task 9.2.3:** *(Database)* Viết câu truy vấn tối ưu lấy gói tập đang hoạt động gần nhất từ bảng `MEMBERSHIP_CARDS`.
+
+#### ● User story 09.3: Hội viên tra cứu lịch sử tập luyện và điểm danh (UC 9.2 - Member Workout & Check-In History)
+* **Mô tả:** Là một Hội viên (Member), tôi cần xem lại toàn bộ lịch sử điểm danh ra/vào và các buổi tập đã hoàn thành để theo dõi sự chuyên cần và lộ trình tập luyện của mình.
+* **Độ ưu tiên:** `Should have`
+* **Story point:** `3`
+* **Tiêu chí chấp nhận:**
+  * Cung cấp bộ lọc khoảng thời gian tra cứu (Tuần này, Tháng này, hoặc Tùy chỉnh).
+  * Hiển thị danh sách lịch sử tập luyện chi tiết gồm: Ngày tập, Thời gian check-in/ra vào, Huấn luyện viên phụ trách (nếu có), Loại buổi tập, Trạng thái tham gia.
+  * Nếu không có dữ liệu trong khoảng thời gian đã chọn: Hiển thị thông báo: *"Không có dữ liệu phù hợp"*.
+* **Danh sách task:**
+  * **Task 9.3.1:** *(Backend)* Xây dựng API `/api/v1/member/history` truy vấn lịch sử check-in và lịch sử ca tập đã hoàn thành.
+  * **Task 9.3.2:** *(Frontend)* Thiết kế màn hình "Lịch sử tập luyện" dạng dòng thời gian (Timeline) trên ứng dụng hội viên.
+  * **Task 9.3.3:** *(Database)* Tạo view tổng hợp giữa bảng `CHECKIN_LOGS` và `SESSION_BOOKINGS`.
 
 ---
 
