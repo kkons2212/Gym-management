@@ -586,7 +586,7 @@ Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Ph�
 | | **UC 5.3** | Xử lý Hủy / Hoàn tiền hóa đơn | US 05.3 | Refund Process Modal | `IBillingService`, `IMemberService` | `INVOICES`, `REFUND_LOGS` |
 | | **UC 5.4** | Xem và xuất báo cáo doanh thu | US 05.4 | Financial Revenue Tab | `IBillingService`, `IReportService` | `INVOICES`, `REFUND_LOGS` |
 | **UC06: Báo cáo & Thống kê** | **UC06** | Xem báo cáo và thống kê (BI & Export) | US 06.1, US 06.2 | BI Analytics Dashboard | `IReportService` | Views/Stored Procedures, Buffer Stream |
-| **UC07: Cài đặt & Danh mục** | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | US 07.1 | Staff Account Create Modal | `ISystemSettingService` | `USERS`, `USER_ROLES` |
+| **UC07: Quản Lý Tài Khoản & Danh mục Gói Tập** | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | US 07.1 | Staff Account Create Modal | `ISystemSettingService` | `USERS`, `USER_ROLES` |
 | | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | US 07.2 | Staff Account Edit Modal | `ISystemSettingService` | `USERS`, `USER_ROLES` |
 | | **UC 7.1.3** | Khóa / Mở khóa tài khoản | US 07.3 | Account Lock Toggle Modal | `ISystemSettingService` | `USERS`, `AUDIT_LOGS` |
 | | **UC 7.2.1** | Thêm gói tập | US 07.4 | Package Create Form | `ISystemSettingService` | `PACKAGES` |
