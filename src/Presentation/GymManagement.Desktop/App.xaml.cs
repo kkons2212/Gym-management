@@ -38,6 +38,7 @@ public partial class App : Application
         services.AddTransient<MembersViewModel>();
         services.AddTransient<CheckInViewModel>();
         services.AddTransient<PtScheduleViewModel>();
+        services.AddTransient<TrainersViewModel>();
         services.AddTransient<BillingViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<ReportsViewModel>();

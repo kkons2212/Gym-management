@@ -1,166 +1,220 @@
-// ==============================================================================
-// Schema DBML: Cu Chi Tunnels Smart Multilingual Guide
-// Generated for dbdiagram.io
-// ==============================================================================
+// ====================================================================
+// LOGICAL DATA MODEL (LDM) - GYM MANAGEMENT SYSTEM (15 TABLES)
+// Visualization Tool: https://dbdiagram.io (DBML Syntax)
+//
+// SUMMARY OF RECENT OPTIMIZATIONS:
+// 1. Kept Role table for quick UI dropdowns and referential integrity.
+// 2. Member and Trainer use UserId as Shared Primary Key (1-1 with User).
+// 3. Removed OperatingConfig (UC 7.2 removed; MaxFreezeDays merged into PackagePlan).
+// 4. Admin lives directly in User (no separate Admin table).
+// 5. Fixed list price, no discount attributes, no invoice_items.
+// ====================================================================
+
+TableGroup Authentication_Users {
+  Role
+  User
+  Trainer
+  Member
+}
+
+TableGroup Packages_CheckIn {
+  PackagePlan
+  MemberPackage
+  PackageFreeze
+  CheckInRecord
+}
+
+TableGroup Personal_Training {
+  TrainerAssignment
+  TrainerAvailability
+  TrainingSession
+  BodyMetric
+  TrainerReview
+}
+
+TableGroup Finance_Billing {
+  Invoice
+  Refund
+}
+
+// --------------------------------------------------------------------
+// 1. AUTHENTICATION & PROFILES (SHARED PRIMARY KEY 1-1)
+// --------------------------------------------------------------------
+Table Role {
+  RoleId varchar(20) [pk]
+  RoleName varchar(50) [not null]
+  Description text
+}
 
 Table User {
-  UserName varchar(20) [pk, note: 'Tài khoản Quản trị & Nhân sự nội bộ']
-  Email varchar(255) [not null, unique]
-  Password_hash varchar(255) [not null]
-  FullName nvarchar(255)
-  Is_Active boolean [not null, default: true]
-  FalsedAttempts int [not null, default: 0]
-  Lockeduntil datetime
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  UserId varchar(50) [pk]
+  RoleId varchar(20) [ref: > Role.RoleId, not null]
+  Username varchar(50) [unique, not null]
+  PasswordHash varchar(255) [not null]
+  FullName varchar(100) [not null]
+  Phone varchar(20) [unique, not null]
+  Email varchar(100)
+  is_Active boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
 }
 
-Table Audit {
-  AuditID varchar(20) [pk]
-  Status nvarchar(255) [not null]
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  UserName varchar(255) [not null]
-
-  indexes {
-    UserName [name: 'idx_Audit_UserName']
-    Create_at [name: 'idx_Audit_Create_at']
-  }
+Table Member {
+  UserId varchar(50) [pk, ref: - User.UserId, note: 'PK & FK to User (Shared PK 1-1)']
+  IdentityNumber varchar(20)
+  DateOfBirth date
+  Gender varchar(10)
+  Address varchar(255)
+  EmergencyContactName varchar(100)
+  EmergencyContactPhone varchar(20)
+  AvatarUrl varchar(500)
 }
 
-Table LanguageCode {
-  LanguageID varchar(20) [pk, note: 'Mã ngôn ngữ: vi, en, ja, ko, zh']
-  LanguageName varchar(255) [not null]
+Table Trainer {
+  UserId varchar(50) [pk, ref: - User.UserId, note: 'PK & FK to User (Shared PK 1-1)']
+  Specialty varchar(150) [not null]
+  ExperienceYears int [not null, default: 0]
+  Bio text
+  RatingAverage decimal(2,1) [not null, default: 5.0]
+  RatingCount int [not null, default: 0]
+  is_Active boolean [not null, default: true]
 }
 
-Table POI {
-  PoiID varchar(20) [pk, note: 'Điểm Di tích / Hiện vật Lịch sử Địa đạo']
-  Title nvarchar(255) [not null]
-  Short_Description nvarchar(255)
-  Description nvarchar(255)
-  Image_Url varchar(255)
-  Latitude "decimal(10, 7)" [not null, note: 'Vĩ độ']
-  Longitude "decimal(10, 7)" [not null, note: 'Kinh độ']
-  Radius int [not null, default: 30, note: 'Bán kính (m) > 0']
-  Area_zone varchar(255) [not null, default: 'GROUND']
-  Is_Active boolean [not null, default: true]
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Create_by varchar(255)
-
-  indexes {
-    Create_by [name: 'idx_POI_Create_by']
-    (Latitude, Longitude) [name: 'idx_POI_Coordinates']
-  }
+// --------------------------------------------------------------------
+// 2. CATALOG
+// --------------------------------------------------------------------
+Table PackagePlan {
+  PackagePlanId varchar(50) [pk]
+  PackageName varchar(100) [not null]
+  DurationDays int [not null]
+  ListPrice decimal(12,2) [not null, note: 'Fixed list price']
+  TotalSessions int [note: 'Session quota, null if unlimited']
+  MaxFreezeDays int [not null, default: 0, note: 'Chính sách bảo lưu riêng của từng gói']
+  AllowedStartHour time
+  AllowedEndHour time
+  has_Trainer boolean [not null, default: false]
+  Description text
+  is_Active boolean [not null, default: true]
 }
 
-Table POITranslation {
-  StranID varchar(20) [pk, note: 'Bản dịch Đa ngôn ngữ của Di tích']
-  Title nvarchar(255) [not null]
-  Short_Description nvarchar(255)
-  Description nvarchar(255)
-  Status nvarchar(255) [not null, default: 'PENDING']
-  Review_at datetime
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Review_by varchar(20)
-  PoiID varchar(20) [not null]
-  LanguageID varchar(20) [not null]
-  UserName varchar(20)
-
-  indexes {
-    (PoiID, LanguageID) [unique, name: 'UQ_POITranslation_PoiID_LanguageID']
-    PoiID [name: 'idx_POITranslation_PoiID']
-    LanguageID [name: 'idx_POITranslation_LanguageID']
-    UserName [name: 'idx_POITranslation_UserName']
-    Status [name: 'idx_POITranslation_Status']
-  }
+// --------------------------------------------------------------------
+// 3. MEMBER PACKAGES & CHECK-IN
+// --------------------------------------------------------------------
+Table MemberPackage {
+  MemberPackageId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  PackagePlanId varchar(50) [ref: > PackagePlan.PackagePlanId, not null]
+  QrCode varchar(100) [unique, not null, note: 'QR Code for check-in']
+  StartDate date [not null]
+  EndDate date [not null]
+  TotalSessions int
+  RemainingSessions int
+  Status varchar(20) [not null, note: 'PENDING_PAYMENT, ACTIVE, FROZEN, EXPIRED, CANCELLED']
+  CancellationReason text
+  cancelled_at timestamp
+  created_at timestamp [not null, default: `now()`]
 }
 
-Table POIAudio {
-  AudioID varchar(20) [pk, note: 'Tệp Âm thanh Thuyết minh AI - Neural TTS']
-  Audio_url text [not null]
-  Duration "decimal(6, 1)"
-  File_size bigint
-  Status nvarchar(255) [not null, default: 'READY']
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Update_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  StranID varchar(20) [not null]
-
-  indexes {
-    StranID [name: 'idx_POIAudio_StranID']
-  }
+Table PackageFreeze {
+  PackageFreezeId varchar(50) [pk]
+  MemberPackageId varchar(50) [ref: > MemberPackage.MemberPackageId, not null]
+  StartDate date [not null]
+  EndDate date [not null]
+  DaysFrozen int [not null]
+  Reason text [not null]
+  created_at timestamp [not null, default: `now()`]
 }
 
-Table VisitorSession {
-  SessionID varchar(20) [pk, note: 'Phiên Tham quan 24h & Khôi phục Đa thiết bị']
-  SessionCode varchar(255) [not null, unique]
-  SessionToken varchar(255) [not null, unique]
-  DeviceFingerPrint varchar(255)
-  Status nvarchar(255) [not null, default: 'ACTIVE']
-  Activate_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  Expire_at datetime [not null]
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  PreferredLanguage varchar(20) [not null]
-
-  indexes {
-    PreferredLanguage [name: 'idx_VisitorSession_PreferredLanguage']
-    (Status, Expire_at) [name: 'idx_VisitorSession_Status_Expire']
-  }
+Table CheckInRecord {
+  CheckInRecordId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  MemberPackageId varchar(50) [ref: > MemberPackage.MemberPackageId]
+  check_in_at timestamp [not null, default: `now()`]
+  Method varchar(20) [not null, note: 'QR_SCAN, MANUAL_PHONE, MANUAL_CODE']
+  Status varchar(20) [not null, note: 'SUCCESS, REJECTED']
+  RejectionReason varchar(255)
 }
 
-Table Transaction {
-  TransactionID varchar(20) [pk, note: 'Giao dịch Thanh toán dịch vụ Số']
-  PayAmount int [not null, note: 'Số tiền thanh toán >= 0']
-  Currency varchar(20) [not null, default: 'VND']
-  PaymentGateway varchar(255) [not null]
-  PaymentMethod varchar(255)
-  Status nvarchar(255) [not null, default: 'PENDING']
-  GatewayTransactionID varchar(MAX)
-  GatewayPayload text
-  Paid_at datetime
-  Create_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  SessionID varchar(20)
-
-  indexes {
-    SessionID [name: 'idx_Transaction_SessionID']
-    (Status, Create_at) [name: 'idx_Transaction_Status_Create_at']
-  }
+// --------------------------------------------------------------------
+// 4. PERSONAL TRAINING SERVICES
+// --------------------------------------------------------------------
+Table TrainerAssignment {
+  TrainerAssignmentId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  TrainerUserId varchar(50) [ref: > Trainer.UserId, not null]
+  MemberPackageId varchar(50) [ref: > MemberPackage.MemberPackageId, not null]
+  assigned_by varchar(50) [ref: > User.UserId, not null]
+  AssignedDate date [not null, default: `current_date`]
+  Status varchar(20) [not null, default: 'ACTIVE']
+  Notes text
 }
 
-Table POITrigger {
-  TriggerID varchar(20) [pk, note: 'Sự kiện Kích hoạt Thuyết minh & Thời gian dừng chân']
-  DwellTime int [not null, default: 0, note: 'Thời gian dừng chân (giây) >= 0']
-  Trigger_at datetime [not null, default: `CURRENT_TIMESTAMP`]
-  SessionID varchar(20) [not null]
-  PoiID varchar(20) [not null]
-
-  indexes {
-    SessionID [name: 'idx_POITrigger_SessionID']
-    PoiID [name: 'idx_POITrigger_PoiID']
-    Trigger_at [name: 'idx_POITrigger_Trigger_at']
-  }
+Table TrainerAvailability {
+  TrainerAvailabilityId varchar(50) [pk]
+  TrainerUserId varchar(50) [ref: > Trainer.UserId, not null]
+  WorkDate date [not null]
+  StartTime time [not null]
+  EndTime time [not null]
+  is_Booked boolean [not null, default: false]
 }
 
-// ==============================================================================
-// Foreign Key Relationships (Mối quan hệ giữa các bảng)
-// ==============================================================================
+Table TrainingSession {
+  TrainingSessionId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  TrainerUserId varchar(50) [ref: > Trainer.UserId, not null]
+  MemberPackageId varchar(50) [ref: > MemberPackage.MemberPackageId, not null]
+  SessionDate date [not null]
+  StartTime time [not null]
+  EndTime time [not null]
+  Status varchar(20) [not null, note: 'BOOKED, COMPLETED, MEMBER_ABSENT, TRAINER_ABSENT, CANCELLED']
+  CancellationReason varchar(255)
+  WorkoutNotes text
+  completed_at timestamp
+}
 
-Ref FK_Audit_User: Audit.UserName > User.UserName [delete: cascade]
+Table BodyMetric {
+  BodyMetricId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  recorded_by varchar(50) [ref: > Trainer.UserId]
+  RecordDate date [not null, default: `current_date`]
+  WeightKg decimal(5,2) [not null]
+  HeightCm decimal(5,2)
+  BodyFatPercentage decimal(4,1)
+  MuscleMassKg decimal(5,2)
+  Bmi decimal(4,1)
+  Advice text
+}
 
-Ref FK_POI_User: POI.Create_by > User.UserName [delete: set null]
+Table TrainerReview {
+  TrainerReviewId varchar(50) [pk]
+  TrainingSessionId varchar(50) [unique, ref: - TrainingSession.TrainingSessionId, not null, note: '1-1 relation with TrainingSession']
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  TrainerUserId varchar(50) [ref: > Trainer.UserId, not null]
+  Rating smallint [not null, note: '1 to 5 stars']
+  Comment text
+  created_at timestamp [not null, default: `now()`]
+}
 
-Ref FK_POITranslation_POI: POITranslation.PoiID > POI.PoiID [delete: cascade]
+// --------------------------------------------------------------------
+// 5. BILLING & REFUND
+// --------------------------------------------------------------------
+Table Invoice {
+  InvoiceId varchar(50) [pk]
+  MemberUserId varchar(50) [ref: > Member.UserId, not null]
+  MemberPackageId varchar(50) [ref: > MemberPackage.MemberPackageId, not null]
+  created_by varchar(50) [ref: > User.UserId, not null]
+  Amount decimal(12,2) [not null, note: 'List price billed directly']
+  PaymentMethod varchar(20) [not null, note: 'CASH, QR_TRANSFER, BANK_CARD']
+  Status varchar(20) [not null, note: 'PENDING, PAID, CANCELLED, REFUNDED']
+  paid_at timestamp
+  created_at timestamp [not null, default: `now()`]
+}
 
-Ref FK_POITranslation_LanguageCode: POITranslation.LanguageID > LanguageCode.LanguageID [delete: restrict]
-
-Ref FK_POITranslation_User: POITranslation.UserName > User.UserName [delete: set null]
-
-Ref FK_POIAudio_POITranslation: POIAudio.StranID > POITranslation.StranID [delete: cascade]
-
-Ref FK_VisitorSession_LanguageCode: VisitorSession.PreferredLanguage > LanguageCode.LanguageID [delete: restrict]
-
-Ref FK_Transaction_VisitorSession: Transaction.SessionID > VisitorSession.SessionID [delete: set null]
-
-Ref FK_POITrigger_VisitorSession: POITrigger.SessionID > VisitorSession.SessionID [delete: cascade]
-
-Ref FK_POITrigger_POI: POITrigger.PoiID > POI.PoiID [delete: cascade]
+Table Refund {
+  RefundId varchar(50) [pk]
+  InvoiceId varchar(50) [unique, ref: - Invoice.InvoiceId, not null, note: '1-1 relation with Invoice']
+  approved_by varchar(50) [ref: > User.UserId, not null]
+  RefundAmount decimal(12,2) [not null]
+  RefundMethod varchar(20) [not null, note: 'CASH, BANK_TRANSFER']
+  Reason text [not null]
+  refunded_at timestamp [not null, default: `now()`]
+}

@@ -13,18 +13,25 @@
             <!-- Header -->
             <StackPanel Spacing="4">
                 <TextBlock Text="Quầy Lễ Tân - Điểm Danh (Check-in)" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
-                <TextBlock Text="Quét mã QR từ điện thoại hội viên hoặc nhập Số điện thoại tra cứu nhanh (UC03)" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Quét mã QR qua camera thiết bị hoặc nhập Số điện thoại / Mã hội viên để tra cứu nhanh (UC03)" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <!-- Scan Input Box -->
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
-                <Grid ColumnSpacing="16">
+                <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" FontSize="18" Padding="12" PlaceholderText="Đặt con trỏ vào đây để quét mã QR hoặc gõ Số điện thoại / Mã hội viên..." Text="{x:Bind ViewModel.InputScanCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Grid.Column="1" Style="{ThemeResource AccentButtonStyle}" Padding="20,12" Command="{x:Bind ViewModel.ProcessCheckInCommand}">
+                    <TextBox Grid.Column="0" FontSize="16" Padding="12" PlaceholderText="Nhập Số điện thoại hoặc Mã hội viên..." Text="{x:Bind ViewModel.InputScanCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="OnInputScanCodeKeyDown" />
+                    <Button Grid.Column="1" Style="{ThemeResource DefaultButtonStyle}" Padding="16,12" Click="OnOpenQrScannerClick">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE722;" Foreground="#24B98A" />
+                            <TextBlock Text="Quét mã QR (Camera)" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Style="{ThemeResource AccentButtonStyle}" Padding="20,12" Command="{x:Bind ViewModel.ProcessCheckInCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE8D7;" />
                             <TextBlock Text="Xác nhận Check-in" FontWeight="Bold" />

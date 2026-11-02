@@ -26,6 +26,7 @@ public sealed partial class MainWindow : Window
                 "Dashboard" => typeof(DashboardPage),
                 "Members" => typeof(MembersPage),
                 "CheckIn" => typeof(CheckInPage),
+                "Trainers" => typeof(TrainersPage),
                 "PtSchedule" => typeof(PtSchedulePage),
                 "Billing" => typeof(BillingPage),
                 "Settings" => typeof(SettingsPage),

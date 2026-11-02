@@ -61,4 +61,22 @@ public partial class CheckInViewModel : ObservableObject
 
         InputScanCode = string.Empty;
     }
+
+    [RelayCommand]
+    public async Task ProcessQrCheckInAsync(string qrCode)
+    {
+        if (string.IsNullOrWhiteSpace(qrCode)) return;
+
+        var result = await _checkInService.CheckInWithQrAsync(qrCode.Trim());
+        LatestCheckIn = result;
+        TodayLogs.Insert(0, result);
+
+        IsSuccessAlert = result.IsSuccess;
+        AlertMessage = result.IsSuccess
+            ? $"Check-in QR thành công: {result.MemberName} ({result.PackageName})"
+            : $"Từ chối check-in: {result.Reason}";
+        ShowAlert = true;
+
+        InputScanCode = string.Empty;
+    }
 }

@@ -43,25 +43,11 @@
                     <div class="fw-semibold">@Member.Email</div>
                 </div>
             </div>
-            <div class="list-item">
+            <div class="list-item" style="border-bottom:none;">
                 <span style="font-size:1rem; width:24px; text-align:center;">🎂</span>
                 <div style="flex:1;">
                     <div class="text-caption">Ngày sinh</div>
                     <div class="fw-semibold">@Member.DateOfBirth.ToString("dd/MM/yyyy")</div>
-                </div>
-            </div>
-            <div class="list-item">
-                <span style="font-size:1rem; width:24px; text-align:center;">🪪</span>
-                <div style="flex:1;">
-                    <div class="text-caption">CCCD/CMND</div>
-                    <div class="fw-semibold" style="font-family:monospace; letter-spacing:0.08em;">@Member.CitizenId</div>
-                </div>
-            </div>
-            <div class="list-item" style="border-bottom:none;">
-                <span style="font-size:1rem; width:24px; text-align:center;">🏠</span>
-                <div style="flex:1;">
-                    <div class="text-caption">Địa chỉ</div>
-                    <div class="fw-semibold">@Member.Address</div>
                 </div>
             </div>
         </div>
@@ -77,10 +63,6 @@
             <div class="form-group">
                 <label class="form-label">Email</label>
                 <input class="form-control" type="email" @bind="EditEmail" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Địa chỉ</label>
-                <input class="form-control" type="text" @bind="EditAddress" />
             </div>
             @if (!string.IsNullOrEmpty(SaveMessage))
             {

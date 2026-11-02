@@ -30,9 +30,10 @@ public interface ICheckInService
 public interface IPtService
 {
     Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync();
+    Task<PtProfileDto?> GetAssignedPtForMemberAsync(string memberCode);
     Task<IReadOnlyList<PtSessionDto>> GetPtScheduleAsync(string? ptId, DateTime startDate, DateTime endDate);
     Task<IReadOnlyList<PtSessionDto>> GetMemberSessionsAsync(string memberCode);
-    Task<bool> BookSessionAsync(string memberCode, string ptId, DateTime startTime, DateTime endTime);
+    Task<bool> BookSessionAsync(string memberCode, string ptId, DateTime startTime, DateTime endTime, string? note = null);
     Task<bool> CancelOrRescheduleSessionAsync(string bookingId, DateTime? newTime, string reason);
     Task<bool> CompleteSessionAsync(string bookingId);
     Task<bool> SubmitRatingAsync(string bookingId, int rating, string? comment);
@@ -43,6 +44,11 @@ public interface IPtService
     Task<IReadOnlyList<PtSlotDto>> GetPtSlotsAsync(string ptId, DateOnly weekStart);
     Task<bool> SavePtSlotsAsync(string ptId, IReadOnlyList<PtSlotDto> slots);
     Task<IReadOnlyList<MemberDto>> GetPtStudentsAsync(string ptId, string? searchTerm = null);
+
+    // UC04.1 – Quản trị hồ sơ và chuyên môn PT
+    Task<bool> SaveTrainerAsync(PtProfileDto trainer);
+    Task<(bool CanDeactivate, string? Message, int ActiveStudents, int PendingSessions)> CheckDeactivationEligibilityAsync(string ptId);
+    Task<bool> SetTrainerStatusAsync(string ptId, bool isActive);
 }
 
 public interface IBillingService

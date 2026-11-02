@@ -1,261 +1,434 @@
 @page "/pt-booking"
 @rendermode InteractiveServer
 @inject IPtService PtService
+@inject IMemberService MemberService
 
-<PageTitle>GYM HOUSE – Đặt lịch PT</PageTitle>
+<PageTitle>GYM HOUSE – Đặt lịch Huấn luyện viên</PageTitle>
+
+@if (!string.IsNullOrEmpty(Notice))
+{
+    <div class="section" style="padding-bottom:0;">
+        <div class="alert @NoticeClass animate-down">
+            @Notice
+            <button class="btn btn-ghost btn-sm" style="float:right; padding:0 4px;" @onclick="() => Notice = string.Empty">✕</button>
+        </div>
+    </div>
+}
 
 <div class="section animate-down">
-    <h1 class="section-title mb-md" style="font-size:1.1rem;">🏋️ Đặt lịch PT</h1>
+    <div class="section-header mb-md">
+        <div>
+            <h1 class="section-title" style="font-size:1.15rem;">🏋️ Đặt lịch PT</h1>
+            <div class="text-caption">Hội viên được phân công Huấn luyện viên riêng. Đặt lịch theo các khung giờ rảnh của PT bên dưới.</div>
+        </div>
+    </div>
 
-    @if (!TrainerSelected)
+    @if (AssignedPt != null)
     {
-        <!-- Step 1: Chọn Huấn luyện viên -->
-        <div class="section-header">
-            <div style="font-size:0.85rem; font-weight:600; color:var(--clr-text-secondary);">Bước 1 — Chọn huấn luyện viên</div>
-        </div>
-
-        <div class="form-group mb-md">
-            <label class="form-label">Tìm theo tên hoặc chuyên môn</label>
-            <input class="form-control" type="search" placeholder="VD: Yoga, Boxing, Nguyễn..." @bind="SearchQuery" @bind:event="oninput" />
-        </div>
-
-        @if (IsLoading)
-        {
-            <div class="d-flex items-center justify-center" style="padding:32px;">
-                <span class="animate-spin" style="font-size:1.5rem;">⟳</span>
+        <!-- Thẻ thông tin PT phụ trách được phân công (Admin gán từ đầu) -->
+        <div class="card mb-md" style="background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border:1px solid rgba(59,130,246,0.35); border-radius:14px; padding:16px;">
+            <div class="d-flex items-center justify-between mb-sm" style="flex-wrap:wrap; gap:8px;">
+                <span class="badge" style="background:rgba(16,185,129,0.2); color:#34D399; border:1px solid rgba(16,185,129,0.4); font-size:0.75rem;">
+                    ✓ HLV phụ trách của bạn
+                </span>
+                <span class="badge" style="background:rgba(59,130,246,0.2); color:#93C5FD; border:1px solid rgba(59,130,246,0.4); font-size:0.75rem;">
+                    Còn @RemainingSessions / @TotalSessions buổi PT
+                </span>
             </div>
-        }
-        else
-        {
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                @foreach (var pt in FilteredTrainers)
-                {
-                    <div class="trainer-card @(SelectedPt?.PtId == pt.PtId ? "selected" : "")"
-                         @onclick="() => SelectTrainer(pt)">
-                        <div class="avatar avatar-lg">@pt.FullName[0]</div>
-                        <div class="fw-semibold" style="font-size:0.9rem;">@pt.FullName</div>
-                        <div class="text-caption">@pt.Specialty</div>
-                        <div class="d-flex items-center gap-xs" style="color:var(--clr-warning); font-size:0.8rem;">
-                            ⭐ @pt.RatingAverage.ToString("0.0") <span class="text-caption">(@pt.ReviewCount đánh giá)</span>
-                        </div>
-                        <div class="badge badge-info">@pt.ExperienceYears năm KN</div>
-                    </div>
-                }
-                @if (!FilteredTrainers.Any())
-                {
-                    <div class="card" style="grid-column:span 2; text-align:center; color:var(--clr-text-secondary); padding:32px;">
-                        Không tìm thấy huấn luyện viên phù hợp
-                    </div>
-                }
-            </div>
-        }
-    }
-    else if (!DateSlotSelected)
-    {
-        <!-- Step 2: Chọn ngày và giờ -->
-        <div class="d-flex items-center gap-sm mb-md">
-            <button class="btn btn-ghost btn-sm" @onclick="BackToTrainerSelect">← Quay lại</button>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--clr-text-secondary);">Bước 2 — Chọn ngày & giờ</div>
-        </div>
 
-        <!-- Selected PT summary -->
-        <div class="card mb-md" style="border-color:rgba(36,185,138,0.4);">
             <div class="d-flex items-center gap-md">
-                <div class="avatar">@SelectedPt!.FullName[0]</div>
-                <div>
-                    <div class="fw-bold">@SelectedPt.FullName</div>
-                    <div class="text-caption">@SelectedPt.Specialty · ⭐ @SelectedPt.RatingAverage.ToString("0.0")</div>
+                <div class="avatar avatar-lg" style="background:linear-gradient(135deg, #06B6D4, #3B82F6); font-size:1.3rem; font-weight:700; color:#fff; flex-shrink:0;">
+                    @AssignedPt.FullName[0]
                 </div>
+                <div style="flex:1; min-width:0;">
+                    <div class="fw-bold" style="font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@AssignedPt.FullName</div>
+                    <div class="text-caption" style="color:#94A3B8;">@AssignedPt.Specialty</div>
+                    <div class="d-flex items-center gap-sm mt-xs" style="font-size:0.8rem;">
+                        <span style="color:#FBBF24;">⭐ @AssignedPt.RatingAverage.ToString("0.0")</span>
+                        <span style="color:#64748B;">·</span>
+                        <span style="color:#94A3B8;">@AssignedPt.ExperienceYears năm KN</span>
+                    </div>
+                </div>
+                <a href="tel:@AssignedPt.Phone" class="btn btn-ghost btn-sm" style="border:1px solid rgba(255,255,255,0.15); font-size:0.8rem; padding:8px 12px; flex-shrink:0;">
+                    📞 Liên hệ
+                </a>
             </div>
         </div>
+    }
 
-        <!-- Date picker (simple week view) -->
-        <div class="section-header">
-            <div class="fw-semibold" style="font-size:0.9rem;">Chọn ngày</div>
+    <!-- Ca tập đã đặt sắp tới của hội viên -->
+    @if (MyUpcomingSessions.Any())
+    {
+        <div class="section-header mb-sm">
+            <h2 class="section-title" style="font-size:0.95rem;">🗓️ Ca tập sắp tới của bạn</h2>
+            <span class="badge badge-info">@MyUpcomingSessions.Count ca</span>
         </div>
-        <div class="d-flex gap-sm mb-md" style="overflow-x:auto; padding-bottom:4px;">
-            @for (int i = 0; i < 7; i++)
+
+        <div class="mb-md" style="display:flex; flex-direction:column; gap:10px;">
+            @foreach (var s in MyUpcomingSessions)
             {
-                var day = DateTime.Today.AddDays(i);
-                var isSel = SelectedDate?.Date == day.Date;
-                <button class="btn @(isSel ? "btn-primary" : "btn-secondary")"
-                        style="flex-shrink:0; display:flex; flex-direction:column; padding:10px 14px; align-items:center; gap:2px;"
-                        @onclick="() => SelectDate(day)">
-                    <span style="font-size:0.65rem; text-transform:uppercase;">@day.ToString("ddd")</span>
-                    <span style="font-size:1rem; font-weight:700;">@day.Day</span>
-                </button>
+                <div class="card animate-fade" style="border-left:3px solid #24B98A; padding:14px;">
+                    <div class="d-flex items-center justify-between mb-xs">
+                        <div class="fw-bold" style="font-size:0.9rem;">
+                            @s.StartTime.ToString("dddd, dd/MM", new System.Globalization.CultureInfo("vi-VN"))
+                        </div>
+                        <span class="badge badge-success">Đã xác nhận</span>
+                    </div>
+                    <div class="text-caption" style="color:var(--clr-text-secondary); margin-bottom:8px;">
+                        🕐 @s.StartTime.ToString("HH:mm") – @s.EndTime.ToString("HH:mm") · HLV @s.PtName
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(s.Note))
+                    {
+                        <div class="text-caption" style="background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px; margin-bottom:8px;">
+                            📝 @s.Note
+                        </div>
+                    }
+                    <div class="d-flex justify-end">
+                        <button class="btn btn-ghost btn-sm" style="color:#F87171; font-size:0.75rem;" @onclick="() => CancelBookingAsync(s.BookingId)">
+                            ✕ Hủy ca tập
+                        </button>
+                    </div>
+                </div>
             }
         </div>
+    }
 
-        @if (SelectedDate.HasValue)
-        {
-            <div class="section-header">
-                <div class="fw-semibold" style="font-size:0.9rem;">Giờ trống — @SelectedDate.Value.ToString("dd/MM/yyyy")</div>
+    <!-- Tiêu đề lưới lịch rảnh & chọn tuần (UC 8.1.1 + UC 10) -->
+    <div class="section-header mb-sm">
+        <h2 class="section-title" style="font-size:1rem;">📅 Chọn lịch rảnh của PT để đặt hẹn</h2>
+    </div>
+
+    <!-- Thanh chuyển tuần tra cứu -->
+    <div class="card mb-md" style="padding:12px 16px;">
+        <div class="d-flex items-center justify-between">
+            <button class="btn btn-ghost btn-sm" @onclick="() => MoveWeekAsync(-1)">‹ Tuần trước</button>
+            <div style="text-align:center;">
+                <div class="fw-semibold" style="font-size:0.9rem;">@WeekRangeLabel</div>
+                <div class="text-caption">Tuần @WeekNumberOfYear</div>
             </div>
-            <div class="slot-grid mb-md">
-                @foreach (var slot in AvailableSlots)
+            <button class="btn btn-ghost btn-sm" @onclick="() => MoveWeekAsync(1)">Tuần sau ›</button>
+        </div>
+        <button class="btn btn-ghost btn-sm w-full mt-sm" style="font-size:0.8rem; color:var(--clr-primary);" @onclick="GoToCurrentWeekAsync">
+            ↻ Về tuần hiện tại
+        </button>
+    </div>
+
+    <!-- Chú thích màu sắc -->
+    <div class="d-flex gap-md mb-md" style="font-size:0.78rem; flex-wrap:wrap; padding:0 4px;">
+        <div class="d-flex items-center gap-xs">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:linear-gradient(135deg, #06B6D4, #10B981);"></span>
+            <span>PT đang rảnh (Bấm để đặt)</span>
+        </div>
+        <div class="d-flex items-center gap-xs">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:linear-gradient(135deg, #6366F1, #8B5CF6);"></span>
+            <span>Bạn đã đặt</span>
+        </div>
+        <div class="d-flex items-center gap-xs">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:#1E293B; border:1px solid #334155;"></span>
+            <span>Không có ca / Bận</span>
+        </div>
+    </div>
+
+    <!-- Lưới lịch rảnh PT từng ngày trong tuần (Khớp chính xác giao diện trong ảnh) -->
+    @foreach (var day in WeekDays)
+    {
+        var freeCount = FreeCountOfDay(day.Date);
+        <div class="mb-lg">
+            <div class="d-flex items-center justify-between mb-sm">
+                <div class="fw-bold" style="font-size:0.92rem; color:#E2E8F0;">
+                    @day.Label
+                </div>
+                <span class="text-caption" style="font-size:0.78rem; color:@(freeCount > 0 ? "var(--clr-primary)" : "#64748B");">
+                    @(freeCount > 0 ? $"{freeCount} khung giờ rảnh" : "Không có giờ rảnh")
+                </span>
+            </div>
+
+            <div class="slot-grid" style="grid-template-columns:repeat(4, 1fr); gap:8px;">
+                @foreach (var slot in SlotsOf(day.Date))
                 {
-                    <button class="slot-btn @(slot.IsBooked ? "booked" : slot.IsSelected ? "selected" : "available")"
-                            disabled="@slot.IsBooked"
-                            @onclick="() => ToggleSlot(slot)">
-                        @slot.Label
-                    </button>
+                    var isMyBooking = IsSlotBookedByMe(slot);
+                    var isFree = (slot.Status == PtSlotStatus.Registered && !isMyBooking);
+
+                    if (isMyBooking)
+                    {
+                        <!-- Khung giờ học viên đã đặt -->
+                        <button class="slot-btn" 
+                                style="background:linear-gradient(135deg, #6366F1, #8B5CF6); border-color:#818CF8; color:#fff; font-weight:700; box-shadow:0 2px 8px rgba(99,102,241,0.4);"
+                                @onclick="() => OnMyBookingClick(slot)">
+                            @slot.StartTime
+                            <div style="font-size:0.55rem; font-weight:normal; margin-top:1px;">Đã đặt</div>
+                        </button>
+                    }
+                    else if (isFree)
+                    {
+                        <!-- Khung giờ PT đang rảnh (Sáng rực rỡ như ảnh chụp) -->
+                        <button class="slot-btn selected" 
+                                style="cursor:pointer;"
+                                @onclick="() => OpenBookingModal(slot)">
+                            @slot.StartTime
+                        </button>
+                    }
+                    else
+                    {
+                        <!-- Khung giờ bận / chưa đăng ký -->
+                        <button class="slot-btn booked" 
+                                disabled
+                                style="opacity:0.35; cursor:not-allowed; background:#182234; border-color:#233149; color:#64748B;">
+                            @slot.StartTime
+                        </button>
+                    }
                 }
             </div>
-
-            @if (SelectedSlot != null)
-            {
-                <button class="btn btn-primary btn-block" @onclick="GoToConfirm">
-                    Tiếp tục xác nhận →
-                </button>
-            }
-        }
-    }
-    else
-    {
-        <!-- Step 3: Xác nhận đặt lịch -->
-        <div class="d-flex items-center gap-sm mb-md">
-            <button class="btn btn-ghost btn-sm" @onclick="BackToDateSelect">← Quay lại</button>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--clr-text-secondary);">Bước 3 — Xác nhận</div>
         </div>
-
-        <div class="card mb-md">
-            <div class="fw-bold mb-md" style="color:var(--clr-primary);">📋 Chi tiết buổi tập</div>
-            <div class="d-flex justify-between mb-sm">
-                <span class="text-caption">Huấn luyện viên</span>
-                <span class="fw-semibold">@SelectedPt!.FullName</span>
-            </div>
-            <div class="d-flex justify-between mb-sm">
-                <span class="text-caption">Chuyên môn</span>
-                <span>@SelectedPt.Specialty</span>
-            </div>
-            <div class="d-flex justify-between mb-sm">
-                <span class="text-caption">Ngày tập</span>
-                <span class="fw-semibold">@SelectedDate?.ToString("dd/MM/yyyy")</span>
-            </div>
-            <div class="d-flex justify-between mb-sm">
-                <span class="text-caption">Giờ tập</span>
-                <span class="fw-semibold" style="color:var(--clr-primary);">@SelectedSlot?.Label</span>
-            </div>
-            <div class="d-flex justify-between">
-                <span class="text-caption">Buổi PT còn lại sau đặt</span>
-                <span class="fw-semibold" style="color:var(--clr-warning);">6 buổi</span>
-            </div>
-        </div>
-
-        <div class="form-group mb-md">
-            <label class="form-label">Ghi chú cho PT (tuỳ chọn)</label>
-            <input class="form-control" type="text" @bind="BookingNote" placeholder="VD: chấn thương vai trái, muốn tập giảm mỡ bụng..." />
-        </div>
-
-        <div class="alert alert-info mb-md">
-            ℹ️ Hủy lịch cần thông báo trước tối thiểu <strong>2 giờ</strong> để không mất buổi tập.
-        </div>
-
-        @if (!string.IsNullOrEmpty(BookingMessage))
-        {
-            <div class="alert @(BookingSuccess ? "alert-success" : "alert-danger") mb-md animate-fade">
-                @BookingMessage
-            </div>
-        }
-
-        <button class="btn btn-primary btn-block" @onclick="ConfirmBooking" disabled="@IsSubmitting">
-            @if (IsSubmitting) { <span class="animate-spin">⟳</span> } else { <span>✅ Xác nhận đặt lịch</span> }
-        </button>
     }
 </div>
 
+<!-- Modal Bottom Sheet: Xác nhận đặt lịch (UC10) -->
+@if (SelectedSlotToBook != null && AssignedPt != null)
+{
+    <div class="modal-overlay" @onclick="CloseBookingModal">
+        <div class="modal-sheet animate-up" @onclick:stopPropagation>
+            <div class="modal-handle"></div>
+            
+            <div class="d-flex items-center justify-between mb-md">
+                <h2 style="font-size:1.15rem; font-weight:700;">🏋️ Xác nhận đặt lịch tập PT</h2>
+                <button class="btn btn-ghost btn-sm" @onclick="CloseBookingModal">✕</button>
+            </div>
+
+            <div class="card mb-md" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:14px;">
+                <div class="d-flex items-center justify-between mb-sm">
+                    <span class="text-caption">Huấn luyện viên</span>
+                    <span class="fw-bold">@AssignedPt.FullName</span>
+                </div>
+                <div class="d-flex items-center justify-between mb-sm">
+                    <span class="text-caption">Thời gian</span>
+                    <span class="fw-bold" style="color:var(--clr-primary);">
+                        @SelectedSlotToBook.StartTime – @SelectedSlotToBook.EndTime
+                    </span>
+                </div>
+                <div class="d-flex items-center justify-between mb-sm">
+                    <span class="text-caption">Ngày tập</span>
+                    <span class="fw-bold">
+                        @SelectedSlotToBook.Date.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </span>
+                </div>
+                <div class="d-flex items-center justify-between" style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;">
+                    <span class="text-caption">Gói tập còn lại</span>
+                    <span class="badge badge-info">@RemainingSessions buổi (Trừ 1 buổi sau khi đặt)</span>
+                </div>
+            </div>
+
+            <div class="form-group mb-md">
+                <label class="form-label">Ghi chú mục tiêu buổi tập (Tùy chọn)</label>
+                <input type="text" class="form-control" @bind="BookingNote" placeholder="VD: Tập cơ vai, Cardio, Đo lại InBody..." />
+            </div>
+
+            <div class="alert alert-info mb-md" style="font-size:0.8rem;">
+                💡 Ca tập sẽ được tự động đồng bộ vào lịch dạy của HLV @AssignedPt.FullName.
+            </div>
+
+            <div class="d-flex gap-sm">
+                <button class="btn btn-secondary" style="flex:1;" @onclick="CloseBookingModal">Hủy</button>
+                <button class="btn btn-primary" style="flex:2;" @onclick="ConfirmBookingAsync" disabled="@IsSubmitting">
+                    @(IsSubmitting ? "Đang xử lý..." : "✓ Xác nhận đặt lịch")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    private List<PtProfileDto> Trainers = [];
-    private List<PtProfileDto> FilteredTrainers => string.IsNullOrWhiteSpace(SearchQuery)
-        ? Trainers
-        : Trainers.Where(t =>
-            t.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-            t.Specialty.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+    private const string CurrentMemberCode = "MB-0248";
 
-    private string SearchQuery = "";
-    private bool IsLoading = true;
-    private bool IsSubmitting = false;
-    private bool TrainerSelected = false;
-    private bool DateSlotSelected = false;
-    private PtProfileDto? SelectedPt;
-    private DateTime? SelectedDate;
-    private SlotItem? SelectedSlot;
+    private PtProfileDto? AssignedPt;
+    private int RemainingSessions = 8;
+    private int TotalSessions = 12;
+
+    private DateOnly _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
+    private List<PtSlotDto> _slots = [];
+    private List<PtSessionDto> MyUpcomingSessions = [];
+
+    private PtSlotDto? SelectedSlotToBook;
     private string BookingNote = "";
-    private string BookingMessage = "";
-    private bool BookingSuccess = false;
+    private bool IsSubmitting = false;
 
-    private List<SlotItem> AvailableSlots = [];
+    private string Notice = "";
+    private string NoticeClass = "alert-info";
+
+    private static DateOnly StartOfWeek(DateOnly date)
+    {
+        var offset = ((int)date.DayOfWeek + 6) % 7;
+        return date.AddDays(-offset);
+    }
+
+    private string WeekRangeLabel => $"{_weekStart:dd/MM} – {_weekStart.AddDays(6):dd/MM/yyyy}";
+
+    private int WeekNumberOfYear =>
+        System.Globalization.ISOWeek.GetWeekOfYear(_weekStart.ToDateTime(TimeOnly.MinValue));
+
+    private sealed record DayCell(DateOnly Date, string Label);
+
+    private List<DayCell> WeekDays => Enumerable.Range(0, 7)
+        .Select(offset => _weekStart.AddDays(offset))
+        .Select(date => new DayCell(date, $"{DayNameOf(date.DayOfWeek)}, {date:dd/MM}"))
+        .ToList();
+
+    private List<PtSlotDto> SlotsOf(DateOnly date) => _slots.Where(s => s.Date == date).ToList();
+
+    private int FreeCountOfDay(DateOnly date) =>
+        _slots.Count(s => s.Date == date && s.Status == PtSlotStatus.Registered && !IsSlotBookedByMe(s));
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. Tải thông tin PT được admin phân công cho hội viên này
+        AssignedPt = await PtService.GetAssignedPtForMemberAsync(CurrentMemberCode);
+
+        // 2. Lấy thông tin hội viên (số buổi PT còn lại)
+        var member = await MemberService.GetMemberByCodeOrPhoneAsync(CurrentMemberCode);
+        if (member != null)
+        {
+            RemainingSessions = member.RemainingPtSessions;
+        }
+
+        await ReloadDataAsync();
+    }
+
+    private async Task ReloadDataAsync()
+    {
+        if (AssignedPt == null) return;
+
         try
         {
-            Trainers = (await PtService.GetTrainersAsync()).ToList();
+            // Tải lịch ca tập của hội viên
+            var allSessions = await PtService.GetMemberSessionsAsync(CurrentMemberCode);
+            MyUpcomingSessions = allSessions
+                .Where(s => s.Status == BookingStatus.Confirmed && s.StartTime >= DateTime.Today)
+                .OrderBy(s => s.StartTime)
+                .ToList();
+
+            // Tải lưới lịch rảnh của PT phụ trách
+            _slots = (await PtService.GetPtSlotsAsync(AssignedPt.PtId, _weekStart)).ToList();
         }
-        catch
+        catch (Exception ex)
         {
-            // Mock fallback
-            Trainers =
-            [
-                new PtProfileDto("PT-01", "Nguyễn Văn An", "0901111111", "an@gym.vn", "Boxing & Thể lực", 5, 4.8m, 32, null, true),
-                new PtProfileDto("PT-02", "Trần Thị Bình", "0902222222", "binh@gym.vn", "Yoga & Pilates", 3, 4.9m, 47, null, true),
-                new PtProfileDto("PT-03", "Lê Văn Cường", "0903333333", "cuong@gym.vn", "CrossFit & Tăng cơ", 7, 4.7m, 28, null, true),
-                new PtProfileDto("PT-04", "Phạm Thị Dung", "0904444444", "dung@gym.vn", "Zumba & Giảm cân", 4, 4.6m, 55, null, true),
-            ];
+            Notice = $"Lỗi tải dữ liệu lịch PT: {ex.Message}";
+            NoticeClass = "alert-danger";
         }
-        IsLoading = false;
     }
 
-    private void SelectTrainer(PtProfileDto pt)
+    private bool IsSlotBookedByMe(PtSlotDto slot)
     {
-        SelectedPt = pt;
-        TrainerSelected = true;
+        var start = slot.Date.ToDateTime(TimeOnly.Parse(slot.StartTime));
+        var end = slot.Date.ToDateTime(TimeOnly.Parse(slot.EndTime));
+        return MyUpcomingSessions.Any(s => s.StartTime < end && s.EndTime > start);
     }
 
-    private void SelectDate(DateTime date)
+    private async Task MoveWeekAsync(int deltaWeeks)
     {
-        SelectedDate = date;
-        SelectedSlot = null;
-        GenerateSlots(date);
+        _weekStart = _weekStart.AddDays(deltaWeeks * 7);
+        await ReloadDataAsync();
     }
 
-    private void GenerateSlots(DateTime date)
+    private async Task GoToCurrentWeekAsync()
     {
-        var rng = new Random(date.DayOfYear + (SelectedPt?.GetHashCode() ?? 0));
-        AvailableSlots = new List<string>
+        _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
+        await ReloadDataAsync();
+    }
+
+    private void OpenBookingModal(PtSlotDto slot)
+    {
+        if (RemainingSessions <= 0)
         {
-            "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-            "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
-        }.Select(t => new SlotItem(t, rng.NextDouble() < 0.35)).ToList();
+            Notice = "Gói tập của bạn đã hết số buổi PT. Vui lòng gia hạn thêm gói để đặt lịch!";
+            NoticeClass = "alert-warning";
+            return;
+        }
+
+        SelectedSlotToBook = slot;
+        BookingNote = "";
     }
 
-    private void ToggleSlot(SlotItem slot)
+    private void CloseBookingModal()
     {
-        if (slot.IsBooked) return;
-        if (SelectedSlot == slot) SelectedSlot = null;
-        else { AvailableSlots.ForEach(s => s.IsSelected = false); slot.IsSelected = true; SelectedSlot = slot; }
+        SelectedSlotToBook = null;
     }
 
-    private void GoToConfirm() => DateSlotSelected = true;
-    private void BackToTrainerSelect() { TrainerSelected = false; SelectedDate = null; SelectedSlot = null; }
-    private void BackToDateSelect() => DateSlotSelected = false;
-
-    private async Task ConfirmBooking()
+    private void OnMyBookingClick(PtSlotDto slot)
     {
+        Notice = $"Bạn đã có lịch tập vào khung giờ {slot.StartTime} ngày {slot.Date:dd/MM/yyyy}.";
+        NoticeClass = "alert-info";
+    }
+
+    private async Task ConfirmBookingAsync()
+    {
+        if (SelectedSlotToBook == null || AssignedPt == null) return;
+
         IsSubmitting = true;
-        await Task.Delay(800); // Simulate API call
-        // TODO: UC10 – call PtService.BookSessionAsync(...)
-        BookingSuccess = true;
-        BookingMessage = $"✅ Đã đặt lịch thành công với {SelectedPt!.FullName} lúc {SelectedSlot!.Label} ngày {SelectedDate?.ToString("dd/MM/yyyy")}!";
-        IsSubmitting = false;
+        try
+        {
+            var start = SelectedSlotToBook.Date.ToDateTime(TimeOnly.Parse(SelectedSlotToBook.StartTime));
+            var end = SelectedSlotToBook.Date.ToDateTime(TimeOnly.Parse(SelectedSlotToBook.EndTime));
+
+            var success = await PtService.BookSessionAsync(CurrentMemberCode, AssignedPt.PtId, start, end, BookingNote);
+            if (success)
+            {
+                Notice = $"🎉 Đặt lịch thành công ca {SelectedSlotToBook.StartTime} – {SelectedSlotToBook.EndTime} ngày {SelectedSlotToBook.Date:dd/MM/yyyy} cùng HLV {AssignedPt.FullName}!";
+                NoticeClass = "alert-success";
+
+                if (RemainingSessions > 0)
+                {
+                    RemainingSessions--;
+                }
+
+                CloseBookingModal();
+                await ReloadDataAsync();
+            }
+            else
+            {
+                Notice = "Không thể đặt ca tập này. Vui lòng thử lại!";
+                NoticeClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            Notice = $"Lỗi khi đặt lịch: {ex.Message}";
+            NoticeClass = "alert-danger";
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
     }
 
-    private class SlotItem
+    private async Task CancelBookingAsync(string bookingId)
     {
-        public string Label { get; }
-        public bool IsBooked { get; }
-        public bool IsSelected { get; set; }
-        public SlotItem(string label, bool isBooked) { Label = label; IsBooked = isBooked; }
+        try
+        {
+            var ok = await PtService.CancelOrRescheduleSessionAsync(bookingId, null, "Hội viên yêu cầu hủy");
+            if (ok)
+            {
+                Notice = "Đã hủy ca tập thành công và hoàn lại 1 buổi vào gói tập!";
+                NoticeClass = "alert-info";
+                RemainingSessions++;
+                await ReloadDataAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Notice = $"Hủy ca tập thất bại: {ex.Message}";
+            NoticeClass = "alert-danger";
+        }
     }
+
+    private static string DayNameOf(DayOfWeek dayOfWeek) => dayOfWeek switch
+    {
+        DayOfWeek.Monday    => "Thứ 2",
+        DayOfWeek.Tuesday   => "Thứ 3",
+        DayOfWeek.Wednesday => "Thứ 4",
+        DayOfWeek.Thursday  => "Thứ 5",
+        DayOfWeek.Friday    => "Thứ 6",
+        DayOfWeek.Saturday  => "Thứ 7",
+        DayOfWeek.Sunday    => "Chủ Nhật",
+        _                   => ""
+    };
 }

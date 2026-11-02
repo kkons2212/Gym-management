@@ -1,0 +1,387 @@
+<Page
+    x:Class="GymManagement.Desktop.Views.TrainersPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:GymManagement.Desktop.ViewModels"
+    xmlns:views="using:GymManagement.Desktop.Views"
+    xmlns:dto="using:GymManagement.Core.DTOs"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!-- Main Content -->
+        <Grid Padding="24" RowSpacing="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Header & Action Buttons -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Quản trị Hồ sơ &amp; Chuyên môn PT" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
+                        <Border Background="#24B98A" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock Text="UC04.1" FontSize="11" FontWeight="Bold" Foreground="White" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Thêm mới, cập nhật chuyên môn, phân quyền lương và kiểm soát trạng thái hoạt động (INACTIVE)"
+                               Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <Button Grid.Column="1" VerticalAlignment="Center" Style="{ThemeResource AccentButtonStyle}" Command="{x:Bind ViewModel.OpenAddTrainerDialogCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE710;" />
+                        <TextBlock Text="Thêm mới Huấn luyện viên" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Row 1: KPI Stats Overview Cards (Đã bỏ thẻ Quỹ lương cơ bản) -->
+            <Grid Grid.Row="1" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Card 1: Total Trainers -->
+                <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="TỔNG SỐ HUẤN LUYỆN VIÊN" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalTrainersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#3B82F6" />
+                        <TextBlock Text="Đội ngũ HLV toàn hệ thống" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 2: Active Trainers -->
+                <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="ĐANG HOẠT ĐỘNG (ACTIVE)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind ViewModel.ActiveTrainersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#24B98A" />
+                        <TextBlock Text="Sẵn sàng nhận phân công học viên" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 3: Inactive Trainers -->
+                <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="ĐÃ VÔ HIỆU HÓA (INACTIVE)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind ViewModel.InactiveTrainersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#EF4444" />
+                        <TextBlock Text="Đã ngừng nhận ca &amp; bàn giao HV" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Row 2: Search & Filter Bar -->
+            <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="170" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search -->
+                    <TextBox Grid.Column="0" PlaceholderText="Tìm theo Tên HLV, Mã PT, SĐT hoặc Email..."
+                             Text="{x:Bind ViewModel.SearchKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!-- Specialty Filter -->
+                    <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" Header="Chuyên môn"
+                              ItemsSource="{x:Bind ViewModel.SpecialtyFilterOptions}"
+                              SelectedItem="{x:Bind ViewModel.SelectedSpecialtyFilter, Mode=TwoWay}" />
+
+                    <!-- Status Filter -->
+                    <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" Header="Trạng thái tài khoản"
+                              ItemsSource="{x:Bind ViewModel.StatusFilterOptions}"
+                              SelectedItem="{x:Bind ViewModel.SelectedStatusFilter, Mode=TwoWay}" />
+
+                    <!-- Search Button -->
+                    <Button Grid.Column="3" VerticalAlignment="Bottom" Command="{x:Bind ViewModel.SearchCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE721;" />
+                            <TextBlock Text="Lọc dữ liệu" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Row 3: Trainers List Table (Reformatted to fit screen frame) -->
+            <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <ListView ItemsSource="{x:Bind ViewModel.TrainersList, Mode=OneWay}" SelectionMode="Single">
+                    <ListView.Header>
+                        <Grid Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="14,10" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="65" />
+                                <ColumnDefinition Width="1.5*" />
+                                <ColumnDefinition Width="95" />
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="115" />
+                                <ColumnDefinition Width="105" />
+                                <ColumnDefinition Width="85" />
+                                <ColumnDefinition Width="140" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="MÃ" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="1" Text="HỌ VÀ TÊN" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="2" Text="CHUYÊN MÔN" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="3" Text="LIÊN HỆ" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="4" Text="LƯƠNG" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="5" Text="PHỤ TRÁCH" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="6" Text="TRẠNG THÁI" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Grid.Column="7" Text="THAO TÁC" FontWeight="Bold" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                    </ListView.Header>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="dto:PtProfileDto">
+                            <Grid Padding="14,10" ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="65" />
+                                    <ColumnDefinition Width="1.5*" />
+                                    <ColumnDefinition Width="95" />
+                                    <ColumnDefinition Width="1.4*" />
+                                    <ColumnDefinition Width="115" />
+                                    <ColumnDefinition Width="105" />
+                                    <ColumnDefinition Width="85" />
+                                    <ColumnDefinition Width="140" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Mã PT -->
+                                <TextBlock Grid.Column="0" Text="{x:Bind PtId}" FontWeight="SemiBold" VerticalAlignment="Center" />
+
+                                <!-- Họ tên & Giới tính -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{x:Bind FullName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{x:Bind Gender}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="•" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind views:TrainersPage.FormatDob(DateOfBirth)}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Chuyên môn -->
+                                <Border Grid.Column="2" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="6,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind Specialty}" FontWeight="SemiBold" FontSize="11" Foreground="#3B82F6" />
+                                </Border>
+
+                                <!-- Liên hệ -->
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{x:Bind Phone}" FontWeight="SemiBold" FontSize="12" />
+                                    <TextBlock Text="{x:Bind Email}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <!-- Mức lương (Admin only) -->
+                                <StackPanel Grid.Column="4" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{x:Bind views:TrainersPage.FormatSalary(BaseSalary)}" FontWeight="SemiBold" FontSize="12" Foreground="#F59E0B" />
+                                </StackPanel>
+
+                                <!-- Số học viên & ca dạy phụ trách -->
+                                <StackPanel Grid.Column="5" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{x:Bind views:TrainersPage.FormatStudents(ActiveStudentsCount)}" FontWeight="SemiBold" FontSize="12" />
+                                    <TextBlock Text="{x:Bind views:TrainersPage.FormatSessions(PendingSessionsCount)}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="10" />
+                                </StackPanel>
+
+                                <!-- Trạng thái -->
+                                <Border Grid.Column="6" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="6,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind views:TrainersPage.FormatStatus(IsActive)}" FontWeight="SemiBold" FontSize="11" />
+                                </Border>
+
+                                <!-- Thao tác -->
+                                <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Content="Sửa" Padding="8,4" FontSize="12" Tag="{x:Bind}" Click="OnEditTrainerClick" />
+                                    <Button Content="Vô hiệu" Padding="8,4" FontSize="12" Tag="{x:Bind}" Click="OnDeactivateTrainerClick" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Border>
+
+            <!-- Row 4: Status Footer -->
+            <TextBlock Grid.Row="4" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- ======================================================== -->
+        <!-- MODAL 1: Form Thêm mới / Cập nhật Hồ sơ PT (UC04.1)      -->
+        <!-- ======================================================== -->
+        <Grid Background="#7F000000" Visibility="{x:Bind ViewModel.IsFormOpen, Mode=OneWay}">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="12" Width="680" MaxHeight="680" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28">
+                <Grid RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Modal Header -->
+                    <Grid Grid.Row="0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{x:Bind ViewModel.FormTitle, Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+                            <TextBlock Text="Nhập đầy đủ thông tin hồ sơ và chuyên môn theo tiêu chí chấp nhận UC04.1" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Content="✕" Command="{x:Bind ViewModel.CloseFormDialogCommand}" />
+                    </Grid>
+
+                    <!-- Phân quyền InfoBar (Acceptance Criteria #2) -->
+                    <InfoBar Grid.Row="1" IsOpen="True" IsClosable="False"
+                             Severity="Informational"
+                             Title="{x:Bind ViewModel.RolePermissionDescription, Mode=OneWay}"
+                             Message="Tiêu chí phân quyền: Khi PT tự đăng nhập chỉ được sửa SĐT, Email, Ảnh đại diện; trường Mức lương và Chuyên môn chỉ có Admin mới có quyền cập nhật." />
+
+                    <!-- Form Input Fields (2 Columns) -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <Grid ColumnSpacing="16" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- CỘT 1 -->
+                            <StackPanel Grid.Column="0" Spacing="12">
+                                <!-- Mã PT -->
+                                <TextBox Header="Mã Huấn luyện viên" Text="{x:Bind ViewModel.FormPtId, Mode=TwoWay}" IsReadOnly="True" />
+
+                                <!-- Họ và tên -->
+                                <TextBox Header="Họ và tên HLV *" PlaceholderText="Nhập đầy đủ họ và tên..."
+                                         Text="{x:Bind ViewModel.FormFullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <!-- Ngày sinh -->
+                                <CalendarDatePicker Header="Ngày sinh *" HorizontalAlignment="Stretch"
+                                                    Date="{x:Bind ViewModel.FormDateOfBirth, Mode=TwoWay}" />
+
+                                <!-- Giới tính -->
+                                <ComboBox Header="Giới tính *" HorizontalAlignment="Stretch"
+                                          ItemsSource="{x:Bind ViewModel.GenderOptions}"
+                                          SelectedItem="{x:Bind ViewModel.FormGender, Mode=TwoWay}" />
+
+                                <!-- Năm kinh nghiệm -->
+                                <TextBox Header="Số năm kinh nghiệm *" PlaceholderText="Ví dụ: 5"
+                                         Text="{x:Bind ViewModel.FormExperienceYears, Mode=TwoWay}" />
+                            </StackPanel>
+
+                            <!-- CỘT 2 -->
+                            <StackPanel Grid.Column="1" Spacing="12">
+                                <!-- Số điện thoại (duy nhất) -->
+                                <TextBox Header="Số điện thoại (Duy nhất) *" PlaceholderText="0901 xxx xxx"
+                                         Text="{x:Bind ViewModel.FormPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <!-- Email -->
+                                <TextBox Header="Địa chỉ Email *" PlaceholderText="pt.name@gymhouse.vn"
+                                         Text="{x:Bind ViewModel.FormEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <!-- Chuyên môn (Chỉ Admin sửa) -->
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="Chuyên môn huấn luyện *" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                        <FontIcon Glyph="&#xE72E;" FontSize="11" Foreground="#F59E0B" />
+                                        <TextBlock Text="(Chỉ Admin)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="#F59E0B" />
+                                    </StackPanel>
+                                    <ComboBox HorizontalAlignment="Stretch"
+                                              ItemsSource="{x:Bind ViewModel.SpecialtyOptions}"
+                                              SelectedItem="{x:Bind ViewModel.FormSpecialty, Mode=TwoWay}"
+                                              IsEnabled="{x:Bind ViewModel.CanEditRestrictedFields, Mode=OneWay}" />
+                                </StackPanel>
+
+                                <!-- Mức lương cơ bản (Chỉ Admin sửa) -->
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="Mức lương cơ bản (VNĐ) *" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                        <FontIcon Glyph="&#xE72E;" FontSize="11" Foreground="#F59E0B" />
+                                        <TextBlock Text="(Chỉ Admin)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="#F59E0B" />
+                                    </StackPanel>
+                                    <TextBox PlaceholderText="15000000"
+                                             Text="{x:Bind ViewModel.FormBaseSalary, Mode=TwoWay}"
+                                             IsEnabled="{x:Bind ViewModel.CanEditRestrictedFields, Mode=OneWay}" />
+                                </StackPanel>
+
+                                <!-- Trạng thái -->
+                                <CheckBox Content="Kích hoạt tài khoản (ACTIVE)" IsChecked="{x:Bind ViewModel.FormIsActive, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind ViewModel.CanEditRestrictedFields, Mode=OneWay}" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+
+                    <!-- Modal Actions -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Content="Hủy bỏ" Command="{x:Bind ViewModel.CloseFormDialogCommand}" />
+                        <Button Style="{ThemeResource AccentButtonStyle}" Content="Lưu hồ sơ Huấn luyện viên" Command="{x:Bind ViewModel.SaveTrainerCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ========================================================================= -->
+        <!-- MODAL 2: Cảnh báo Ràng buộc khi Vô hiệu hóa PT (Acceptance Criteria #3)   -->
+        <!-- ========================================================================= -->
+        <Grid Background="#7F000000" Visibility="{x:Bind ViewModel.IsDeactivateWarningOpen, Mode=OneWay}">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="#EF4444"
+                    BorderThickness="2" CornerRadius="12" Width="540" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28">
+                <StackPanel Spacing="18">
+                    <!-- Warning Header -->
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <FontIcon Glyph="&#xE783;" FontSize="32" Foreground="#EF4444" />
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.DeactivateWarningTitle, Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+                            <TextBlock Text="Ràng buộc nghiệp vụ Acceptance Criteria #3 (User Story 04.1)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Warning InfoBar with exact Acceptance Criteria quote -->
+                    <InfoBar IsOpen="True" IsClosable="False" Severity="Error"
+                             Title="RÀNG BUỘC KHI XÓA / VÔ HIỆU HÓA PT:"
+                             Message="“PT đang có lịch dạy chưa hoàn thành hoặc đang phụ trách hội viên”" />
+
+                    <!-- Detailed Notice & Instructions -->
+                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Hệ thống từ chối xóa và yêu cầu chuyển giao học viên trước khi chuyển trạng thái sang INACTIVE." FontWeight="SemiBold" Foreground="#EF4444" TextWrapping="Wrap" />
+                            <TextBlock Text="Thông tin ràng buộc hiện tại:" FontWeight="SemiBold" Style="{ThemeResource CaptionTextBlockStyle}" />
+                            <StackPanel Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="• Huấn luyện viên:" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.TargetPtToDeactivate.FullName, Mode=OneWay, FallbackValue=''}" FontWeight="SemiBold" />
+                                    <TextBlock Text="({x:Bind ViewModel.TargetPtToDeactivate.PtId, Mode=OneWay, FallbackValue=''})" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="• Số học viên đang phụ trách:" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.DeactivateActiveStudentsCount, Mode=OneWay}" FontWeight="Bold" Foreground="#EF4444" />
+                                    <TextBlock Text="hội viên" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="• Số ca dạy chưa hoàn thành:" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.DeactivatePendingSessionsCount, Mode=OneWay}" FontWeight="Bold" Foreground="#EF4444" />
+                                    <TextBlock Text="ca tập" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Warning Actions -->
+                    <Grid>
+                        <Button HorizontalAlignment="Left" Content="Đóng" Command="{x:Bind ViewModel.CloseDeactivateWarningCommand}" />
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                            <Button Style="{ThemeResource AccentButtonStyle}" Command="{x:Bind ViewModel.OpenAssignTransferCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE8D4;" />
+                                    <TextBlock Text="Chuyển giao học viên ngay (UC04.2)" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

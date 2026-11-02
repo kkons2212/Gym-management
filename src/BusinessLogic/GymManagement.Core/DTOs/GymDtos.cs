@@ -64,7 +64,12 @@ public record PtProfileDto(
     decimal RatingAverage,
     int ReviewCount,
     string? AvatarUrl,
-    bool IsActive
+    bool IsActive,
+    DateOnly? DateOfBirth = null,
+    string? Gender = "Nam",
+    decimal BaseSalary = 15000000m,
+    int ActiveStudentsCount = 0,
+    int PendingSessionsCount = 0
 );
 
 public record PtSessionDto(

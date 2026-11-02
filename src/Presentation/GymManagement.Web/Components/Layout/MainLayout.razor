@@ -1,18 +1,35 @@
 @inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@implements IDisposable
 
 <div class="app-shell">
     <!-- Top Header -->
     <header class="app-header">
-        <div class="brand">
-            <div class="brand-icon">💪</div>
-            <span class="brand-name">GYM HOUSE</span>
-        </div>
-        <div class="d-flex items-center gap-sm">
-            <a href="/notifications" aria-label="Thông báo" style="color:var(--clr-text-secondary); font-size:1.2rem; text-decoration:none;">🔔</a>
-            <a href="/profile">
-                <div class="avatar avatar-sm">HL</div>
-            </a>
-        </div>
+        @if (IsPtArea)
+        {
+            <div class="brand">
+                <div class="brand-icon">🧑‍🏫</div>
+                <span class="brand-name">GYM HOUSE · PT</span>
+            </div>
+            <div class="d-flex items-center gap-sm">
+                <a href="/pt/profile" aria-label="Hồ sơ PT">
+                    <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);">PT</div>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="brand">
+                <div class="brand-icon">💪</div>
+                <span class="brand-name">GYM HOUSE</span>
+            </div>
+            <div class="d-flex items-center gap-sm">
+                <a href="/notifications" aria-label="Thông báo" style="color:var(--clr-text-secondary); font-size:1.2rem; text-decoration:none;">🔔</a>
+                <a href="/profile">
+                    <div class="avatar avatar-sm">HL</div>
+                </a>
+            </div>
+        }
     </header>
 
     <!-- Page Content -->
@@ -21,32 +38,54 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="bottom-nav" aria-label="Điều hướng chính">
-        <NavLink href="/" class="nav-item" Match="NavLinkMatch.All">
-            <span class="nav-icon">🏠</span>
-            <span>Trang chủ</span>
-        </NavLink>
-        <NavLink href="/digital-card" class="nav-item">
-            <span class="nav-icon">🪪</span>
-            <span>Gói tập</span>
-        </NavLink>
-        <NavLink href="/pt-booking" class="nav-item">
-            <span class="nav-icon">🏋️</span>
-            <span>Đặt PT</span>
-        </NavLink>
-        <NavLink href="/pt/schedule" class="nav-item">
-            <span class="nav-icon">🧑‍🏫</span>
-            <span>PT</span>
-        </NavLink>
-        <NavLink href="/inbody" class="nav-item">
-            <span class="nav-icon">📊</span>
-            <span>InBody</span>
-        </NavLink>
-        <NavLink href="/profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span>Tôi</span>
-        </NavLink>
-    </nav>
+    @if (IsPtArea)
+    {
+        <!-- Bottom Navigation for PT Portal -->
+        <nav class="bottom-nav" aria-label="Điều hướng Huấn luyện viên">
+            <NavLink href="/pt" class="nav-item" Match="NavLinkMatch.All">
+                <span class="nav-icon">🏠</span>
+                <span>Trang chủ</span>
+            </NavLink>
+            <NavLink href="/pt/schedule" class="nav-item">
+                <span class="nav-icon">📅</span>
+                <span>Lịch dạy</span>
+            </NavLink>
+            <NavLink href="/pt/students" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Học viên</span>
+            </NavLink>
+            <NavLink href="/pt/profile" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span>Hồ sơ PT</span>
+            </NavLink>
+        </nav>
+    }
+    else
+    {
+        <!-- Bottom Navigation for Member Portal -->
+        <nav class="bottom-nav" aria-label="Điều hướng chính">
+            <NavLink href="/" class="nav-item" Match="NavLinkMatch.All">
+                <span class="nav-icon">🏠</span>
+                <span>Trang chủ</span>
+            </NavLink>
+            <NavLink href="/digital-card" class="nav-item">
+                <span class="nav-icon">🪪</span>
+                <span>Gói tập</span>
+            </NavLink>
+            <NavLink href="/pt-booking" class="nav-item">
+                <span class="nav-icon">🏋️</span>
+                <span>Đặt PT</span>
+            </NavLink>
+            <NavLink href="/inbody" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>InBody</span>
+            </NavLink>
+            <NavLink href="/profile" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span>Tôi</span>
+            </NavLink>
+        </nav>
+    }
 </div>
 
 <div id="blazor-error-ui">
@@ -54,3 +93,30 @@
     <a href="" class="reload">Tải lại</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool IsPtArea
+    {
+        get
+        {
+            var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+            return relativePath.Equals("pt", StringComparison.OrdinalIgnoreCase) ||
+                   relativePath.StartsWith("pt/", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

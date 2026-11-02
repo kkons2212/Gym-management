@@ -32,9 +32,10 @@
                 <NavigationViewItem Content="Tổng quan" Tag="Dashboard" Icon="Home" />
                 <NavigationViewItem Content="Hội viên &amp; Gói tập" Tag="Members" Icon="Contact" />
                 <NavigationViewItem Content="Quầy Điểm danh" Tag="CheckIn" Icon="Scan" />
+                <NavigationViewItem Content="Quản lý Huấn luyện viên" Tag="Trainers" Icon="People" />
                 <NavigationViewItem Content="Điều phối &amp; Lịch PT" Tag="PtSchedule" Icon="Calendar" />
                 <NavigationViewItem Content="Thu ngân &amp; Hóa đơn" Tag="Billing" Icon="Shop" />
-                <NavigationViewItem Content="Cài đặt &amp; Gói tập" Tag="Settings" Icon="Setting" />
+                <NavigationViewItem Content="Quản lý danh mục gói tập" Tag="Settings" Icon="Setting" />
                 <NavigationViewItem Content="Báo cáo &amp; Thống kê" Tag="Reports" Icon="Document" />
             </NavigationView.MenuItems>
 

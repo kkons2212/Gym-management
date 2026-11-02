@@ -12,43 +12,9 @@
         <StackPanel Spacing="24">
             <!-- Header -->
             <StackPanel Spacing="4">
-                <TextBlock Text="Cấu Hình Hệ Thống &amp; Danh Mục Gói Tập" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
-                <TextBlock Text="Quản lý các gói tập phòng gym và tham số vận hành chung (UC07)" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Quản lý danh mục gói tập" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
+                <TextBlock Text="Quản lý các gói tập phòng gym (UC07)" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
-
-            <!-- Operational Parameters Section -->
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
-                <StackPanel Spacing="16">
-                    <TextBlock Text="THAM SỐ VẬN HÀNH CHUNG" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
-
-                    <Grid ColumnSpacing="16" RowSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="Giờ mở cửa" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBox Text="{x:Bind ViewModel.OpeningTime, Mode=TwoWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Spacing="4">
-                            <TextBlock Text="Giờ đóng cửa" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBox Text="{x:Bind ViewModel.ClosingTime, Mode=TwoWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Spacing="4">
-                            <TextBlock Text="Hủy lịch PT tối thiểu (giờ)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <NumberBox Value="{x:Bind ViewModel.MinCancellationHours, Mode=TwoWay}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Button Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Left" Command="{x:Bind ViewModel.SaveConfigCommand}">
-                        <TextBlock Text="Lưu Tham Số Vận Hành" />
-                    </Button>
-                </StackPanel>
-            </Border>
 
             <!-- Packages Catalog Section -->
             <StackPanel Spacing="12">

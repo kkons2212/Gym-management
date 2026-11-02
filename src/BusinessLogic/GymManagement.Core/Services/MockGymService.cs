@@ -32,9 +32,11 @@ public class MockGymService :
 
     private readonly List<PtProfileDto> _trainers =
     [
-        new("PT-01", "Nguyễn Quốc Bảo", "0903 456 789", "bao.nguyen@gymhouse.vn", "Gym & Tăng cơ chuyên sâu", 5, 4.9m, 48, null, true),
-        new("PT-02", "Trần Thu Trang", "0907 111 222", "trang.tran@gymhouse.vn", "Giảm cân & Định hình vóc dáng", 4, 4.8m, 35, null, true),
-        new("PT-03", "Lê Thanh Tùng", "0908 123 456", "tung.le@gymhouse.vn", "Boxing & Cardio thể lực", 6, 5.0m, 62, null, true)
+        new("PT-01", "Nguyễn Quốc Bảo", "0903 456 789", "bao.nguyen@gymhouse.vn", "Gym", 5, 4.9m, 48, null, true, new DateOnly(1993, 4, 15), "Nam", 18500000m, 2, 2),
+        new("PT-02", "Trần Thu Trang", "0907 111 222", "trang.tran@gymhouse.vn", "Yoga", 4, 4.8m, 35, null, true, new DateOnly(1996, 8, 22), "Nữ", 16000000m, 1, 0),
+        new("PT-03", "Lê Thanh Tùng", "0908 123 456", "tung.le@gymhouse.vn", "Boxing", 6, 5.0m, 62, null, true, new DateOnly(1991, 1, 10), "Nam", 21000000m, 1, 0),
+        new("PT-04", "Hoàng Hải Yến", "0912 345 678", "haiyen.hoang@gymhouse.vn", "Yoga", 3, 4.7m, 24, null, true, new DateOnly(1997, 11, 3), "Nữ", 14500000m, 0, 0),
+        new("PT-05", "Vũ Đình Trọng", "0934 567 890", "trong.vu@gymhouse.vn", "Gym", 2, 4.2m, 10, null, false, new DateOnly(1998, 6, 18), "Nam", 12000000m, 0, 0)
     ];
 
     private readonly List<CheckInRecordDto> _checkInLogs =
@@ -114,17 +116,53 @@ public class MockGymService :
     // Check-in
     public Task<CheckInRecordDto> CheckInWithQrAsync(string qrCode)
     {
-        var record = new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], "CARD-0248", "MB-0248", "Nguyễn Minh Anh", "Premium", DateTime.Now, true, null, "Ca Sáng");
+        var cleanQr = qrCode.Trim();
+        var member = _members.FirstOrDefault(m => 
+            cleanQr.Contains(m.MemberCode, StringComparison.OrdinalIgnoreCase) ||
+            cleanQr.Contains(m.Phone.Replace(" ", "")) ||
+            cleanQr.Contains(m.Phone));
+
+        if (member == null && cleanQr.StartsWith("MB-", StringComparison.OrdinalIgnoreCase))
+        {
+            member = _members.FirstOrDefault(m => m.MemberCode.Equals(cleanQr, StringComparison.OrdinalIgnoreCase));
+        }
+
+        bool isSuccess = member != null && member.Status == MemberStatus.Active;
+        string? reason = member == null 
+            ? "Mã QR không khớp hội viên nào" 
+            : member.Status != MemberStatus.Active 
+                ? $"Gói tập ở trạng thái {member.Status}" 
+                : null;
+
+        var record = member != null
+            ? new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], $"CARD-{member.MemberCode}", member.MemberCode, member.FullName, member.ActivePackageName ?? "Gym", DateTime.Now, isSuccess, reason, "Ca Sáng")
+            : new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], "CARD-UNKNOWN", cleanQr, "Khách quét QR", "Chưa rõ", DateTime.Now, false, reason, "Ca Sáng");
+
         _checkInLogs.Insert(0, record);
         return Task.FromResult(record);
     }
 
     public Task<CheckInRecordDto> ManualCheckInAsync(string phoneOrMemberCode)
     {
-        var member = _members.FirstOrDefault(m => m.Phone == phoneOrMemberCode || m.MemberCode == phoneOrMemberCode);
+        var clean = phoneOrMemberCode.Trim();
+        var cleanNoSpace = clean.Replace(" ", "");
+        var member = _members.FirstOrDefault(m => 
+            m.Phone.Replace(" ", "") == cleanNoSpace || 
+            m.Phone.Equals(clean, StringComparison.OrdinalIgnoreCase) ||
+            m.MemberCode.Equals(clean, StringComparison.OrdinalIgnoreCase) ||
+            clean.Contains(m.MemberCode, StringComparison.OrdinalIgnoreCase));
+
+        bool isSuccess = member != null && member.Status == MemberStatus.Active;
+        string? reason = member == null 
+            ? "Không tìm thấy thông tin hội viên" 
+            : member.Status != MemberStatus.Active 
+                ? $"Gói tập ở trạng thái {member.Status}" 
+                : null;
+
         var record = member != null 
-            ? new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], "CARD-MOCK", member.MemberCode, member.FullName, member.ActivePackageName ?? "Gym", DateTime.Now, true, null, "Ca Sáng")
-            : new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], "CARD-ERR", phoneOrMemberCode, "Khách lạ", "Không rõ", DateTime.Now, false, "Không tìm thấy thông tin hội viên", "Ca Sáng");
+            ? new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], $"CARD-{member.MemberCode}", member.MemberCode, member.FullName, member.ActivePackageName ?? "Gym", DateTime.Now, isSuccess, reason, "Ca Sáng")
+            : new CheckInRecordDto($"CK-{Guid.NewGuid():N}"[..8], "CARD-ERR", phoneOrMemberCode, "Khách lạ", "Không rõ", DateTime.Now, false, reason, "Ca Sáng");
+
         _checkInLogs.Insert(0, record);
         return Task.FromResult(record);
     }
@@ -135,7 +173,24 @@ public class MockGymService :
     }
 
     // PT
-    public Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync() => Task.FromResult<IReadOnlyList<PtProfileDto>>(_trainers);
+    public Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync()
+    {
+        var result = _trainers.Select(t =>
+        {
+            int studentsCount = _ptAssignments.TryGetValue(t.PtId, out var students) ? students.Count : 0;
+            int pendingSessionsCount = _sessions.Count(s => s.PtId == t.PtId && s.Status == BookingStatus.Confirmed);
+            return t with { ActiveStudentsCount = studentsCount, PendingSessionsCount = pendingSessionsCount };
+        }).ToList();
+        return Task.FromResult<IReadOnlyList<PtProfileDto>>(result);
+    }
+
+    public Task<PtProfileDto?> GetAssignedPtForMemberAsync(string memberCode)
+    {
+        var pair = _ptAssignments.FirstOrDefault(kvp => kvp.Value.Contains(memberCode));
+        var ptId = !string.IsNullOrEmpty(pair.Key) ? pair.Key : "PT-01";
+        var pt = _trainers.FirstOrDefault(t => t.PtId == ptId) ?? _trainers.FirstOrDefault();
+        return Task.FromResult(pt);
+    }
 
     public Task<IReadOnlyList<PtSessionDto>> GetPtScheduleAsync(string? ptId, DateTime startDate, DateTime endDate)
     {
@@ -147,19 +202,55 @@ public class MockGymService :
 
     public Task<IReadOnlyList<PtSessionDto>> GetMemberSessionsAsync(string memberCode)
     {
-        var result = _sessions.Where(s => s.MemberCode == memberCode).ToList();
+        var result = _sessions.Where(s => s.MemberCode == memberCode).OrderBy(s => s.StartTime).ToList();
         return Task.FromResult<IReadOnlyList<PtSessionDto>>(result);
     }
 
-    public Task<bool> BookSessionAsync(string memberCode, string ptId, DateTime startTime, DateTime endTime)
+    public Task<bool> BookSessionAsync(string memberCode, string ptId, DateTime startTime, DateTime endTime, string? note = null)
     {
         var pt = _trainers.FirstOrDefault(t => t.PtId == ptId);
         var member = _members.FirstOrDefault(m => m.MemberCode == memberCode);
-        _sessions.Add(new PtSessionDto($"BK-{Guid.NewGuid():N}"[..6], ptId, pt?.FullName ?? "PT", memberCode, member?.FullName ?? "Hội viên", startTime, endTime, BookingStatus.Confirmed, null, null, null));
+        _sessions.Add(new PtSessionDto($"BK-{Guid.NewGuid():N}"[..6], ptId, pt?.FullName ?? "PT", memberCode, member?.FullName ?? "Hội viên", startTime, endTime, BookingStatus.Confirmed, note, null, null));
+
+        var memberIndex = _members.FindIndex(m => m.MemberCode == memberCode);
+        if (memberIndex >= 0 && _members[memberIndex].RemainingPtSessions > 0)
+        {
+            _members[memberIndex] = _members[memberIndex] with
+            {
+                RemainingPtSessions = _members[memberIndex].RemainingPtSessions - 1
+            };
+        }
+
         return Task.FromResult(true);
     }
 
-    public Task<bool> CancelOrRescheduleSessionAsync(string bookingId, DateTime? newTime, string reason) => Task.FromResult(true);
+    public Task<bool> CancelOrRescheduleSessionAsync(string bookingId, DateTime? newTime, string reason)
+    {
+        var session = _sessions.FirstOrDefault(s => s.BookingId == bookingId);
+        if (session != null)
+        {
+            var index = _sessions.IndexOf(session);
+            if (newTime.HasValue)
+            {
+                var duration = session.EndTime - session.StartTime;
+                _sessions[index] = session with { StartTime = newTime.Value, EndTime = newTime.Value + duration, Note = reason };
+            }
+            else
+            {
+                _sessions[index] = session with { Status = BookingStatus.Cancelled, Note = reason };
+                var memberIndex = _members.FindIndex(m => m.MemberCode == session.MemberCode);
+                if (memberIndex >= 0)
+                {
+                    _members[memberIndex] = _members[memberIndex] with
+                    {
+                        RemainingPtSessions = _members[memberIndex].RemainingPtSessions + 1
+                    };
+                }
+            }
+            return Task.FromResult(true);
+        }
+        return Task.FromResult(false);
+    }
 
     public Task<bool> CompleteSessionAsync(string bookingId)
     {
@@ -270,6 +361,51 @@ public class MockGymService :
     /// </summary>
     private static bool IsSlotRegisteredByDefault(DateOnly date, int hour)
         => (date.DayNumber * 31 + hour * 17) % 5 is 0 or 1;
+
+    // UC04.1 – Quản trị hồ sơ và chuyên môn PT
+    public Task<bool> SaveTrainerAsync(PtProfileDto trainer)
+    {
+        var index = _trainers.FindIndex(t => t.PtId == trainer.PtId);
+        if (index >= 0)
+        {
+            _trainers[index] = trainer;
+        }
+        else
+        {
+            var newId = string.IsNullOrWhiteSpace(trainer.PtId) ? $"PT-{_trainers.Count + 1:D2}" : trainer.PtId;
+            _trainers.Add(trainer with { PtId = newId });
+        }
+        return Task.FromResult(true);
+    }
+
+    public Task<(bool CanDeactivate, string? Message, int ActiveStudents, int PendingSessions)> CheckDeactivationEligibilityAsync(string ptId)
+    {
+        int studentsCount = _ptAssignments.TryGetValue(ptId, out var students) ? students.Count : 0;
+        int pendingSessionsCount = _sessions.Count(s => s.PtId == ptId && s.Status == BookingStatus.Confirmed);
+
+        if (studentsCount > 0 || pendingSessionsCount > 0)
+        {
+            return Task.FromResult<(bool CanDeactivate, string? Message, int ActiveStudents, int PendingSessions)>((
+                false, 
+                "PT đang có lịch dạy chưa hoàn thành hoặc đang phụ trách hội viên", 
+                studentsCount, 
+                pendingSessionsCount
+            ));
+        }
+
+        return Task.FromResult<(bool CanDeactivate, string? Message, int ActiveStudents, int PendingSessions)>((true, null, 0, 0));
+    }
+
+    public Task<bool> SetTrainerStatusAsync(string ptId, bool isActive)
+    {
+        var index = _trainers.FindIndex(t => t.PtId == ptId);
+        if (index >= 0)
+        {
+            _trainers[index] = _trainers[index] with { IsActive = isActive };
+            return Task.FromResult(true);
+        }
+        return Task.FromResult(false);
+    }
 
     // Billing
     public Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(DateTime? fromDate = null, DateTime? toDate = null) => Task.FromResult<IReadOnlyList<InvoiceDto>>(_invoices);
