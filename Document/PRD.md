@@ -1,4 +1,4 @@
-# TÀI LIỆU YÊU CẦU SẢN PHẨM (PRD) & PRODUCT BACKLOG
+﻿# TÀI LIỆU YÊU CẦU SẢN PHẨM (PRD) & PRODUCT BACKLOG
 # HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
 
 <p align="center">
@@ -78,7 +78,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Thiết kế màn hình đăng nhập chuẩn Responsive trên Desktop và Web, lưu trữ session token.
   * *(Business Logic):* Viết hàm `LoginAsync` trong `IAuthService`, xác thực mã băm BCrypt, sinh JWT Token.
-  * *(Data Access):* Truy vấn bảng `USERS`, kiểm tra trạng thái `status == 'ACTIVE'`, ghi nhận vào `LOGIN_AUDIT_LOG`.
+  * *(Data Access):* Truy vấn bảng `[User]`, kiểm tra trạng thái `status == 'ACTIVE'`, ghi nhận vào `CheckInLog / Log`.
 
 ---
 
@@ -94,7 +94,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình danh sách nhân sự kèm Form Modal tạo tài khoản.
   * *(Business Logic):* Validate định dạng dữ liệu, băm mật khẩu, gán Role claims trong `ISystemSettingService`.
-  * *(Data Access):* Insert bảng `USERS` và bảng liên kết `USER_ROLES`.
+  * *(Data Access):* Insert bảng `[User]` và bảng liên kết `USER_Role`.
 
 #### ● User Story 07.2: Cập nhật thông tin tài khoản và điều chỉnh phân quyền (Tương ứng UC 7.1.2)
 * **Mô tả:** Là Super Admin, tôi cần cập nhật thông tin và điều chỉnh lại vai trò/quyền hạn truy cập của nhân viên.
@@ -105,7 +105,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện chỉnh sửa quyền tài khoản có kiểm tra tài khoản phiên hiện tại.
   * *(Business Logic):* Kiểm tra logic ID đang đăng nhập khác ID cần sửa quyền quản trị.
-  * *(Data Access):* Update bảng `USERS` và `USER_ROLES`.
+  * *(Data Access):* Update bảng `[User]` và `USER_Role`.
 
 #### ● User Story 07.3: Khóa hoặc Mở khóa tài khoản nhân viên (Tương ứng UC 7.1.3)
 * **Mô tả:** Là Super Admin, tôi cần khóa quyền truy cập của tài khoản vi phạm hoặc mở khóa khi nhân sự làm việc lại.
@@ -117,7 +117,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Switch toggle hoặc nút hành động Khóa/Mở khóa có cảnh báo xác nhận.
   * *(Business Logic):* Xử lý chuyển đổi cờ `Status` (`ACTIVE` / `LOCKED`) và vô hiệu hóa JWT Token tương ứng.
-  * *(Data Access):* Cập nhật cột `status` trong bảng `USERS`, ghi vết vào `AUDIT_LOGS`.
+  * *(Data Access):* Cập nhật cột `status` trong bảng `[User]`, ghi vết vào `Log`.
 
 #### ● User Story 07.4: Thêm mới gói tập vào danh mục kinh doanh (Tương ứng UC 7.2.1)
 * **Mô tả:** Là Super Admin, tôi cần tạo mới gói tập vào hệ thống để bắt đầu mở bán cho khách hàng.
@@ -128,7 +128,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Biểu mẫu tạo gói tập có kiểm tra trường số dương và bắt buộc.
   * *(Business Logic):* Hàm `SavePackageAsync` trong `ISystemSettingService`, kiểm tra nghiệp vụ và định dạng.
-  * *(Data Access):* Insert bảng `PACKAGES` với `is_active = true`.
+  * *(Data Access):* Insert bảng `PackagePlan` với `is_active = true`.
 
 #### ● User Story 07.5: Chỉnh sửa thông tin gói tập (Tương ứng UC 7.2.2)
 * **Mô tả:** Là Super Admin, tôi cần chỉnh sửa thông số giá bán, thời hạn hoặc quyền lợi của gói tập hiện có.
@@ -139,7 +139,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form cập nhật gói tập hiển thị thông tin hiện tại.
   * *(Business Logic):* Xử lý cập nhật thông số và đồng bộ danh mục.
-  * *(Data Access):* Update bản ghi trong bảng `PACKAGES`.
+  * *(Data Access):* Update bản ghi trong bảng `PackagePlan`.
 
 #### ● User Story 07.6: Xóa hoặc Chuyển trạng thái ngừng kinh doanh gói tập (Tương ứng UC 7.2.3)
 * **Mô tả:** Là Super Admin, tôi cần xóa gói tập khỏi hệ thống hoặc ngừng kinh doanh khi không còn áp dụng.
@@ -149,8 +149,8 @@ graph TD
   * Nếu gói tập đã có hội viên đăng ký hoặc phát sinh hóa đơn: Từ chối xóa vật lý, hiển thị thông báo lỗi và gợi ý chuyển trạng thái sang `DISCONTINUED` (Ngừng kinh doanh) để bảo toàn quyền lợi của hội viên hiện tại.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Nút hành động Xóa kèm popup thông báo lỗi ràng buộc dữ liệu.
-  * *(Business Logic):* Kiểm tra khóa ngoại bảng `MEMBERSHIP_CARDS` và `INVOICE_DETAILS` trước khi thực thi lệnh xóa.
-  * *(Data Access):* Delete hoặc Update `is_active = false` trong bảng `PACKAGES`.
+  * *(Business Logic):* Kiểm tra khóa ngoại bảng `[User]ubscription` và `Invoice` trước khi thực thi lệnh xóa.
+  * *(Data Access):* Delete hoặc Update `is_active = false` trong bảng `PackagePlan`.
 
 ---
 
@@ -169,7 +169,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Wizard biểu mẫu đăng ký 2 bước (Thông tin cá nhân $\rightarrow$ Gói tập & Thu tiền).
   * *(Business Logic):* Transaction kích hoạt: Tạo Member $\rightarrow$ Tạo Thẻ tập $\rightarrow$ Tạo Hóa đơn $\rightarrow$ Tạo QR string.
-  * *(Data Access):* Lưu vào bảng `MEMBERS`, `MEMBERSHIP_CARDS`, `INVOICES` trong cùng một Database Transaction.
+  * *(Data Access):* Lưu vào bảng `[User]`, `[User]ubscription`, `Invoice` trong cùng một Database Transaction.
 
 #### ● User Story 02.2: Cập nhật thông tin cá nhân hội viên (Tương ứng UC 02.2)
 * **Mô tả:** Là Admin, tôi cần tìm kiếm hội viên theo từ khóa (SĐT, Họ tên, Mã thẻ) và cập nhật thông tin liên hệ khi có thay đổi.
@@ -181,7 +181,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Thanh tìm kiếm nhanh và Form Popup cập nhật thông tin hội viên.
   * *(Business Logic):* Validate thông tin cập nhật, gọi `UpdateMemberProfileAsync`.
-  * *(Data Access):* Update bảng `MEMBERS`, ghi vết thay đổi vào `AUDIT_LOGS`.
+  * *(Data Access):* Update bảng `[User]`, ghi vết thay đổi vào `Log`.
 
 #### ● User Story 02.3: Gia hạn hoặc Nâng cấp gói tập cho hội viên (Tương ứng UC 02.3)
 * **Mô tả:** Là Admin / Lễ tân, tôi cần gia hạn thêm thời gian hoặc đổi gói tập lên hạng cao hơn cho hội viên.
@@ -193,7 +193,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Popup "Gia hạn / Nâng cấp" hiển thị thẻ hiện tại và bảng tính tiền chênh lệch tự động.
   * *(Business Logic):* Tính toán ngày hết hạn mới dựa trên trạng thái thẻ hiện tại, tạo hóa đơn thu tiền.
-  * *(Data Access):* Cập nhật `MEMBERSHIP_CARDS` và thêm bản ghi vào `MEMBERSHIP_HISTORY`.
+  * *(Data Access):* Cập nhật `[User]ubscription` và thêm bản ghi vào `[User]ubscription`.
 
 #### ● User Story 02.4: Bảo lưu gói tập cho hội viên (Tương ứng UC 02.4)
 * **Mô tả:** Là Admin / Lễ tân, tôi cần tạm dừng hiệu lực gói tập của hội viên trong một khoảng thời gian nhất định theo quy chế.
@@ -205,7 +205,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form đăng ký bảo lưu thẻ kèm bộ chọn khoảng ngày (Date Range Picker).
   * *(Business Logic):* Hàm `FreezeCardAsync` kiểm tra chính sách gói và tính toán dời ngày hết hạn `end_date`.
-  * *(Data Access):* Cập nhật trạng thái trong `MEMBERSHIP_CARDS` và lưu vào `CARD_FREEZE_LOGS`.
+  * *(Data Access):* Cập nhật trạng thái trong `[User]ubscription` và lưu vào `[User]ubscription`.
 
 #### ● User Story 02.5: Hủy đăng ký gói tập của hội viên (Tương ứng UC 02.5)
 * **Mô tả:** Là Admin, tôi cần chấm dứt hiệu lực gói tập của hội viên khi có vi phạm hoặc theo yêu cầu đặc biệt.
@@ -217,7 +217,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Modal cảnh báo hủy gói màu cam/đỏ kèm ô nhập lý do bắt buộc.
   * *(Business Logic):* Hàm `LockOrCancelCardAsync` chuyển trạng thái thẻ, vô hiệu hóa quyền check-in.
-  * *(Data Access):* Cập nhật trạng thái thẻ trong `MEMBERSHIP_CARDS` và ghi nhật ký vào `AUDIT_LOGS`.
+  * *(Data Access):* Cập nhật trạng thái thẻ trong `[User]ubscription` và ghi nhật ký vào `Log`.
 
 ---
 
@@ -233,7 +233,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện quầy thu ngân POS: chọn dịch vụ, tính tiền thối, hiển thị QR thanh toán động.
   * *(Business Logic):* Tích hợp thư viện sinh chuỗi VietQR chuẩn, xử lý kích hoạt dịch vụ sau thanh toán.
-  * *(Data Access):* Lưu bản ghi vào bảng `INVOICES` và `INVOICE_DETAILS`.
+  * *(Data Access):* Lưu bản ghi vào bảng `Invoice` và `Invoice`.
 
 #### ● User Story 05.2: Tra cứu, in lại và xuất hóa đơn điện tử (Tương ứng UC 5.2)
 * **Mô tả:** Là Thu ngân / Admin, tôi cần tìm kiếm lịch sử hóa đơn để in phiếu thu nhiệt hoặc xuất file PDF khi khách hàng yêu cầu đối soát.
@@ -256,7 +256,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form xử lý hoàn tiền có bước đối soát số tiền và lý do.
   * *(Business Logic):* Transaction hoàn tiền: Đổi trạng thái Hóa đơn $\rightarrow$ Thu hồi thẻ/dịch vụ $\rightarrow$ Ghi giảm trừ doanh thu.
-  * *(Data Access):* Cập nhật `INVOICES` và lưu bản ghi vào `REFUND_LOGS`.
+  * *(Data Access):* Cập nhật `Invoice` và lưu bản ghi vào `Invoice`.
 
 #### ● User Story 05.4: Xem và xuất báo cáo doanh thu tài chính (Tương ứng UC 5.4)
 * **Mô tả:** Là Admin, tôi cần xem biểu đồ thống kê doanh thu theo mốc thời gian và xuất báo cáo ra file Excel/PDF để đối soát kế toán.
@@ -268,7 +268,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Tab báo cáo doanh thu trên module thanh toán kèm biểu đồ trực quan.
   * *(Business Logic):* Tính toán tổng hợp số liệu doanh thu thực thu (Thu - Hoàn), xuất tệp Excel/PDF.
-  * *(Data Access):* Truy vấn tổng hợp dữ liệu từ `INVOICES` và `REFUND_LOGS`.
+  * *(Data Access):* Truy vấn tổng hợp dữ liệu từ `Invoice` và `Invoice`.
 
 ---
 
@@ -287,7 +287,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình "Quản lý Check-in" tích hợp thư viện đọc Camera Scanner, tự động kích hoạt chế độ chờ quét.
   * *(Business Logic):* Hàm `CheckInWithQrAsync` xử lý kiểm tra đa điều kiện và trừ buổi trong 1 Transaction duy nhất.
-  * *(Data Access):* Lưu bản ghi vào `CHECKIN_LOGS` và cập nhật `remaining_sessions` trong `MEMBERSHIP_CARDS`.
+  * *(Data Access):* Lưu bản ghi vào `CheckInLog` và cập nhật `remaining_sessions` trong `[User]ubscription`.
 
 #### ● User Story 03.2: Điểm danh thủ công qua Số điện thoại / Mã hội viên (Tương ứng UC 3.2)
 * **Mô tả:** Là Lễ tân, tôi cần nhập SĐT hoặc Mã hội viên thủ công khi khách quên điện thoại hoặc máy hết pin để hỗ trợ vào phòng tập.
@@ -299,7 +299,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Khung nhập SĐT nhanh và Card hiển thị tóm tắt thông tin hội viên kèm ảnh chân dung.
   * *(Business Logic):* Hàm `ManualCheckInAsync` trong `ICheckInService`.
-  * *(Data Access):* Truy vấn tìm kiếm theo `phone` trên bảng `MEMBERS` (được đánh Unique Index).
+  * *(Data Access):* Truy vấn tìm kiếm theo `phone` trên bảng `[User]` (được đánh Unique Index).
 
 #### ● User Story 03.3: Tra cứu và giám sát lịch sử ra/vào phòng tập (Tương ứng UC 3.3)
 * **Mô tả:** Là Lễ tân / Quản lý ca, tôi cần xem danh sách các lượt điểm danh trong ngày theo ca để nắm bắt lưu lượng phòng tập.
@@ -311,7 +311,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Bảng dữ liệu lịch sử check-in thời gian thực kèm huy hiệu màu phân biệt trạng thái.
   * *(Business Logic):* Hàm `GetTodayCheckInLogsAsync` hỗ trợ lọc theo ca trực và từ khóa.
-  * *(Data Access):* Truy vấn bảng `CHECKIN_LOGS` theo mốc ngày hiện tại.
+  * *(Data Access):* Truy vấn bảng `CheckInLog` theo mốc ngày hiện tại.
 
 ---
 
@@ -356,7 +356,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form nhập hồ sơ chuyên môn PT có upload ảnh đại diện.
   * *(Business Logic):* Hàm `SaveTrainerAsync` trong `IPtService`.
-  * *(Data Access):* Insert bảng `PT_PROFILES` và liên kết với tài khoản `USERS`.
+  * *(Data Access):* Insert bảng `[User]` và liên kết với tài khoản `[User]`.
 
 #### ● User Story 04.2: Tra cứu lịch làm việc và tình trạng ca dạy của PT (Tương ứng UC 4.2)
 * **Mô tả:** Là Admin, tôi cần tra cứu lịch làm việc của từng PT theo các tiêu chí để nắm bắt lịch trình và hỗ trợ điều phối.
@@ -367,7 +367,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình tra cứu lịch PT với bộ lọc thời gian và màu sắc phân biệt trạng thái ca.
   * *(Business Logic):* Hàm `GetPtScheduleAsync` trả về danh sách `PtSessionDto`.
-  * *(Data Access):* View kết nối giữa `PT_PROFILES`, `PT_AVAILABILITY` và `SESSION_BOOKINGS`.
+  * *(Data Access):* View kết nối giữa `[User]`, `PTAvailability` và `PTTrainingSession`.
 
 #### ● User Story 04.3: Cập nhật thông tin chuyên môn và trạng thái PT (Tương ứng UC 4.3)
 * **Mô tả:** Là Admin, tôi cần chỉnh sửa thông tin chuyên môn hoặc chuyển trạng thái hoạt động của PT.
@@ -378,7 +378,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form chỉnh sửa hồ sơ PT kèm cảnh báo ràng buộc ca dạy tồn đọng.
   * *(Business Logic):* Hàm `CheckDeactivationEligibilityAsync` kiểm tra điều kiện học viên và ca dạy còn hiệu lực.
-  * *(Data Access):* Update bảng `PT_PROFILES`.
+  * *(Data Access):* Update bảng `[User]`.
 
 #### ● User Story 04.4: Phân công PT phụ trách cố định cho Hội viên (Tương ứng UC 4.4)
 * **Mô tả:** Là Admin, tôi cần gán cố định một huấn luyện viên phụ trách cho hội viên vừa mua gói tập PT để hội viên có thể xem lịch và đặt ca tập.
@@ -390,7 +390,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện phân công PT nhanh dạng danh sách đối chiếu.
   * *(Business Logic):* Kiểm tra định mức học viên và gán quan hệ PT - Học viên trong `IPtService`.
-  * *(Data Access):* Lưu vào bảng `PT_ASSIGNMENTS` và cập nhật trường `assigned_pt_id` trong thẻ tập.
+  * *(Data Access):* Lưu vào bảng `[User]ubscription` và cập nhật trường `assigned_pt_id` trong thẻ tập.
 
 #### ● User Story 04.5: Rà soát và xác nhận kết quả ca tập phía Admin (Tương ứng UC 4.5)
 * **Mô tả:** Là Admin, tôi cần rà soát, xác nhận thay hoặc điều chỉnh kết quả ca tập (Hoàn thành / Hội viên vắng / PT vắng / Hoãn) đối với các ca tập phát sinh ngoại lệ hoặc PT chưa bấm xác nhận.
@@ -403,7 +403,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện rà soát ca tập ngoại lệ trong ngày kèm các nút hành động xử lý nhanh.
   * *(Business Logic):* Hàm `CompleteSessionAsync` hoặc điều chỉnh trạng thái ca trong Transaction.
-  * *(Data Access):* Cập nhật `SESSION_BOOKINGS` và điều chỉnh `remaining_sessions` trong `MEMBERSHIP_CARDS`.
+  * *(Data Access):* Cập nhật `PTTrainingSession` và điều chỉnh `remaining_sessions` trong `[User]ubscription`.
 
 #### ● User Story 04.6: Xếp lịch làm việc theo ca tuần/tháng cho PT (Tương ứng UC 4.6)
 * **Mô tả:** Là Admin, tôi cần thiết lập hoặc điều chỉnh lịch làm việc (các ca dạy khả dụng) cho PT theo tuần/tháng để mở khung giờ cho học viên đặt lịch.
@@ -415,7 +415,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện Lịch trực quan (Calendar View) theo tuần/tháng, phân biệt trạng thái bằng màu sắc.
   * *(Business Logic):* Thuật toán kiểm tra chống xung đột lịch dạy (Overlapping Check) khi lưu lịch.
-  * *(Data Access):* Insert/Update bảng `PT_AVAILABILITY`.
+  * *(Data Access):* Insert/Update bảng `PTAvailability`.
 
 ---
 
@@ -430,7 +430,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Lưới chọn slot giờ rảnh trên ứng dụng Web/Mobile hỗ trợ chọn nhanh nhiều slot.
   * *(Business Logic):* Hàm `SavePtSlotsAsync` trong `IPtService` kiểm tra ràng buộc ca đã đặt.
-  * *(Data Access):* Lưu vào bảng `PT_AVAILABILITY` với trạng thái `AVAILABLE`.
+  * *(Data Access):* Lưu vào bảng `PTAvailability` với trạng thái `AVAILABLE`.
 
 #### ● User Story 08.2: PT xem thời khóa biểu lịch dạy theo tuần (Tương ứng UC 8.1.2)
 * **Mô tả:** Là Huấn luyện viên (PT), tôi cần xem chi tiết thời khóa biểu các ca dạy trong tuần của mình trên điện thoại để chủ động sắp xếp thời gian làm việc.
@@ -441,7 +441,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện thời khóa biểu cá nhân của PT chuẩn Responsive.
   * *(Business Logic):* Hàm `GetPtScheduleAsync` lọc theo `ptId` đang đăng nhập.
-  * *(Data Access):* Truy vấn bảng `SESSION_BOOKINGS`.
+  * *(Data Access):* Truy vấn bảng `PTTrainingSession`.
 
 #### ● User Story 08.3: PT xem danh sách và theo dõi học viên phụ trách (Tương ứng UC 8.2.1)
 * **Mô tả:** Là Huấn luyện viên (PT), tôi cần xem danh sách tất cả học viên do mình trực tiếp phụ trách, kèm số buổi tập còn lại và lịch sử tập luyện.
@@ -452,7 +452,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình danh sách học viên dạng thẻ (Cards) trên điện thoại.
   * *(Business Logic):* Hàm `GetPtStudentsAsync` trong `IPtService`.
-  * *(Data Access):* Truy vấn bảng `PT_ASSIGNMENTS` kết hợp `MEMBERS` và `MEMBERSHIP_CARDS`.
+  * *(Data Access):* Truy vấn bảng `[User]ubscription` kết hợp `[User]` và `[User]ubscription`.
 
 #### ● User Story 08.4: PT ghi chú tiến độ và cập nhật chỉ số InBody (Tương ứng UC 8.2.2)
 * **Mô tả:** Là Huấn luyện viên (PT), tôi cần nhập các chỉ số thể hình định kỳ (InBody) và ghi chú bài tập cho học viên sau ca tập.
@@ -463,7 +463,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form nhập chỉ số InBody nhanh trên Mobile và biểu đồ tiến độ thể hình.
   * *(Business Logic):* Hàm `RecordInBodyAsync` trong `IPtService`.
-  * *(Data Access):* Insert bảng `INBODY_LOGS`.
+  * *(Data Access):* Insert bảng `MemberBodyMetric`.
 
 #### ● User Story 08.5: PT xác nhận hoàn thành ca tập trực tiếp trên thiết bị (Tương ứng UC 8.2.3)
 * **Mô tả:** Là Huấn luyện viên (PT), tôi cần bấm xác nhận hoàn tất ca dạy ngay trên điện thoại sau khi buổi tập kết thúc để hệ thống tự động trừ buổi tập của học viên.
@@ -475,7 +475,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Nút bấm xác nhận nhanh kèm thông báo trạng thái tức thì.
   * *(Business Logic):* Hàm `CompleteSessionAsync` kiểm tra thời gian diễn ra và thực hiện transaction trừ buổi.
-  * *(Data Access):* Update `SESSION_BOOKINGS` và trừ `remaining_sessions` trong `MEMBERSHIP_CARDS`.
+  * *(Data Access):* Update `PTTrainingSession` và trừ `remaining_sessions` trong `[User]ubscription`.
 
 ---
 
@@ -491,8 +491,8 @@ graph TD
   * Cho phép chỉnh sửa SĐT, Email, Địa chỉ và cập nhật ảnh đại diện; kiểm tra tính hợp lệ dữ liệu.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình "Hồ sơ cá nhân" trên Blazor Web/Mobile có form cập nhật dữ liệu.
-  * *(Business Logic):* Hàm `UpdateMemberProfileAsync` trong `IMemberService`.
-  * *(Data Access):* Update thông tin vào bảng `MEMBERS`.
+  * *(Business Logic):* Hàm `UpdateMemberProfileAsync` trong `I[User]ervice`.
+  * *(Data Access):* Update thông tin vào bảng `[User]`.
 
 #### ● User Story 09.2: Hội viên tra cứu lịch sử tập luyện và điểm danh (Tương ứng UC 9.2)
 * **Mô tả:** Là Hội viên (Member), tôi cần xem lại toàn bộ lịch sử điểm danh check-in và các ca tập PT đã hoàn thành để theo dõi sự chuyên cần của bản thân.
@@ -502,8 +502,8 @@ graph TD
   * Hiển thị danh sách lịch sử gồm: Ngày tập, Giờ check-in vào phòng, Tên PT phụ trách (nếu có ca PT), Loại buổi tập và Trạng thái tham gia.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện dòng thời gian (Timeline) lịch sử tập luyện trên Cổng hội viên.
-  * *(Business Logic):* Tổng hợp lịch sử check-in và lịch sử ca tập trong `IMemberService`.
-  * *(Data Access):* Truy vấn kết hợp bảng `CHECKIN_LOGS` và `SESSION_BOOKINGS`.
+  * *(Business Logic):* Tổng hợp lịch sử check-in và lịch sử ca tập trong `I[User]ervice`.
+  * *(Data Access):* Truy vấn kết hợp bảng `CheckInLog` và `PTTrainingSession`.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình "Đặt lịch PT" 3 bước trực quan: Chọn ngày $\rightarrow$ Chọn khung giờ trống $\rightarrow$ Xác nhận.
   * *(Business Logic):* Hàm `BookSessionAsync` trong `IPtService` kiểm tra số buổi khả dụng và chống trùng lịch.
-  * *(Data Access):* Insert bản ghi mới vào `SESSION_BOOKINGS` trạng thái `CONFIRMED`.
+  * *(Data Access):* Insert bản ghi mới vào `PTTrainingSession` trạng thái `CONFIRMED`.
 
 #### ● User Story 10.2: Hội viên hủy lịch tập hẹn trước (Tương ứng UC 10.2)
 * **Mô tả:** Là Hội viên (Member), tôi cần hủy lịch tập đã đặt khi có việc đột xuất theo đúng chính sách thời gian của phòng gym.
@@ -532,7 +532,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Popup xác nhận hủy lịch kèm hiển thị cảnh báo phạt vi phạm chính sách thời gian.
   * *(Business Logic):* Hàm `CancelOrRescheduleSessionAsync` tính toán khoảng cách thời gian so với giờ bắt đầu ca.
-  * *(Data Access):* Update trạng thái `CANCELLED` trong `SESSION_BOOKINGS` và điều chỉnh lại số buổi tập nếu hợp lệ.
+  * *(Data Access):* Update trạng thái `CANCELLED` trong `PTTrainingSession` và điều chỉnh lại số buổi tập nếu hợp lệ.
 
 #### ● User Story 10.3: Hội viên đánh giá chất lượng ca tập sau khi hoàn tất (Tương ứng UC 10.3)
 * **Mô tả:** Là Hội viên (Member), tôi cần chấm điểm sao (1–5 sao) và để lại nhận xét sau khi ca tập hoàn thành để phản ánh chất lượng giảng dạy của PT.
@@ -544,7 +544,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Component chấm điểm sao (Star Rating) và form nhận xét trên ứng dụng di động.
   * *(Business Logic):* Hàm `SubmitRatingAsync` trong `IPtService`, cập nhật `RatingAverage` và `ReviewCount`.
-  * *(Data Access):* Lưu vào bảng `PT_REVIEWS` và cập nhật trường thống kê trong `PT_PROFILES`.
+  * *(Data Access):* Lưu vào bảng `PTTrainingSession` và cập nhật trường thống kê trong `[User]`.
 
 #### ● User Story 10.4: Hội viên đổi lịch tập sang ca trống khác của cùng PT (Tương ứng UC 10.4)
 * **Mô tả:** Là Hội viên (Member), tôi cần đổi ca tập đã đặt sang một khung giờ trống khác của chính PT phụ trách mà không phải hủy lịch.
@@ -556,50 +556,50 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form đổi lịch hiển thị so sánh ca cũ và chọn ca mới trên lưới thời gian.
   * *(Business Logic):* Hàm `CancelOrRescheduleSessionAsync` thực hiện chuyển đổi khung giờ trong cùng 1 Transaction.
-  * *(Data Access):* Update `SESSION_BOOKINGS` sang thời gian mới và cập nhật lại trạng thái các slot trong `PT_AVAILABILITY`.
+  * *(Data Access):* Update `PTTrainingSession` sang thời gian mới và cập nhật lại trạng thái các slot trong `PTAvailability`.
 
 ---
 
 # PHẦN III: MA TRẬN TRUY VẾT YÊU CẦU (REQUIREMENTS TRACEABILITY MATRIX - RTM)
 
-Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Phân hệ Use Case Cấp cao**, **37 Use Cases Chi tiết**, **User Stories Backlog** và **Kiến trúc 3 Lớp**:
+Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Phân hệ Use Case Cấp cao**, **37 Use Cases Chi tiết**, **User Stories Backlog** và **Kiến trúc 3 Lớp (với 9 bảng CSDL vật lý chuẩn)**:
 
-| Phân hệ Cấp cao | Mã Use Case Chi Tiết | Tên Use Case Chi Tiết | Mã User Story | Tầng Presentation | Tầng Business Logic (Core) | Tầng Data Access (DAL) |
+| Phân hệ Cấp cao | Mã Use Case Chi Tiết | Tên Use Case Chi Tiết | Mã User Story | Tầng Presentation | Tầng Business Logic (Core) | Tầng Data Access (DAL / 9 Bảng) |
 | :--- | :---: | :--- | :---: | :--- | :--- | :--- |
-| **UC01: Đăng nhập & Xác thực** | **UC01** | Đăng nhập | US 01.1 | Login View (Desktop & Web) | `IAuthService` | `USERS`, `LOGIN_AUDIT_LOG` |
-| **UC02: Quản lý Hội viên & Gói tập** | **UC02.1** | Đăng ký hội viên mới cùng gói tập | US 02.1 | Member Registration Wizard | `IMemberService`, `IBillingService` | `MEMBERS`, `MEMBERSHIP_CARDS`, `INVOICES` |
-| | **UC02.2** | Cập nhật thông tin hội viên | US 02.2 | Member Profile Form | `IMemberService` | `MEMBERS`, `AUDIT_LOGS` |
-| | **UC02.3** | Gia hạn / Nâng cấp gói tập | US 02.3 | Renew/Upgrade Modal | `IMemberService`, `IBillingService` | `MEMBERSHIP_CARDS`, `MEMBERSHIP_HISTORY` |
-| | **UC02.4** | Bảo lưu gói tập | US 02.4 | Freeze Card Modal | `IMemberService` | `MEMBERSHIP_CARDS`, `CARD_FREEZE_LOGS` |
-| | **UC02.5** | Hủy đăng ký gói tập | US 02.5 | Cancel Card Modal | `IMemberService` | `MEMBERSHIP_CARDS`, `AUDIT_LOGS` |
-| **UC03: Điểm danh Check-in** | **UC 3.1** | Quét mã QR | US 03.1 | Camera QR Scanner View | `ICheckInService` | `CHECKIN_LOGS`, `MEMBERSHIP_CARDS` |
-| | **UC 3.2** | Nhập mã hội viên thủ công | US 03.2 | Manual Check-in Input View | `ICheckInService` | `MEMBERS`, `CHECKIN_LOGS` |
-| | **UC 3.3** | Tra cứu lịch sử ra/vào | US 03.3 | Access Logs Table & Filters | `ICheckInService` | `CHECKIN_LOGS` |
-| **UC04: Quản lý PT & Ca dạy** | **UC 4.1** | Thêm PT mới | US 04.1 | Trainer Create Form | `IPtService` | `PT_PROFILES`, `USERS` |
-| | **UC 4.2** | Tra cứu lịch dạy | US 04.2 | PT Schedule View | `IPtService` | `SESSION_BOOKINGS`, `PT_AVAILABILITY` |
-| | **UC 4.3** | Cập nhật thông tin PT | US 04.3 | Trainer Edit Form | `IPtService` | `PT_PROFILES` |
-| | **UC 4.4** | Phân công cho PT | US 04.4 | PT Assignment View | `IPtService` | `PT_ASSIGNMENTS`, `MEMBERSHIP_CARDS` |
-| | **UC 4.5** | Xác nhận kết quả buổi tập | US 04.5 | Session Attendance Modal | `IPtService` | `SESSION_BOOKINGS`, `MEMBERSHIP_CARDS` |
-| | **UC 4.6** | Xếp lịch dạy | US 04.6 | Weekly Calendar Dispatcher | `IPtService` | `PT_AVAILABILITY` |
-| **UC05: Quản lý Thanh toán & Hóa đơn** | **UC 5.1** | Lập hóa đơn và Thu tiền | US 05.1 | POS Billing Counter View | `IBillingService` | `INVOICES`, `INVOICE_DETAILS` |
-| | **UC 5.2** | Tra cứu và in lại hóa đơn | US 05.2 | Invoice History & PDF View | `IBillingService` | `INVOICES` |
-| | **UC 5.3** | Xử lý Hủy / Hoàn tiền hóa đơn | US 05.3 | Refund Process Modal | `IBillingService`, `IMemberService` | `INVOICES`, `REFUND_LOGS` |
-| | **UC 5.4** | Xem và xuất báo cáo doanh thu | US 05.4 | Financial Revenue Tab | `IBillingService`, `IReportService` | `INVOICES`, `REFUND_LOGS` |
-| **UC06: Báo cáo & Thống kê** | **UC06** | Xem báo cáo và thống kê (BI & Export) | US 06.1, US 06.2 | BI Analytics Dashboard | `IReportService` | Views/Stored Procedures, Buffer Stream |
-| **UC07: Quản Lý Tài Khoản & Danh mục Gói Tập** | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | US 07.1 | Staff Account Create Modal | `ISystemSettingService` | `USERS`, `USER_ROLES` |
-| | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | US 07.2 | Staff Account Edit Modal | `ISystemSettingService` | `USERS`, `USER_ROLES` |
-| | **UC 7.1.3** | Khóa / Mở khóa tài khoản | US 07.3 | Account Lock Toggle Modal | `ISystemSettingService` | `USERS`, `AUDIT_LOGS` |
-| | **UC 7.2.1** | Thêm gói tập | US 07.4 | Package Create Form | `ISystemSettingService` | `PACKAGES` |
-| | **UC 7.2.2** | Sửa gói tập | US 07.5 | Package Edit Form | `ISystemSettingService` | `PACKAGES` |
-| | **UC 7.2.3** | Xóa gói tập | US 07.6 | Package Delete/Discontinue View | `ISystemSettingService` | `PACKAGES`, `MEMBERSHIP_CARDS` |
-| **UC08: Cổng tác nghiệp PT** | **UC 8.1.1** | Đăng ký lịch rảnh | US 08.1 | PT Availability Grid | `IPtService` | `PT_AVAILABILITY` |
-| | **UC 8.1.2** | Xem lịch dạy theo tuần | US 08.2 | PT Weekly Calendar View | `IPtService` | `SESSION_BOOKINGS` |
-| | **UC 8.2.1** | Xem danh sách học viên | US 08.3 | PT Students List View | `IPtService` | `PT_ASSIGNMENTS`, `MEMBERS` |
-| | **UC 8.2.2** | Ghi chú tiến độ / Chỉ số (InBody) | US 08.4 | InBody Progress Entry Form | `IPtService` | `INBODY_LOGS` |
-| | **UC 8.2.3** | Xác nhận hoàn thành ca tập | US 08.5 | PT Quick Session Complete Action | `IPtService` | `SESSION_BOOKINGS`, `MEMBERSHIP_CARDS` |
-| **UC09: Cổng cá nhân Hội viên** | **UC 9.1** | Quản lý thông tin cá nhân | US 09.1 | Member Profile View | `IMemberService` | `MEMBERS` |
-| | **UC 9.2** | Xem lịch sử tập luyện | US 09.2 | Member Workout History Timeline | `IMemberService` | `CHECKIN_LOGS`, `SESSION_BOOKINGS` |
-| **UC10: Đặt lịch PT & Đánh giá** | **UC 10.1** | Đặt lịch tập | US 10.1 | PT Booking Step-by-Step View | `IPtService` | `SESSION_BOOKINGS`, `PT_AVAILABILITY` |
-| | **UC 10.2** | Hủy lịch tập | US 10.2 | Booking Cancellation Modal | `IPtService` | `SESSION_BOOKINGS`, `MEMBERSHIP_CARDS` |
-| | **UC 10.3** | Đánh giá | US 10.3 | Star Rating & Feedback Form | `IPtService` | `PT_REVIEWS`, `PT_PROFILES` |
-| | **UC 10.4** | Đổi lịch tập | US 10.4 | Booking Reschedule View | `IPtService` | `SESSION_BOOKINGS`, `PT_AVAILABILITY` |
+| **UC01: Đăng nhập & Xác thực** | **UC01** | Đăng nhập | US 01.1 | Login View (Desktop & Web) | `IAuthService` | `[User]`, `Role` |
+| **UC02: Quản lý Hội viên & Gói tập** | **UC02.1** | Đăng ký hội viên mới cùng gói tập | US 02.1 | Member Registration Wizard | `IMemberService`, `IBillingService` | `[User]`, `MemberSubscription`, `Invoice` |
+| | **UC02.2** | Cập nhật thông tin hội viên | US 02.2 | Member Profile Form | `IMemberService` | `[User]` |
+| | **UC02.3** | Gia hạn / Nâng cấp gói tập | US 02.3 | Renew/Upgrade Modal | `IMemberService`, `IBillingService` | `MemberSubscription`, `Invoice` |
+| | **UC02.4** | Bảo lưu gói tập | US 02.4 | Freeze Card Modal | `IMemberService` | `MemberSubscription` |
+| | **UC02.5** | Hủy đăng ký gói tập | US 02.5 | Cancel Card Modal | `IMemberService` | `MemberSubscription` |
+| **UC03: Điểm danh Check-in** | **UC 3.1** | Quét mã QR | US 03.1 | Camera QR Scanner View | `ICheckInService` | `CheckInLog`, `MemberSubscription` |
+| | **UC 3.2** | Nhập mã hội viên thủ công | US 03.2 | Manual Check-in Input View | `ICheckInService` | `[User]`, `CheckInLog`, `MemberSubscription` |
+| | **UC 3.3** | Tra cứu lịch sử ra/vào | US 03.3 | Access Logs Table & Filters | `ICheckInService` | `CheckInLog` |
+| **UC04: Quản lý PT & Ca dạy** | **UC 4.1** | Thêm PT mới | US 04.1 | Trainer Create Form | `IPtService` | `[User]`, `Role` |
+| | **UC 4.2** | Tra cứu lịch dạy | US 04.2 | PT Schedule View | `IPtService` | `PTTrainingSession`, `PTAvailability` |
+| | **UC 4.3** | Cập nhật thông tin PT | US 04.3 | Trainer Edit Form | `IPtService` | `[User]` |
+| | **UC 4.4** | Phân công cho PT | US 04.4 | PT Assignment View | `IPtService` | `MemberSubscription` |
+| | **UC 4.5** | Xác nhận kết quả buổi tập | US 04.5 | Session Attendance Modal | `IPtService` | `PTTrainingSession`, `MemberSubscription` |
+| | **UC 4.6** | Xếp lịch dạy | US 04.6 | Weekly Calendar Dispatcher | `IPtService` | `PTAvailability` |
+| **UC05: Quản lý Thanh toán & Hóa đơn** | **UC 5.1** | Lập hóa đơn và Thu tiền | US 05.1 | POS Billing Counter View | `IBillingService` | `Invoice` |
+| | **UC 5.2** | Tra cứu và in lại hóa đơn | US 05.2 | Invoice History & PDF View | `IBillingService` | `Invoice` |
+| | **UC 5.3** | Xử lý Hủy / Hoàn tiền hóa đơn | US 05.3 | Refund Process Modal | `IBillingService`, `IMemberService` | `Invoice`, `MemberSubscription` |
+| | **UC 5.4** | Xem và xuất báo cáo doanh thu | US 05.4 | Financial Revenue Tab | `IBillingService`, `IReportService` | `Invoice` |
+| **UC06: Báo cáo & Thống kê** | **UC06** | Xem báo cáo và thống kê (BI & Export) | US 06.1, US 06.2 | BI Analytics Dashboard | `IReportService` | Views / Aggregate Queries |
+| **UC07: Quản Lý Tài Khoản & Danh mục Gói Tập** | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | US 07.1 | Staff Account Create Modal | `ISystemSettingService` | `[User]`, `Role` |
+| | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | US 07.2 | Staff Account Edit Modal | `ISystemSettingService` | `[User]`, `Role` |
+| | **UC 7.1.3** | Khóa / Mở khóa tài khoản | US 07.3 | Account Lock Toggle Modal | `ISystemSettingService` | `[User]` |
+| | **UC 7.2.1** | Thêm gói tập | US 07.4 | Package Create Form | `ISystemSettingService` | `PackagePlan` |
+| | **UC 7.2.2** | Sửa gói tập | US 07.5 | Package Edit Form | `ISystemSettingService` | `PackagePlan` |
+| | **UC 7.2.3** | Xóa gói tập | US 07.6 | Package Delete/Discontinue View | `ISystemSettingService` | `PackagePlan`, `MemberSubscription` |
+| **UC08: Cổng tác nghiệp PT** | **UC 8.1.1** | Đăng ký lịch rảnh | US 08.1 | PT Availability Grid | `IPtService` | `PTAvailability` |
+| | **UC 8.1.2** | Xem lịch dạy theo tuần | US 08.2 | PT Weekly Calendar View | `IPtService` | `PTTrainingSession` |
+| | **UC 8.2.1** | Xem danh sách học viên | US 08.3 | PT Students List View | `IPtService` | `[User]`, `MemberSubscription` |
+| | **UC 8.2.2** | Ghi chú tiến độ / Chỉ số (InBody) | US 08.4 | InBody Progress Entry Form | `IPtService` | `MemberBodyMetric` |
+| | **UC 8.2.3** | Xác nhận hoàn thành ca tập | US 08.5 | PT Quick Session Complete Action | `IPtService` | `PTTrainingSession`, `MemberSubscription` |
+| **UC09: Cổng cá nhân Hội viên** | **UC 9.1** | Quản lý thông tin cá nhân | US 09.1 | Member Profile View | `IMemberService` | `[User]` |
+| | **UC 9.2** | Xem lịch sử tập luyện | US 09.2 | Member Workout History Timeline | `IMemberService` | `CheckInLog`, `PTTrainingSession` |
+| **UC10: Đặt lịch PT & Đánh giá** | **UC 10.1** | Đặt lịch tập | US 10.1 | PT Booking Step-by-Step View | `IPtService` | `PTTrainingSession`, `PTAvailability` |
+| | **UC 10.2** | Hủy lịch tập | US 10.2 | Booking Cancellation Modal | `IPtService` | `PTTrainingSession`, `MemberSubscription` |
+| | **UC 10.3** | Đánh giá | US 10.3 | Star Rating & Feedback Form | `IPtService` | `PTTrainingSession` |
+| | **UC 10.4** | Đổi lịch tập | US 10.4 | Booking Reschedule View | `IPtService` | `PTTrainingSession`, `PTAvailability` |
