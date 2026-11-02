@@ -10,7 +10,7 @@ Hệ thống được thiết kế theo chuẩn **Kiến trúc 3 Lớp (3-Tier A
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │ TẦNG 1: PRESENTATION LAYER (Giao diện & Cổng Điều hướng)                        │
-│  ├── 1.1 Desktop Admin Client (WinUI 3): Lễ tân, Thu ngân, Admin                │
+│  ├── 1.1 Desktop Admin Client (WinUI 3): Admin (Vận hành & Quản trị)            │
 │  ├── 1.2 Member & PT Portal (Blazor Server): Cổng Hội viên & Huấn luyện viên     │
 │  └── 1.3 API Gateway / Controller: Tiếp nhận HTTP/JSON, phân quyền JWT Claims   │
 └────────────────────────────────────────┬────────────────────────────────────────┘
@@ -40,8 +40,8 @@ Hệ thống được thiết kế theo chuẩn **Kiến trúc 3 Lớp (3-Tier A
 
 ### 2.1. Tầng 1: Presentation Layer (Giao diện người dùng)
 * **1.1 Desktop Admin Client (`GymManagement.Desktop` - WinUI 3):**
-  * Dành riêng cho nhân sự vận hành tại quầy: Admin, Lễ tân, Thu ngân.
-  * Đảm nhiệm các tác vụ nặng: Quản lý hồ sơ hội viên, quét webcam QR check-in tốc độ cao, lập hóa đơn thu ngân POS, xếp lịch trực quan cho PT, xem Dashboard báo cáo quản trị.
+  * Dành cho Quản trị viên (Admin) đảm nhiệm toàn bộ công tác vận hành tại quầy lẫn quản trị cơ sở.
+  * Đảm nhiệm toàn diện: Tiếp nhận hội viên mới, quét webcam QR check-in tốc độ cao, lập hóa đơn thu tiền POS, xử lý gia hạn/bảo lưu thẻ, xếp lịch trực quan cho PT, cấu hình hệ thống và xem Dashboard báo cáo quản trị.
 * **1.2 Member & PT Portal (`GymManagement.Web` - Blazor Server):**
   * Cổng tác nghiệp trực tuyến chuẩn Responsive dành cho Hội viên và Huấn luyện viên.
   * Phía Hội viên: Thẻ tập số (mã QR check-in cá nhân), đặt/đổi/hủy lịch tập PT, theo dõi chỉ số thể hình InBody, đánh giá chất lượng ca dạy (1–5 sao).
@@ -145,7 +145,7 @@ graph TD
 ```
 
 1. **Luồng Thanh toán & Kích hoạt Thẻ tập (UC02 + UC05):**
-   * Thu ngân xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo thẻ tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin thẻ cho khách hàng.
+   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo thẻ tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin thẻ cho khách hàng.
 2. **Luồng Điểm danh Check-in Vào phòng (UC03):**
    * Quét QR hoặc nhập SĐT $\rightarrow$ `CheckInModule` tiếp nhận $\rightarrow$ gọi `MemberModule` tra cứu bảng `MemberSubscription` để kiểm tra điều kiện (thẻ `ACTIVE`, không bị `FROZEN` hay `LOCKED`, còn hạn và số buổi) $\rightarrow$ gọi `ConfigModule` đối soát khung giờ mở cửa $\rightarrow$ nếu hợp lệ, tự động trừ 1 buổi tập (với gói theo lượt) và ghi bản ghi vào bảng `CheckInLog`.
 3. **Luồng Đặt, Đổi, Hủy & Hoàn tất Ca dạy PT (UC04 + UC08 + UC10):**
@@ -182,7 +182,7 @@ Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuâ
 
 ### Quy tắc 4: Phân quyền & Kiểm tra Bảo mật Chặt chẽ (RBAC Enforcement)
 * Mỗi API Endpoint hoặc Service Method phải kiểm tra vai trò người gọi dựa trên JWT Claims:
-  * `Admin / Super Admin`: Có toàn quyền quản trị cấu hình, phân công PT, xử lý hóa đơn và hoàn tiền.
+  * `Admin / Super Admin`: Có toàn quyền quản trị cấu hình, phân công PT, tiếp nhận hội viên, quét điểm danh check-in, lập hóa đơn POS và xử lý hoàn tiền.
   * `PT`: Chỉ có quyền thao tác trên lịch dạy của chính mình, học viên do mình phụ trách và nhập chỉ số InBody.
   * `Member`: Chỉ có quyền xem thông tin cá nhân của bản thân, xem thẻ tập cá nhân và đặt lịch với PT đã được phân công cố định.
 
