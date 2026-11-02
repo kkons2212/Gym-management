@@ -1,7 +1,7 @@
 # Hệ Thống Quản Lý Phòng Tập Thể Thao (Gym Management System)
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/ed4d18a3-9994-4d0e-8752-2a8a88a752eb" alt="Sơ đồ Use Case Tổng Quát" style="max-width: 100%; height: auto;" />
+  <img width="2655" height="3200" alt="image" src="https://github.com/user-attachments/assets/0864437d-f1b3-478b-8126-b3a33dd9daa9" />
 </p>
 
 ---
