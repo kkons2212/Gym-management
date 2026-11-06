@@ -1,4 +1,4 @@
-# QUY TẮC PHÁT TRIỂN & TÀI LIỆU KIẾN TRÚC 3 LỚP (PRE-DEV RULES)
+# QUY TẮC PHÁT TRIỂN & TÀI LIỆU KIẾN TRÚC HỆ THỐNG (PRE-DEV RULES)
 # HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
 
 ---
@@ -36,9 +36,130 @@ Hệ thống được thiết kế theo chuẩn **Kiến trúc 3 Lớp (3-Tier A
 
 ---
 
-## 2. PHÂN BỐ MODULE THEO TỪNG TẦNG KIẾN TRÚC
+## 2. BIỂU ĐỒ CONTAINER THEO MÔ HÌNH C4 (LEVEL 2: C4 CONTAINER DIAGRAM)
 
-### 2.1. Tầng 1: Presentation Layer (Giao diện người dùng)
+Biểu đồ Container (Mức 2 trong mô hình C4 của Simon Brown) mô tả bức tranh kiến trúc tổng thể ở mức độ công nghệ: các khối phần mềm (Containers) độc lập có thể triển khai/chạy riêng biệt, ranh giới phần mềm (System Boundary), các tác nhân người dùng (Persons), và các hệ thống bên ngoài (External Systems) cùng giao thức kết nối giữa chúng.
+
+### 2.1. Mục đích (Intent)
+* Phóng to (Zoom-in) ranh giới của Hệ thống Quản lý Phòng tập thể thao để làm rõ các khối ứng dụng (Desktop, Web, API) và kho lưu trữ (Database).
+* Xác định rõ vai trò kỹ thuật, môi trường thực thi, công nghệ sử dụng và giao thức truyền thông (HTTPS, JSON, EF Core/TCP, SMTP).
+* Cung cấp góc nhìn kiến trúc chuẩn cho cả nhóm kỹ sư phát triển phần mềm (Software Engineers) lẫn nhóm vận hành hạ tầng (DevOps).
+
+### 2.2. Sơ đồ Container (Container Diagram)
+
+```mermaid
+flowchart TB
+    %% Users / Actors
+    subgraph Users ["Nhóm Người Dùng (Actors / Persons)"]
+        direction LR
+        Admin["<b>Quản trị viên / Lễ tân / Thu ngân</b><br><i>[Person]</i><br>Nhân viên vận hành: Tiếp nhận hội viên, quét check-in, lập hóa đơn, xếp lịch PT, xem báo cáo BI"]
+        PT["<b>Huấn luyện viên (PT)</b><br><i>[Person]</i><br>Nhân sự chuyên môn: Đăng ký lịch rảnh, xem học viên phụ trách, nhập InBody, xác nhận ca dạy"]
+        Member["<b>Hội viên (Member)</b><br><i>[Person]</i><br>Khách hàng: Tra cứu gói tập, mã QR điểm danh, đặt/đổi/hủy lịch PT, đánh giá sao"]
+    end
+
+    %% Software System Boundary
+    subgraph GymSystem ["Hệ thống Quản lý Phòng tập (Gym Management System) [Software System Boundary]"]
+        DesktopApp["<b>Desktop Application</b><br><i>[Container: C# .NET 8, WinUI 3 / Windows App SDK]</i><br>Ứng dụng quản trị Desktop: Quản lý hội viên, POS quầy, quét webcam QR check-in, điều phối lịch PT, báo cáo doanh thu"]
+        WebApp["<b>Member & PT Portal</b><br><i>[Container: C# .NET 8, Blazor Server]</i><br>Cổng tác nghiệp Web/Mobile: Thẻ tập số QR, đặt/hủy lịch hẹn PT, theo dõi InBody, đánh giá sao, PT quản lý lịch rảnh"]
+        ApiApp["<b>API Application / Core Backend</b><br><i>[Container: C# .NET 8, ASP.NET Core Web API]</i><br>Cung cấp toàn bộ nghiệp vụ tập trung (Auth, Member, CheckIn, PT, Billing, BI, Config) qua JSON/HTTPS"]
+        Database[("<b>Database Persistence</b><br><i>[Container: Microsoft SQL Server]</i><br>Lưu trữ 9 bảng dữ liệu quan hệ: Role, [User], PackagePlan, PTAvailability, PTTrainingSession, MemberSubscription, CheckInLog, Invoice, MemberBodyMetric")]
+    end
+
+    %% External Systems
+    subgraph ExternalSystems ["Hệ Thống Ngoại Vi (External Systems)"]
+        VietQR["<b>VietQR / Payment Gateway</b><br><i>[Software System]</i><br>Hệ thống thanh toán tự động: Sinh mã QR động chuẩn NAPAS để khách chuyển khoản ngân hàng"]
+        EmailSystem["<b>E-mail & SMS Notification System</b><br><i>[Software System]</i><br>Hệ thống thông báo: Gửi Email chào mừng, biên lai điện tử và SMS nhắc lịch tập"]
+        CameraScanner["<b>Webcam / Barcode Hardware Scanner</b><br><i>[External Hardware/Driver]</i><br>Thiết bị quang học/webcam đọc chuỗi mã QR điểm danh tốc độ cao tại quầy lễ tân"]
+    end
+
+    %% Interactions between Users and Containers
+    Admin -->|"Thao tác quản trị trên máy trạm quầy [Desktop GUI]"| DesktopApp
+    PT -->|"Đăng ký lịch rảnh, xem học viên qua [HTTPS]"| WebApp
+    Member -->|"Xem thẻ số QR, đặt lịch tập qua [HTTPS]"| WebApp
+
+    %% Interactions inside Containers
+    DesktopApp -->|"Gọi dịch vụ / API nghiệp vụ [JSON/HTTPS]"| ApiApp
+    WebApp -->|"Gọi dịch vụ / API nghiệp vụ [JSON/HTTPS]"| ApiApp
+    DesktopApp -->|"Đọc luồng video webcam quét QR [DirectShow / MediaCapture]"| CameraScanner
+
+    %% Interactions with Database and External Systems
+    ApiApp -->|"Đọc và ghi dữ liệu [EF Core / TCP Port 1433]"| Database
+    ApiApp -->|"Tạo mã QR thanh toán động [HTTPS / REST API]"| VietQR
+    ApiApp -->|"Gửi email hóa đơn, kích hoạt, thông báo [SMTP / HTTPS]"| EmailSystem
+
+    %% External notifications back to users
+    EmailSystem -.->|"Gửi email chào mừng, hóa đơn, xác nhận [SMTP]"| Member
+    EmailSystem -.->|"Gửi thông báo ca tập mới, hủy ca, xếp lịch [SMTP]"| PT
+
+    %% Styling to mimic C4 standards
+    classDef person fill:#08427b,stroke:#073b6f,color:#fff;
+    classDef container fill:#1168bd,stroke:#0b4884,color:#fff;
+    classDef database fill:#1168bd,stroke:#0b4884,color:#fff;
+    classDef external fill:#777777,stroke:#555555,color:#fff;
+    classDef systemBoundary fill:none,stroke:#444444,stroke-width:2px,stroke-dasharray: 6 6;
+    classDef groupBoundary fill:none,stroke:none;
+
+    class Admin,PT,Member person;
+    class DesktopApp,WebApp,ApiApp container;
+    class Database database;
+    class VietQR,EmailSystem,CameraScanner external;
+    class GymSystem systemBoundary;
+    class Users,ExternalSystems groupBoundary;
+```
+
+---
+
+### 2.3. Bảng Đặc Tả Thành Phần (Elements Description)
+
+| Loại Phần Tử | Tên Phần Tử (Element) | Công Nghệ / Môi Trường | Mô Tả Trách Nhiệm Chi Tiết |
+| :--- | :--- | :--- | :--- |
+| **Person** | **Admin / Lễ tân / Thu ngân** | Người dùng vận hành | Nhân viên phòng gym thực hiện tiếp đón, đăng ký hội viên mới, quét check-in vào phòng, thu tiền hóa đơn POS, phân công/xếp ca PT và xem báo cáo tài chính. |
+| **Person** | **Huấn luyện viên (PT)** | Người dùng chuyên môn | Nhân viên trực tiếp giảng dạy: Đăng ký ca rảnh theo tuần, xem học viên được phân công, cập nhật chỉ số InBody và bấm xác nhận hoàn tất ca dạy. |
+| **Person** | **Hội viên (Member)** | Khách hàng tập luyện | Khách hàng sử dụng ứng dụng di động để xuất trình thẻ số QR, đặt lịch hẹn với PT phụ trách cố định, đổi/hủy ca tập và chấm điểm sao dịch vụ. |
+| **Container** | **Desktop Application** | C# .NET 8, WinUI 3 (Windows App SDK) | Ứng dụng Desktop chạy trực tiếp trên máy tính Windows tại quầy lễ tân: Tối ưu cho thao tác nghiệp vụ liên tục, hỗ trợ phím tắt, in nhiệt hóa đơn K80 và kết nối webcam quét QR cục bộ. |
+| **Container** | **Member & PT Portal** | C# .NET 8, Blazor Server | Ứng dụng Web chuẩn Responsive (chạy tốt trên trình duyệt máy tính, máy tính bảng và điện thoại di động): Cho phép Hội viên và PT truy cập mọi lúc mọi nơi mà không cần cài đặt qua Store. |
+| **Container** | **API Application / Core Backend** | C# .NET 8, ASP.NET Core Web API | Bộ não xử lý nghiệp vụ trung tâm: Cung cấp API RESTful (JSON/HTTPS), điều phối xác thực JWT, phân quyền RBAC, kiểm tra xung đột lịch dạy, quy tắc phạt thời gian và quản lý giao dịch. |
+| **Container** | **Database** | Microsoft SQL Server (Relational DB) | Hệ quản trị cơ sở dữ liệu quan hệ lưu trữ **chính xác 9 bảng**: `Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`. |
+| **External** | **VietQR / Payment Gateway** | Web API (NAPAS 247) | Dịch vụ ngân hàng bên ngoài hỗ trợ sinh chuỗi VietQR động chứa sẵn số tài khoản, số tiền và nội dung chuyển khoản để thanh toán tức thì tại quầy. |
+| **External** | **E-mail & SMS System** | SMTP / SendGrid / Twilio API | Hệ thống gửi thư và tin nhắn tự động: Bắn thông báo kích hoạt tài khoản, hóa đơn điện tử cho Hội viên; thông báo ca tập mới hoặc hủy ca cho PT. |
+| **External** | **Camera / Barcode Scanner** | Phần cứng USB/Webcam + DirectShow Driver | Thiết bị thu nhận hình ảnh quang học giúp giải mã mã vạch/mã QR điểm danh của hội viên theo thời gian thực (< 1 giây). |
+
+---
+
+### 2.4. Luồng Tương Tác & Giao Thức Truyền Thông (Interactions & Protocols)
+
+1. **Client $\rightarrow$ API Application:**
+   * Giao thức: `HTTPS / RESTful API (JSON Payload)`.
+   * Xác thực & Phân quyền: Cấp phát JWT Bearer Token tại endpoint `/api/v1/auth/login`. Mọi request tiếp theo đều gửi kèm header `Authorization: Bearer <token>`, tầng Middleware kiểm tra Claims (`Admin`, `PT`, `Member`) trước khi thực thi.
+2. **API Application $\rightarrow$ Database:**
+   * Giao thức: `TDS (Tabular Data Stream) qua TCP Port 1433`.
+   * ORM: Entity Framework Core 8.0, truy xuất theo Repository Pattern & Unit of Work, đảm bảo transaction ACID trên 9 bảng vật lý.
+3. **Desktop App $\rightarrow$ Hardware Camera:**
+   * Giao thức: `Windows.Media.Capture` / `DirectShow API` cục bộ đọc frame video thời gian thực từ webcam để thư viện ZXing giải mã chuỗi định danh.
+4. **API Application $\rightarrow$ VietQR Payment Gateway:**
+   * Giao thức: `HTTPS / JSON POST`.
+   * Truyền tham số: Ngân hàng thụ hưởng, số tiền hóa đơn, mã hóa đơn để sinh chuỗi Base64 QR code hiển thị lên màn hình POS.
+5. **API Application $\rightarrow$ Notification System:**
+   * Giao thức: `SMTP (Cổng 587 TLS)` hoặc `HTTPS REST API`.
+   * Tiến trình chạy ngầm (Background Task / Hosted Service) gửi email xác nhận và hóa đơn PDF đính kèm, không làm nghẽn luồng xử lý UI chính.
+
+---
+
+### 2.5. Động Lực Thiết Kế & Đối Tượng Sử Dụng (Motivation & Audience)
+
+* **Đối tượng độc giả (Audience):**
+  * **Lập trình viên (Developers):** Hiểu rõ ranh giới công nghệ của module mình đang phụ trách (Desktop, Blazor hay Backend API), tránh gọi tắt vượt tầng.
+  * **Kiến trúc sư hệ thống (Architects):** Dễ dàng đánh giá các điểm nghẽn hiệu năng (bottlenecks), khả năng chịu tải và khả năng mở rộng (Scalability).
+  * **Nhóm vận hành (DevOps / SysAdmin):** Nắm bắt danh mục container cần đóng gói (Docker/IIS), cấu hình port mạng (443, 1433, 587) và chuỗi kết nối an toàn.
+* **Động lực thiết kế (Motivation):**
+  * Phân tách riêng biệt giữa máy trạm Desktop quầy lễ tân (cần hiệu năng cao, in ấn trực tiếp, quét camera) và ứng dụng Web/Mobile (cần tính cơ động, đa nền tảng cho hội viên và PT).
+  * Tập trung 100% logic nghiệp vụ vào Backend API / Core Services để tránh tình trạng nhân bản code logic giữa Desktop và Web.
+
+---
+
+## 3. PHÂN BỐ MODULE THEO TỪNG TẦNG KIẾN TRÚC
+
+### 3.1. Tầng 1: Presentation Layer (Giao diện người dùng)
 * **1.1 Desktop Admin Client (`GymManagement.Desktop` - WinUI 3):**
   * Dành riêng cho nhân sự vận hành tại quầy: Admin, Lễ tân, Thu ngân.
   * Đảm nhiệm các tác vụ nặng: Quản lý hồ sơ hội viên, quét webcam QR check-in tốc độ cao, lập hóa đơn thu ngân POS, xếp lịch trực quan cho PT, xem Dashboard báo cáo quản trị.
@@ -49,7 +170,7 @@ Hệ thống được thiết kế theo chuẩn **Kiến trúc 3 Lớp (3-Tier A
 * **1.3 API Gateway / Controllers:**
   * Tiếp nhận yêu cầu HTTP/JSON từ các client, kiểm tra xác thực JWT Token, phân quyền người dùng thông qua Role Claims (`Admin`, `PT`, `Member`) trước khi chuyển tiếp vào tầng Business Logic.
 
-### 2.2. Tầng 2: Business Logic Layer (BLL / `GymManagement.Core`)
+### 3.2. Tầng 2: Business Logic Layer (BLL / `GymManagement.Core`)
 Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, kiểm tra điều kiện và ràng buộc logic:
 * **2.1 Auth & RBAC Module (`IAuthService`):**
   * Xác thực thông tin đăng nhập, đối soát mật khẩu băm (BCrypt), kiểm tra trạng thái khóa tài khoản (`LOCKED`), sinh JWT Token chứa claims vai trò (UC01).
@@ -66,7 +187,7 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
 * **2.7 System Configuration & Catalog Module (`ISystemSettingService`):**
   * Quản trị tài khoản nhân viên và phân quyền (RBAC), quản lý danh mục gói tập (thêm mới, chỉnh sửa, chuyển trạng thái ngừng kinh doanh `DISCONTINUED`), cài đặt tham số vận hành chung (UC07).
 
-### 2.3. Tầng 3: Data Access Layer (DAL / `GymManagement.Infrastructure`)
+### 3.3. Tầng 3: Data Access Layer (DAL / `GymManagement.Infrastructure`)
 * **3.1 Repositories & Unit of Work:**
   * Quản trị phiên kết nối ORM (EF Core) tới SQL Server. Áp dụng mẫu thiết kế Unit of Work để đảm bảo tính toàn vẹn giao dịch (ACID Transaction) khi một nghiệp vụ tác động lên nhiều bảng đồng thời.
 * **3.2 Database Persistence (Chuẩn hóa 9 bảng SQL Server):**
@@ -87,9 +208,9 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
 
 ---
 
-## 3. CƠ CHẾ GIAO TIẾP GIỮA CÁC MODULE
+## 4. CƠ CHẾ GIAO TIẾP GIỮA CÁC MODULE
 
-### 3.1. Giao tiếp Dọc (Vertical Flow)
+### 4.1. Giao tiếp Dọc (Vertical Flow)
 
 ```mermaid
 sequenceDiagram
@@ -117,7 +238,7 @@ sequenceDiagram
 
 ---
 
-### 3.2. Giao tiếp Ngang giữa các Module Nghiệp vụ (Inter-Module / Cross-Cutting Flow)
+### 4.2. Giao tiếp Ngang giữa các Module Nghiệp vụ (Inter-Module / Cross-Cutting Flow)
 
 Các quy trình nghiệp vụ phức tạp phối hợp giữa các module nghiệp vụ ở tầng BLL theo luồng sau:
 
@@ -163,7 +284,7 @@ graph TD
 
 ---
 
-## 4. QUY TẮC PHÁT TRIỂN BẮT BUỘC (PRE-DEVELOPMENT RULES)
+## 5. QUY TẮC PHÁT TRIỂN BẮT BUỘC (PRE-DEVELOPMENT RULES)
 
 Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuân thủ nghiêm ngặt 5 nguyên tắc kỹ thuật sau:
 
@@ -188,4 +309,3 @@ Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuâ
 
 ### Quy tắc 5: Quy chuẩn Đặt tên & Cấu trúc Mô hình CSDL Chuẩn 9 Bảng
 * Toàn bộ mã nguồn Data Access phải tuân thủ chuẩn xác 9 bảng vật lý trong `GymManagement_Physical_Model.sql`. Tuyệt đối không tự ý thêm các bảng độc lập nằm ngoài thiết kế nếu chưa được cập nhật chính thức vào mô hình DDL.
-
