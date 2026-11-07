@@ -14,7 +14,7 @@
 Hệ thống Quản lý Phòng tập Thể thao vận hành dựa trên sự phối hợp chặt chẽ giữa ba nhóm tác nhân chính:
 * **Hội viên (Member):** Khách hàng sử dụng dịch vụ tập luyện, tra cứu gói tập, chủ động đặt/đổi/hủy lịch hẹn với huấn luyện viên (PT), theo dõi tiến độ thể hình (InBody) và đánh giá chất lượng dịch vụ.
 * **Huấn luyện viên cá nhân (Personal Trainer - PT):** Nhân sự chuyên môn trực tiếp giảng dạy; chủ động đăng ký khung giờ làm việc rảnh, theo dõi lịch dạy tuần, quản lý học viên phụ trách, cập nhật chỉ số thể chất và xác nhận hoàn tất ca tập.
-* **Nhân viên vận hành & Quản trị viên (Admin / Lễ tân / Thu ngân):** Tiếp nhận khách hàng, phát hành thẻ tập, thu ngân và xuất hóa đơn, kiểm soát ra/vào phòng tập (Check-in), phân công PT, cấu hình danh mục gói tập và theo dõi báo cáo doanh thu tài chính.
+* **Nhân viên vận hành & Quản trị viên (Admin / Lễ tân / Thu ngân):** Tiếp nhận khách hàng, phát hành gói tập, thu ngân và xuất hóa đơn, kiểm soát ra/vào phòng tập (Check-in), phân công PT, cấu hình danh mục gói tập và theo dõi báo cáo doanh thu tài chính.
 
 Hệ thống được thiết kế theo **kiến trúc 3 lớp (3-Tier Architecture)**:
 1. **Presentation Layer:** Ứng dụng Desktop (WinUI 3) dành cho Admin/Lễ tân/Thu ngân và Ứng dụng Web/Mobile (Blazor Server) dành cho Hội viên và PT.
@@ -44,7 +44,7 @@ Hệ thống được thiết kế theo **kiến trúc 3 lớp (3-Tier Architect
 
 ```mermaid
 graph TD
-    B1[B1. Cấu hình Nền tảng & Tiếp nhận Hội viên<br>UC07, UC02] --> B2[B2. Thanh toán & Kích hoạt Thẻ tập<br>UC05, UC02]
+    B1[B1. Cấu hình Nền tảng & Tiếp nhận Hội viên<br>UC07, UC02] --> B2[B2. Thanh toán & Kích hoạt Gói tập<br>UC05, UC02]
     B2 --> B3[B3. Điểm danh Check-in Vào phòng<br>UC03]
     B2 --> B4[B4. Điều phối & Thực hiện Dịch vụ PT<br>UC04, UC08, UC10]
     B3 --> B5[B5. Quản trị Vòng đời Thẻ, Doanh thu & Báo cáo<br>UC02, UC05, UC06]
@@ -52,7 +52,7 @@ graph TD
 ```
 
 1. **B1: Cấu hình Nền tảng & Tiếp nhận Hội viên (UC07, UC02):** Super Admin thiết lập danh mục gói tập và tài khoản nhân sự. Khi có khách hàng, Lễ tân tiếp nhận thông tin và tạo hồ sơ hội viên mới.
-2. **B2: Thanh toán & Kích hoạt Gói dịch vụ (UC05, UC02):** Lập hóa đơn, thu tiền (Tiền mặt, VietQR, POS). Hệ thống chuyển hóa đơn sang `PAID`, kích hoạt thẻ tập `ACTIVE`, tạo mã QR định danh và gửi thông báo điện tử.
+2. **B2: Thanh toán & Kích hoạt Gói dịch vụ (UC05, UC02):** Lập hóa đơn, thu tiền (Tiền mặt, VietQR, POS). Hệ thống chuyển hóa đơn sang `PAID`, kích hoạt gói tập `ACTIVE`, tạo mã QR định danh và gửi thông báo điện tử.
 3. **B3: Tuyến Điểm danh Check-in Thường nhật (UC03):** Lễ tân quét mã QR hoặc nhập SĐT. Hệ thống kiểm tra điều kiện (trạng thái `ACTIVE`, còn hạn, còn buổi, đúng khung giờ), ghi nhận lượt check-in và trừ buổi tập theo lượt.
 4. **B4: Điều phối & Giảng dạy Dịch vụ PT (UC04, UC08, UC10):** Admin gán cố định PT phụ trách cho hội viên. PT đăng ký lịch rảnh theo tuần. Hội viên chọn ca trống của PT để đặt lịch (hoặc đổi/hủy ca). Sau buổi tập, PT cập nhật chỉ số InBody và xác nhận hoàn tất; Hội viên gửi đánh giá chất lượng (1–5 sao).
 5. **B5: Quản trị Vòng đời Thẻ, Tài chính & Báo cáo (UC02, UC05, UC06):** Xử lý ngoại lệ (gia hạn, nâng cấp, bảo lưu `FROZEN`, hủy đăng ký gói hoặc khóa thẻ); xử lý hoàn tiền hóa đơn theo quy định; trích xuất báo cáo doanh thu tài chính và hiệu suất hoạt động phòng tập.
@@ -135,7 +135,7 @@ graph TD
 * **Độ ưu tiên:** `Must have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
   * Cho phép cập nhật tên gói, đơn giá, thời hạn, quyền lợi.
-  * Các thẻ tập đã bán trước đó vẫn giữ nguyên quyền lợi và thời hạn đã cam kết; thông tin mới áp dụng cho các lượt đăng ký/gia hạn về sau.
+  * Các gói tập đã bán trước đó vẫn giữ nguyên quyền lợi và thời hạn đã cam kết; thông tin mới áp dụng cho các lượt đăng ký/gia hạn về sau.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form cập nhật gói tập hiển thị thông tin hiện tại.
   * *(Business Logic):* Xử lý cập nhật thông số và đồng bộ danh mục.
@@ -156,10 +156,10 @@ graph TD
 
 ## THEME 2: QUẢN TRỊ HỘI VIÊN, VÒNG ĐỜI THẺ & TÀI CHÍNH
 
-### Epic 03: Quản lý Hội viên & Vòng đời Thẻ tập (Tương ứng UC02)
+### Epic 03: Quản lý Hội viên & Vòng đời Gói tập (Tương ứng UC02)
 
 #### ● User Story 02.1: Đăng ký hội viên mới cùng gói tập (Tương ứng UC 02.1)
-* **Mô tả:** Là Lễ tân / Admin, tôi cần nhập thông tin khách hàng, chọn gói tập, thu tiền và hoàn tất kích hoạt thẻ tập để khách hàng trở thành hội viên chính thức.
+* **Mô tả:** Là Lễ tân / Admin, tôi cần nhập thông tin khách hàng, chọn gói tập, thu tiền và hoàn tất kích hoạt gói tập để khách hàng trở thành hội viên chính thức.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `8`
 * **Tiêu chí chấp nhận (AC):**
   * Nhập: Họ tên, Số điện thoại, Email, CCCD, Ngày sinh, Ngày bắt đầu hiệu lực và Gói tập.
@@ -168,7 +168,7 @@ graph TD
   * Kích hoạt thẻ trạng thái `ACTIVE`, tự động tính ngày hết hạn, sinh chuỗi mã định danh kèm mã QR duy nhất và kích hoạt gửi SMS/Email xác nhận.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Wizard biểu mẫu đăng ký 2 bước (Thông tin cá nhân $\rightarrow$ Gói tập & Thu tiền).
-  * *(Business Logic):* Transaction kích hoạt: Tạo Member $\rightarrow$ Tạo Thẻ tập $\rightarrow$ Tạo Hóa đơn $\rightarrow$ Tạo QR string.
+  * *(Business Logic):* Transaction kích hoạt: Tạo Member $\rightarrow$ Tạo Gói tập $\rightarrow$ Tạo Hóa đơn $\rightarrow$ Tạo QR string.
   * *(Data Access):* Lưu vào bảng `[User]`, `[User]ubscription`, `Invoice` trong cùng một Database Transaction.
 
 #### ● User Story 02.2: Cập nhật thông tin cá nhân hội viên (Tương ứng UC 02.2)
@@ -390,7 +390,7 @@ graph TD
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện phân công PT nhanh dạng danh sách đối chiếu.
   * *(Business Logic):* Kiểm tra định mức học viên và gán quan hệ PT - Học viên trong `IPtService`.
-  * *(Data Access):* Lưu vào bảng `[User]ubscription` và cập nhật trường `assigned_pt_id` trong thẻ tập.
+  * *(Data Access):* Lưu vào bảng `[User]ubscription` và cập nhật trường `assigned_pt_id` trong gói tập.
 
 #### ● User Story 04.5: Rà soát và xác nhận kết quả ca tập phía Admin (Tương ứng UC 4.5)
 * **Mô tả:** Là Admin, tôi cần rà soát, xác nhận thay hoặc điều chỉnh kết quả ca tập (Hoàn thành / Hội viên vắng / PT vắng / Hoãn) đối với các ca tập phát sinh ngoại lệ hoặc PT chưa bấm xác nhận.

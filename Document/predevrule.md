@@ -60,7 +60,7 @@ flowchart TB
     %% Software System Boundary
     subgraph GymSystem ["Hệ thống Quản lý Phòng tập (Gym Management System) [Software System Boundary]"]
         DesktopApp["<b>Desktop Application</b><br><i>[Container: C# .NET 8, WinUI 3 / Windows App SDK]</i><br>Ứng dụng quản trị Desktop: Quản lý hội viên, POS quầy, quét webcam QR check-in, điều phối lịch PT, báo cáo doanh thu"]
-        WebApp["<b>Member & PT Portal</b><br><i>[Container: C# .NET 8, Blazor Server]</i><br>Cổng tác nghiệp Web/Mobile: Thẻ tập số QR, đặt/hủy lịch hẹn PT, theo dõi InBody, đánh giá sao, PT quản lý lịch rảnh"]
+        WebApp["<b>Member & PT Portal</b><br><i>[Container: C# .NET 8, Blazor Server]</i><br>Cổng tác nghiệp Web/Mobile: Gói tập số QR, đặt/hủy lịch hẹn PT, theo dõi InBody, đánh giá sao, PT quản lý lịch rảnh"]
         ApiApp["<b>API Application / Core Backend</b><br><i>[Container: C# .NET 8, ASP.NET Core Web API]</i><br>Cung cấp toàn bộ nghiệp vụ tập trung (Auth, Member, CheckIn, PT, Billing, BI, Config) qua JSON/HTTPS"]
         Database[("<b>Database Persistence</b><br><i>[Container: Microsoft SQL Server]</i><br>Lưu trữ 9 bảng dữ liệu quan hệ: Role, [User], PackagePlan, PTAvailability, PTTrainingSession, MemberSubscription, CheckInLog, Invoice, MemberBodyMetric")]
     end
@@ -165,7 +165,7 @@ flowchart TB
   * Đảm nhiệm toàn diện: Tiếp nhận hội viên mới, quét webcam QR check-in tốc độ cao, lập hóa đơn thu tiền POS, xử lý gia hạn/bảo lưu thẻ, xếp lịch trực quan cho PT, cấu hình hệ thống và xem Dashboard báo cáo quản trị.
 * **1.2 Member & PT Portal (`GymManagement.Web` - Blazor Server):**
   * Cổng tác nghiệp trực tuyến chuẩn Responsive dành cho Hội viên và Huấn luyện viên.
-  * Phía Hội viên: Thẻ tập số (mã QR check-in cá nhân), đặt/đổi/hủy lịch tập PT, theo dõi chỉ số thể hình InBody, đánh giá chất lượng ca dạy (1–5 sao).
+  * Phía Hội viên: Gói tập số (mã QR check-in cá nhân), đặt/đổi/hủy lịch tập PT, theo dõi chỉ số thể hình InBody, đánh giá chất lượng ca dạy (1–5 sao).
   * Phía Huấn luyện viên (PT): Đăng ký khung giờ làm việc rảnh theo tuần, xem thời khóa biểu, theo dõi danh sách học viên phụ trách, nhập số đo InBody và bấm xác nhận hoàn tất ca dạy trực tiếp.
 * **1.3 API Gateway / Controllers:**
   * Tiếp nhận yêu cầu HTTP/JSON từ các client, kiểm tra xác thực JWT Token, phân quyền người dùng thông qua Role Claims (`Admin`, `PT`, `Member`) trước khi chuyển tiếp vào tầng Business Logic.
@@ -197,7 +197,7 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
     3. `PackagePlan`: Danh mục gói tập.
     4. `PTAvailability`: Khung giờ rảnh theo tuần của PT.
     5. `PTTrainingSession`: Ca tập luyện giữa PT và học viên (gộp cả đánh giá, sao, nhận xét).
-    6. `MemberSubscription`: Thẻ tập hội viên (gộp cả thông tin bảo lưu và PT phụ trách).
+    6. `MemberSubscription`: Gói tập hội viên (gộp cả thông tin bảo lưu và PT phụ trách).
     7. `CheckInLog`: Nhật ký điểm danh ra/vào cơ sở.
     8. `Invoice`: Hóa đơn tài chính (gộp cả thông tin hoàn tiền).
     9. `MemberBodyMetric`: Chỉ số phát triển thể hình InBody.
@@ -265,8 +265,8 @@ graph TD
     PT -->|Gửi thông báo lịch tập mới/hủy ca| Notify
 ```
 
-1. **Luồng Thanh toán & Kích hoạt Thẻ tập (UC02 + UC05):**
-   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo thẻ tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin thẻ cho khách hàng.
+1. **Luồng Thanh toán & Kích hoạt Gói tập (UC02 + UC05):**
+   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo gói tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin thẻ cho khách hàng.
 2. **Luồng Điểm danh Check-in Vào phòng (UC03):**
    * Quét QR hoặc nhập SĐT $\rightarrow$ `CheckInModule` tiếp nhận $\rightarrow$ gọi `MemberModule` tra cứu bảng `MemberSubscription` để kiểm tra điều kiện (thẻ `ACTIVE`, không bị `FROZEN` hay `LOCKED`, còn hạn và số buổi) $\rightarrow$ gọi `ConfigModule` đối soát khung giờ mở cửa $\rightarrow$ nếu hợp lệ, tự động trừ 1 buổi tập (với gói theo lượt) và ghi bản ghi vào bảng `CheckInLog`.
 3. **Luồng Đặt, Đổi, Hủy & Hoàn tất Ca dạy PT (UC04 + UC08 + UC10):**
@@ -274,7 +274,7 @@ graph TD
    * **Hủy ca:** `PtModule` gọi `ConfigModule` kiểm tra quy định thời gian hủy tối thiểu: nếu hủy trước $\ge 2\text{h}$ thì hoàn lại 1 buổi tập vào `MemberSubscription`; nếu sát giờ tập $< 2\text{h}$ thì áp dụng quy tắc phạt không hoàn lại buổi.
    * **Hoàn tất ca tập:** PT bấm "Xác nhận hoàn thành" $\rightarrow$ `PtModule` gọi `MemberModule` tự động trừ 1 buổi tập PT trong `MemberSubscription` và ghi nhận công dạy cho PT.
 4. **Luồng Hủy / Hoàn tiền Hóa đơn (UC05.3):**
-   * Admin duyệt yêu cầu hoàn tiền $\rightarrow$ `BillingModule` cập nhật `RefundAmount` và `RefundReason` vào bảng `Invoice` $\rightarrow$ gọi `MemberModule` chuyển trạng thái thẻ tập tương ứng sang `CANCELLED`.
+   * Admin duyệt yêu cầu hoàn tiền $\rightarrow$ `BillingModule` cập nhật `RefundAmount` và `RefundReason` vào bảng `Invoice` $\rightarrow$ gọi `MemberModule` chuyển trạng thái gói tập tương ứng sang `CANCELLED`.
 5. **Luồng Báo cáo Quản trị Đa chiều (UC06):**
    * `ReportModule` đóng vai trò module tổng hợp dữ liệu:
      * Trích xuất doanh thu thực thu từ `BillingModule` (bảng `Invoice`).
@@ -305,7 +305,7 @@ Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuâ
 * Mỗi API Endpoint hoặc Service Method phải kiểm tra vai trò người gọi dựa trên JWT Claims:
   * `Admin / Super Admin`: Có toàn quyền quản trị cấu hình, phân công PT, tiếp nhận hội viên, quét điểm danh check-in, lập hóa đơn POS và xử lý hoàn tiền.
   * `PT`: Chỉ có quyền thao tác trên lịch dạy của chính mình, học viên do mình phụ trách và nhập chỉ số InBody.
-  * `Member`: Chỉ có quyền xem thông tin cá nhân của bản thân, xem thẻ tập cá nhân và đặt lịch với PT đã được phân công cố định.
+  * `Member`: Chỉ có quyền xem thông tin cá nhân của bản thân, xem gói tập cá nhân và đặt lịch với PT đã được phân công cố định.
 
 ### Quy tắc 5: Quy chuẩn Đặt tên & Cấu trúc Mô hình CSDL Chuẩn 9 Bảng
 * Toàn bộ mã nguồn Data Access phải tuân thủ chuẩn xác 9 bảng vật lý trong `GymManagement_Physical_Model.sql`. Tuyệt đối không tự ý thêm các bảng độc lập nằm ngoài thiết kế nếu chưa được cập nhật chính thức vào mô hình DDL.

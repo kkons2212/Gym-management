@@ -10,7 +10,7 @@
 
 Hệ thống Quản lý Phòng tập thể thao vận hành như một mạng lưới tương tác đa bên liên đới chặt chẽ giữa ba tác nhân chính:
 * **Hội viên (Member):** Người sử dụng dịch vụ tập luyện và các tiện ích tại phòng tập.
-* **Nhân viên vận hành & Quản lý (Admin / Lễ tân / Thu ngân):** Tiếp nhận thông tin, quản lý hồ sơ, thẻ tập, lập hóa đơn thanh toán và điều phối tại cơ sở.
+* **Nhân viên vận hành & Quản lý (Admin / Lễ tân / Thu ngân):** Tiếp nhận thông tin, quản lý hồ sơ, gói tập, lập hóa đơn thanh toán và điều phối tại cơ sở.
 * **Huấn luyện viên cá nhân (Personal Trainer - PT):** Trực tiếp cung cấp dịch vụ chuyên môn, hướng dẫn và theo dõi tiến độ tập luyện của học viên.
 
 Trọng tâm của hệ thống là chuyển đổi các yêu cầu tập luyện và hợp đồng dịch vụ thành các luồng nghiệp vụ hợp lệ, đảm bảo kiểm soát quyền ra vào phòng tập chuẩn xác, điều phối lịch dạy – lịch tập không xung đột, quản lý dòng tiền minh bạch và cung cấp báo cáo hỗ trợ ra quyết định kinh doanh.
@@ -48,7 +48,7 @@ Nghiệp vụ điểm danh (Check-in) đóng vai trò là chốt chặn kiểm s
 * **Kiểm soát chống xung đột:** Hệ thống liên tục rà soát nhằm ngăn chặn tuyệt đối tình trạng trùng lịch giữa PT và học viên, đồng thời kiểm tra điều kiện số buổi PT còn lại trong gói.
 * **Ghi nhận kết quả & Đánh giá:** Khi ca tập diễn ra, PT cập nhật các chỉ số phát triển thể chất của học viên (như cân nặng, chỉ số InBody định kỳ, ghi chú bài tập) và xác nhận hoàn thành ca tập (hệ thống tự động trừ 1 buổi tập). Sau buổi tập, hội viên có quyền chấm điểm số sao (1–5 sao) và để lại nhận xét đánh giá chất lượng của PT để nâng cao tính minh bạch dịch vụ.
 
-### 2.5. Vòng đời Thẻ tập & Xử lý Ngoại lệ
+### 2.5. Vòng đời Gói tập & Xử lý Ngoại lệ
 Trong suốt vòng đời của gói tập, hệ thống linh hoạt hỗ trợ các nghiệp vụ phát sinh và xử lý ngoại lệ:
 * **Gia hạn / Nâng cấp:** Khi thẻ sắp hoặc đã hết hạn, Lễ tân có thể thực hiện gia hạn hoặc nâng cấp thẻ sang gói mới và thu khoản phí chênh lệch.
 * **Bảo lưu thẻ (Freeze):** Khi hội viên có nhu cầu tạm dừng do công tác hoặc ốm đau, tính năng bảo lưu cho phép tạm ngưng thẻ và tự động kéo dài ngày hết hạn tương ứng theo đúng chính sách cho phép.
