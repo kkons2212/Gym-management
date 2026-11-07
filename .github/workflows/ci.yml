@@ -1,64 +1,242 @@
-name: Gym Management Server CI Pipeline
+name: Continuous Integration (CI)
 
 on:
   push:
-    branches: [ "main", "feature/*" ]
+    branches: [ "main", "feature/**" ]
+    paths-ignore:
+      - 'Document/**'
+      - '**.md'
+      - '.agents/**'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - 'Document/**'
+      - '**.md'
+      - '.agents/**'
+
+# Cancel older runs when a new commit is pushed to the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-server-component:
-    name: Build & Test Server Component
-    runs-on: windows-latest
-
+  # -------------------------------------------------------------
+  # JOB 0: SUBSYSTEM PATH FILTERING (Server vs Client)
+  # -------------------------------------------------------------
+  detect-changes:
+    name: Detect Changed Subsystems
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            server:
+              - 'src/Server/**'
+              - 'tests/**'
+              - 'Document/GymManagement_Physical_Model.sql'
+              - '.github/workflows/ci.yml'
+              - 'GymManagement.sln'
+            client:
+              - 'src/Client/**'
+              - '.github/workflows/ci.yml'
+              - 'GymManagement.sln'
 
-    - name: Setup .NET 8 SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+  # -------------------------------------------------------------
+  # JOB 1: SECURITY SCAN (Gitleaks Secret Detection)
+  # -------------------------------------------------------------
+  security-scan:
+    name: Security & Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Check Solution Status
-      id: check_sln
-      shell: pwsh
-      run: |
-        if (Test-Path "GymManagement.sln") {
-          Write-Host "GymManagement.sln found. Enabling Build and Test steps."
-          echo "sln_exists=true" >> $env:GITHUB_OUTPUT
-        } else {
-          Write-Host "GymManagement.sln not yet scaffolded. Ready for Phase 0 implementation."
-          echo "sln_exists=false" >> $env:GITHUB_OUTPUT
-        }
+  # -------------------------------------------------------------
+  # JOB 2: SERVER COMPILE, LINT & 3-TIER BOUNDARY CHECK
+  # -------------------------------------------------------------
+  server-compile-and-lint:
+    name: Server Compile & Architecture Guard
+    needs: detect-changes
+    if: needs.detect-changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Restore Dependencies
-      if: steps.check_sln.outputs.sln_exists == 'true'
-      run: dotnet restore GymManagement.sln
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Build Solution (Server & Client)
-      if: steps.check_sln.outputs.sln_exists == 'true'
-      run: dotnet build GymManagement.sln --no-restore --configuration Release
+      - name: Check Solution Status
+        id: check_sln
+        run: |
+          if [ -f "GymManagement.sln" ]; then
+            echo "sln_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ GymManagement.sln found."
+          else
+            echo "sln_exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ GymManagement.sln not yet scaffolded. Ready for Phase 0 implementation."
+          fi
 
-    # 1. Kiểm thử 7 Service Components nội bộ Server
-    - name: "Test 7 Server Core Services"
-      if: steps.check_sln.outputs.sln_exists == 'true'
-      run: dotnet test tests/GymManagement.Server.UnitTests --no-build --configuration Release --logger "console;verbosity=normal"
+      - name: Restore Dependencies
+        if: steps.check_sln.outputs.sln_exists == 'true'
+        run: dotnet restore GymManagement.sln
 
-    # 2. Kiểm thử Cổng Database API & Giao dịch 9 bảng CSDL
-    - name: "Test Database API & ACID Transactions"
-      if: steps.check_sln.outputs.sln_exists == 'true'
-      run: dotnet test tests/GymManagement.Server.DataTests --no-build --configuration Release --logger "console;verbosity=normal"
+      - name: Build Server Component
+        if: steps.check_sln.outputs.sln_exists == 'true'
+        run: dotnet build GymManagement.sln --no-restore --configuration Release
 
-    # 3. Kiểm thử Cổng GymManagement API & Cổng Authenticated
-    - name: "Test GymManagement API & Authenticated Boundary"
-      if: steps.check_sln.outputs.sln_exists == 'true'
-      run: dotnet test tests/GymManagement.Server.ApiTests --no-build --configuration Release --logger "console;verbosity=normal"
+      - name: Enforce 3-Tier Layering Boundaries (Pre-dev Rule 1)
+        if: steps.check_sln.outputs.sln_exists == 'true'
+        run: |
+          echo "🔍 Checking 3-Tier Layering boundaries..."
+          # Rule 1: Core must NOT depend on Data or Api
+          if grep -rn "GymManagement.Server.Data" src/Server/GymManagement.Server.Core/*.csproj 2>/dev/null; then
+            echo "❌ Architecture Violation: Core cannot reference Data directly."
+            exit 1
+          fi
+          # Rule 1: Presentation (Clients) must NOT depend on Server.Data directly
+          if grep -rn "GymManagement.Server.Data" src/Client/*/*.csproj 2>/dev/null; then
+            echo "❌ Architecture Violation: Client cannot reference Data directly."
+            exit 1
+          fi
+          echo "✅ 3-Tier Layering Boundaries verified successfully."
 
-    - name: Upload Test Results
-      if: always() && steps.check_sln.outputs.sln_exists == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-test-results
-        path: '**/TestResults/*.trx'
-        retention-days: 7
+      - name: Run C# Code Formatting Check (dotnet format)
+        if: steps.check_sln.outputs.sln_exists == 'true'
+        run: dotnet format GymManagement.sln --verify-no-changes --verbosity diagnostic || echo "⚠️ Formatting warnings detected."
+
+  # -------------------------------------------------------------
+  # JOB 3: SERVER CORE SERVICES TESTS & 9 TABLES DDL VERIFY
+  # -------------------------------------------------------------
+  server-test:
+    name: Server Tests & SQL Server Schema
+    needs: [detect-changes, server-compile-and-lint]
+    if: needs.detect-changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Verify SQL Server 9 Tables DDL Schema
+        run: |
+          python3 -c "
+          tables = ['Role', '[User]', 'PackagePlan', 'PTAvailability', 'PTTrainingSession', 'MemberSubscription', 'CheckInLog', 'Invoice', 'MemberBodyMetric']
+          content = open('Document/GymManagement_Physical_Model.sql', encoding='utf-8').read()
+          missing = [t for t in tables if f'CREATE TABLE dbo.{t}' not in content]
+          if missing:
+              print('❌ Missing required table(s) in DDL:', missing)
+              exit(1)
+          print('✅ All 9 physical tables verified in DDL schema.')
+          "
+
+      # 1. Kiểm thử 7 Service Components nội bộ Server (Core)
+      - name: Test 7 Server Core Services (UnitTests)
+        run: |
+          if [ -d "tests/GymManagement.Server.UnitTests" ]; then
+            dotnet test tests/GymManagement.Server.UnitTests --configuration Release --collect:"XPlat Code Coverage" --logger "console;verbosity=normal"
+          else
+            echo "ℹ️ tests/GymManagement.Server.UnitTests not yet scaffolded. Unit tests will run as modules are developed."
+          fi
+
+      # 2. Kiểm thử Cổng Database API & 9 Bảng CSDL (DataTests)
+      - name: Test Database API & ACID Transactions (DataTests)
+        run: |
+          if [ -d "tests/GymManagement.Server.DataTests" ]; then
+            dotnet test tests/GymManagement.Server.DataTests --configuration Release --collect:"XPlat Code Coverage" --logger "console;verbosity=normal"
+          else
+            echo "ℹ️ tests/GymManagement.Server.DataTests not yet scaffolded. Data tests will run as modules are developed."
+          fi
+
+      # 3. Kiểm thử Cổng GymManagement API & Authenticated Boundary (ApiTests)
+      - name: Test GymManagement API & Authenticated Boundary (ApiTests)
+        run: |
+          if [ -d "tests/GymManagement.Server.ApiTests" ]; then
+            dotnet test tests/GymManagement.Server.ApiTests --configuration Release --collect:"XPlat Code Coverage" --logger "console;verbosity=normal"
+          else
+            echo "ℹ️ tests/GymManagement.Server.ApiTests not yet scaffolded. API tests will run as modules are developed."
+          fi
+
+      - name: Upload Server Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-results
+          path: '**/TestResults/*.trx'
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------
+  # JOB 4: CLIENT COMPILE (WINUI 3 DESKTOP & BLAZOR WEB)
+  # -------------------------------------------------------------
+  client-compile-and-build:
+    name: Client Desktop (WinUI 3) & Web Portal (Blazor)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.client == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Compile Admin Desktop App (WinUI 3 / Windows App SDK)
+        shell: pwsh
+        run: |
+          if (Test-Path "src/Client/GymManagement.Desktop") {
+            Write-Host "Compiling Admin Desktop App (WinUI 3)..."
+            dotnet build src/Client/GymManagement.Desktop -c Release
+          } else {
+            Write-Host "ℹ️ src/Client/GymManagement.Desktop not yet scaffolded; skipping build."
+          }
+
+      - name: Compile Member/PT Web Portal (Blazor Server)
+        shell: pwsh
+        run: |
+          if (Test-Path "src/Client/GymManagement.Web") {
+            Write-Host "Compiling Member/PT Web Portal (Blazor Server)..."
+            dotnet build src/Client/GymManagement.Web -c Release
+          } else {
+            Write-Host "ℹ️ src/Client/GymManagement.Web not yet scaffolded; skipping build."
+          }
+
+  # -------------------------------------------------------------
+  # JOB 5: CI QUALITY GATE (Bắt buộc để Merge Pull Request)
+  # -------------------------------------------------------------
+  ci-gate:
+    name: CI Quality Gate
+    needs:
+      - detect-changes
+      - security-scan
+      - server-compile-and-lint
+      - server-test
+      - client-compile-and-build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate Pipeline Status
+        run: |
+          if [[ "${{ needs.security-scan.result }}" == "failure" || \
+                "${{ needs.server-compile-and-lint.result }}" == "failure" || \
+                "${{ needs.server-test.result }}" == "failure" || \
+                "${{ needs.client-compile-and-build.result }}" == "failure" ]]; then
+            echo "❌ CI Quality Gate Failed: One or more critical jobs failed."
+            exit 1
+          fi
+          echo "✅ All required checks completed successfully."

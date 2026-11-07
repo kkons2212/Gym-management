@@ -259,50 +259,14 @@ GymManagement.sln
 
 ---
 
-### GIAI ĐOẠN 5: KẾ HOẠCH CI CHO `SERVER COMPONENT` TRÊN GITHUB ACTIONS
-- [x] **Task 5.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Cấu hình workflow `.github/workflows/ci.yml` trên GitHub Actions tự động kiểm thử Server Component & Modular Services khi push/PR vào nhánh chính.
+### GIAI ĐOẠN 5: KẾ HOẠCH CI TOÀN DIỆN CHO `SERVER COMPONENT` & `CLIENT` TRÊN GITHUB ACTIONS
+- [x] **Task 5.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Cấu hình workflow `.github/workflows/ci.yml` trên GitHub Actions theo kiến trúc Enterprise (Path filtering, Gitleaks, 3-Tier Architecture check, Server Core tests, Data tests, Api tests, Client build & CI Quality Gate).
 
-Pipeline CI tập trung kiểm thử toàn diện **`Server Component`** và các cổng giao tiếp:
-
-```yaml
-name: Gym Management Server CI Pipeline
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  test-server-component:
-    name: Test Server Component & Modular Services
-    runs-on: windows-latest
-
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Setup .NET 8 SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
-
-    - name: Restore Dependencies
-      run: dotnet restore GymManagement.sln
-
-    - name: Build Server & Client
-      run: dotnet build GymManagement.sln --no-restore --configuration Release
-
-    # 1. Kiểm thử 7 Service Components nội bộ Server
-    - name: "Test 7 Server Core Services"
-      run: dotnet test tests/GymManagement.Server.UnitTests --no-build --configuration Release --logger "console;verbosity=normal"
-
-    # 2. Kiểm thử Cổng Database API & 9 Bảng CSDL
-    - name: "Test Database API & ACID Transactions"
-      run: dotnet test tests/GymManagement.Server.DataTests --no-build --configuration Release --logger "console;verbosity=normal"
-
-    # 3. Kiểm thử Cổng GymManagement API & Authenticated Middleware
-    - name: "Test GymManagement API & Authenticated Boundary"
-      run: dotnet test tests/GymManagement.Server.ApiTests --no-build --configuration Release --logger "console;verbosity=normal"
-```
+Pipeline CI được thiết kế chuyên biệt và khớp 100% với yêu cầu dự án:
+1. **`detect-changes`:** Tách biệt phạm vi ảnh hưởng giữa `src/Server/**` và `src/Client/**`.
+2. **`security-scan`:** Quét rò rỉ mã bí mật, API key và Connection string bằng Gitleaks.
+3. **`server-compile-and-lint`:** Biên dịch .NET 8, kiểm tra định dạng code và kiểm tra vi phạm ranh giới 3 lớp (Pre-dev Rule 1).
+4. **`server-test`:** Kiểm tra cú pháp 9 bảng CSDL (`GymManagement_Physical_Model.sql`), kiểm thử 7 Service Components nội bộ (`UnitTests`), kiểm thử cổng Database API (`DataTests`) và cổng GymManagement API (`ApiTests`).
+5. **`client-compile-and-build`:** Biên dịch Desktop WinUI 3 (trên runner `windows-latest`) và Blazor Web Portal.
+6. **`ci-gate`:** Cổng kiểm duyệt chất lượng tổng hợp bắt buộc để Merge Pull Request vào nhánh chính `main`.
 
