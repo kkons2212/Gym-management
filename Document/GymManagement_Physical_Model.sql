@@ -29,7 +29,7 @@ GO
 
 -- 2. Bảng User
 CREATE TABLE dbo.[User] (
-    UserID VARCHAR(10) NOT NULL,
+    UserName VARCHAR(10) NOT NULL,
     RoleID VARCHAR(10) NOT NULL,
     FullName VARCHAR(50) NULL,
     Phone VARCHAR(10) NULL,
