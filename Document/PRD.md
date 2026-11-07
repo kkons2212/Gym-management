@@ -603,3 +603,14 @@ Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Ph�
 | | **UC 10.2** | Hủy lịch tập | US 10.2 | Booking Cancellation Modal | `IPtService` | `PTTrainingSession`, `MemberSubscription` |
 | | **UC 10.3** | Đánh giá | US 10.3 | Star Rating & Feedback Form | `IPtService` | `PTTrainingSession` |
 | | **UC 10.4** | Đổi lịch tập | US 10.4 | Booking Reschedule View | `IPtService` | `PTTrainingSession`, `PTAvailability` |
+
+
+# Phần 4 Component Diagram
+<p alt="center">
+<img width="1271" height="707" alt="Gym" src="https://github.com/user-attachments/assets/ba4817c7-2250-48e1-ad53-900985c161eb" />
+
+</p>
+
+
+
+
