@@ -1,5 +1,5 @@
 -- ====================================================================
--- GYM MANAGEMENT SYSTEM - DDL SCRIPT (CHUẨN 100% THEO ẢNH ERD)
+-- GYM MANAGEMENT SYSTEM - DDL SCRIPT
 -- Hệ quản trị đích: SQL Server
 -- ====================================================================
 
