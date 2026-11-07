@@ -1,0 +1,64 @@
+name: Gym Management Server CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "feature/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-server-component:
+    name: Build & Test Server Component
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Check Solution Status
+      id: check_sln
+      shell: pwsh
+      run: |
+        if (Test-Path "GymManagement.sln") {
+          Write-Host "GymManagement.sln found. Enabling Build and Test steps."
+          echo "sln_exists=true" >> $env:GITHUB_OUTPUT
+        } else {
+          Write-Host "GymManagement.sln not yet scaffolded. Ready for Phase 0 implementation."
+          echo "sln_exists=false" >> $env:GITHUB_OUTPUT
+        }
+
+    - name: Restore Dependencies
+      if: steps.check_sln.outputs.sln_exists == 'true'
+      run: dotnet restore GymManagement.sln
+
+    - name: Build Solution (Server & Client)
+      if: steps.check_sln.outputs.sln_exists == 'true'
+      run: dotnet build GymManagement.sln --no-restore --configuration Release
+
+    # 1. Kiểm thử 7 Service Components nội bộ Server
+    - name: "Test 7 Server Core Services"
+      if: steps.check_sln.outputs.sln_exists == 'true'
+      run: dotnet test tests/GymManagement.Server.UnitTests --no-build --configuration Release --logger "console;verbosity=normal"
+
+    # 2. Kiểm thử Cổng Database API & Giao dịch 9 bảng CSDL
+    - name: "Test Database API & ACID Transactions"
+      if: steps.check_sln.outputs.sln_exists == 'true'
+      run: dotnet test tests/GymManagement.Server.DataTests --no-build --configuration Release --logger "console;verbosity=normal"
+
+    # 3. Kiểm thử Cổng GymManagement API & Cổng Authenticated
+    - name: "Test GymManagement API & Authenticated Boundary"
+      if: steps.check_sln.outputs.sln_exists == 'true'
+      run: dotnet test tests/GymManagement.Server.ApiTests --no-build --configuration Release --logger "console;verbosity=normal"
+
+    - name: Upload Test Results
+      if: always() && steps.check_sln.outputs.sln_exists == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-test-results
+        path: '**/TestResults/*.trx'
+        retention-days: 7

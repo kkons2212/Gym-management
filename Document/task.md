@@ -149,6 +149,7 @@ GymManagement.sln
 ## 3. CHECKLIST NHIỆM VỤ CHI TIẾT THEO CÁC THÀNH PHẦN
 
 ### GIAI ĐOẠN 0: KHỞI TẠO NỀN TẢNG THEO RÀNH GIỚI COMPONENT
+- [x] **Task 0.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Thiết lập pipeline CI GitHub Actions (`.github/workflows/ci.yml`) tự động Build & Test cho Solution.
 - [ ] **Task 0.1:** `[Type: Scaffolding]` `[Module: Infrastructure]` Tạo mới file Solution `GymManagement.sln`.
 - [ ] **Task 0.2:** `[Type: Scaffolding]` `[Module: Server]` Tạo các dự án thành phần của `Server`:
   - `src/Server/GymManagement.Server.Core` (Class Library .NET 8).
@@ -259,6 +260,7 @@ GymManagement.sln
 ---
 
 ### GIAI ĐOẠN 5: KẾ HOẠCH CI CHO `SERVER COMPONENT` TRÊN GITHUB ACTIONS
+- [x] **Task 5.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Cấu hình workflow `.github/workflows/ci.yml` trên GitHub Actions tự động kiểm thử Server Component & Modular Services khi push/PR vào nhánh chính.
 
 Pipeline CI tập trung kiểm thử toàn diện **`Server Component`** và các cổng giao tiếp:
 
