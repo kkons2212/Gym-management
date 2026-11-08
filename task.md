@@ -8,7 +8,7 @@
 
 ## 1. KHỚP NỐI VỚI SƠ ĐỒ THÀNH PHẦN (COMPONENT DIAGRAM - PRD PHẦN 4)
 
-Dựa trên sơ đồ thành phần kiến trúc chính thức trong [`Document/PRD.md`](Document/PRD.md), hệ thống bao gồm **3 Khối Thành phần Cấp cao (High-Level Components)**:
+Dựa trên sơ đồ thành phần kiến trúc chính thức trong [`PRD.md`](PRD.md), hệ thống bao gồm **3 Khối Thành phần Cấp cao (High-Level Components)**:
 
 ```mermaid
 flowchart TD
@@ -150,7 +150,7 @@ GymManagement.sln
 
 ### GIAI ĐOẠN 0: KHỞI TẠO NỀN TẢNG THEO RÀNH GIỚI COMPONENT
 - [x] **Task 0.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Thiết lập pipeline CI GitHub Actions (`.github/workflows/ci.yml`) tự động Build & Test cho Solution.
-- [x] **Task 0.0b:** `[Type: Standards]` `[Module: Documentation]` Ban hành bộ quy chuẩn thực thi lập trình [`Document/dev_rule.md`](Document/dev_rule.md) (KISS, YAGNI, SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, 10 tiêu chí DoD) và Sổ ánh xạ kỹ thuật [`Document/dev_mapping.md`](Document/dev_mapping.md).
+- [x] **Task 0.0b:** `[Type: Standards]` `[Module: Documentation]` Ban hành bộ quy chuẩn thực thi lập trình [`dev_rule.md`](dev_rule.md) (KISS, YAGNI, SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, 10 tiêu chí DoD) và Sổ ánh xạ kỹ thuật [`dev_mapping.md`](dev_mapping.md).
 - [ ] **Task 0.1:** `[Type: Scaffolding]` `[Module: Infrastructure]` Tạo mới file Solution `GymManagement.sln`.
 - [ ] **Task 0.2:** `[Type: Scaffolding]` `[Module: Server]` Tạo các dự án thành phần của `Server`:
   - `src/Server/GymManagement.Server.Core` (Class Library .NET 8).
@@ -270,4 +270,3 @@ Pipeline CI được thiết kế chuyên biệt và khớp 100% với yêu cầ
 4. **`server-test`:** Kiểm tra cú pháp 9 bảng CSDL (`GymManagement_Physical_Model.sql`), kiểm thử 7 Service Components nội bộ (`UnitTests`), kiểm thử cổng Database API (`DataTests`) và cổng GymManagement API (`ApiTests`).
 5. **`client-compile-and-build`:** Biên dịch Desktop WinUI 3 (trên runner `windows-latest`) và Blazor Web Portal.
 6. **`ci-gate`:** Cổng kiểm duyệt chất lượng tổng hợp bắt buộc để Merge Pull Request vào nhánh chính `main`.
-
