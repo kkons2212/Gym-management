@@ -7,11 +7,11 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **16 / 33 Tasks (48.5%)**
+* **Tiến độ Hoàn thành:** **18 / 33 Tasks (54.5%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 3.1)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.5, Task 3.1, Task 3.2)
   * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
@@ -37,6 +37,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
+| **Task 2.5** | PtService Component (UC04, UC08, UC10) | UC04, UC08, UC10 (PT profile, lịch rảnh, đặt/hủy/đổi ca, InBody, đánh giá) | `Server.Core` | `Enums/PtSessionStatus.cs`, `DTOs/PT/PtDtos.cs`, `Contracts/IPtService.cs`, `Services/PtService.cs` | `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 tests) | `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]` | `03e9053` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | UC01, UC02, UC04, UC05, UC07, UC10 | `src/Client/GymManagement.Desktop`, `Core/DTOs` | CheckIn, PosBilling, Members, PtSchedule, PackagePlans, Dashboard, Settings, Dialogs | WinUI 3 Release Compilation 0 Errors | 9 bảng DDL | `89c525a` |
 
 ---
@@ -204,6 +205,36 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Nghiệp vụ phòng gym:** Tuân thủ triệt để vai trò duy nhất Quản trị viên (`Admin`), thanh toán đúng theo giá niêm yết (không chiết khấu/voucher), điểm danh bằng camera quét QR từ màn hình điện thoại hội viên kèm nhập số điện thoại thủ công.
 
 ---
+
+---
+
+### 📌 [Task 2.5] Hiện thực PtService Component (UC04, UC08, UC10)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `03e9053` | **Nhánh:** `feat/task-2.5-pt-service`
+* **Phân hệ nghiệp vụ liên quan:**
+  - UC04 (Admin quản lý hồ sơ PT, phân công PT, xếp lịch dạy, xác nhận kết quả ca tập)
+  - UC08 (PT đăng ký lịch rảnh, xem học viên, ghi InBody, xác nhận hoàn thành ca dạy)
+  - UC10 (Hội viên đặt/hủy/đổi lịch tập PT, đánh giá sao)
+* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Enums, Services)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Enums/PtSessionStatus.cs` (6 trạng thái: Booked, Completed, Cancelled, AbsentMember, AbsentPt, Postponed)
+  - `src/Server/GymManagement.Server.Core/DTOs/PT/PtDtos.cs` (15 record types: PtProfileDto, MemberSummaryDto, PtSlotDto, PtSlotUpsertDto, PtSessionDto, + 9 Request types)
+  - `src/Server/GymManagement.Server.Core/Contracts/IPtService.cs` (17 method signatures chia 6 nhóm nghiệp vụ)
+  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (PtService sealed class, 5 entity stubs, ACID transactions)
+  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (thêm InternalsVisibleTo cho UnitTests và DynamicProxyGenAssembly2)
+  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (đổi TargetFramework sang net10.0)
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 test cases — 16/16 pass 100%)
+  - Coverage: SaveTrainer (phone/email duplicate), SetTrainerStatus (not found), CheckDeactivation (has students / no students), AssignPt (max student limit), BookSession (slot booked / no PT sessions), CancelSession (late / wrong status), SubmitRating (out of range / already rated / not completed), RecordInBody (invalid weight)
+* **Bảng CSDL liên quan:** `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]`
+* **Ràng buộc nghiệp vụ & Giao dịch:**
+  - **Quy tắc phạt hủy ca:** `CancellationGracePeriodHours = 2` — hủy < 2h → `ForceLateCancellation = true` mới thực thi, không hoàn buổi.
+  - **Giới hạn học viên PT:** `MaxStudentsPerPt = 10` — throw `BusinessRuleException` khi vượt.
+  - **Slot lock:** `is_Booked = 1` không cho phép hủy từ PT (UC 8.1.1 — phụ 5.1).
+  - **Mọi luồng đa bảng** (BookSession, CancelSession, RescheduleSession, CompleteSession, ConfirmResult, RecordInBody) đều bọc trong `ExecuteTransactionAsync`.
+  - **SMS không block nghiệp vụ:** `SendSessionReminderSafeAsync` catch exception riêng, chỉ log Warning.
+* **Ghi chú kiến trúc:**
+  - Entity stubs (`User`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`) là `internal` placeholder, đặt tên đúng theo bảng SQL (không có suffix). Sẽ được thay bằng EF Core entity thật khi hoàn thành Task 1.1.x mà không cần thay đổi service logic.
+  - `GetPtStudentsAsync` trả `MemberSummaryDto` (không phải `PtProfileDto`) để phản ánh đúng domain — học viên là Member, không phải PT.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

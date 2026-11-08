@@ -207,7 +207,7 @@ GymManagement.sln
   - Xác nhận nhận tiền: Đổi hóa đơn sang `PAID` và kích hoạt thẻ `ACTIVE` trong 1 Transaction.
   - Xử lý hoàn tiền hóa đơn (`REFUNDED`) và thu hồi thẻ (`CANCELLED`).
   - Gửi email hóa đơn điện tử qua `SMS Sending Gateway`.
-- [ ] **Task 2.5: `PtService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
+- [x] **Task 2.5: `PtService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
   - Quản lý lịch rảnh PT (`PTAvailability`), phân công PT phụ trách.
   - Hội viên đặt lịch tập: Thuật toán kiểm tra chống trùng lịch (Overlapping Check).
   - Hủy ca tập: Nếu $< 2\text{h}$ phạt trừ buổi, nếu $\ge 2\text{h}$ bảo lưu buổi; gửi thông báo qua `SMS Sending Gateway`.
