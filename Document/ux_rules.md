@@ -19,14 +19,14 @@ Hệ thống sử dụng bảng màu hiện đại, tương phản cao, tối ư
 
 | Vai Trò Token | Mã Màu Hex / Tailwind | Ràng Buộc Ứng Dụng Nghiệp Vụ Bắt Buộc |
 | :--- | :--- | :--- |
-| **Nền Chính (Primary Background)** | `#0F172A` (Dark) / `#FFFFFF` (Light) | Giao diện Desktop hỗ trợ Fluent Dark/Light; Web Portal tối ưu hiển thị rõ nét trên thiết bị di động. |
-| **Bề Mặt Thẻ (Card / Surface)** | `#1E293B` (Dark) / `#F8FAFC` (Light) | Khối hiển thị thông tin thẻ tập, giỏ hàng POS, ca tập với viền `1px solid #334155` (Dark) hoặc `#E2E8F0` (Light). |
-| **Màu Chữ Chính (Primary Text)** | `#F8FAFC` (Dark) / `#0F172A` (Light) | Độ tương phản WCAG AAA ($\ge 7:1$) bảo đảm nhìn rõ từ xa tại quầy lễ tân và màn hình turnstile. |
-| **Màu Chữ Phụ (Muted Text)** | `#94A3B8` (Dark) / `#64748B` (Light) | Dùng cho nhãn phụ, ngày hết hạn, mã định danh thẻ tập, chú thích chỉ số InBody. |
+| **Nền Chính (Primary Background)** | `#0F172A` (Slate 900) | Giao diện Desktop và Web chỉ sử dụng Dark Mode; Web Portal tối ưu hiển thị rõ nét trên thiết bị di động. |
+| **Bề Mặt Thẻ (Card / Surface)** | `#1E293B` (Slate 800) | Khối hiển thị thông tin thẻ tập, giỏ hàng POS và ca tập; viền `1px solid #334155`. |
+| **Màu Chữ Chính (Primary Text)** | `#F8FAFC` (Slate 50) | Dùng cho tiêu đề, nội dung và thông tin quan trọng; bảo đảm tương phản tốt trên nền tối. |
+| **Màu Chữ Phụ (Muted Text)** | `#94A3B8` (Slate 400) | Dùng cho nhãn phụ, ngày hết hạn, mã định danh thẻ tập và chú thích chỉ số InBody. |
 | **Điểm Nhấn Hành Động (Primary Accent)** | `#0EA5E9` (Cyan/Sky) hoặc `#2563EB` (Blue) | Đúng 1 màu nổi bật cho các nút CTA chính: Check-in, Thanh toán, Đặt lịch PT, Đăng ký gói tập. |
-| **Trạng Thái Thành Công (Success)** | `#16A34A` (`bg-green-600` / `#DCFCE7`) | Sử dụng cho: Check-in hợp lệ, Mở cổng Turnstile, `ACTIVE`, `PAID`, Đặt lịch PT thành công. |
-| **Trạng Thái Cảnh Báo (Warning)** | `#D97706` (`bg-amber-500` / `#FEF3C7`) | Sử dụng cho: Thẻ sắp hết hạn ($\le 7$ ngày), Thẻ bảo lưu `FROZEN`, Hủy ca tập $< 2\text{h}$ tính phí phạt, Lượt tập còn ít ($\le 2$). |
-| **Trạng Thái Lỗi / Bị Khóa (Danger)** | `#DC2626` (`bg-red-600` / `#FEE2E2`) | Sử dụng cho: Thẻ hết hạn `EXPIRED`, Thẻ bị hủy `CANCELLED`, Điểm danh thất bại (Hết lượt/Sai mã), Trùng lịch dạy PT. |
+| **Trạng Thái Thành Công (Success)** | `#16A34A` / `text-green-400` | Sử dụng cho: Check-in hợp lệ, Mở cổng Turnstile, `ACTIVE`, `PAID`, Đặt lịch PT thành công. |
+| **Trạng Thái Cảnh Báo (Warning)** | `#D97706` / `text-amber-400` | Sử dụng cho: Thẻ sắp hết hạn ($\le 7$ ngày), Thẻ bảo lưu `FROZEN`, Hủy ca tập $< 2\text{h}$ tính phí phạt, Lượt tập còn ít ($\le 2$). |
+| **Trạng Thái Lỗi / Bị Khóa (Danger)** | `#DC2626` / `text-red-400` | Sử dụng cho: Thẻ hết hạn `EXPIRED`, Thẻ bị hủy `CANCELLED`, Điểm danh thất bại (Hết lượt/Sai mã), Trùng lịch dạy PT. |
 | **Trạng Thái PT & Lịch Tập (PT Accent)** | `#8B5CF6` (Purple/Violet) | Điểm nhấn chuyên biệt nhận diện ca dạy PT, chỉ số InBody và lịch biểu huấn luyện viên. |
 
 ### 1.2. Kiểu Chữ, Vùng Bấm (Touch Targets) & Tương Tác Phím Tắt
@@ -51,27 +51,31 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay lập tức Thẻ Hội Viên Điện Tử ở vị trí trên cùng.
   * Thẻ hiển thị rõ: Họ tên hội viên, Ảnh đại diện, Tên gói tập hiện tại (`PackagePlan`), Trạng thái thẻ (`ACTIVE`, `FROZEN`, `EXPIRED`), Số ngày còn lại và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
 * **Cơ Chế Mã QR Động Chống Gian Lận (Dynamic QR Check-in):**
-  * Mã QR hiển thị to, rõ ở trung tâm thẻ (tối thiểu $200\text{px} \times 200\text{px}$), độ sáng màn hình tự động đẩy tối đa khi mở mã QR.
-  * Chuỗi mã QR được mã hóa theo định dạng bảo mật kèm timestamp và tự động làm mới mỗi **60 giây** để chống hành vi chụp ảnh màn hình chuyển tiếp cho người khác tập hộ.
-  * Kèm theo nút bấm 1 chạm `"Làm mới mã QR"` nếu kết nối mạng của hội viên bị gián đoạn.
+  * Dashboard hiển thị nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện riêng ở kích thước tối thiểu **240 × 240 px**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
+  * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm máy quét đọc được.
+  * Trang QR hiển thị tên và ảnh nhỏ của hội viên để đối chiếu; thông tin nhạy cảm không được nhúng trực tiếp vào mã.
+  * Mã có thời hạn ngắn, được cấp và xác thực an toàn từ máy chủ, tự làm mới mỗi **60 giây**. Hiển thị đếm ngược rõ ràng và trạng thái đang làm mới.
+  * Có nút `"Làm mới mã QR"`; nếu mất mạng hoặc làm mới thất bại, hiển thị thông báo và trạng thái mã hiện tại, không giả vờ rằng mã mới đã được cấp.
+  * Khi mã hết hạn hoặc thẻ không hợp lệ, ẩn mã cũ và thông báo rõ lý do. Không yêu cầu ứng dụng tự thay đổi độ sáng thiết bị.
 * **Cảnh Báo Hết Hạn & Đóng Băng Thẻ (Smart Expiry & Freeze Alert):**
   * Khi thẻ còn dưới 7 ngày hoặc dưới 3 lượt tập: Hiển thị thanh thông báo màu vàng hổ phách mời gia hạn kèm nút `"Gia hạn ngay"` dẫn thẳng tới cổng thanh toán VietQR.
   * Nếu thẻ đang ở trạng thái `FROZEN`: Hiển thị rõ ngày kết thúc bảo lưu và nút `"Yêu cầu mở thẻ sớm"`.
 
-### 2.2. Giai đoạn 2: Khám Phá Gói Tập & Thanh Toán VietQR Tự Động (Catalog & POS Payment - UC03 & UC07)
+### 2.2. Giai đoạn 2: Khám Phá Gói Tập & Thanh Toán VietQR Sandbox (Catalog & POS Payment - UC03 & UC07)
 * **Bảng Giá & So Sánh Gói Tập Minh Bạch (Freemium to Premium Catalog):**
   * Liệt kê danh mục gói tập dạng thẻ trực quan (Gói Ngày, Gói Tháng, Gói VIP, Gói Kèm PT).
   * Hiển thị rõ giá niêm yết, thời hạn sử dụng, số buổi tập gym và số buổi tập PT đi kèm.
-* **Thanh Toán VietQR Không Cần Nhập Liệu (Zero-Friction VietQR Checkout):**
-  * Khi hội viên chọn `"Đăng ký gói"` $\rightarrow$ Hệ thống gọi API sinh mã thanh toán VietQR chuẩn NAPAS 247 có sẵn số tiền chính xác và nội dung chuyển khoản định danh duy nhất (ví dụ: `GYM SUB 1042`).
-  * Hiển thị đồng hồ đếm ngược phiên thanh toán **10 phút (600 giây)** kèm hướng dẫn: `"Mở ứng dụng ngân hàng bất kỳ để quét mã"`.
-  * **Cơ chế Kích hoạt Thời gian Thực (Real-time Webhook Activation):**
-    * Client lắng nghe kết quả qua SignalR / WebSocket hoặc cơ chế Polling 2 giây/lần.
-    * Ngay khi nhận được tín hiệu thanh toán thành công từ Webhook ngân hàng:
-      1. Tự động đóng modal QR code ngay lập tức (không cần tải lại trang).
-      2. Hiệu ứng chúc mừng tinh tế (Checkmark xanh) kèm thông báo `"Kích hoạt thẻ tập thành công!"`.
-      3. Cập nhật ngay trạng thái thẻ sang `ACTIVE` và cộng đủ số lượt tập.
-      4. Cung cấp nút xem/tải Hóa đơn điện tử PDF.
+* **Thanh Toán VietQR Sandbox:**
+  * Khi hội viên chọn `"Đăng ký gói"` $\rightarrow$ Hệ thống tạo phiên thanh toán sandbox với số tiền chính xác và nội dung chuyển khoản định danh duy nhất (ví dụ: `GYM SUB 1042`).
+  * Hiển thị nhãn nổi bật `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"`, hướng dẫn quét thử mã nếu sandbox hỗ trợ, và đồng hồ hết hạn phiên **10 phút (600 giây)**.
+  * Hiển thị nút `"Giả lập thanh toán thành công"` để người dùng chủ động kiểm thử luồng thanh toán. Nút chỉ khả dụng ở môi trường phát triển/kiểm thử sandbox, tuyệt đối không xuất hiện hoặc hoạt động ở production.
+  * Khi bấm nút, giao diện chuyển sang trạng thái đang xử lý và khóa nút để tránh gửi lặp. Chỉ khi máy chủ sandbox xác nhận kết quả mô phỏng thành công mới:
+    1. Đóng màn hình/mở hộp thoại kết quả thanh toán.
+    2. Hiển thị rõ `"Thanh toán mô phỏng thành công"` và thông báo `"Kích hoạt thẻ tập thành công!"`.
+    3. Cập nhật trạng thái thẻ và số lượt tập theo kết quả máy chủ.
+    4. Cung cấp nút xem/tải hóa đơn nếu tạo hóa đơn thành công.
+  * Nếu mô phỏng thất bại, phiên hết hạn hoặc mất kết nối, hiển thị trạng thái tương ứng và cho phép thử lại an toàn; không báo đã thanh toán hoặc kích hoạt gói khi chưa có xác nhận từ máy chủ.
+  * Giao dịch sandbox phải được nhận diện là giao dịch mô phỏng trong giao diện và dữ liệu, không được trình bày như tiền thật đã vào tài khoản. Khi chuyển sang production, chỉ xác nhận thanh toán qua tích hợp và xác minh thông báo thanh toán thật từ nhà cung cấp.
 
 ### 2.3. Giai đoạn 3: Đặt Lịch Tập Với Huấn Luyện Viên Cá Nhân (PT Booking - UC05)
 * **Lưới Chọn Khung Giờ Trực Quan (Interactive Slot Picker):**
@@ -102,13 +106,14 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 ### 3.1. Phân Hệ Quầy Điểm Danh & Cổng Tự Động (Turnstile Check-in Counter - UC04)
 * **Tốc Độ Xử Lý Điểm Danh < 1 Giây:**
   * Luồng check-in là luồng quan trọng bậc nhất của phòng gym, không được phép trễ nải gây ùn tắc tại cửa ra vào.
-* **Giao Diện Màn Hình Điểm Danh Quầy Lễ Tân (Chia 2 Cột Rõ Ràng):**
-  * **Cột Trái (Camera Scanner / Thiết bị đọc mã):** Luồng quét mã QR/mã vạch trực tiếp từ camera hoặc máy quét chuyên dụng USB, ô nhập mã thẻ luôn ở trạng thái tự động Focus để sẵn sàng nhận tín hiệu máy quét không cần click chuột.
-  * **Cột Phải (Kết Quả Xác Minh Hội Viên Tức Thì):**
-    * Khi mã thẻ được quét hợp lệ: Màn hình nháy viền xanh lá, phát âm thanh báo thành công ("Beep" ngắn), hiển thị to rõ: Ảnh đại diện hội viên, Họ tên, Gói tập, Số buổi còn lại (`RemainingCheckInSessions`), và tín hiệu `"ĐÃ MỞ CỔNG TURNSTILE"`.
-    * Khi thẻ hết hạn hoặc không hợp lệ: Màn hình đổi nền cảnh báo đỏ, phát âm thanh cảnh báo lỗi ("Buzz"), hiển thị nguyên nhân chi tiết (ví dụ: `"Thẻ đã hết hạn từ ngày 15/10/2026"`, `"Gói tập đã hết lượt vào phòng"`, `"Thẻ đang bị đóng băng"`).
-* **Nút Ghi Đè Thủ Công (Manual Receptionist Override):**
-  * Trường hợp hội viên quên thẻ hoặc cổng turnstile kẹt cơ khí, lễ tân có nút `"Cho phép vào thủ công (Manual Check-in)"` kèm bắt buộc chọn lý do để lưu vào vết kiểm toán (`CheckInLog`).
+* **Hai Phần Tiếp Nhận Điểm Danh:**
+  1. **Quét QR để xác nhận:** Nhận QR hội viên từ camera hoặc đầu đọc USB. Khi quét thành công, gửi mã để hệ thống xác minh và hiển thị trạng thái đang xử lý/lỗi đọc mã nếu có.
+  2. **Nhập mã hội viên thủ công:** Lễ tân nhập mã hội viên vào ô riêng hoặc dùng đầu đọc nhập mã, sau đó chọn `"Tra cứu"`/nhấn Enter. Hiển thị hội viên khớp để đối chiếu trước khi xác nhận check-in.
+  * Hai cách dùng cùng một quy trình xác minh và cùng kết quả; nhập mã thủ công không bỏ qua kiểm tra trạng thái, hạn dùng, số lượt hoặc các điều kiện check-in khác.
+  * Kết quả thành công cần cho biết rõ `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"`, ảnh đại diện, họ tên, gói tập và số lượt còn lại (`RemainingCheckInSessions`). Kết quả từ chối cần nêu nguyên nhân cụ thể như thẻ hết hạn, hết lượt hoặc đang bảo lưu; không chỉ truyền đạt bằng màu/âm thanh.
+  * Sau mỗi kết quả, giao diện trở về trạng thái sẵn sàng cho lượt tiếp theo; lỗi camera/đầu đọc không được ngăn lễ tân dùng phần nhập mã thủ công.
+* **Ghi Đè Thủ Công (Ngoại Lệ Có Kiểm Soát):**
+  * Ghi đè cho phép vào là thao tác ngoại lệ, tách biệt với nhập mã hội viên và chỉ dùng khi có lý do vận hành được phê duyệt (ví dụ cổng turnstile hỏng). Bắt buộc chọn/ghi lý do và lưu dấu vết kiểm toán; không dùng như cách nhập mã hoặc bỏ qua xác minh mặc định.
 
 ### 3.2. Phân Hệ Thu Ngân, Bán Gói & Xuất Hóa Đơn (POS & Billing Workflow - UC07)
 * **Tối Ưu Hóa Quy Trình Tạo Hóa Đơn (3-Step Fast Checkout):**
@@ -117,8 +122,9 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   3. **Bước 3 - Chọn Phương Thức Thanh Toán:**
      * Nút bấm lớn chuyển đổi nhanh: `Tiền mặt (Cash)`, `Chuyển khoản VietQR`, `Thẻ tín dụng / POS Card`.
 * **Cơ Chế Khóa An Toàn Khi Chờ Thanh Toán VietQR:**
-  * Khi chọn VietQR: Màn hình hiển thị cửa sổ bật lên (Dialog) có mã QR động lớn và tổng số tiền thanh toán.
-  * Nút `"Xác nhận thu tiền thủ công"` bị vô hiệu hóa trong 10 giây đầu để khuyến khích chờ hệ thống đối soát tự động qua Webhook, tránh nhân viên bấm nhầm khi tiền chưa vào tài khoản.
+  * Khi chọn VietQR sandbox: Dialog hiển thị mã QR, tổng tiền và nhãn `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"`.
+  * Cho phép thu ngân bấm `"Giả lập thanh toán thành công"` để kiểm thử; nút chỉ khả dụng trong sandbox, bị khóa trong lúc xử lý và sau khi máy chủ xác nhận kết quả. Không dùng nút này để xác nhận tiền thật.
+  * Chỉ cập nhật hóa đơn sang `PAID` và kích hoạt gói sau khi máy chủ xác nhận kết quả mô phỏng. Nếu thất bại hoặc hết hạn, giữ nguyên trạng thái chưa thanh toán và hiển thị cách thử lại/tạo phiên mới.
 * **Tự Động Sinh Hóa Đơn & Mở Khóa Dịch Vụ (ACID Integrity):**
   * Ngay khi giao dịch hoàn tất: Tạo bản ghi `Invoice`, cập nhật `MemberSubscription` mới hoặc gia hạn thêm ngày/lượt cho gói cũ trong cùng 1 transaction CSDL.
   * Hộp thoại in hóa đơn xuất hiện tức thì với nút in nhanh `Enter` hoặc đóng `Esc`.
@@ -167,8 +173,7 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 | Thành Phần Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Lễ Tân & Quản Trị (WinUI 3 - Desktop) |
 | :--- | :--- | :--- |
 | **Điểm danh & Ra vào (UC04)** | Mở Thẻ điện tử trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình quầy lễ tân tiếp nhận quét trong $<1\text{s}$, đối chiếu ảnh chân dung, hiển thị trạng thái xanh/đỏ và âm thanh phản hồi. |
-| **Gói tập & Thanh toán (UC03, UC07)** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt thẻ trong 3 giây. | Thu ngân POS chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt. |
+| **Gói tập & Thanh toán (UC03, UC07)** | Hội viên xem gói tập, tạo phiên VietQR sandbox và dùng nút giả lập để kiểm thử kích hoạt sau xác nhận từ máy chủ. | Thu ngân POS chọn nhanh hội viên/gói, giả lập thanh toán VietQR trong sandbox, xác nhận trạng thái từ máy chủ và in hóa đơn. |
 | **Lịch Huấn luyện viên PT (UC05)** | Xem lịch rảnh của PT trên lưới tuần, đặt ca tập chỉ với 2 click; cảnh báo phạt nếu hủy ca $<2$ tiếng. | PT xem danh sách học viên theo Timeline ca dạy; Quản trị viên xếp lịch PT, phát hiện và chặn đứng xung đột trùng giờ. |
 | **Chỉ số Sức khỏe InBody (UC06)** | Xem biểu đồ trực quan biến thiên cân nặng, tỷ lệ mỡ và khối lượng cơ qua từng mốc thời gian. | Nhân viên đo nhập số liệu trên form có kiểm tra biên an toàn (Guard clauses), tự động tính chỉ số BMI ngay tức thì. |
 | **Quản lý & Báo cáo (UC08, UC10)** | Nhận thông báo tự động khi thẻ sắp hết hạn hoặc đến giờ hẹn tập cùng huấn luyện viên. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/CSV và sổ kiểm toán. |
-
