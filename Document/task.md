@@ -181,9 +181,9 @@ GymManagement.sln
 - [ ] **Task 1.2.2:** `[Type: DAL / Repository]` `[Module: Server / Data]` Xây dựng `IUnitOfWork` và `UnitOfWork` điều phối transaction ACID cho các nghiệp vụ đa bảng.
 
 #### 1.3. Cổng giao tiếp Third Party Service
-- [ ] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.
-- [ ] **Task 1.3.2:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`SMS Sending Gateway`**: Xây dựng `NotificationAdapter` gửi Email hóa đơn/SMS tới `Email/SMS Provider`.
-- [ ] **Task 1.3.3:** `[Type: Adapter]` `[Module: Server / Data]` Xây dựng `CameraScannerAdapter` giải mã QR điểm danh.
+- [x] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.
+- [x] **Task 1.3.2:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`SMS Sending Gateway`**: Xây dựng `NotificationAdapter` gửi Email hóa đơn/SMS tới `Email/SMS Provider`.
+- [x] **Task 1.3.3:** `[Type: Adapter]` `[Module: Server / Data]` Xây dựng `CameraScannerAdapter` giải mã QR điểm danh.
 
 ---
 
