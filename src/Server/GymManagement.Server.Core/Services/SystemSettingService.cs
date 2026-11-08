@@ -4,6 +4,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -735,44 +736,3 @@ public sealed class SystemSettingService : ISystemSettingService
         return Convert.ToHexString(hash);
     }
 }
-
-// =============================================================================
-// ENTITY STUBS
-// Placeholder types ánh xạ trực tiếp với 5 bảng SQL Server liên quan đến Cấu hình.
-// Tên đặt theo đúng Ma trận 3.2 dev_rule (tên bảng vật lý, không có suffix).
-// Sẽ được thay bằng EF Core entity chính thức khi hoàn thành Task 1.1.x
-// =============================================================================
-
-#pragma warning disable CS8618
-
-/// <summary>Stub Entity — ánh xạ bảng Role.</summary>
-internal sealed class Role
-{
-    public string RoleID { get; set; }
-    public string? RoleName { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng PackagePlan.</summary>
-internal sealed class PackagePlan
-{
-    public string PlanId { get; set; }
-    public string? Name { get; set; }
-    public string? Description { get; set; }
-    public int? DurationDays { get; set; }
-    public decimal? Price { get; set; }
-    public int? MaxCheckInSessions { get; set; }
-    public byte? is_PtIncluded { get; set; }
-    public int? TotalPtSessions { get; set; }
-    public byte? is_Active { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng Invoice.</summary>
-internal sealed class Invoice
-{
-    public string InvoiceId { get; set; }
-    public string SubscriptionId { get; set; }
-    public string UserName { get; set; }
-    public string? Status { get; set; }
-}
-
-#pragma warning restore CS8618

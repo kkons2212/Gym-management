@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using FluentAssertions;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using GymManagement.Server.Core.Services;
 using Microsoft.Extensions.Logging;
