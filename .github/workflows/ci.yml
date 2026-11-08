@@ -2,7 +2,7 @@ name: Continuous Integration (CI)
 
 on:
   push:
-    branches: [ "main", "feature/**" ]
+    branches: [ "main", "feature/**", "feat/**", "fix/**" ]
     paths-ignore:
       - 'Document/**'
       - '**.md'
@@ -41,6 +41,7 @@ jobs:
               - 'Document/GymManagement_Physical_Model.sql'
               - '.github/workflows/ci.yml'
               - 'GymManagement.sln'
+              - 'GymManagement.Server.slnf'
             client:
               - 'src/Client/**'
               - '.github/workflows/ci.yml'
@@ -80,21 +81,26 @@ jobs:
       - name: Check Solution Status
         id: check_sln
         run: |
-          if [ -f "GymManagement.sln" ]; then
+          if [ -f "GymManagement.Server.slnf" ]; then
+            echo "sln_target=GymManagement.Server.slnf" >> $GITHUB_OUTPUT
+            echo "sln_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ GymManagement.Server.slnf found for Linux runner."
+          elif [ -f "GymManagement.sln" ]; then
+            echo "sln_target=GymManagement.sln" >> $GITHUB_OUTPUT
             echo "sln_exists=true" >> $GITHUB_OUTPUT
             echo "✅ GymManagement.sln found."
           else
             echo "sln_exists=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ GymManagement.sln not yet scaffolded. Ready for Phase 0 implementation."
+            echo "ℹ️ Solution file not yet scaffolded. Ready for Phase 0 implementation."
           fi
 
       - name: Restore Dependencies
         if: steps.check_sln.outputs.sln_exists == 'true'
-        run: dotnet restore GymManagement.sln
+        run: dotnet restore ${{ steps.check_sln.outputs.sln_target }}
 
       - name: Build Server Component
         if: steps.check_sln.outputs.sln_exists == 'true'
-        run: dotnet build GymManagement.sln --no-restore --configuration Release
+        run: dotnet build ${{ steps.check_sln.outputs.sln_target }} --no-restore --configuration Release
 
       - name: Enforce 3-Tier Layering Boundaries (Pre-dev Rule 1)
         if: steps.check_sln.outputs.sln_exists == 'true'
@@ -114,7 +120,7 @@ jobs:
 
       - name: Run C# Code Formatting Check (dotnet format)
         if: steps.check_sln.outputs.sln_exists == 'true'
-        run: dotnet format GymManagement.sln --verify-no-changes --verbosity diagnostic || echo "⚠️ Formatting warnings detected."
+        run: dotnet format ${{ steps.check_sln.outputs.sln_target }} --verify-no-changes --verbosity diagnostic || echo "⚠️ Formatting warnings detected."
 
   # -------------------------------------------------------------
   # JOB 3: SERVER CORE SERVICES TESTS & 9 TABLES DDL VERIFY
