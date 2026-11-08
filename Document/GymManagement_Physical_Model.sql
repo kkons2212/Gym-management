@@ -38,7 +38,7 @@ CREATE TABLE dbo.[User] (
     Gender TINYINT NULL,
     Status VARCHAR(20) NULL,
     created_at DATE NULL,
-    CONSTRAINT PK_User PRIMARY KEY (UserID)
+    CONSTRAINT PK_User PRIMARY KEY (UserName)
 );
 GO
 
@@ -98,7 +98,7 @@ CREATE TABLE dbo.MemberSubscription (
     FreezeEndDate DATE NULL,
     Status VARCHAR(20) NULL,
     created_at DATE NULL,
-    UserID VARCHAR(10) NOT NULL,
+    UserName VARCHAR(10) NOT NULL,
     AssignedPtId VARCHAR(10) NULL,
     PlanId VARCHAR(10) NOT NULL,
     PTSessionId VARCHAR(10) NULL,
@@ -115,7 +115,7 @@ CREATE TABLE dbo.CheckInLog (
     DenialReason VARCHAR(100) NULL,
     SubscriptionId VARCHAR(10) NOT NULL,
     VerifiedByAdminId VARCHAR(10) NULL,
-    UserID VARCHAR(10) NOT NULL,
+    UserName VARCHAR(10) NOT NULL,
     CONSTRAINT PK_CheckInLog PRIMARY KEY (CheckInId)
 );
 GO
@@ -132,7 +132,7 @@ CREATE TABLE dbo.Invoice (
     RefundAmount DECIMAL(19, 0) NULL,
     RefundReason VARCHAR(255) NULL,
     paid_at DATE NULL,
-    UserID VARCHAR(10) NOT NULL,
+    UserName VARCHAR(10) NOT NULL,
     SubscriptionId VARCHAR(10) NOT NULL,
     CreatedByAdminId VARCHAR(10) NULL,
     CheckInLogCheckInId VARCHAR(10) NULL,
@@ -151,7 +151,7 @@ CREATE TABLE dbo.MemberBodyMetric (
     Bmi DECIMAL(19, 0) NULL,
     Notes VARCHAR(255) NULL,
     measured_at DATE NULL,
-    UserID VARCHAR(10) NOT NULL,
+    UserName VARCHAR(10) NOT NULL,
     PTSessionId VARCHAR(10) NULL,
     RecordedByPtId VARCHAR(10) NULL,
     CONSTRAINT PK_MemberBodyMetric PRIMARY KEY (BodyMetricId)
@@ -168,37 +168,37 @@ ALTER TABLE dbo.[User]
 
 -- PTAvailability -> User
 ALTER TABLE dbo.PTAvailability
-    ADD CONSTRAINT FK_PTAvailability_User FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserID);
+    ADD CONSTRAINT FK_PTAvailability_User FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserName);
 
 -- PTTrainingSession -> User & PTAvailability
 ALTER TABLE dbo.PTTrainingSession
-    ADD CONSTRAINT FK_PTTrainingSession_Member FOREIGN KEY (MemberID) REFERENCES dbo.[User] (UserID),
-    CONSTRAINT FK_PTTrainingSession_PT FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserID),
+    ADD CONSTRAINT FK_PTTrainingSession_Member FOREIGN KEY (MemberID) REFERENCES dbo.[User] (UserName),
+    CONSTRAINT FK_PTTrainingSession_PT FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_PTTrainingSession_Availability FOREIGN KEY (AvailabilityId) REFERENCES dbo.PTAvailability (AvailabilityId);
 
 -- MemberSubscription -> User, PackagePlan & PTTrainingSession
 ALTER TABLE dbo.MemberSubscription
-    ADD CONSTRAINT FK_MemberSubscription_User FOREIGN KEY (UserID) REFERENCES dbo.[User] (UserID),
-    CONSTRAINT FK_MemberSubscription_AssignedPt FOREIGN KEY (AssignedPtId) REFERENCES dbo.[User] (UserID),
+    ADD CONSTRAINT FK_MemberSubscription_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
+    CONSTRAINT FK_MemberSubscription_AssignedPt FOREIGN KEY (AssignedPtId) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_MemberSubscription_PackagePlan FOREIGN KEY (PlanId) REFERENCES dbo.PackagePlan (PlanId),
     CONSTRAINT FK_MemberSubscription_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId);
 
 -- CheckInLog -> MemberSubscription & User
 ALTER TABLE dbo.CheckInLog
     ADD CONSTRAINT FK_CheckInLog_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId),
-    CONSTRAINT FK_CheckInLog_User FOREIGN KEY (UserID) REFERENCES dbo.[User] (UserID),
-    CONSTRAINT FK_CheckInLog_Admin FOREIGN KEY (VerifiedByAdminId) REFERENCES dbo.[User] (UserID);
+    CONSTRAINT FK_CheckInLog_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
+    CONSTRAINT FK_CheckInLog_Admin FOREIGN KEY (VerifiedByAdminId) REFERENCES dbo.[User] (UserName);
 
 -- Invoice -> User, MemberSubscription & CheckInLog
 ALTER TABLE dbo.Invoice
-    ADD CONSTRAINT FK_Invoice_User FOREIGN KEY (UserID) REFERENCES dbo.[User] (UserID),
+    ADD CONSTRAINT FK_Invoice_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_Invoice_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId),
-    CONSTRAINT FK_Invoice_Admin FOREIGN KEY (CreatedByAdminId) REFERENCES dbo.[User] (UserID),
+    CONSTRAINT FK_Invoice_Admin FOREIGN KEY (CreatedByAdminId) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_Invoice_CheckInLog FOREIGN KEY (CheckInLogCheckInId) REFERENCES dbo.CheckInLog (CheckInId);
 
 -- MemberBodyMetric -> User & PTTrainingSession
 ALTER TABLE dbo.MemberBodyMetric
-    ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserID) REFERENCES dbo.[User] (UserID),
+    ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_MemberBodyMetric_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId),
-    CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserID);
+    CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserName);
 GO
