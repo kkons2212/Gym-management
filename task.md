@@ -170,11 +170,11 @@ GymManagement.sln
 *Mục tiêu: Đóng gói tầng dữ liệu của Server Component và kết nối các External Adapters.*
 
 #### 1.1. Thực thể CSDL & Cấu hình 9 bảng (SQL Server Database)
-- [ ] **Task 1.1.1:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `Role` và `[User]` theo đúng DDL.
-- [ ] **Task 1.1.2:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `PackagePlan` và `MemberSubscription`.
-- [ ] **Task 1.1.3:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `PTAvailability` và `PTTrainingSession`.
-- [ ] **Task 1.1.4:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `CheckInLog`, `Invoice` và `MemberBodyMetric`.
-- [ ] **Task 1.1.5:** `[Type: Database]` `[Module: Server / Data]` Cấu hình `GymDbContext` thiết lập toàn bộ khóa ngoại (FKs) và Unique Constraints (`QrCode`, `InvoiceCode`, `Phone`).
+- [x] **Task 1.1.1:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `Role` và `[User]` theo đúng DDL.
+- [x] **Task 1.1.2:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `PackagePlan` và `MemberSubscription`.
+- [x] **Task 1.1.3:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `PTAvailability` và `PTTrainingSession`.
+- [x] **Task 1.1.4:** `[Type: Database]` `[Module: Server / Data]` Định nghĩa Entity `CheckInLog`, `Invoice` và `MemberBodyMetric`.
+- [x] **Task 1.1.5:** `[Type: Database]` `[Module: Server / Data]` Cấu hình `GymDbContext` thiết lập toàn bộ khóa ngoại (FKs) và Unique Constraints (`QrCode`, `InvoiceCode`, `Phone`).
 
 #### 1.2. Hiện thực Interface "Database API" (Unit of Work & Repositories)
 - [x] **Task 1.2.1:** `[Type: DAL / Repository]` `[Module: Server / Data]` Triển khai `GenericRepository<T>` hỗ trợ CRUD an toàn.

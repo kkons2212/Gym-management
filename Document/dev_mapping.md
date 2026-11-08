@@ -7,12 +7,13 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **14 / 33 Tasks (42.4%)**
+* **Tiến độ Hoàn thành:** **25 / 33 Tasks (75.8%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 2 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, **Task 2.3**)
-  * ⚪ **Khối Giao Diện (Client Component - WinUI 3 & Blazor):** Khung ứng dụng đã sẵn sàng, chờ tích hợp nghiệp vụ (Giai đoạn 4.0)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
+  * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
 ---
 
@@ -29,6 +30,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
+| **Task 1.1.1 - 1.1.5** | Thực thể CSDL & Cấu hình 9 bảng (SQL Server Database) | Toàn bộ 10 Epics (9 bảng vật lý chuẩn DDL) | `Server.Core` (Entities) & `Server.Data` (Configurations & DbContext) | `src/Server/GymManagement.Server.Core/Entities/*` (9 entities), `src/Server/GymManagement.Server.Data/Configurations/*` (9 configs), `GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Persistence/GymDbContextAllEntitiesModelTests.cs` (5 tests) | Toàn bộ 9 bảng (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`) | `afb9ef9` |
 | **Task 1.2.1** | Interface Database API: GenericRepository | Toàn bộ 10 Epics (CRUD an toàn) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/GenericRepository.cs`, `Contracts/Data/IGenericRepository.cs` | `tests/GymManagement.Server.DataTests/Repositories/GenericRepositoryTests.cs` (13 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.2.2** | Interface Database API: UnitOfWork (ACID) | Toàn bộ 10 Epics (Transaction ACID) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/UnitOfWork.cs`, `Contracts/Data/IUnitOfWork.cs`, `Persistence/GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Repositories/UnitOfWorkTests.cs` (9 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
@@ -174,6 +176,50 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - FreezeSubscription: `EndDate += (FreezeEndDate - FreezeStartDate)`, Status → FROZEN
   - CancelSubscription: lý do hủy bắt buộc, Status → CANCELLED, giữ lịch sử
   - Welcome Email: fire-and-forget, lỗi chỉ log Warning
+
+---
+
+### 📌 [Task 1.1.1 – 1.1.5] Thực Thể CSDL & Cấu Hình 9 Bảng (SQL Server Database)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `afb9ef9` | **Nhánh:** `feat/task-1.1-sql-entities-configuration`
+* **Phân hệ nghiệp vụ liên quan:** Nền tảng dữ liệu cho toàn bộ 10 Epics (UC01 – UC10)
+* **Ranh giới thành phần:** `Server.Core` (Entities) và `Server.Data` (Configurations & DbContext)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Entities/Role.cs` (Task 1.1.1)
+  - `src/Server/GymManagement.Server.Core/Entities/User.cs` (Task 1.1.1)
+  - `src/Server/GymManagement.Server.Core/Entities/PackagePlan.cs` (Task 1.1.2)
+  - `src/Server/GymManagement.Server.Core/Entities/MemberSubscription.cs` (Task 1.1.2)
+  - `src/Server/GymManagement.Server.Core/Entities/PTAvailability.cs` (Task 1.1.3)
+  - `src/Server/GymManagement.Server.Core/Entities/PTTrainingSession.cs` (Task 1.1.3)
+  - `src/Server/GymManagement.Server.Core/Entities/CheckInLog.cs` (Task 1.1.4)
+  - `src/Server/GymManagement.Server.Core/Entities/Invoice.cs` (Task 1.1.4)
+  - `src/Server/GymManagement.Server.Core/Entities/MemberBodyMetric.cs` (Task 1.1.4)
+  - `src/Server/GymManagement.Server.Data/Configurations/RoleConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/UserConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/PackagePlanConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/MemberSubscriptionConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/PTAvailabilityConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/PTTrainingSessionConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/CheckInLogConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/InvoiceConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Configurations/MemberBodyMetricConfiguration.cs` (Task 1.1.5)
+  - `src/Server/GymManagement.Server.Data/Persistence/GymDbContext.cs` (Khai báo 9 `DbSet<T>`)
+  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (Xóa entity stubs tạm thời, dùng chung Core Entities)
+  - `src/Server/GymManagement.Server.Core/Services/SystemSettingService.cs` (Xóa entity stubs tạm thời, dùng chung Core Entities)
+  - `src/Server/GymManagement.Server.Core/Services/AuthService.cs` (Import Core Entities)
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.DataTests/Persistence/GymDbContextAllEntitiesModelTests.cs` (5 tests mới: table names, primary keys, physical columns/types, unique constraints, foreign keys).
+  - Kết quả kiểm thử toàn solution:
+    - `DataTests`: 41/41 test cases pass 100%.
+    - `UnitTests`: 56/56 test cases pass 100%.
+    - `ApiTests`: 12/12 test cases pass 100%.
+    - **Tổng cộng: 109/109 test cases pass 100%.**
+* **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+* **Ràng buộc nghiệp vụ & Kiến trúc:**
+  - **Khớp 100% DDL:** Định kiểu chính xác `varchar(10)`, `decimal(19, 0)`, `date`, `time(7)`, `tinyint`.
+  - **Ràng buộc duy nhất (Unique Constraints):** `UQ_MemberSubscription_QrCode` trên cột `QrCode`, `UQ_Invoice_InvoiceCode` trên cột `InvoiceCode`.
+  - **Khóa ngoại & Toàn vẹn tham chiếu:** Toàn bộ khóa ngoại cấu hình `DeleteBehavior.Restrict` chống xóa tầng làm mất dữ liệu lịch sử hoặc xung đột DDL.
+  - **Xóa bỏ triệt để Entity Stubs:** Loại bỏ hoàn toàn các class placeholder rải rác trong `PtService` và `SystemSettingService`, chuẩn hóa dùng một nguồn sự thật duy nhất (Single Source of Truth) trong `GymManagement.Server.Core.Entities`.
+  - **DoD 6 & Cú pháp:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), đặt tên chuẩn, properties hỗ trợ cả PascalCase lẫn alias tương thích ngược.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

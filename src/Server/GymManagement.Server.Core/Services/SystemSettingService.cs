@@ -736,21 +736,3 @@ public sealed class SystemSettingService : ISystemSettingService
         return Convert.ToHexString(hash);
     }
 }
-
-// =============================================================================
-// ENTITY STUBS
-// Placeholder types ánh xạ trực tiếp với 5 bảng SQL Server liên quan đến Cấu hình.
-// Tên đặt theo đúng Ma trận 3.2 dev_rule (tên bảng vật lý, không có suffix).
-// Sẽ được thay bằng EF Core entity chính thức khi hoàn thành Task 1.1.x
-// =============================================================================
-
-#pragma warning disable CS8618
-
-/// <summary>Stub Entity — ánh xạ bảng Role.</summary>
-internal sealed class Role
-{
-    public string RoleID { get; set; }
-    public string? RoleName { get; set; }
-}
-
-#pragma warning restore CS8618
