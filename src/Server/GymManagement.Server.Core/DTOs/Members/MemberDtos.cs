@@ -15,7 +15,12 @@ public record MemberDto(
     string FullName,
     string Phone,
     string Email,
-    string Status
+    string Status,
+    DateTime CreatedAt,
+    string? ActivePlanName = null,
+    DateTime? EndDate = null,
+    int RemainingCheckInSessions = 0,
+    int RemainingPtSessions = 0
 );
 
 /// <summary>
@@ -85,6 +90,25 @@ public record SubscriptionDto(
     int RemainingPtSessions
 );
 
+/// <summary>
+/// Chi tiết gói tập hội viên (phiên bản mở rộng dùng cho Auth/Billing context).
+/// Internal DTO — hậu tố *Dto.
+/// </summary>
+public record MemberSubscriptionDto(
+    string SubscriptionId,
+    string PlanId,
+    string PlanName,
+    string Status,
+    DateTime? StartDate,
+    DateTime? EndDate,
+    int? RemainingCheckInSessions,
+    int? RemainingPtSessions,
+    DateTime? FreezeStartDate,
+    DateTime? FreezeEndDate,
+    string? AssignedPtId,
+    string? AssignedPtName
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — INCOMING REQUESTS (Hậu tố *Request)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,7 +122,7 @@ public record RegisterMemberRequest(
     string Email,
     string PlanId,
     DateOnly StartDate,
-    string AdminUserName     // người thực hiện đăng ký (Admin/Lễ tân)
+    string AdminUserName
 );
 
 /// <summary>
@@ -116,8 +140,8 @@ public record UpdateMemberRequest(
 /// </summary>
 public record RenewSubscriptionRequest(
     string SubscriptionId,
-    string NewPlanId,        // gói cần gia hạn/chọn lại
-    DateOnly NewStartDate,   // ngày bắt đầu hiệu lực mới
+    string NewPlanId,
+    DateOnly NewStartDate,
     string AdminUserName
 );
 
@@ -146,12 +170,44 @@ public record FreezeSubscriptionRequest(
 /// </summary>
 public record CancelSubscriptionRequest(
     string SubscriptionId,
-    string Reason,           // bắt buộc theo UC02.5
+    string Reason,
     string AdminUserName
 );
 
+/// <summary>
+/// Payload nhập chỉ số InBody (dùng chung với PT context).
+/// </summary>
+public record InBodyEntryRequest(
+    string UserId,
+    decimal HeightCm,
+    decimal WeightKg,
+    decimal? BodyFatPercentage,
+    decimal? SkeletalMuscleMass,
+    string? Notes
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
-// SECTION 4 — LỊCH SỬ TẬP LUYỆN (UC09.2)
+// SECTION 4 — INBODY
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// Một bản ghi chỉ số InBody.
+/// Internal DTO — hậu tố *Dto.
+/// </summary>
+public record InBodyMetricDto(
+    string MetricId,
+    decimal HeightCm,
+    decimal WeightKg,
+    decimal? BodyFatPercentage,
+    decimal? SkeletalMuscleMass,
+    decimal Bmi,
+    string? Notes,
+    DateTime MeasuredAt,
+    string? RecordedByPtName
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5 — LỊCH SỬ TẬP LUYỆN (UC09.2)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// <summary>
@@ -161,7 +217,7 @@ public record CancelSubscriptionRequest(
 public record WorkoutHistoryResponse(
     string CheckInId,
     DateOnly CheckInDate,
-    string Status,           // SUCCESS | DENIED
+    string Status,
     string? DenialReason,
     string? AssignedPtName
 );

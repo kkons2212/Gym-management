@@ -58,13 +58,20 @@ public class VietQrAdapter : IVietQrAdapter
                 Content: request.Description,
                 Amount: request.Amount,
                 ExpiresAt: DateTime.UtcNow,
+                BankAccount: _options.AccountNo,
+                BankName: _options.BankName,
                 ErrorMessage: "Số tiền thanh toán phải lớn hơn 0."
             ));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        string template = string.IsNullOrWhiteSpace(_options.Template) ? DefaultTemplate : _options.Template;
+        string template = _options.Template;
+        if (string.IsNullOrWhiteSpace(template))
+        {
+            template = DefaultTemplate;
+        }
+
         string encodedDescription = UrlEncoder.Default.Encode(request.Description);
         string encodedAccountName = UrlEncoder.Default.Encode(_options.AccountName);
 
@@ -72,7 +79,11 @@ public class VietQrAdapter : IVietQrAdapter
         string quickLink = $"{_options.ImageBaseUrl}/{_options.BankBin}-{_options.AccountNo}-{template}.png" +
                            $"?amount={(long)request.Amount}&addInfo={encodedDescription}&accountName={encodedAccountName}";
 
-        int timeout = request.Timeout.HasValue ? (int)request.Timeout.Value.TotalSeconds : _options.TimeoutSeconds;
+        int timeout = _options.TimeoutSeconds;
+        if (request.Timeout.HasValue)
+        {
+            timeout = (int)request.Timeout.Value.TotalSeconds;
+        }
         DateTime expiresAt = DateTime.UtcNow.AddSeconds(timeout);
 
         _logger.LogInformation("Đã tạo mã VietQR thành công cho hóa đơn {InvoiceCode}, số tiền {Amount} VNĐ. Hết hạn lúc: {ExpiresAt}",
@@ -85,7 +96,9 @@ public class VietQrAdapter : IVietQrAdapter
             TransactionReference: request.InvoiceCode,
             Content: request.Description,
             Amount: request.Amount,
-            ExpiresAt: expiresAt
+            ExpiresAt: expiresAt,
+            BankAccount: _options.AccountNo,
+            BankName: _options.BankName
         );
 
         return Task.FromResult(response);
@@ -121,8 +134,20 @@ public class VietQrAdapter : IVietQrAdapter
 
     /// <inheritdoc />
     public Task<PaymentVerificationResult> SimulatePaymentSuccessAsync(string transactionReference, CancellationToken cancellationToken = default)
+        => SimulatePaymentSuccessAsync(transactionReference, 0m, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<PaymentVerificationResult> SimulatePaymentSuccessAsync(
+        string transactionReference,
+        decimal paidAmount,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(transactionReference);
+
+        if (paidAmount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(paidAmount), "Số tiền thanh toán không được âm.");
+        }
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -141,7 +166,7 @@ public class VietQrAdapter : IVietQrAdapter
         var result = new PaymentVerificationResult(
             IsPaid: true,
             TransactionReference: transactionReference,
-            PaidAmount: 0, // Sẽ được hệ thống đối soát điền theo số tiền hóa đơn
+            PaidAmount: paidAmount,
             PaidAt: DateTime.UtcNow,
             BankTransactionId: $"SANDBOX-MB-{DateTime.UtcNow.Ticks}"
         );
@@ -154,4 +179,3 @@ public class VietQrAdapter : IVietQrAdapter
         return Task.FromResult(result);
     }
 }
-
