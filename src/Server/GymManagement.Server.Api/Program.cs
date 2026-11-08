@@ -1,8 +1,13 @@
+using GymManagement.Server.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Đăng ký 3 Cổng Adapters ngoại vi (VietQR, Notification, CameraScanner)
+builder.Services.AddServerDataAdapters(builder.Configuration);
 
 var app = builder.Build();
 

@@ -6,12 +6,12 @@
 
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
-* **Tổng số Nhiệm vụ trong Roadmap:** 36 Tasks
-* **Tiến độ Hoàn thành:** **7 / 36 Tasks (19.4%)**
+* **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
+* **Tiến độ Hoàn thành:** **10 / 33 Tasks (30.3%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Sẵn sàng triển khai Giai đoạn 1 (Task 1.1.1 – 1.3.3)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1 (Đã hoàn tất Task 1.3.1, 1.3.2, 1.3.3)
   * ⚪ **Khối Giao Diện (Client Component - WinUI 3 & Blazor):** Khung ứng dụng đã sẵn sàng, chờ tích hợp nghiệp vụ (Giai đoạn 4.0)
 
 ---
@@ -29,6 +29,9 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
+| **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
+| **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
+| **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 
 ---
 
@@ -88,6 +91,38 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Build Solution: 100% build thành công 0 errors
   - Test Execution: 4/4 test cases passed (100% pass)
 * **Ghi chú kiến trúc:** Tuân thủ Pre-dev Rule 1 (tách biệt ranh giới 3 lớp), không cho phép Client gọi trực tiếp CSDL.
+
+---
+
+### 📌 [Task 1.3.1, 1.3.2, 1.3.3] Cổng Giao Tiếp Dịch Vụ Bên Ngoài (External Adapters: VietQR, Notification, CameraScanner)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `b2f0cab` | **Nhánh:** `feat/task-1.3-external-adapters`
+* **Phân hệ nghiệp vụ liên quan:**
+  - UC05 (Thanh toán POS, VietQR động theo chuẩn NAPAS 247 & Giả lập Sandbox)
+  - UC02, UC04, UC05 (Gửi Email/SMS hóa đơn tức thì & Nhắc lịch tập PT trước 2 giờ)
+  - UC03 (Giải mã QR điểm danh <100ms, xác thực token động xoay vòng 60 giây chống gian lận)
+* **Ranh giới thành phần:** `Server.Core` (Contracts & DTOs) và `Server.Data` (Adapters & DI Extension)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/DTOs/Adapters/VietQrDtos.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Adapters/NotificationDtos.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Adapters/QrScanDtos.cs`
+  - `src/Server/GymManagement.Server.Core/Contracts/Adapters/IVietQrAdapter.cs`
+  - `src/Server/GymManagement.Server.Core/Contracts/Adapters/INotificationAdapter.cs`
+  - `src/Server/GymManagement.Server.Core/Contracts/Adapters/ICameraScannerAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/DependencyInjection.cs`
+  - `src/Server/GymManagement.Server.Api/Program.cs`
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 unit tests - QuickLink NAPAS, validate amount > 0, Sandbox simulation, pending status)
+  - `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 unit tests - Sandbox logging, SMS dispatch, HTML invoice template, PT reminder)
+  - `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 unit tests - ZXing empty bytes, plain text fallback, 60s dynamic token valid, >60s token expired, invalid prefix)
+  - **Kết quả:** 13/13 unit tests pass 100% (Tổng DataTests: 14/14, Solution Tests: 17/17 pass)
+* **Bảng CSDL liên quan:** `Invoice`, `[User]`, `CheckInLog`
+* **Ràng buộc nghiệp vụ & Kiến trúc:**
+  - **Sandbox Simulation:** Khi `UseSandbox = true`, VietQR và Notification Adapter ghi log và mô phỏng giao dịch thành công mà không gọi mạng thực tế, đảm bảo an toàn môi trường phát triển và kiểm thử tự động.
+  - **QR Token Security:** Token điểm danh có định dạng `GYM-{UserId}-{TimestampUtcTicks}[-{Signature}]`, tự động hết hạn sau 60 giây, ngăn chặn triệt để chụp ảnh màn hình chuyển tiếp.
+  - **ZXing Decoding Performance:** Tối ưu hóa đọc mảng byte hình ảnh qua LuminanceSource và giải mã chuỗi dự phòng cho thiết bị quét quang học USB/HID với thời gian xử lý <100ms.
 
 ---
 
