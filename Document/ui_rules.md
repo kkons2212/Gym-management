@@ -13,20 +13,20 @@ Mọi mã nguồn XAML, CSS hoặc thành phần giao diện bắt buộc tuân 
 
 ### 1.1. Bảng Màu Chuẩn (Color Palette & Tokens)
 
-Hệ thống hỗ trợ cả chế độ Sáng (Light Mode) và Tối (Dark Mode), đặc biệt tối ưu cho màn hình cảm ứng POS tại quầy lễ tân và màn hình điện thoại của hội viên.
+Toàn bộ ứng dụng sử dụng giao diện tối (Dark Mode) thống nhất, đặc biệt tối ưu cho màn hình cảm ứng POS tại quầy lễ tân và màn hình điện thoại của hội viên.
 
-| Tên Token (Role) | Chế độ Tối (Dark Mode) | Chế độ Sáng (Light Mode) | Ràng Buộc Ứng Dụng Thực Tế |
-| :--- | :--- | :--- | :--- |
-| **`bg-canvas`** | `#0F172A` (Slate 900) | `#FFFFFF` (White) | Màu nền gốc của toàn bộ ứng dụng. |
-| **`bg-surface`** | `#1E293B` (Slate 800) | `#F8FAFC` (Slate 50) | Khối thẻ (Card), ô thông tin hội viên, giỏ hàng POS. |
-| **`border-subtle`** | `#334155` (Slate 700) | `#E2E8F0` (Slate 200) | Đường viền thanh lịch `1px solid` phân tách các khối nội dung. |
-| **`text-primary`** | `#F8FAFC` (Slate 50) | `#0F172A` (Slate 900) | Văn bản chính, tiêu đề, số liệu quan trọng (Tương phản AAA $\ge 7:1$). |
-| **`text-secondary`** | `#94A3B8` (Slate 400) | `#64748B` (Slate 500) | Nhãn mô tả, ngày giờ, số điện thoại, ghi chú phụ. |
-| **`accent-primary`** | `#0EA5E9` (Sky 500) | `#0284C7` (Sky 600) | Màu nút CTA chính: Quét thẻ, Thanh toán, Đặt lịch, Lưu thông tin. |
-| **`status-success`** | `#16A34A` (Green 600) | `#15803D` (Green 700) | Check-in hợp lệ, Mở cổng Turnstile, Thẻ `ACTIVE`, Hóa đơn `PAID`. |
-| **`status-warning`** | `#D97706` (Amber 600) | `#B45309` (Amber 700) | Thẻ sắp hết hạn ($\le 7$ ngày), Thẻ bảo lưu `FROZEN`, Cảnh báo hủy ca $<2\text{h}$. |
-| **`status-danger`** | `#DC2626` (Red 600) | `#B91C1C` (Red 700) | Thẻ hết hạn `EXPIRED`, Check-in thất bại, Trùng lịch dạy PT, Nút Xóa/Hủy. |
-| **`status-pt`** | `#8B5CF6` (Purple 500) | `#7C3AED` (Purple 600) | Khối hiển thị lịch dạy của Huấn luyện viên cá nhân và chỉ số InBody. |
+| Tên Token (Role) | Giá trị | Ràng Buộc Ứng Dụng Thực Tế |
+| :--- | :--- | :--- |
+| **`bg-canvas`** | `#0F172A` (Slate 900) | Màu nền gốc của toàn bộ ứng dụng. |
+| **`bg-surface`** | `#1E293B` (Slate 800) | Khối thẻ (Card), ô thông tin hội viên, giỏ hàng POS. |
+| **`border-subtle`** | `#334155` (Slate 700) | Đường viền thanh lịch `1px solid` phân tách các khối nội dung. |
+| **`text-primary`** | `#F8FAFC` (Slate 50) | Văn bản chính, tiêu đề, số liệu quan trọng. |
+| **`text-secondary`** | `#94A3B8` (Slate 400) | Nhãn mô tả, ngày giờ, số điện thoại, ghi chú phụ. |
+| **`accent-primary`** | `#0EA5E9` (Sky 500) | Màu nút CTA chính: Quét thẻ, Thanh toán, Đặt lịch, Lưu thông tin. |
+| **`status-success`** | `#16A34A` (Green 600) | Check-in hợp lệ, Mở cổng Turnstile, Thẻ `ACTIVE`, Hóa đơn `PAID`. |
+| **`status-warning`** | `#D97706` (Amber 600) | Thẻ sắp hết hạn ($\le 7$ ngày), Thẻ bảo lưu `FROZEN`, Cảnh báo hủy ca $<2\text{h}$. |
+| **`status-danger`** | `#DC2626` (Red 600) | Thẻ hết hạn `EXPIRED`, Check-in thất bại, Trùng lịch dạy PT, Nút Xóa/Hủy. |
+| **`status-pt`** | `#8B5CF6` (Purple 500) | Khối hiển thị lịch dạy của Huấn luyện viên cá nhân và chỉ số InBody. |
 
 ### 1.2. Kiểu Chữ (Typography) & Tỷ Lệ Bố Cục (Scale)
 
@@ -53,17 +53,21 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
 
 ### 2.1. Thẻ Tập Hội Viên Điện Tử (`DigitalCard.razor`)
 * **Bố cục Thẻ Số Cao Cấp (Digital Membership Card):**
-  * Kích thước tỷ lệ thẻ ATM tiêu chuẩn ($1.58:1$), nền tối thể thao sang trọng (`bg-gradient-to-br from-slate-900 to-slate-800`), viền kim loại mảnh `border border-slate-700`.
+  * Thẻ thông tin gọn, nền `bg-slate-800`, viền `border border-slate-700`; ưu tiên tên hội viên, tên gói, trạng thái và lượt tập còn lại.
   * **Góc trên bên trái:** Logo phòng gym + Tên gói tập hiện tại (`PackagePlan.PlanName`) kèm chip hạng gói (Standard: Bạc, VIP: Vàng ánh kim).
-  * **Góc trên bên phải:** Chip trạng thái tròn:
-    * `ACTIVE`: Chấm xanh lá `#16A34A` nhấp nháy nhẹ.
+  * **Góc trên bên phải:** Chip trạng thái rõ chữ, không phụ thuộc vào màu hoặc hiệu ứng nhấp nháy:
+    * `ACTIVE`: Nhãn xanh lá `#16A34A`.
     * `FROZEN`: Chấm vàng `#D97706` kèm nhãn `"Đang bảo lưu"`.
     * `EXPIRED`: Chấm đỏ `#DC2626` kèm nhãn `"Hết hạn"`.
-* **Khối Mã QR Điểm Danh Trung Tâm:**
-  * Khung quét hình vuông màu trắng tinh khiết (`bg-white p-3 rounded-lg shadow-sm w-52 h-52 mx-auto flex items-center justify-center`).
-  * Mã QR động tương phản đen-trắng tuyệt đối, bên dưới là thanh đếm ngược làm mới mã (60 giây) và nút nhỏ `"Làm mới mã QR"`.
+* **Hiển thị Mã QR Điểm Danh:**
+  * Trên thẻ thông tin, dùng nút CTA dễ nhận biết `"Mở mã QR điểm danh"`; không thu nhỏ hoặc đặt QR cạnh các thông tin khác.
+  * Khi mở, hiển thị QR trong màn hình chuyên biệt trên mobile hoặc dialog lớn trên desktop. QR tối thiểu `240px × 240px`, co giãn theo viewport nhưng không vượt quá `min(80vw, 320px)`.
+  * Đặt QR đen trên nền trắng đặc, có vùng trống (quiet zone) tối thiểu 4 module xung quanh; không phủ logo, chữ, họa tiết, bo góc hoặc hiệu ứng lên vùng mã.
+  * Hiển thị tên hội viên, ảnh đại diện nhỏ và trạng thái thẻ bên ngoài vùng quét để nhân viên dễ đối chiếu. Không đưa thông tin nhạy cảm vào nội dung QR.
+  * Bên dưới QR, hiển thị thời gian còn hiệu lực và thời điểm tự làm mới mỗi 60 giây; có nút `"Làm mới mã QR"` với trạng thái đang tải và thông báo lỗi nếu không lấy được mã mới.
+  * QR hết hạn hoặc thẻ không còn hợp lệ phải được làm mờ/ẩn và thay bằng trạng thái giải thích rõ ràng; không hiển thị mã hết hạn như còn dùng được.
 * **Hàng Thông Số Buổi Tập (Session Counters):**
-  * Chia 2 cột đều nhau dưới mã QR:
+  * Chia 2 cột đều nhau trên thẻ thông tin:
     * Cột 1: `"Lượt Gym Còn Lại"` $\rightarrow$ Số lớn nổi bật (`text-2xl font-bold text-sky-400`).
     * Cột 2: `"Buổi PT Còn Lại"` $\rightarrow$ Số lớn nổi bật (`text-2xl font-bold text-purple-400`).
   * Chân thẻ hiển thị ngày hết hạn: `"Hết hạn: 31/12/2026"` (`text-xs text-slate-400`).
@@ -72,22 +76,26 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
 * **Lưới Danh Mục Gói Tập (Package Plan Cards):**
   * Trình bày dạng danh sách thẻ cuộn dọc (hoặc lưới 2 cột trên máy tính bảng).
   * Mỗi thẻ gói tập có: Tên gói, Giá tiền lớn kèm đơn vị VNĐ, Thời hạn (ví dụ: `30 ngày`, `90 ngày`), Số buổi tập không giới hạn hoặc số lượt cụ thể, Huy hiệu `"PHỔ BIẾN NHẤT"` cho gói bán chạy.
-  * Nút CTA: `"Đăng Ký Gói Này"` màu xanh `bg-sky-600 hover:bg-sky-500 text-white font-semibold h-11 w-full rounded-lg`.
+  * Nút CTA: `"Đăng Ký Gói Này"` màu xanh `bg-sky-500 hover:bg-sky-400 text-white font-semibold h-11 w-full rounded-lg`.
 * **Modal Thanh Toán VietQR Tự Động (VietQR Pop-up Modal):**
-  * Nền trắng hoặc slate đậm, bo góc `rounded-xl`, phủ backdrop làm mờ xung quanh.
+  * Nền slate đậm, bo góc `rounded-xl`, phủ backdrop làm mờ xung quanh.
+  * Hiển thị nhãn dễ thấy `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"` để người dùng không nhầm với giao dịch thật.
   * **Mã QR VietQR chuẩn NAPAS 247:** Kích thước cố định $220\text{px} \times 220\text{px}$, hiển thị logo ngân hàng và logo Napas ở giữa.
   * **Hộp Thông Tin Chuyển Khoản Minh Bạch:**
     * Số tiền: Hiển thị to rõ màu xanh lá (ví dụ: `800,000 đ`).
-    * Nội dung chuyển khoản: Ô văn bản font đơn cách (`font-mono tracking-wider bg-slate-100 p-2 rounded`) kèm nút 1-chạm `"Sao chép"`.
+    * Nội dung chuyển khoản: Ô văn bản font đơn cách (`font-mono tracking-wider bg-slate-700 p-2 rounded`) kèm nút 1-chạm `"Sao chép"`.
   * **Thanh Đếm Ngược:** Hiển thị thời gian hiệu lực của mã QR `09:59` đếm lùi, khi hết giờ nút chuyển sang `"Tạo lại mã thanh toán"`.
+  * **Giả Lập Thanh Toán:** Trong môi trường sandbox, hiển thị nút riêng `"Giả lập thanh toán thành công"` dưới mã QR. Nút phải chỉ gọi luồng xác nhận mô phỏng của sandbox; không xác nhận giao dịch ngân hàng thật.
+  * Sau khi mô phỏng thành công, khóa nút để tránh gửi lặp, hiển thị trạng thái `"Thanh toán mô phỏng thành công"` và chỉ kích hoạt gói sau khi máy chủ xác nhận kết quả.
+  * Nút giả lập chỉ được bật trong môi trường phát triển/kiểm thử sandbox, tuyệt đối không hiển thị hoặc khả dụng trong production.
 
 ### 2.3. Lịch Huấn Luyện Viên & Hộp Thoại Đặt Ca (`PtCalendarView.razor`, `BookingModal.razor`)
 * **Bộ Chọn Ngày Dạng Băng Chuyền Ngang (Horizontal Date Picker):**
   * Cho phép bấm chọn nhanh từng ngày trong tuần (Thứ 2 đến Chủ nhật) kèm ngày tháng rõ ràng. Ngày được chọn sáng nổi bật với nền xanh `bg-sky-500 text-white`.
 * **Lưới Khung Giờ (Time Slot Grid):**
   * Các khung giờ từ 06:00 đến 21:00 trình bày dạng nút bấm phẳng 2 cột hoặc 3 cột:
-    * Khung giờ rảnh: Nền xanh lá nhạt (`bg-green-50 text-green-700 border border-green-200 hover:bg-green-100`).
-    * Khung giờ đã kín lịch: Nền xám mờ (`bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed line-through`).
+    * Khung giờ rảnh: Nền xanh lá tối (`bg-green-900/30 text-green-300 border border-green-700 hover:bg-green-900/50`).
+    * Khung giờ đã kín lịch: Nền slate tối (`bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed line-through`).
 * **Hộp Thoại Cảnh Báo Hủy Ca Muộn (< 2 Giờ):**
   * Hộp thoại bật lên cảnh báo màu hổ phách/đỏ với biểu tượng dấu chấm than lớn `⚠️`:
   * Tiêu đề: `"Xác Nhận Hủy Buổi Tập"`.
@@ -121,26 +129,25 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
     6. `Báo Cáo & Thống Kê Doanh Thu`
     7. `Cấu Hình & Sổ Kiểm Toán Hệ Thống` (Dành riêng Admin)
 * **Thanh Tiêu Đề Trên Cùng (App TitleBar):**
-  * Tích hợp thanh tìm kiếm hội viên toàn cục nhanh, thông tin nhân viên đang đăng nhập kèm Badge phân quyền (`Admin`, `Lễ Tân`, `Thu Ngân`), và nút chuyển đổi Dark/Light mode.
+  * Tích hợp thanh tìm kiếm hội viên toàn cục nhanh và thông tin nhân viên đang đăng nhập kèm Badge phân quyền (`Admin`, `Lễ Tân`, `Thu Ngân`).
 
 ### 3.2. Màn Hình Quầy Điểm Danh Cửa Ra Vào (`CheckInCounterPage.xaml`)
-* **Bố Cục 2 Cột Đối Xứng:**
-  * **Cột Trái ($40\%$ Chiều rộng) - Khu vực Tiếp Nhận Máy Quét:**
-    * Luồng hiển thị hình ảnh từ Camera quét QR hoặc ô nhập mã thẻ USB Scanner.
-    * Ô `TextBox` quét mã luôn giữ trạng thái `Focus` liên tục để sẵn sàng nhận lệnh từ máy quét mã vạch/mã QR mà nhân viên không cần dùng chuột click.
-    * Nút thao tác nhanh: `"Cho vào thủ công (Override)"` và `"Mở cổng kiểm tra"`.
-  * **Cột Phải ($60\%$ Chiều rộng) - Bảng Hiển Thị Kết Quả Điểm Danh:**
-    * Khi chưa quét: Hiển thị biểu tượng thẻ tập chờ quét với thông báo `"Sẵn sàng tiếp nhận hội viên..."`.
-    * **Khi Check-in Hợp Lệ:**
-      * Toàn bộ viền khung nháy sáng màu xanh lá `#16A34A`.
-      * Băng rôn lớn trên cùng: `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"` (`bg-green-600 text-white text-xl font-bold p-4 rounded-t-lg`).
+* **Bố Cục 2 Cột:**
+  * **Cột Trái ($40\%$ Chiều rộng) - Hai Phần Tiếp Nhận Điểm Danh:**
+    1. **Quét QR để xác nhận:** Khu vực quét riêng bằng camera hoặc đầu đọc QR USB, có chỉ dẫn `"Đưa mã QR hội viên vào vùng quét"`, trạng thái sẵn sàng/đang quét và lỗi camera/đầu đọc nếu có. Ô nhận dữ liệu từ đầu đọc giữ focus khi màn hình sẵn sàng.
+    2. **Nhập mã hội viên thủ công:** Ô nhập mã hội viên riêng, có nhãn rõ ràng và nút `"Tra cứu"`; hỗ trợ Enter để gửi. Hiển thị lỗi ngay cạnh ô nếu mã trống, sai định dạng hoặc không tìm thấy hội viên.
+    * Hai phần dùng chung kết quả xác minh ở cột phải. Nhập mã thủ công là phương thức xác minh bình thường, không tự bỏ qua điều kiện thẻ hoặc thay thế thao tác ghi đè có kiểm soát.
+  * **Cột Phải ($60\%$ Chiều rộng) - Kết Quả Xác Minh Hội Viên:**
+    * Trạng thái ban đầu hiển thị `"Sẵn sàng tiếp nhận hội viên..."` và hướng dẫn chọn quét QR hoặc nhập mã hội viên.
+    * **Khi Check-in Hợp Lệ từ một trong hai cách:**
+      * Hiển thị trạng thái thành công màu xanh `#16A34A` và thông báo `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"`.
       * Ảnh chân dung hội viên kích thước lớn ($140\text{px} \times 140\text{px}$, bo tròn).
-      * Thông tin chi tiết: Họ tên in hoa to rõ (`text-2xl font-bold`), Mã thẻ, Tên gói tập hiện tại.
-      * Chip số lượt còn lại to nổi bật: `"Còn 18 lượt tập gym"` / `"Còn 5 buổi tập PT"`.
+      * Thông tin chi tiết: Họ tên (`text-2xl font-bold`), mã hội viên, tên gói tập.
+      * Chip số lượt còn lại nổi bật: `"Còn 18 lượt tập gym"` / `"Còn 5 buổi tập PT"`.
     * **Khi Check-in Thất Bại:**
-      * Toàn bộ viền khung nháy sáng cảnh báo đỏ `#DC2626`.
-      * Băng rôn lớn trên cùng: `"TỪ CHỐI CHECK-IN • CỔNG KHÓA"` (`bg-red-600 text-white text-xl font-bold p-4 rounded-t-lg`).
-      * Lý do từ chối in chữ đậm: `"Thẻ đã hết hạn ngày 20/10/2026"` hoặc `"Gói tập đã hết lượt vào phòng"`.
+      * Hiển thị trạng thái từ chối màu đỏ `#DC2626` và thông báo `"TỪ CHỐI CHECK-IN • CỔNG KHÓA"`.
+      * Nêu rõ lý do, ví dụ `"Thẻ đã hết hạn ngày 20/10/2026"` hoặc `"Gói tập đã hết lượt vào phòng"`; không chỉ dựa vào màu sắc hoặc âm thanh.
+    * Sau khi hiện kết quả, đưa màn hình về trạng thái sẵn sàng cho lượt tiếp theo mà không xóa kết quả trước khi nhân viên kịp đọc.
 
 ### 3.3. Màn Hình POS Thu Ngân & Xuất Hóa Đơn (`PosBillingPage.xaml`)
 * **Bố Cục 2 Khối Thao Tác:**
@@ -153,7 +160,7 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
     * Bảng tổng kết tiền:
       * Tạm tính: `1,200,000 đ`
       * Giảm giá: `- 100,000 đ`
-      * **Tổng thanh toán:** `1,100,000 đ` (`text-3xl font-bold text-sky-600`).
+      * **Tổng thanh toán:** `1,100,000 đ` (`text-3xl font-bold text-sky-400`).
 * **Bộ Nút Chọn Phương Thức Thanh Toán Lớn:**
   * 3 Nút bấm kích thước lớn dễ chạm trên màn hình cảm ứng:
     * `[Tiền Mặt]`
@@ -161,8 +168,9 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
     * `[Quẹt Thẻ POS / Ngân Hàng]`
 * **Cửa Sổ Bật Lên Thanh Toán VietQR (Dialog):**
   * Mở hộp thoại `ContentDialog` chứa mã VietQR động lớn ở trung tâm.
-  * Có biểu tượng xoay nhẹ (Spinner) hiển thị trạng thái `"Đang chờ ngân hàng xác nhận giao dịch..."`.
-  * Khi tiền về tài khoản: Hệ thống phát tiếng ting-ting, hộp thoại tự đổi sang dấu tích xanh thành công và nút `"In Hóa Đơn (Enter)"` sáng lên.
+  * Khi chạy sandbox, hiển thị nhãn `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"` và nút `"Giả lập thanh toán thành công"`; không mô tả trạng thái chờ như đang đối soát với ngân hàng thật.
+  * Khi sandbox xác nhận mô phỏng thành công từ máy chủ, hộp thoại hiển thị trạng thái thành công và bật nút `"In Hóa Đơn (Enter)"`. Khóa nút giả lập trong lúc gửi và sau khi giao dịch đã được xác nhận.
+  * Nút giả lập chỉ khả dụng trong môi trường phát triển/kiểm thử sandbox; không hiển thị hoặc khả dụng trong production.
 
 ### 3.4. Bảng Lịch Huấn Luyện Viên & Hàng Rào Chống Trùng Lịch (`PtSchedulePage.xaml`)
 * **Lưới Thời Gian Tuần (Weekly Timeline Timetable):**
@@ -190,7 +198,7 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 
 ### 3.6. Bảng Điều Khiển Thống Kê Doanh Thu (`DashboardPage.xaml`)
 * **4 Thẻ Chỉ Số KPI Phẳng (Flat KPI Cards):**
-  * Nền trắng hoặc slate đậm, viền mảnh `border-subtle`, số liệu in đậm cỡ lớn (`text-3xl font-bold`).
+  * Nền slate đậm, viền mảnh `border-subtle`, số liệu in đậm cỡ lớn (`text-3xl font-bold`).
   * Chỉ số hiển thị: `Doanh Thu Hôm Nay (VNĐ)`, `Lượt Check-in Hôm Nay`, `Thẻ Mới Trong Tháng`, `Số Giờ PT Đã Dạy`.
 * **Biểu Đồ Doanh Thu & Giờ Cao Điểm:**
   * Biểu đồ cột biểu diễn phân bố lượt khách vào phòng tập theo từng khung giờ trong ngày (nhận diện khung giờ vàng 17h - 20h).
@@ -203,8 +211,7 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 | Thành Phần Giao Diện | Ứng Dụng WinUI 3 Desktop (Quầy Lễ Tân / Admin) | Ứng Dụng Blazor Server Web (Hội Viên / PT) |
 | :--- | :--- | :--- |
 | **Thẻ Hội Viên & Điểm Danh** | Màn hình tiếp nhận quét 2 cột, hiển thị ảnh chân dung lớn, đèn báo xanh/đỏ, nút ghi đè thủ công. | Thẻ điện tử di động cao cấp, mã QR động tự làm mới mỗi 60s, chip đếm số buổi còn lại. |
-| **Thanh Toán & Hóa Đơn** | Màn hình POS thu ngân đầy đủ tính năng, chọn nhanh hội viên, bảng giá, cửa sổ VietQR động, in nhiệt. | Danh mục gói dạng thẻ cuộn dọc, modal mã QR VietQR Napas 247 có đếm ngược 10 phút, tự kích hoạt. |
+| **Thanh Toán & Hóa Đơn** | Màn hình POS thu ngân đầy đủ tính năng, chọn nhanh hội viên, bảng giá, cửa sổ VietQR sandbox có nút giả lập và in nhiệt. | Danh mục gói dạng thẻ cuộn dọc, modal mã QR sandbox có đếm ngược 10 phút, nút giả lập thanh toán và cập nhật trạng thái sau xác nhận từ máy chủ. |
 | **Lịch Tập Huấn Luyện Viên** | Bảng lịch tuần đa năng nhiều PT, kéo thả khung giờ, hàng rào viền đỏ chặn đứng xung đột trùng lịch. | Lưới chọn khung giờ rảnh của PT theo ngày, modal xác nhận kèm cảnh báo mất buổi nếu hủy ca $<2$ tiếng. |
 | **Chỉ Số Sức Khỏe InBody** | Biểu mẫu nhập số đo chuyên dụng có kiểm tra ngưỡng an toàn y tế và tính tự động chỉ số BMI tức thời. | Thẻ tóm tắt chỉ số thể lực cá nhân, thước đo dải màu BMI trực quan, biểu đồ đường theo dõi tiến trình giảm mỡ. |
 | **Báo Cáo & Quản Trị** | Dashboard KPI doanh thu thời gian thực, biểu đồ cột giờ cao điểm, bảng dữ liệu phân trang và xuất Excel. | Trang hồ sơ cá nhân, lịch sử các ca tập đã tham gia, lịch sử các lần check-in và hóa đơn đã thanh toán. |
-
