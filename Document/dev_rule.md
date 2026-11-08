@@ -1,6 +1,6 @@
 # QUY CHUẨN THỰC THI LẬP TRÌNH & NGUYÊN TẮC PHÁT TRIỂN HỆ THỐNG
 # HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
-**Tài liệu tham chiếu:** [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) | [`predevrule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/predevrule.md) | [`task.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/task.md) | [`dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md)
+**Tài liệu tham chiếu:** [`PRD.md`](PRD.md) | [`predevrule.md`](predevrule.md) | [`task.md`](task.md) | [`dev_mapping.md`](dev_mapping.md)
 
 ---
 
@@ -8,7 +8,7 @@
 
 Tài liệu này là **Quy chuẩn Kỹ thuật Thực thi Bắt buộc (Mandatory Engineering Standard)** của dự án Hệ thống Quản lý Phòng tập Thể thao. 
 
-Mọi lập trình viên và AI Agent khi bắt tay vào thực hiện bất kỳ nhiệm vụ nào trong [`task.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/task.md) (từ Giai đoạn 0 đến Giai đoạn 5) **BẮT BUỘC PHẢI TUÂN THỦ 100%** toàn bộ các nguyên tắc, quy chuẩn đặt tên, bố cục file, ranh giới kiến trúc và tiêu chuẩn nghiệm thu (Definition of Done) được quy định dưới đây.
+Mọi lập trình viên và AI Agent khi bắt tay vào thực hiện bất kỳ nhiệm vụ nào trong [`task.md`](task.md) (từ Giai đoạn 0 đến Giai đoạn 5) **BẮT BUỘC PHẢI TUÂN THỦ 100%** toàn bộ các nguyên tắc, quy chuẩn đặt tên, bố cục file, ranh giới kiến trúc và tiêu chuẩn nghiệm thu (Definition of Done) được quy định dưới đây.
 
 ```mermaid
 flowchart TD
@@ -54,7 +54,7 @@ Mọi task khi được thực hiện đều phải tuân thủ nghiêm ngặt q
 #### Chi tiết 8 bước thực thi:
 1. **Bước 1: Nhận diện Task:** Đọc rõ `Task ID`, `[Type: ...]`, `[Module: ...]`. Chỉ tập trung giải quyết đúng phạm vi của task đó, không sửa lan man sang các module khác.
 2. **Bước 2: Tạo nhánh Git mới:** Tạo nhánh riêng từ `main` theo đúng quy chuẩn đặt tên tiếng Anh (mục 1.2). Tuyệt đối không commit trực tiếp lên nhánh `main`.
-3. **Bước 3: Đối chiếu Nghiệp vụ:** Tra cứu mã Use Case tương ứng trong Phần II của [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) và bảng Ma trận truy vết (RTM) để hiểu rõ Tiêu chí chấp nhận (Acceptance Criteria - AC).
+3. **Bước 3: Đối chiếu Nghiệp vụ:** Tra cứu mã Use Case tương ứng trong Phần II của [`PRD.md`](PRD.md) và bảng Ma trận truy vết (RTM) để hiểu rõ Tiêu chí chấp nhận (Acceptance Criteria - AC).
 4. **Bước 4: Lập trình:** Viết mã nguồn tuân thủ ranh giới 3 lớp và Dependency Rule (Presentation $\rightarrow$ Core Contracts $\rightarrow$ Data Access).
 5. **Bước 5: Kiểm thử song hành (Test-Alongside):** Viết test ngay trong thư mục `tests/` tương ứng (`UnitTests`, `DataTests`, hoặc `ApiTests`).
 6. **Bước 6: Thẩm định chất lượng cục bộ:**
@@ -63,8 +63,8 @@ Mọi task khi được thực hiện đều phải tuân thủ nghiêm ngặt q
    * `dotnet test --no-build` (100% test cases pass).
 7. **Bước 7: Commit theo chuẩn:** Commit code với thông điệp Conventional Commits bằng **Tiếng Anh 100%** (mục 1.3).
 8. **Bước 8: Đóng Task & Ghi Sổ Ánh Xạ Kỹ Thuật:**
-   * Đổi `[ ]` thành `[x]` trong cả `task.md` và `Document/task.md`.
-   * Ghi nhận thông tin chi tiết vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md).
+   * Đổi `[ ]` thành `[x]` trong cả `../task.md` và `task.md`.
+   * Ghi nhận thông tin chi tiết vào [`dev_mapping.md`](dev_mapping.md).
    * Đẩy nhánh lên GitHub, mở Pull Request và xác nhận `CI Quality Gate` báo Xanh.
 
 ---
@@ -172,7 +172,7 @@ flowchart LR
 * **Hàm ngắn gọn, đơn mục đích:** Mỗi hàm lý tưởng chỉ nên dài từ 20 đến 40 dòng, giải quyết trọn vẹn đúng 1 mục tiêu duy nhất.
 
 ### 2. YAGNI (You Aren't Gonna Need It) — Chỉ làm đúng những gì cần
-* Tuyệt đối **không lập trình đón đầu tương lai**: Chỉ hiện thực đúng các trường dữ liệu, phương thức và endpoint được quy định trong 37 Use Cases của [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) và đúng 9 bảng CSDL trong [`GymManagement_Physical_Model.sql`](file:///c:/Users/nguye/Desktop/Gym-management/Document/GymManagement_Physical_Model.sql).
+* Tuyệt đối **không lập trình đón đầu tương lai**: Chỉ hiện thực đúng các trường dữ liệu, phương thức và endpoint được quy định trong 37 Use Cases của [`PRD.md`](PRD.md) và đúng 9 bảng CSDL trong [`GymManagement_Physical_Model.sql`](GymManagement_Physical_Model.sql).
 * Không tự ý thêm cột "dự phòng", không thêm bảng mở rộng, không thêm các API "tiện ích" chưa nằm trong Acceptance Criteria (AC).
 
 ### 3. DRY (Don't Repeat Yourself) — Không nhân bản logic
@@ -413,5 +413,5 @@ Một task trong `task.md` chỉ được phép chuyển trạng thái sang `[x]
 - [ ] **DoD 7 (Code Cleanliness):** Chạy `dotnet format` không còn lỗi format hay warning nghiêm trọng.
 - [ ] **DoD 8 (Biên dịch Không Lỗi):** `dotnet build` đạt 0 Errors.
 - [ ] **DoD 9 (Git Branch & Commit Tiếng Anh):** Tên nhánh chuẩn kebab-case tiếng Anh (`feature/task-X.Y-...`), thông điệp commit chuẩn Conventional Commits tiếng Anh (`feat(...)`, `fix(...)`). Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
-- [ ] **DoD 10 (Sổ Ánh Xạ Kỹ Thuật):** Đã ghi lại nhật ký ánh xạ kỹ thuật chi tiết của task vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL, commit hash).
+- [ ] **DoD 10 (Sổ Ánh Xạ Kỹ Thuật):** Đã ghi lại nhật ký ánh xạ kỹ thuật chi tiết của task vào [`dev_mapping.md`](dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL, commit hash).
 

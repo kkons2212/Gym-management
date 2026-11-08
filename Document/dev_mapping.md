@@ -1,6 +1,6 @@
 # SỔ ÁNH XẠ KỸ THUẬT & TRUY VẾT TRIỂN KHAI (TECHNICAL IMPLEMENTATION & MAPPING LEDGER)
 # HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
-**Tài liệu tham chiếu:** [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) | [`predevrule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/predevrule.md) | [`task.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/task.md) | [`dev_rule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_rule.md)
+**Tài liệu tham chiếu:** [`PRD.md`](PRD.md) | [`predevrule.md`](predevrule.md) | [`task.md`](task.md) | [`dev_rule.md`](dev_rule.md)
 
 ---
 
@@ -34,12 +34,12 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 * **Phân hệ nghiệp vụ liên quan:** Chuẩn mực kỹ thuật & Truy vết cho toàn bộ 10 Epics (UC01 – UC10)
 * **Ranh giới thành phần:** `Document/` (Quy định cho toàn bộ `Server`, `Client`, và `Testing`)
 * **Mã nguồn tạo / sửa:**
-  - [`Document/dev_rule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_rule.md) (7 chương: Task Lifecycle, KISS/YAGNI/DRY/SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, DoD 10 tiêu chí)
-  - [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md) (Dashboard, Ma trận truy vết, Nhật ký chi tiết)
-  - [`task.md`](file:///c:/Users/nguye/Desktop/Gym-management/task.md)
-  - [`Document/task.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/task.md)
+  - [`Document/dev_rule.md`](dev_rule.md) (7 chương: Task Lifecycle, KISS/YAGNI/DRY/SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, DoD 10 tiêu chí)
+  - [`Document/dev_mapping.md`](dev_mapping.md) (Dashboard, Ma trận truy vết, Nhật ký chi tiết)
+  - [`task.md`](../task.md)
+  - [`Document/task.md`](task.md)
 * **Kiểm thử & Ràng buộc xác thực:**
-  - Đối soát 100% với [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md), [`predevrule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/predevrule.md) và DDL 9 bảng CSDL.
+  - Đối soát 100% với [`PRD.md`](PRD.md), [`predevrule.md`](predevrule.md) và DDL 9 bảng CSDL.
   - Tích hợp 10 tiêu chí nghiệm thu (DoD) làm điều kiện bắt buộc trước khi đóng bất kỳ task nào.
 * **Ghi chú kiến trúc:** Mọi task sau khi hoàn thành bắt buộc phải cập nhật bản ghi vào file này trước khi commit.
 
@@ -50,13 +50,13 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 * **Phân hệ nghiệp vụ liên quan:** Hạ tầng DevOps & Kiểm chuẩn chất lượng toàn bộ 10 Epics (UC01 – UC10)
 * **Ranh giới thành phần:** `.github/workflows/` (Điều phối `Server` và `Client`)
 * **Mã nguồn tạo / sửa:**
-  - [`.github/workflows/ci.yml`](file:///c:/Users/nguye/Desktop/Gym-management/.github/workflows/ci.yml)
-  - [`task.md`](file:///c:/Users/nguye/Desktop/Gym-management/task.md)
-  - [`Document/task.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/task.md)
+  - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+  - [`task.md`](../task.md)
+  - [`Document/task.md`](task.md)
 * **Kiểm thử & Ràng buộc xác thực:**
   - `dorny/paths-filter@v3`: Phát hiện thay đổi theo subsystem (`src/Server/**` vs `src/Client/**`)
   - `gitleaks/gitleaks-action@v2`: Quét rò rỉ secret/token/password trong git history
-  - Script python: Kiểm tra cú pháp đầy đủ 9 bảng CSDL trong [`Document/GymManagement_Physical_Model.sql`](file:///c:/Users/nguye/Desktop/Gym-management/Document/GymManagement_Physical_Model.sql)
+  - Script python: Kiểm tra cú pháp đầy đủ 9 bảng CSDL trong [`Document/GymManagement_Physical_Model.sql`](GymManagement_Physical_Model.sql)
   - Kiểm tra ranh giới 3 lớp (.csproj references)
   - Cổng chất lượng tổng hợp: `ci-gate` (Quality Gate bắt buộc để Merge PR)
 * **Ghi chú kiến trúc:** Runner Windows (`windows-latest`) cho Desktop WinUI 3; Runner Linux (`ubuntu-latest`) cho Server Core & Database verification.

@@ -8,7 +8,7 @@
 
 ## 1. KHỚP NỐI VỚI SƠ ĐỒ THÀNH PHẦN (COMPONENT DIAGRAM - PRD PHẦN 4)
 
-Dựa trên sơ đồ thành phần kiến trúc chính thức trong [`Document/PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md), hệ thống bao gồm **3 Khối Thành phần Cấp cao (High-Level Components)**:
+Dựa trên sơ đồ thành phần kiến trúc chính thức trong [`PRD.md`](PRD.md), hệ thống bao gồm **3 Khối Thành phần Cấp cao (High-Level Components)**:
 
 ```mermaid
 flowchart TD
@@ -150,7 +150,7 @@ GymManagement.sln
 
 ### GIAI ĐOẠN 0: KHỞI TẠO NỀN TẢNG THEO RÀNH GIỚI COMPONENT
 - [x] **Task 0.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Thiết lập pipeline CI GitHub Actions (`.github/workflows/ci.yml`) tự động Build & Test cho Solution.
-- [x] **Task 0.0b:** `[Type: Standards]` `[Module: Documentation]` Ban hành bộ quy chuẩn thực thi lập trình [`Document/dev_rule.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_rule.md) (KISS, YAGNI, SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, 10 tiêu chí DoD) và Sổ ánh xạ kỹ thuật [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md).
+- [x] **Task 0.0b:** `[Type: Standards]` `[Module: Documentation]` Ban hành bộ quy chuẩn thực thi lập trình [`dev_rule.md`](dev_rule.md) (KISS, YAGNI, SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, 10 tiêu chí DoD) và Sổ ánh xạ kỹ thuật [`dev_mapping.md`](dev_mapping.md).
 - [ ] **Task 0.1:** `[Type: Scaffolding]` `[Module: Infrastructure]` Tạo mới file Solution `GymManagement.sln`.
 - [ ] **Task 0.2:** `[Type: Scaffolding]` `[Module: Server]` Tạo các dự án thành phần của `Server`:
   - `src/Server/GymManagement.Server.Core` (Class Library .NET 8).
