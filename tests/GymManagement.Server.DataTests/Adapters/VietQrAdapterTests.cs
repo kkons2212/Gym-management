@@ -20,6 +20,7 @@ public class VietQrAdapterTests
         _options = Options.Create(new VietQrOptions
         {
             BankBin = "970422",
+            BankName = "MB Bank",
             AccountNo = "0912345678",
             AccountName = "CONG TY TNHH PHONG TAP",
             IsSandbox = true
@@ -50,6 +51,8 @@ public class VietQrAdapterTests
         result.TransactionReference.Should().Be("INV-20261108-001");
         result.QuickLink.Should().Contain("970422-0912345678-compact2.png");
         result.QuickLink.Should().Contain("amount=1200000");
+        result.BankAccount.Should().Be("0912345678");
+        result.BankName.Should().Be("MB Bank");
         result.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
     }
 
@@ -80,16 +83,18 @@ public class VietQrAdapterTests
         string invoiceCode = "INV-SIMULATE-001";
 
         // Act
-        var simulateResult = await _adapter.SimulatePaymentSuccessAsync(invoiceCode);
+        var simulateResult = await _adapter.SimulatePaymentSuccessAsync(invoiceCode, 500000m);
         var verifyResult = await _adapter.VerifyPaymentAsync(invoiceCode, 500000m);
 
         // Assert
         simulateResult.IsPaid.Should().BeTrue();
         simulateResult.TransactionReference.Should().Be(invoiceCode);
+        simulateResult.PaidAmount.Should().Be(500000m);
         simulateResult.BankTransactionId.Should().StartWith("SANDBOX-MB-");
 
         verifyResult.IsPaid.Should().BeTrue();
         verifyResult.TransactionReference.Should().Be(invoiceCode);
+        verifyResult.PaidAmount.Should().Be(500000m);
     }
 
     [Fact]
@@ -106,4 +111,3 @@ public class VietQrAdapterTests
         result.ErrorMessage.Should().Contain("chưa được thanh toán");
     }
 }
-

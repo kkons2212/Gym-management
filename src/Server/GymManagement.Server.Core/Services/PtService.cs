@@ -2,6 +2,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -1079,18 +1080,6 @@ public sealed class PtService : IPtService
 
 #pragma warning disable CS8618
 
-/// <summary>Stub Entity — ánh xạ bảng [User].</summary>
-internal sealed class User
-{
-    public string UserName { get; set; }
-    public string RoleId { get; set; }
-    public string? FullName { get; set; }
-    public string? Phone { get; set; }
-    public string? Email { get; set; }
-    public string? Status { get; set; }
-    public DateOnly? CreatedAt { get; set; }
-}
-
 /// <summary>Stub Entity — ánh xạ bảng PTAvailability.</summary>
 internal sealed class PTAvailability
 {
@@ -1116,21 +1105,6 @@ internal sealed class PTTrainingSession
     public byte? RatingStars { get; set; }
     public string? ReviewComment { get; set; }
     public DateOnly? CompletedAt { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng MemberSubscription.</summary>
-internal sealed class MemberSubscription
-{
-    public string SubscriptionId { get; set; }
-    public string UserName { get; set; }
-    public string? AssignedPtId { get; set; }
-    public string? PlanId { get; set; }
-    public string? Status { get; set; }
-    public int RemainingPtSessions { get; set; }
-    public int RemainingCheckInSessions { get; set; }
-    public string? QrCode { get; set; }
-    public DateOnly? StartDate { get; set; }
-    public DateOnly? EndDate { get; set; }
 }
 
 /// <summary>Stub Entity — ánh xạ bảng MemberBodyMetric.</summary>
