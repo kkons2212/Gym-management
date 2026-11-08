@@ -64,7 +64,12 @@ public class VietQrAdapter : IVietQrAdapter
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        string template = string.IsNullOrWhiteSpace(_options.Template) ? DefaultTemplate : _options.Template;
+        string template = _options.Template;
+        if (string.IsNullOrWhiteSpace(template))
+        {
+            template = DefaultTemplate;
+        }
+
         string encodedDescription = UrlEncoder.Default.Encode(request.Description);
         string encodedAccountName = UrlEncoder.Default.Encode(_options.AccountName);
 
@@ -72,7 +77,11 @@ public class VietQrAdapter : IVietQrAdapter
         string quickLink = $"{_options.ImageBaseUrl}/{_options.BankBin}-{_options.AccountNo}-{template}.png" +
                            $"?amount={(long)request.Amount}&addInfo={encodedDescription}&accountName={encodedAccountName}";
 
-        int timeout = request.Timeout.HasValue ? (int)request.Timeout.Value.TotalSeconds : _options.TimeoutSeconds;
+        int timeout = _options.TimeoutSeconds;
+        if (request.Timeout.HasValue)
+        {
+            timeout = (int)request.Timeout.Value.TotalSeconds;
+        }
         DateTime expiresAt = DateTime.UtcNow.AddSeconds(timeout);
 
         _logger.LogInformation("Đã tạo mã VietQR thành công cho hóa đơn {InvoiceCode}, số tiền {Amount} VNĐ. Hết hạn lúc: {ExpiresAt}",

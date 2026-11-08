@@ -175,8 +175,9 @@ flowchart LR
 
 ### 1. KISS (Keep It Simple, Stupid) — Đơn giản là thượng sách
 * **Tính dễ đọc là ưu tiên số 1:** Viết code tường minh, trực diện. Tránh viết những câu lệnh một dòng (one-liners) phức tạp, lắt léo khó debug.
+* **Cấm tuyệt đối toán tử 3 ngôi (`? :`):** Mọi điều kiện rẽ nhánh bắt buộc phải dùng `if / else` hoặc Guard Clause phẳng. Không dùng `? :` để đảm bảo có thể đặt breakpoint trực tiếp trên từng nhánh khi debug.
 * **Chống Over-Engineering:** Không tự ý tạo thêm các tầng trung gian trừu tượng không cần thiết. Không dùng Mediator/CQRS hay Abstract Factory khi chỉ cần Service Interface + Dependency Injection đơn giản là đủ đáp ứng.
-* **Hàm ngắn gọn, đơn mục đích:** Mỗi hàm lý tưởng chỉ nên dài từ 20 đến 40 dòng, giải quyết trọn vẹn đúng 1 mục tiêu duy nhất.
+* **Hàm ngắn gọn, đơn mục đích:** Mỗi hàm lý tưởng chỉ nên dài từ 20 đến 40 dòng, giải quyết trọn vẹn đúng 1 mục tiêu duy nhất. Thân hàm bắt buộc dùng khối `{ ... }`, cấm dùng Expression-bodied method `=>`.
 
 ### 2. YAGNI (You Aren't Gonna Need It) — Chỉ làm đúng những gì cần
 * Tuyệt đối **không lập trình đón đầu tương lai**: Chỉ hiện thực đúng các trường dữ liệu, phương thức và endpoint được quy định trong 37 Use Cases của [`PRD.md`](PRD.md) và đúng 9 bảng CSDL trong [`GymManagement_Physical_Model.sql`](GymManagement_Physical_Model.sql).
@@ -453,6 +454,74 @@ public class MemberService : IMemberService
 
 ---
 
+### 3.8. Quy chuẩn Kiểm soát Rẽ nhánh & Cú pháp Lambda (Control Flow & Lambda Guidelines)
+
+Để đảm bảo tính dễ đọc tuyệt đối, hỗ trợ gỡ lỗi (Debugging) nhanh chóng và triệt tiêu mã nguồn khó bảo trì, toàn bộ hệ thống áp dụng các quy chuẩn sau:
+
+#### 1. CẤM TUYỆT ĐỐI TOÁN TỬ 3 NGÔI (`? :` - STRICTLY FORBIDDEN):
+* **Nguyên tắc:** Toàn bộ các cấu trúc điều kiện rẽ nhánh **BẮT BUỘC PHẢI SỬ DỤNG CÂU LỆNH `if / else` HOẶC GUARD CLAUSES**.
+* **Lý do kỹ thuật:**
+  * Cho phép lập trình viên đặt Breakpoint trực tiếp trên từng nhánh (`true` hoặc `false`) để quan sát biến môi trường khi Debug.
+  * Ngăn chặn triệt để thói quen viết các biểu thức lồng nhau nguy hiểm (`a ? b : c ? d : e`).
+  * Tránh giấu diếm logic kiểm tra điều kiện sau các dòng code dài.
+* **Mẫu chuyển đổi bắt buộc:**
+  ```csharp
+  // ❌ CẤM VIẾT:
+  int pageSize = requestSize < 1 ? 10 : requestSize;
+
+  // ✅ BẮT BUỘC VIẾT (Tường minh, đặt breakpoint từng nhánh):
+  int pageSize = requestSize;
+  if (requestSize < 1)
+  {
+      pageSize = 10;
+  }
+  ```
+
+#### 2. CẤM EXPRESSION-BODIED TRÊN PHƯƠNG THỨC / HÀM NGHIỆP VỤ (`=>`):
+* Mọi hàm hoặc phương thức nghiệp vụ trong `Services`, `Repositories`, `Controllers` **bắt buộc phải có thân khối `{ ... }` có lệnh `return` rõ ràng**.
+* Cấm viết dạng `public Task<T> GetDataAsync() => _repo.GetAsync();`.
+* **Lý do:** Phân định rõ ràng giữa phương thức thực thi (Methods có thể có side-effects) và thuộc tính dữ liệu thuần túy (Properties), đồng thời giúp dễ dàng bổ sung log, validation hoặc đặt breakpoint khi mở rộng.
+
+#### 3. CẤM LAMBDA ĐA DÒNG / PHỨC TẠP LỒNG TRONG THAM SỐ (INLINE MULTI-LINE LAMBDAS):
+* Tuyệt đối không viết các khối anonymous lambda dài quá 3 dòng lồng vào tham số của phương thức khác (như trong `ExecuteTransactionAsync` hay các bộ lọc).
+* **Bắt buộc tách thành Private Named Method riêng biệt** có tên rõ nghĩa, giúp code phẳng, dễ đọc và tự tài liệu hóa.
+  ```csharp
+  // ❌ CẤM: Nhồi nhét cả khối logic nghiệp vụ vào lambda làm tham số
+  await _unitOfWork.ExecuteTransactionAsync(async () =>
+  {
+      var member = await _memberRepo.GetByIdAsync(memberId);
+      member.Status = "ACTIVE";
+      await _unitOfWork.SaveChangesAsync();
+      return true;
+  });
+
+  // ✅ BẮT BUỘC: Tách thành Named Method riêng biệt
+  await _unitOfWork.ExecuteTransactionAsync(ActivateMemberSubscriptionAsync);
+
+  private async Task<bool> ActivateMemberSubscriptionAsync()
+  {
+      var member = await _memberRepo.GetByIdAsync(memberId);
+      member.Status = "ACTIVE";
+      await _unitOfWork.SaveChangesAsync();
+      return true;
+  }
+  ```
+
+#### 4. PHẠM VI DUY NHẤT ĐƯỢC PHÉP SỬ DỤNG LAMBDA (`=>`):
+Chỉ cho phép sử dụng ký tự `=>` trong 3 trường hợp tiêu chuẩn sau:
+1. **Biểu thức truy vấn LINQ của EF Core:** Các biểu thức lọc đơn giản (`x => x.IsActive`, `x => x.PlanId == planId`) dùng để EF Core dịch sang câu lệnh SQL `WHERE`.
+2. **Thuộc tính chỉ đọc (Read-only Properties) 1 dòng đơn giản:**
+   ```csharp
+   public bool IsActive => Status == "ACTIVE";
+   public string FullName => $"{FirstName} {LastName}";
+   ```
+3. **Cấu hình Action Delegate của ASP.NET Core:**
+   ```csharp
+   services.AddDbContext<GymDbContext>(options => { options.UseSqlServer(connectionString); });
+   ```
+
+---
+
 ## CHƯƠNG 4: QUY TẮC TRIỂN KHAI THEO TỪNG THÀNH PHẦN (LAYER RULES)
 
 ### 4.1. Thành phần `GymManagement.Server.Core` (7 Service Components)
@@ -583,7 +652,7 @@ Một task trong `task.md` chỉ được phép chuyển trạng thái sang `[x]
 - [ ] **DoD 3 (Async & Cancellation):** Mọi hàm I/O đều là `async/await` và có `CancellationToken`.
 - [ ] **DoD 4 (CSDL Chuẩn):** Thao tác dữ liệu đúng 9 bảng, không tự tạo bảng mới ngoài DDL.
 - [ ] **DoD 5 (Kiểm thử):** Có ít nhất 1 Unit/Integration Test tương ứng, test chạy Pass 100%.
-- [ ] **DoD 6 (Bố cục & Quy chuẩn Đặt tên Toàn Hệ thống):** Đặt tên thư mục, file, class, interface (`I*`), DTOs (`*Request`, `*Response`, `*Dto`), hàm (`Verb + Noun`), biến và ca test tuân thủ 100% Ma trận Chương 3 & Chương 6. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**.
+- [ ] **DoD 6 (Bố cục, Quy chuẩn Đặt tên & Cú pháp Rẽ nhánh):** Đặt tên thư mục, file, class, interface (`I*`), DTOs (`*Request`, `*Response`, `*Dto`), hàm (`Verb + Noun`), biến và ca test tuân thủ 100% Ma trận Chương 3 & Chương 6. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**. **CẤM 100% toán tử 3 ngôi `? :`** (bắt buộc dùng `if / else` hoặc Guard Clause phẳng); **CẤM expression-bodied methods `=>` trên các hàm nghiệp vụ**.
 - [ ] **DoD 7 (Code Cleanliness):** Chạy `dotnet format` không còn lỗi format hay warning nghiêm trọng.
 - [ ] **DoD 8 (Biên dịch Không Lỗi):** `dotnet build` đạt 0 Errors.
 - [ ] **DoD 9 (Git Branch & Commit Tiếng Anh):** Tên nhánh chuẩn kebab-case tiếng Anh (`<type>/<story-id>-<short-description>`), thông điệp commit chuẩn Conventional Commits tiếng Anh (`<type>(<scope>): <action>`). Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
