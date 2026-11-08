@@ -227,7 +227,7 @@ graph TD
 * **Mô tả:** Là Thu ngân / Lễ tân, tôi cần lập hóa đơn thu tiền cho các dịch vụ (gói tập, thuê PT, nước uống/phụ kiện) và thu tiền qua Tiền mặt/VietQR/Thẻ.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `8`
 * **Tiêu chí chấp nhận (AC):**
-  * Chọn hội viên, thêm các mục thanh toán, tự động áp dụng giảm giá/ưu đãi và tính tổng thanh toán.
+  * Chọn hội viên, chọn gói tập niêm yết và tính tổng thanh toán theo giá gói (khớp 100% bảng Invoice: SubtotalAmount, TotalAmount).
   * Hỗ trợ 3 phương thức thanh toán: Tiền mặt, Chuyển khoản VietQR (hiển thị mã QR động có sẵn số tiền và nội dung chuyển khoản chuẩn NAPAS), và Quẹt thẻ POS.
   * Sau khi xác nhận: Lưu hóa đơn trạng thái `PAID`, kích hoạt dịch vụ tương ứng và tự động phát hành hóa đơn điện tử gửi qua Email cho hội viên.
 * **Danh sách task triển khai 3 lớp:**

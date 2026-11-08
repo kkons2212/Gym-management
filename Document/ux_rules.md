@@ -49,7 +49,7 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 ### 2.1. Giai đoạn 1: Đăng nhập Một Chạm & Thẻ Hội Viên Số (Digital Membership Card - UC01 & UC02)
 * **Thẻ Tập Số Tức Thời (Zero-Delay Digital Card):**
   * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay lập tức Thẻ Hội Viên Điện Tử ở vị trí trên cùng.
-  * Thẻ hiển thị rõ: Họ tên hội viên, Ảnh đại diện, Tên gói tập hiện tại (`PackagePlan`), Trạng thái thẻ (`ACTIVE`, `FROZEN`, `EXPIRED`), Số ngày còn lại và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
+  * Thẻ hiển thị rõ: Họ tên hội viên (`User.FullName`), Ảnh đại diện, Tên gói tập hiện tại (`PackagePlan.Name`), Trạng thái thẻ (`MemberSubscription.Status`), Số ngày còn lại (tính từ `MemberSubscription.EndDate`) và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
 * **Cơ Chế Mã QR Động Chống Gian Lận (Dynamic QR Check-in):**
   * Dashboard hiển thị nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện riêng ở kích thước tối thiểu **240 × 240 px**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
   * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm máy quét đọc được.
@@ -63,19 +63,19 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ### 2.2. Giai đoạn 2: Khám Phá Gói Tập & Thanh Toán VietQR Sandbox (Catalog & POS Payment - UC03 & UC07)
 * **Bảng Giá & So Sánh Gói Tập Minh Bạch (Freemium to Premium Catalog):**
-  * Liệt kê danh mục gói tập dạng thẻ trực quan (Gói Ngày, Gói Tháng, Gói VIP, Gói Kèm PT).
-  * Hiển thị rõ giá niêm yết, thời hạn sử dụng, số buổi tập gym và số buổi tập PT đi kèm.
-* **Thanh Toán VietQR Sandbox:**
-  * Khi hội viên chọn `"Đăng ký gói"` $\rightarrow$ Hệ thống tạo phiên thanh toán sandbox với số tiền chính xác và nội dung chuyển khoản định danh duy nhất (ví dụ: `GYM SUB 1042`).
-  * Hiển thị nhãn nổi bật `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"`, hướng dẫn quét thử mã nếu sandbox hỗ trợ, và đồng hồ hết hạn phiên **10 phút (600 giây)**.
-  * Hiển thị nút `"Giả lập thanh toán thành công"` để người dùng chủ động kiểm thử luồng thanh toán. Nút chỉ khả dụng ở môi trường phát triển/kiểm thử sandbox, tuyệt đối không xuất hiện hoặc hoạt động ở production.
-  * Khi bấm nút, giao diện chuyển sang trạng thái đang xử lý và khóa nút để tránh gửi lặp. Chỉ khi máy chủ sandbox xác nhận kết quả mô phỏng thành công mới:
-    1. Đóng màn hình/mở hộp thoại kết quả thanh toán.
-    2. Hiển thị rõ `"Thanh toán mô phỏng thành công"` và thông báo `"Kích hoạt thẻ tập thành công!"`.
-    3. Cập nhật trạng thái thẻ và số lượt tập theo kết quả máy chủ.
-    4. Cung cấp nút xem/tải hóa đơn nếu tạo hóa đơn thành công.
-  * Nếu mô phỏng thất bại, phiên hết hạn hoặc mất kết nối, hiển thị trạng thái tương ứng và cho phép thử lại an toàn; không báo đã thanh toán hoặc kích hoạt gói khi chưa có xác nhận từ máy chủ.
-  * Giao dịch sandbox phải được nhận diện là giao dịch mô phỏng trong giao diện và dữ liệu, không được trình bày như tiền thật đã vào tài khoản. Khi chuyển sang production, chỉ xác nhận thanh toán qua tích hợp và xác minh thông báo thanh toán thật từ nhà cung cấp.
+  * Liệt kê danh mục gói tập dạng thẻ trực quan khớp bảng `PackagePlan` (`PlanId`, `Name`, `Description`).
+  * Hiển thị rõ đơn giá niêm yết (`PackagePlan.Price`), thời hạn sử dụng (`DurationDays`), số buổi tập gym (`MaxCheckInSessions`), số buổi tập PT đi kèm (`TotalPtSessions`) và cờ kèm PT (`is_PtIncluded`).
+  * **Chính sách Giá Niêm Yết Cố Định:** Giá hóa đơn hiển thị đúng bằng giá niêm yết của gói (`Invoice.TotalAmount = CAST(PackagePlan.Price AS INT)`). Hệ thống không áp dụng chiết khấu/giảm giá vì mô hình CSDL vật lý không lưu trữ giảm giá.
+* **Thanh Toán VietQR Không Cần Nhập Liệu (Zero-Friction VietQR Checkout):**
+  * Khi hội viên chọn `"Đăng ký gói"` $\rightarrow$ Hệ thống gọi API sinh mã thanh toán VietQR chuẩn NAPAS 247 có sẵn số tiền chính xác và nội dung chuyển khoản định danh duy nhất (ví dụ: `GYM SUB 1042`).
+  * Hiển thị đồng hồ đếm ngược phiên thanh toán **10 phút (600 giây)** kèm hướng dẫn: `"Mở ứng dụng ngân hàng bất kỳ để quét mã"`.
+  * **Cơ chế Kích hoạt Thời gian Thực (Real-time Webhook Activation):**
+    * Client lắng nghe kết quả qua SignalR / WebSocket hoặc cơ chế Polling 2 giây/lần.
+    * Ngay khi nhận được tín hiệu thanh toán thành công từ Webhook ngân hàng:
+      1. Tự động đóng modal QR code ngay lập tức (không cần tải lại trang).
+      2. Hiệu ứng chúc mừng tinh tế (Checkmark xanh) kèm thông báo `"Kích hoạt thẻ tập thành công!"`.
+      3. Cập nhật ngay trạng thái thẻ sang `ACTIVE` và cộng đủ số lượt tập.
+      4. Cung cấp nút xem/tải Hóa đơn điện tử PDF.
 
 ### 2.3. Giai đoạn 3: Đặt Lịch Tập Với Huấn Luyện Viên Cá Nhân (PT Booking - UC05)
 * **Lưới Chọn Khung Giờ Trực Quan (Interactive Slot Picker):**
@@ -91,11 +91,12 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ### 2.4. Giai đoạn 4: Theo Dõi Sức Khỏe & Tiến Trình InBody (Health & InBody Tracking - UC06)
 * **Bảng Chỉ Số Đo Lường Cá Nhân (Personal Metric Dashboard):**
-  * Hiển thị kết quả đo InBody mới nhất: Chiều cao, Cân nặng, Tỷ lệ mỡ (`BodyFatPercentage`), Khối lượng cơ (`MuscleMass`), và Chỉ số khối cơ thể tính tự động (`BMI = Weight / (Height / 100)²`).
+  * Hiển thị kết quả đo InBody mới nhất khớp bảng `MemberBodyMetric`: Chiều cao (`HeightCm` - cm), Cân nặng (`WeightKg` - kg), Tỷ lệ mỡ (`BodyFatPercentage` - %), Khối lượng cơ xương (`SkeletalMuscleMass` - kg), và Chỉ số khối cơ thể tính tự động:
+    $$\text{Bmi} = \frac{\text{WeightKg}}{(\text{HeightCm} / 100)^2}$$
 * **Phân Loại Tình Trạng Thể Thao (Visual BMI Categorization):**
   * Sử dụng thước đo trực quan có dải màu chuẩn (Thiếu cân - Xanh dương, Chuẩn - Xanh lá, Thừa cân - Vàng, Béo phì - Đỏ).
 * **Biểu Đồ Tiến Trình Theo Thời Gian (Progress Chart):**
-  * Biểu đồ đường phẳng (Line chart) thể hiện xu hướng giảm mỡ, tăng cơ qua các lần đo lịch sử giúp hội viên và PT cùng đánh giá hiệu quả huấn luyện.
+  * Biểu đồ đường phẳng (Line chart) thể hiện xu hướng biến thiên cân nặng (`WeightKg`), tỷ lệ mỡ (`BodyFatPercentage`) và cơ xương (`SkeletalMuscleMass`) qua các mốc thời gian (`measured_at`) giúp hội viên và PT cùng đánh giá hiệu quả huấn luyện.
 
 ---
 
@@ -116,17 +117,18 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   * Ghi đè cho phép vào là thao tác ngoại lệ, tách biệt với nhập mã hội viên và chỉ dùng khi có lý do vận hành được phê duyệt (ví dụ cổng turnstile hỏng). Bắt buộc chọn/ghi lý do và lưu dấu vết kiểm toán; không dùng như cách nhập mã hoặc bỏ qua xác minh mặc định.
 
 ### 3.2. Phân Hệ Thu Ngân, Bán Gói & Xuất Hóa Đơn (POS & Billing Workflow - UC07)
-* **Tối Ưu Hóa Quy Trình Tạo Hóa Đơn (3-Step Fast Checkout):**
-  1. **Bước 1 - Tìm / Chọn Hội viên:** Ô tìm kiếm thông minh hỗ trợ gõ tên, số điện thoại hoặc mã thẻ có gợi ý tự động (Auto-complete dropdown) trong $< 300\text{ms}$.
-  2. **Bước 2 - Chọn Gói Tập / Dịch Vụ:** Lưới các gói tập kèm bộ lọc nhanh theo nhóm (Gym, Yoga, PT 1:1, Gói Combo). Cho phép nhập mã giảm giá (`DiscountAmount`) nếu có.
+* **Tối Ưu Hóa Quy Trình Tạo Hóa Đơn (3-Step Fast Checkout Khớp Bảng Invoice):**
+  1. **Bước 1 - Tìm / Chọn Hội viên:** Ô tìm kiếm thông minh hỗ trợ gõ tên, số điện thoại (`User.Phone`) hoặc mã thẻ có gợi ý tự động (Auto-complete dropdown) trong $< 300\text{ms}$ để liên kết `Invoice.UserID`.
+  2. **Bước 2 - Chọn Gói Tập / Dịch Vụ:** Lưới các gói tập (`PackagePlan`) hiển thị tên gói (`PackagePlan.Name`), đơn giá niêm yết (`PackagePlan.Price`), thời hạn (`DurationDays`), số buổi gym (`MaxCheckInSessions`) và số buổi kèm PT (`TotalPtSessions`). Hệ thống tự động gán `Invoice.SubtotalAmount = PackagePlan.Price` và `Invoice.TotalAmount = CAST(PackagePlan.Price AS INT)`.
+     * **Ràng Buộc Tuyệt Đối Về Giá:** Không có trường giảm giá hay mã ưu đãi vì bảng `Invoice` trong CSDL vật lý chỉ gồm các trường: `SubtotalAmount`, `TotalAmount`, `RefundAmount`, `RefundReason`, `PaymentMethod`, `TransactionType`, `paid_at`. Hóa đơn phản ánh đúng 100% giá niêm yết của gói.
   3. **Bước 3 - Chọn Phương Thức Thanh Toán:**
-     * Nút bấm lớn chuyển đổi nhanh: `Tiền mặt (Cash)`, `Chuyển khoản VietQR`, `Thẻ tín dụng / POS Card`.
+     * Nút bấm lớn chuyển đổi nhanh các giá trị lưu vào `Invoice.PaymentMethod`: `Tiền mặt (CASH)`, `Chuyển khoản VietQR (VIETQR)`, `Thẻ ngân hàng / Quẹt thẻ POS (CREDIT_CARD)`.
+     * Xác định loại giao dịch lưu vào `Invoice.TransactionType`: `SUBSCRIPTION_PURCHASE` (đăng ký mới) hoặc `SUBSCRIPTION_RENEWAL` (gia hạn).
 * **Cơ Chế Khóa An Toàn Khi Chờ Thanh Toán VietQR:**
-  * Khi chọn VietQR sandbox: Dialog hiển thị mã QR, tổng tiền và nhãn `"SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"`.
-  * Cho phép thu ngân bấm `"Giả lập thanh toán thành công"` để kiểm thử; nút chỉ khả dụng trong sandbox, bị khóa trong lúc xử lý và sau khi máy chủ xác nhận kết quả. Không dùng nút này để xác nhận tiền thật.
-  * Chỉ cập nhật hóa đơn sang `PAID` và kích hoạt gói sau khi máy chủ xác nhận kết quả mô phỏng. Nếu thất bại hoặc hết hạn, giữ nguyên trạng thái chưa thanh toán và hiển thị cách thử lại/tạo phiên mới.
+  * Khi chọn VietQR: Màn hình hiển thị cửa sổ bật lên (Dialog) có mã QR động lớn và tổng số tiền thanh toán `Invoice.TotalAmount`.
+  * Nút `"Xác nhận thu tiền thủ công"` bị vô hiệu hóa trong 10 giây đầu để khuyến khích chờ hệ thống đối soát tự động qua Webhook, tránh nhân viên bấm nhầm khi tiền chưa vào tài khoản.
 * **Tự Động Sinh Hóa Đơn & Mở Khóa Dịch Vụ (ACID Integrity):**
-  * Ngay khi giao dịch hoàn tất: Tạo bản ghi `Invoice`, cập nhật `MemberSubscription` mới hoặc gia hạn thêm ngày/lượt cho gói cũ trong cùng 1 transaction CSDL.
+  * Ngay khi giao dịch hoàn tất: Tạo bản ghi `Invoice` (sinh mã `InvoiceCode` duy nhất), cập nhật `MemberSubscription` mới hoặc gia hạn thêm ngày (`EndDate`) / lượt (`RemainingCheckInSessions`, `RemainingPtSessions`) cho gói cũ trong cùng 1 transaction CSDL.
   * Hộp thoại in hóa đơn xuất hiện tức thì với nút in nhanh `Enter` hoặc đóng `Esc`.
 
 ### 3.3. Phân Hệ Quản Lý Lịch Dạy & Chống Xung Đột Huấn Luyện Viên (PT Scheduling - UC05)
@@ -151,12 +153,14 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   * Hệ thống tự động tính số ngày bảo lưu và hiển thị ngày hết hạn mới dự kiến:
     $$\text{EndDate mới} = \text{EndDate cũ} + \text{Số ngày bảo lưu}$$
   * Có cảnh báo rõ ràng nếu số ngày bảo lưu vượt quá chính sách gói tập quy định.
-* **Biểu Mẫu Nhập Chỉ Số InBody Phòng Vệ (Defensive InBody Form):**
-  * Ràng buộc giới hạn hợp lệ đầu vào để tránh gõ nhầm dữ liệu y tế:
-    * Chiều cao: $100\text{cm} \le \text{Height} \le 250\text{cm}$.
-    * Cân nặng: $30\text{kg} \le \text{Weight} \le 250\text{kg}$.
-    * Tỷ lệ mỡ: $3\% \le \text{BodyFat} \le 60\%$.
-  * Tự động tính và hiển thị ngay chỉ số BMI khi người dùng vừa gõ xong Chiều cao và Cân nặng trước khi bấm nút Lưu.
+* **Biểu Mẫu Nhập Chỉ Số InBody Phòng Vệ (Defensive InBody Form - Khớp Bảng MemberBodyMetric):**
+  * Ràng buộc giới hạn hợp lệ đầu vào khớp các trường của `MemberBodyMetric`:
+    * Chiều cao (`HeightCm`): $100\text{cm} \le \text{HeightCm} \le 250\text{cm}$.
+    * Cân nặng (`WeightKg`): $30\text{kg} \le \text{WeightKg} \le 250\text{kg}$.
+    * Tỷ lệ mỡ (`BodyFatPercentage`): $3\% \le \text{BodyFatPercentage} \le 60\%$.
+    * Khối lượng cơ xương (`SkeletalMuscleMass`): $10\text{kg} \le \text{SkeletalMuscleMass} \le 100\text{kg}$.
+  * Tự động tính và hiển thị ngay chỉ số $\text{Bmi} = \text{WeightKg} / ((\text{HeightCm} / 100) \times (\text{HeightCm} / 100))$ khi người dùng vừa gõ xong Chiều cao và Cân nặng trước khi bấm nút Lưu.
+  * Tự động lưu `measured_at = Ngày hiện tại`, `RecordedByPtId = ID của PT đang đăng nhập`.
 
 ### 3.5. Báo Cáo Doanh Thu, Vận Hành & Nhật Ký Kiểm Toán (Analytics & Audit Trail - UC08 & UC10)
 * **Thẻ Chỉ Số KPI Trực Quan (Executive KPI Cards):**
