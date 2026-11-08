@@ -9,14 +9,21 @@ namespace GymManagement.Server.Data.Persistence;
 /// </summary>
 public class GymDbContext : DbContext
 {
+    // ====================================================================
+    // 1. DBSETS CHO 9 THỰC THỂ CSDL VẬT LÝ
+    // ====================================================================
+    public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<MemberSubscription> MemberSubscriptions => Set<MemberSubscription>();
     public DbSet<PackagePlan> PackagePlans => Set<PackagePlan>();
-    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<MemberSubscription> MemberSubscriptions => Set<MemberSubscription>();
+    public DbSet<PTAvailability> PTAvailabilities => Set<PTAvailability>();
+    public DbSet<PTTrainingSession> PTTrainingSessions => Set<PTTrainingSession>();
     public DbSet<CheckInLog> CheckInLogs => Set<CheckInLog>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<MemberBodyMetric> MemberBodyMetrics => Set<MemberBodyMetric>();
 
     // ====================================================================
-    // 1. CONSTRUCTOR
+    // 2. CONSTRUCTOR
     // ====================================================================
     /// <summary>
     /// Khởi tạo một phiên GymDbContext với các tùy chọn cấu hình được truyền vào qua DI.
@@ -28,7 +35,7 @@ public class GymDbContext : DbContext
     }
 
     // ====================================================================
-    // 2. MODEL CONFIGURATION
+    // 3. MODEL CONFIGURATION
     // ====================================================================
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
