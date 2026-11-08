@@ -151,15 +151,15 @@ GymManagement.sln
 ### GIAI ĐOẠN 0: KHỞI TẠO NỀN TẢNG THEO RÀNH GIỚI COMPONENT
 - [x] **Task 0.0:** `[Type: Scaffolding]` `[Module: Infrastructure]` Thiết lập pipeline CI GitHub Actions (`.github/workflows/ci.yml`) tự động Build & Test cho Solution.
 - [x] **Task 0.0b:** `[Type: Standards]` `[Module: Documentation]` Ban hành bộ quy chuẩn thực thi lập trình [`dev_rule.md`](dev_rule.md) (KISS, YAGNI, SOLID, quy tắc đặt tên, biến toàn cục ở đầu file, 10 tiêu chí DoD) và Sổ ánh xạ kỹ thuật [`dev_mapping.md`](dev_mapping.md).
-- [ ] **Task 0.1:** `[Type: Scaffolding]` `[Module: Infrastructure]` Tạo mới file Solution `GymManagement.sln`.
-- [ ] **Task 0.2:** `[Type: Scaffolding]` `[Module: Server]` Tạo các dự án thành phần của `Server`:
+- [x] **Task 0.1:** `[Type: Scaffolding]` `[Module: Infrastructure]` Tạo mới file Solution `GymManagement.sln`.
+- [x] **Task 0.2:** `[Type: Scaffolding]` `[Module: Server]` Tạo các dự án thành phần của `Server`:
   - `src/Server/GymManagement.Server.Core` (Class Library .NET 8).
   - `src/Server/GymManagement.Server.Data` (Class Library .NET 8, tham chiếu Core).
   - `src/Server/GymManagement.Server.Api` (ASP.NET Core Web API, tham chiếu Core & Data).
-- [ ] **Task 0.3:** `[Type: Scaffolding]` `[Module: Client]` Tạo các dự án thành phần của `Client`:
+- [x] **Task 0.3:** `[Type: Scaffolding]` `[Module: Client]` Tạo các dự án thành phần của `Client`:
   - `src/Client/GymManagement.Desktop` (WinUI 3 .NET 8).
   - `src/Client/GymManagement.Web` (Blazor Server .NET 8).
-- [ ] **Task 0.4:** `[Type: Scaffolding]` `[Module: Testing]` Tạo 3 project kiểm thử trong thư mục `tests/`:
+- [x] **Task 0.4:** `[Type: Scaffolding]` `[Module: Testing]` Tạo 3 project kiểm thử trong thư mục `tests/`:
   - `tests/GymManagement.Server.UnitTests`.
   - `tests/GymManagement.Server.DataTests`.
   - `tests/GymManagement.Server.ApiTests`.

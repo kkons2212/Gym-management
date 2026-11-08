@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GymManagement.Desktop (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "GymManagement.Desktop (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

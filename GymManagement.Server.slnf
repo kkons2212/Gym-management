@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "GymManagement.sln",
+    "projects": [
+      "src/Client/GymManagement.Web/GymManagement.Web.csproj",
+      "src/Server/GymManagement.Server.Api/GymManagement.Server.Api.csproj",
+      "src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj",
+      "src/Server/GymManagement.Server.Data/GymManagement.Server.Data.csproj",
+      "tests/GymManagement.Server.ApiTests/GymManagement.Server.ApiTests.csproj",
+      "tests/GymManagement.Server.DataTests/GymManagement.Server.DataTests.csproj",
+      "tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj"
+    ]
+  }
+}
