@@ -245,7 +245,7 @@ public sealed class BillingService : IBillingService
             DateOnly startDate = DateOnly.FromDateTime(paidAt);
             subscription.Status = ActiveStatus;
             subscription.StartDate = startDate;
-            subscription.EndDate = startDate.AddDays(            context.Plan.DurationDays!.Value);
+            subscription.EndDate = startDate.AddDays(context.Plan.DurationDays!.Value);
             _unitOfWork.Repository<MemberSubscription>().Update(subscription);
 
             invoice.Status = PaidStatus;

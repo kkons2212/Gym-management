@@ -7,13 +7,12 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **22 / 33 Tasks (66.7%)**
+* **Tiến độ Hoàn thành:** **14 / 33 Tasks (42.4%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.2, Task 2.4, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
-  * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
-  * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 2 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, **Task 2.3**)
+  * ⚪ **Khối Giao Diện (Client Component - WinUI 3 & Blazor):** Khung ứng dụng đã sẵn sàng, chờ tích hợp nghiệp vụ (Giai đoạn 4.0)
 
 ---
 
@@ -29,20 +28,13 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.2** | Scaffolding 3 Server Projects | Hạ tầng Server | `src/Server/` | `Server.Core`, `Server.Data`, `Server.Api` | `tests/GymManagement.Server.UnitTests` | 9 bảng DDL | `f92e2c7` |
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
-| **Task 3.1** | Global API error handling | GymManagement API | `Server.Api/Middleware` | `GlobalExceptionHandlingMiddleware.cs`, `ApiErrorResponse.cs`, `Program.cs` | `ApiPipelineTests` | N/A | — |
-| **Task 3.2** | JWT authentication and role policies | GymManagement API | `Server.Api/Configuration`, `Program.cs` | `JwtOptions.cs`, `Program.cs` | `JwtAuthenticationTests` | N/A | — |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
 | **Task 1.2.1** | Interface Database API: GenericRepository | Toàn bộ 10 Epics (CRUD an toàn) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/GenericRepository.cs`, `Contracts/Data/IGenericRepository.cs` | `tests/GymManagement.Server.DataTests/Repositories/GenericRepositoryTests.cs` (13 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.2.2** | Interface Database API: UnitOfWork (ACID) | Toàn bộ 10 Epics (Transaction ACID) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/UnitOfWork.cs`, `Contracts/Data/IUnitOfWork.cs`, `Persistence/GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Repositories/UnitOfWorkTests.cs` (9 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
-| **Task 2.1** | AuthService Component (Xác thực & Cấp phát JWT) | UC01 / US 01.1 (Đăng nhập Username/Email, BCrypt, Status == ACTIVE, cấp JWT) | `Server.Core` | `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs`, `Services/AuthService.cs`, `DTOs/Identity/IdentityDtos.cs` | `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 tests) | `[User]`, `Role` | `569ff68` |
-| **Task 2.2** | CheckInService Component | UC03 (US 03.1, 03.2, 03.3 - Check-in QR/Phone, trừ buổi, CheckInLog) | `Server.Core`, `Server.Data` | `Contracts/ICheckInService.cs`, `DTOs/CheckIn/CheckInDtos.cs`, `Entities/CheckInEntities.cs`, `Services/CheckInService.cs`, `GymDbContext.cs` | `tests/GymManagement.Server.UnitTests/Services/CheckInServiceTests.cs` (21 tests) | `CheckInLog`, `MemberSubscription`, `[User]`, `PackagePlan` | `2cedcaa` |
-| **Task 2.4** | BillingService Component | UC05 (POS, VietQR, hóa đơn, hoàn tiền nội bộ) | `Server.Core`, `Server.Data`, `Server.Api` | `Entities/BillingEntities.cs`, `Contracts/IBillingService.cs`, `Services/BillingService.cs`, `GymDbContext.cs`, VietQR adapter DTO/options, `Program.cs` | `BillingServiceTests.cs` (5 tests), `VietQrAdapterTests.cs` (4 tests), `GymDbContextBillingModelTests.cs` | `Invoice`, `MemberSubscription`, `PackagePlan`, `[User]` | `794f318` |
-| **Task 2.5** | PtService Component (UC04, UC08, UC10) | UC04, UC08, UC10 (PT profile, lịch rảnh, đặt/hủy/đổi ca, InBody, đánh giá) | `Server.Core` | `Enums/PtSessionStatus.cs`, `DTOs/PT/PtDtos.cs`, `Contracts/IPtService.cs`, `Services/PtService.cs` | `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 tests) | `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]` | `03e9053` |
-| **Task 2.6** | SystemSettingService Component (UC07) | UC07 (Quản trị tài khoản, phân quyền nhân sự, quản lý danh mục gói tập) | `Server.Core` | `Contracts/ISystemSettingService.cs`, `DTOs/Settings/*`, `Services/SystemSettingService.cs` | `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 tests) | `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `Invoice` | `41ca333` |
-| **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | UC01, UC02, UC04, UC05, UC07, UC10 | `src/Client/GymManagement.Desktop`, `Core/DTOs` | CheckIn, PosBilling, Members, PtSchedule, PackagePlans, Dashboard, Settings, Dialogs | WinUI 3 Release Compilation 0 Errors | 9 bảng DDL | `89c525a` |
+| **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
 
 ---
 
@@ -105,26 +97,6 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 
 ---
 
-### 📌 [Task 3.2] Xác thực JWT và phân quyền theo vai trò
-* **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.2-jwt-authentication`
-* **Ranh giới thành phần:** `Server.Api`
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Api/Configuration/JwtOptions.cs`
-  - `src/Server/GymManagement.Server.Api/Program.cs`
-  - `tests/GymManagement.Server.ApiTests/JwtAuthenticationTests.cs`
-* **Kiểm thử tương ứng:** API integration tests kiểm tra health anonymous, JWT thiếu/sai, role policy Admin và định dạng phản hồi 401/403.
-* **Cấu hình JWT:** Bắt buộc cung cấp issuer, audience và signing key tối thiểu 32 byte qua secret store hoặc environment variables; không có khóa mặc định trong repository.
-
-### 📌 [Task 3.1] Chuẩn hóa lỗi API
-* **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.1-global-errors`
-* **Ranh giới thành phần:** `Server.Api` và `Server.Core` DTO dùng chung
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Api/Middleware/GlobalExceptionHandlingMiddleware.cs`
-  - `src/Server/GymManagement.Server.Api/Program.cs`
-  - `src/Server/GymManagement.Server.Core/DTOs/Common/ApiErrorResponse.cs`
-  - `tests/GymManagement.Server.ApiTests/ApiPipelineTests.cs`
-* **Kiểm thử tương ứng:** API integration tests kiểm tra ánh xạ lỗi, lỗi model validation, ẩn thông tin lỗi nội bộ và anonymous health check.
-
 ### 📌 [Task 1.3.1, 1.3.2, 1.3.3] Cổng Giao Tiếp Dịch Vụ Bên Ngoài (External Adapters: VietQR, Notification, CameraScanner)
 * **Ngày hoàn tất:** 08/11/2026 | **Commit:** `b2f0cab` | **Nhánh:** `feat/task-1.3-external-adapters`
 * **Phân hệ nghiệp vụ liên quan:**
@@ -180,165 +152,28 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **DIP (Dependency Inversion):** `IGenericRepository<T>` và `IUnitOfWork` nằm hoàn toàn trong `Server.Core`, không phụ thuộc EF Core hay SQL Server.
   - **ACID Transaction Guarantee:** `UnitOfWork.ExecuteTransactionAsync` tự động mở transaction, ghi log chi tiết khi phát sinh exception, tự động gọi `RollbackAsync` và làm sạch bộ theo dõi trạng thái (`ChangeTracker.Clear()`) để đảm bảo tính cô lập và nhất quán tuyệt đối.
   - **Hiệu năng & An toàn:** Dùng `AsNoTracking()` cho tất cả các truy vấn đọc, và quản lý repository instances qua `ConcurrentDictionary` để tránh khởi tạo dư thừa đối tượng.
----
-
-### 📌 [Task 4.1] Toàn Diện Phân Hệ Quản Trị Admin Desktop App (WinUI 3 MVVM)
-* **Ngày hoàn tất:** 08/11/2026 | **Nhánh:** `feat/task-4.1-admin-desktop`
-* **Phân hệ nghiệp vụ liên quan:** UC01 (Xác thực Admin), UC02 (Hồ sơ hội viên & InBody), UC04 (Quầy điểm danh Check-in & Camera QR), UC05 (Lịch huấn luyện viên PT), UC07 (Bán gói & POS VietQR), UC10 (Báo cáo kinh doanh BI đa chiều & Quản lý gói tập/tài khoản).
-* **Ranh giới thành phần:** `src/Client/GymManagement.Desktop`, `src/Server/GymManagement.Server.Core/DTOs/*` (Tuyệt đối không tham chiếu `Server.Data`).
-* **Mã nguồn tạo / sửa:**
-  - **DTOs (`Server.Core`):** `Identity`, `CheckIn`, `Billing`, `Members`, `PTSchedules`, `Reports`, `Packages`
-  - **ViewModels (`Client.Desktop`):** `LoginViewModel`, `CheckInCounterViewModel`, `PosBillingViewModel`, `MembersViewModel`, `PtScheduleViewModel`, `PackagePlansViewModel`, `DashboardViewModel`, `SettingsViewModel`, `ShellViewModel`, `FreezeSubscriptionViewModel`, `InBodyEntryViewModel`
-  - **Views & Dialogs (`Client.Desktop`):**
-    - `LoginPage.xaml` / `.xaml.cs` (Xác thực đăng nhập Admin)
-    - `CheckInCounterPage.xaml` / `.xaml.cs` (Camera scanner QR code, tín hiệu đèn xanh/đỏ, âm thanh beep/buzz, ghi đè thủ công có lý do)
-    - `PosBillingPage.xaml` / `.xaml.cs` (Lập hóa đơn POS, dialog VietQR chuẩn NAPAS 247, mô phỏng 10s thanh toán thành công, in hóa đơn K80)
-    - `MembersPage.xaml` / `.xaml.cs` (Tìm kiếm hội viên, xem chi tiết gói, Dialog bảo lưu `FreezeSubscriptionDialog`, Dialog đo chỉ số `InBodyEntryDialog` với gauge BMI tức thì)
-    - `PtSchedulePage.xaml` / `.xaml.cs` (Lịch làm việc PT, chống xung đột thời gian collision, trạng thái màu sắc)
-    - `PackagePlansPage.xaml` / `.xaml.cs` (Quản lý và tạo mới gói tập)
-    - `DashboardPage.xaml` / `.xaml.cs` (Báo cáo doanh thu BI đa chiều, tỷ lệ lấp đầy PT, giờ cao điểm check-in)
-    - `SettingsPage.xaml` / `.xaml.cs` (Quản lý tài khoản Admin/PT, khóa tài khoản có chốt chặn bảo mật không khóa chính mình)
-    - `MainPage.xaml` / `MainWindow.xaml` (Giao diện Shell Sidebar điều hướng mượt mà, phím tắt F1-F5)
-  - **Dịch vụ & Tiện ích:** `IApiClient`, `MockApiClient`, `AdminSessionService`, `AudioFeedbackService`, Value Converters, Design Tokens màu tối
-* **Kiểm thử tương ứng (Verification):**
-  - Unit Tests: `tests/GymManagement.Server.UnitTests/DTOs/AdminDesktopDtoTests.cs` (5 tests mới cho DTOs: PackagePlanDto, CheckInRequest, CreateInvoiceRequest, FreezeSubscriptionRequest, BookPtSlotRequest; 100% Pass).
-  - Biên dịch Release `dotnet build src/Client/GymManagement.Desktop -c Release`: 100% thành công (0 errors, 0 warnings kiến trúc).
-  - Xác thực kiến trúc Pre-dev Rule 1: Không có tham chiếu tới `GymManagement.Server.Data`.
-* **Ghi chú kiến trúc & Chuẩn hóa theo `dev_rule.md`:**
-  - **DoD 6 (Cú pháp rẽ nhánh & Bố cục):** Triệt tiêu 100% toán tử 3 ngôi (`? :`), toàn bộ rẽ nhánh sử dụng `if / else` tường minh có khối `{ ... }`; loại bỏ các expression-bodied methods trên hàm nghiệp vụ; tách biệt named methods riêng cho các event handlers; toàn bộ fields/properties tập trung ở đầu class.
-  - **Nghiệp vụ phòng gym:** Tuân thủ triệt để vai trò duy nhất Quản trị viên (`Admin`), thanh toán đúng theo giá niêm yết (không chiết khấu/voucher), điểm danh bằng camera quét QR từ màn hình điện thoại hội viên kèm nhập số điện thoại thủ công.
 
 ---
 
----
-
-### 📌 [Task 2.5] Hiện thực PtService Component (UC04, UC08, UC10)
-* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `03e9053` | **Nhánh:** `feat/task-2.5-pt-service`
-* **Phân hệ nghiệp vụ liên quan:**
-  - UC04 (Admin quản lý hồ sơ PT, phân công PT, xếp lịch dạy, xác nhận kết quả ca tập)
-  - UC08 (PT đăng ký lịch rảnh, xem học viên, ghi InBody, xác nhận hoàn thành ca dạy)
-  - UC10 (Hội viên đặt/hủy/đổi lịch tập PT, đánh giá sao)
+### 📌 [Task 2.3] Hiện thực MemberService Component (UC02, UC09)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** *(pending)* | **Nhánh:** `feat/task-2.3-member-service`
+* **Phân hệ nghiệp vụ liên quan:** UC02.1–UC02.5 (Đăng ký, cập nhật, gia hạn, bảo lưu, hủy gói tập), UC09.1–UC09.2 (Hội viên xem profile & lịch sử tập)
 * **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Enums, Services)
 * **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Core/Enums/PtSessionStatus.cs` (6 trạng thái: Booked, Completed, Cancelled, AbsentMember, AbsentPt, Postponed)
-  - `src/Server/GymManagement.Server.Core/DTOs/PT/PtDtos.cs` (15 record types: PtProfileDto, MemberSummaryDto, PtSlotDto, PtSlotUpsertDto, PtSessionDto, + 9 Request types)
-  - `src/Server/GymManagement.Server.Core/Contracts/IPtService.cs` (17 method signatures chia 6 nhóm nghiệp vụ)
-  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (PtService sealed class, 3 entity stubs; dùng chung entity `User` và `MemberSubscription`, ACID transactions)
-  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (thêm InternalsVisibleTo cho UnitTests và DynamicProxyGenAssembly2)
-  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (giữ TargetFramework net8.0 đồng bộ toàn solution)
+  - `src/Server/GymManagement.Server.Core/Enums/SubscriptionStatus.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Members/MemberDtos.cs` (12 record types)
+  - `src/Server/GymManagement.Server.Core/Contracts/IMemberService.cs` (9 methods)
+  - `src/Server/GymManagement.Server.Core/Services/MemberService.cs`
+  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj`
+  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj`
 * **Kiểm thử tương ứng (Verification):**
-  - `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 test cases — 16/16 pass 100%)
-  - Coverage: SaveTrainer (phone/email duplicate), SetTrainerStatus (not found), CheckDeactivation (has students / no students), AssignPt (max student limit), BookSession (slot booked / no PT sessions), CancelSession (late / wrong status), SubmitRating (out of range / already rated / not completed), RecordInBody (invalid weight)
-* **Bảng CSDL liên quan:** `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]`
+  - `tests/GymManagement.Server.UnitTests/Services/MemberServiceTests.cs` (13 tests — 13/13 pass)
+* **Bảng CSDL liên quan:** `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog`
 * **Ràng buộc nghiệp vụ & Giao dịch:**
-  - **Quy tắc phạt hủy ca:** `CancellationGracePeriodHours = 2` — hủy < 2h → `ForceLateCancellation = true` mới thực thi, không hoàn buổi.
-  - **Giới hạn học viên PT:** `MaxStudentsPerPt = 10` — throw `BusinessRuleException` khi vượt.
-  - **Slot lock:** `is_Booked = 1` không cho phép hủy từ PT (UC 8.1.1 — phụ 5.1).
-  - **Mọi luồng đa bảng** (BookSession, CancelSession, RescheduleSession, CompleteSession, ConfirmResult, RecordInBody) đều bọc trong `ExecuteTransactionAsync`.
-  - **SMS không block nghiệp vụ:** `SendSessionReminderSafeAsync` catch exception riêng, chỉ log Warning.
-* **Ghi chú kiến trúc:**
-  - `PTAvailability`, `PTTrainingSession` và `MemberBodyMetric` vẫn là entity stubs `internal`; `User` và `MemberSubscription` đã được chuyển sang entity dùng chung trong `Server.Core.Entities` để BillingService có thể dùng persistence mapping.
-  - `GetPtStudentsAsync` trả `MemberSummaryDto` (không phải `PtProfileDto`) để phản ánh đúng domain — học viên là Member, không phải PT.
-
-### 📌 [Task 2.4] Hiện thực BillingService Component (UC05)
-* **Ngày hoàn tất:** 08/11/2026
-* **Phân hệ nghiệp vụ liên quan:** UC05 — POS, thanh toán VietQR, hóa đơn và hoàn tiền nội bộ.
-* **Ranh giới thành phần:** `Server.Core`, VietQR adapter trong `Server.Data`, đăng ký DI trong `Server.Api`.
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Core/Contracts/IBillingService.cs`
-  - `src/Server/GymManagement.Server.Core/Entities/BillingEntities.cs`
-  - `src/Server/GymManagement.Server.Core/Services/BillingService.cs`
-  - `src/Server/GymManagement.Server.Core/DTOs/Billing/BillingDtos.cs`
-  - `src/Server/GymManagement.Server.Core/DTOs/Adapters/VietQrDtos.cs`
-  - `src/Server/GymManagement.Server.Core/Contracts/Adapters/IVietQrAdapter.cs`
-  - `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`
-  - `src/Server/GymManagement.Server.Data/Persistence/GymDbContext.cs`
-  - `src/Server/GymManagement.Server.Api/Program.cs`
-* **Kiểm thử tương ứng (Verification):**
-  - `tests/GymManagement.Server.UnitTests/Services/BillingServiceTests.cs` (5 tests)
-  - `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests)
-  - `tests/GymManagement.Server.DataTests/Persistence/GymDbContextBillingModelTests.cs` (1 test)
-  - Xác nhận: UnitTests 26/26, DataTests 37/37, ApiTests 13/13.
-* **Bảng CSDL liên quan:** `Invoice`, `MemberSubscription`, `PackagePlan`, `[User]`.
-* **Ràng buộc nghiệp vụ & Giao dịch:**
-  - Tạo hóa đơn và subscription trạng thái `PENDING` cùng transaction; chỉ bật subscription `ACTIVE` sau khi xác nhận thanh toán.
-  - VietQR xác minh đúng mã giao dịch và số tiền; phương thức tiền mặt được xác nhận nội bộ.
-  - Hoàn tiền chỉ cập nhật nội bộ `Invoice=REFUNDED`, `MemberSubscription=CANCELLED`, không thực hiện chuyển tiền qua ngân hàng.
-  - Gửi email biên lai sau khi transaction thanh toán commit; lỗi gửi được ghi log và không đảo ngược thanh toán.
-* **Ghi chú phạm vi:**
-  - Đã ánh xạ EF Core cho bốn bảng cần thiết của billing (`Invoice`, `MemberSubscription`, `PackagePlan`, `[User]`); các bảng và ràng buộc còn lại vẫn thuộc Task 1.1.x.
-  - Chưa tạo API controller hay kết nối Desktop API vì không thuộc Task 2.4.
-
-### 📌 [Task 2.6] Hiện thực SystemSettingService Component (UC07)
-* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `41ca333` | **Nhánh:** `feat/task-2.6-system-setting-service`
-* **Phân hệ nghiệp vụ liên quan:**
-  - UC07 (US 07.1, 07.2, 07.3: Tạo tài khoản nhân sự, phân quyền vai trò, khóa/mở khóa tài khoản, chốt chặn không tự khóa/tự tước quyền)
-  - UC07 (US 07.4, 07.5, 07.6: Thêm, sửa, ngừng kinh doanh gói tập, kiểm tra toàn vẹn ràng buộc với hội viên trước khi xóa)
-* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Services)
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Core/DTOs/Settings/UserDtos.cs` (CreateUserRequest, UpdateUserRequest, SetUserStatusRequest, UserDto)
-  - `src/Server/GymManagement.Server.Core/DTOs/Settings/PackageSettingDtos.cs` (CreatePackagePlanRequest, UpdatePackagePlanRequest, DeletePackageResultDto)
-  - `src/Server/GymManagement.Server.Core/Contracts/ISystemSettingService.cs` (10 method signatures chia 2 nhóm nghiệp vụ)
-  - `src/Server/GymManagement.Server.Core/Services/SystemSettingService.cs` (SystemSettingService sealed class, chốt chặn bảo mật, 3 entity stubs)
-  - `src/Server/GymManagement.Server.Core/Entities/BillingEntities.cs` (entity `User` dùng chung có PasswordHash, Gender, CreatedAt)
-* **Kiểm thử tương ứng (Verification):**
-  - `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 test cases — 17/17 pass 100%)
-  - Coverage: CreateUser (valid, duplicate username, duplicate phone, role not found, username > 10 chars), UpdateUser (self-demoting admin, user not found, valid update), SetUserStatus (admin self-lockout, user not found, valid update), CreatePackagePlan (price <= 0, duplicate planId, valid), UpdatePackagePlan (not found), DeletePackagePlan (no subscriptions -> hard delete, with subscriptions -> discontinued), GetPackagePlans (active only).
-* **Bảng CSDL liên quan:** `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `Invoice`
-* **Ràng buộc nghiệp vụ & Giao dịch:**
-  - **Chốt chặn tự khóa:** Admin không thể tự khóa hoặc vô hiệu hóa tài khoản của chính mình (`currentUserName == targetUserName && status == LOCKED`).
-  - **Chốt chặn tự hạ quyền:** Admin không thể tự đổi vai trò của mình thành vai trò khác Admin (`currentUserName == targetUserName && newRoleId != "ADMIN"`).
-  - **Toàn vẹn xóa gói tập:** Gói đã có `MemberSubscription` hoặc `Invoice` không bị xóa vật lý; chuyển cờ `is_Active = 0` (ngừng kinh doanh) để bảo toàn quyền lợi của hội viên.
-  - **Cú pháp tuân thủ `dev_rule.md`:** 100% không dùng toán tử 3 ngôi `? :`, không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ fields/constants đặt ở đầu file.
-
----
-
-### 📌 [Task 2.1] Hiện thực AuthService Component (UC01 / US 01.1)
-* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `569ff68` | **Nhánh:** `feat/task-2.1-auth-service`
-* **Phân hệ nghiệp vụ liên quan:**
-  - UC01 (Đăng nhập và Xác thực)
-  - US 01.1 (Đăng nhập hệ thống theo vai trò: Admin, PT, Member; xác thực BCrypt; cấp phát JWT token mở cổng Authenticated)
-* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Services)
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs` (Định nghĩa 4 phương thức: `LoginAsync`, `ValidateTokenAsync`, `HashPassword`, `VerifyPassword`)
-  - `src/Server/GymManagement.Server.Core/Services/AuthService.cs` (Hiện thực xác thực danh tính, băm/so sánh BCrypt, kiểm tra cờ Status == ACTIVE / LOCKED, sinh và giải mã JWT token)
-  - `src/Server/GymManagement.Server.Core/DTOs/Identity/IdentityDtos.cs` (Record DTOs: `LoginRequest`, `LoginResponse`, `UserSessionDto`)
-  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (Thêm package `BCrypt.Net-Next`, `System.IdentityModel.Tokens.Jwt`, `Microsoft.Extensions.Configuration.Abstractions`)
-  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (Chuẩn hóa TargetFramework sang `net8.0` đồng bộ toàn solution và CI runner)
-* **Kiểm thử tương ứng (Verification):**
-  - `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 test cases — 18/18 pass 100%)
-  - Coverage: Đăng nhập hợp lệ bằng Username/Email, cấp JWT token và refresh token, mật khẩu không chính xác, tài khoản không tồn tại, tài khoản LOCKED, tài khoản INACTIVE, mật khẩu rỗng/tên đăng nhập rỗng, mật khẩu null trong DB, giải mã JWT token hợp lệ, token rỗng/token sai chữ ký hoặc hết hạn, băm mật khẩu BCrypt, xác thực mã băm BCrypt, chuẩn hóa vai trò TRAINER -> PT.
-* **Bảng CSDL liên quan:** `[User]`, `Role`
-* **Ràng buộc nghiệp vụ & Bảo mật:**
-  - **Bảo mật thông tin đăng nhập:** Nếu sai mật khẩu hoặc không tìm thấy user, đều ném `UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không chính xác.")` để chống liệt kê tài khoản (User Enumeration).
-  - **Khóa tài khoản:** Nếu `Status == "LOCKED"`, ném `BusinessRuleException("Tài khoản đã bị khóa.")`. Nếu khác `ACTIVE`, ném `BusinessRuleException("Tài khoản chưa được kích hoạt hoặc đã ngừng hoạt động.")`.
-  - **Khóa ký JWT:** Tự động fallback và kiểm tra độ dài khóa tối thiểu 32 bytes UTF-8 (`HmacSha256`).
-  - **Chuẩn hóa vai trò:** Tự động chuẩn hóa `ADMIN` -> `Admin`, `TRAINER` / `PT` -> `PT`, `MEMBER` -> `Member` để khớp chặt chẽ với Authorize policies trong `Program.cs`.
-  - **DoD 6:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), mọi rẽ nhánh dùng `if / else` có khối `{ ... }`, bố cục fields ở đầu class, phương thức nghiệp vụ không dùng expression-bodied `=>`.
-
-### 📌 [Task 2.2] Hiện thực CheckInService Component (UC03 / US 03.1, 03.2, 03.3)
-* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `2cedcaa` | **Nhánh:** `feat/task-2.2-check-in-service`
-* **Phân hệ nghiệp vụ liên quan:**
-  - UC03 (Quản lý Check-in & Điểm danh hội viên)
-  - US 03.1 (Điểm danh hội viên tại quầy lễ tân qua quét mã QR động xoay vòng 60s hoặc mã QR tĩnh)
-  - US 03.2 (Điểm danh thủ công bằng số điện thoại khi hội viên quên điện thoại hoặc camera quầy hỏng)
-  - US 03.3 (Thẩm định điều kiện đa tầng: trạng thái gói tập ACTIVE, hạn sử dụng EndDate, số lượt còn lại RemainingCheckInSessions > 0; tự động trừ 1 buổi và ghi nhật ký CheckInLog)
-* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Entities, Services) & `Server.Data` (GymDbContext)
-* **Mã nguồn tạo / sửa:**
-  - `src/Server/GymManagement.Server.Core/Contracts/ICheckInService.cs` (Khai báo 5 methods: `CheckInAsync`, `CheckInWithQrAsync`, `ManualCheckInAsync`, `GetTodayCheckInLogsAsync`, `GetCurrentAttendanceCountAsync`)
-  - `src/Server/GymManagement.Server.Core/DTOs/CheckIn/CheckInDtos.cs` (Khai báo các Record DTOs: `CheckInRequest`, `CheckInResponse`, `CheckInLogDto`)
-  - `src/Server/GymManagement.Server.Core/Entities/CheckInEntities.cs` (Entity `CheckInLog` ánh xạ chuẩn DDL SQL Server với bảng `CheckInLog`)
-  - `src/Server/GymManagement.Server.Core/Services/CheckInService.cs` (Hiện thực toàn bộ logic kiểm soát điểm danh: xác thực QR động/tĩnh, tra cứu số điện thoại, kiểm tra gói tập FROZEN/CANCELLED/EXPIRED/hết lượt, trừ buổi và ghi log CheckInLog bằng Transaction ACID)
-  - `src/Server/GymManagement.Server.Data/Persistence/GymDbContext.cs` (Bổ sung `DbSet<CheckInLog> CheckInLogs`)
-* **Kiểm thử tương ứng (Verification):**
-  - `tests/GymManagement.Server.UnitTests/Services/CheckInServiceTests.cs` (21 test cases — 21/21 pass 100%)
-  - Coverage: Điểm danh thành công qua QR động và QR tĩnh, điểm danh thủ công qua SĐT, từ chối khi không có QR/SĐT, từ chối khi không tìm thấy hội viên, từ chối khi chưa có gói tập, từ chối khi gói tập bảo lưu FROZEN (ghi log DENIED), từ chối khi gói tập bị hủy CANCELLED (ghi log DENIED), từ chối khi gói tập EXPIRED (ghi log DENIED), tự động cập nhật EXPIRED khi quá ngày EndDate, từ chối khi RemainingCheckInSessions <= 0 (ghi log DENIED), xử lý token động hết hạn, mã QR sai định dạng, bọc ngoại lệ trong ACID transaction, tính năng GetTodayCheckInLogsAsync và GetCurrentAttendanceCountAsync.
-* **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`, `PackagePlan`
-* **Ràng buộc nghiệp vụ & Giao dịch:**
-  - **Giao dịch ACID:** Mọi thao tác thành công (trừ 1 session trong `MemberSubscription` và thêm bản ghi SUCCESS vào `CheckInLog`) đều được bọc trong `_unitOfWork.ExecuteTransactionAsync` đảm bảo tính toàn vẹn tuyệt đối.
-  - **Ghi nhật ký từ chối (DENIED log):** Khi gặp bất kỳ vi phạm điều kiện gói tập nào (FROZEN, CANCELLED, EXPIRED, hết lượt), hệ thống lập tức ghi nhận 1 bản ghi `CheckInLog` với trạng thái `DENIED`, kèm lý do vi phạm chi tiết và `VerifiedByAdminId` để kiểm toán lễ tân.
-  - **Chuẩn hóa thuật ngữ:** Tuyệt đối dùng thuật ngữ "gói tập" trong toàn bộ mã nguồn, thông báo lỗi và nhật ký hệ thống.
-  - **DoD 6:** 100% không toán tử 3 ngôi (`? :`), toàn bộ rẽ nhánh dùng khối `if / else`, trường dữ liệu ở đầu file, không dùng expression-bodied `=>` cho phương thức nghiệp vụ.
+  - RegisterMember: tạo `[User]` + `MemberSubscription` trong 1 Transaction, sinh QrCode unique, `EndDate = StartDate + DurationDays`
+  - FreezeSubscription: `EndDate += (FreezeEndDate - FreezeStartDate)`, Status → FROZEN
+  - CancelSubscription: lý do hủy bắt buộc, Status → CANCELLED, giữ lịch sử
+  - Welcome Email: fire-and-forget, lỗi chỉ log Warning
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
