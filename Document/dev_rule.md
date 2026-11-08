@@ -569,7 +569,7 @@ public record ApiResponse<T>(
 Không bắt lỗi chung chung bằng `Exception`. Hãy sử dụng các Custom Exceptions chuẩn nghĩa:
 * `ValidationException`: Dữ liệu đầu vào sai định dạng (HTTP 400 Bad Request).
 * `NotFoundException`: Không tìm thấy tài nguyên yêu cầu (HTTP 404 Not Found).
-* `BusinessRuleException`: Vi phạm quy tắc phòng gym (ví dụ: thẻ hết hạn, hủy ca $<2\text{h}$, trùng lịch PT) (HTTP 422 Unprocessable Entity hoặc HTTP 409 Conflict).
+* `BusinessRuleException`: Vi phạm quy tắc phòng gym (ví dụ: gói tập hết hạn, hủy ca $<2\text{h}$, trùng lịch PT) (HTTP 422 Unprocessable Entity hoặc HTTP 409 Conflict).
 * `UnauthorizedAccessException`: Sai mật khẩu hoặc không có quyền truy cập (HTTP 401 Unauthorized / HTTP 403 Forbidden).
 
 ### 5.3. Global Exception Handling Middleware
@@ -611,11 +611,11 @@ $$\text{Cú pháp chuẩn:} \quad \mathbf{[MethodUnderTest]\_[StateUnderTest]\_[
 #### Bảng Ví dụ Ca Kiểm thử Chuẩn theo Nghiệp vụ Phòng Gym:
 | Phân hệ Nghiệp vụ | Tên Test Method Chuẩn Mẫu | Ý Nghĩa Kiểm Thử |
 | :--- | :--- | :--- |
-| **Check-in (UC04)** | `CheckInAsync_WhenSubscriptionIsExpired_ThrowsBusinessRuleException` | Quét thẻ đã hết hạn $\rightarrow$ Báo lỗi BusinessRuleException |
-| **Check-in (UC04)** | `CheckInAsync_WhenValidQrCodeAndHasSessions_DeductsRemainingSessionAndReturnsSuccess` | Quét thẻ hợp lệ $\rightarrow$ Trừ 1 lượt tập và trả về thành công |
+| **Check-in (UC04)** | `CheckInAsync_WhenSubscriptionIsExpired_ThrowsBusinessRuleException` | Quét mã gói tập đã hết hạn $\rightarrow$ Báo lỗi BusinessRuleException |
+| **Check-in (UC04)** | `CheckInAsync_WhenValidQrCodeAndHasSessions_DeductsRemainingSessionAndReturnsSuccess` | Quét mã gói tập hợp lệ $\rightarrow$ Trừ 1 lượt tập và trả về thành công |
 | **PT Booking (UC05)** | `BookSessionAsync_WhenSlotAlreadyBooked_ThrowsScheduleConflictException` | Đặt trùng khung giờ PT $\rightarrow$ Báo lỗi xung đột lịch |
 | **PT Booking (UC05)** | `CancelSessionAsync_WhenLessThanTwoHoursBeforeStart_ChargesCancellationPenalty` | Hủy ca tập $< 2\text{h}$ $\rightarrow$ Tính phí phạt hủy muộn |
-| **Billing & POS (UC07)** | `CreateInvoiceAsync_WhenCashPaymentCompleted_ActivatesSubscriptionInstantly` | Thanh toán tiền mặt $\rightarrow$ Kích hoạt thẻ tập ngay lập tức |
+| **Billing & POS (UC07)** | `CreateInvoiceAsync_WhenCashPaymentCompleted_ActivatesSubscriptionInstantly` | Thanh toán tiền mặt $\rightarrow$ Kích hoạt gói tập ngay lập tức |
 | **Billing & POS (UC07)** | `ProcessVietQrCallbackAsync_WhenChecksumInvalid_ReturnsUnauthorized` | Callback VietQR sai mã checksum $\rightarrow$ Từ chối xử lý |
 | **InBody Metrics (UC06)** | `CalculateBmi_WhenHeightAndWeightValid_ReturnsAccurateBmiScore` | Tính toán chỉ số BMI chính xác từ chiều cao, cân nặng |
 

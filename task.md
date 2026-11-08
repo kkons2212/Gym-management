@@ -109,7 +109,7 @@ GymManagement.sln
 │   │   │
 │   │   └── GymManagement.Web/              # <<component>> Member/PT Web Portal (Blazor Server)
 │   │       ├── Sessions/                   # <<component>> Member/PT session (AuthStateProvider)
-│   │       ├── Pages/                      # Thẻ số QR, Đặt lịch PT, InBody, Lịch dạy
+│   │       ├── Pages/                      # Mã QR gói tập, Đặt lịch PT, InBody, Lịch dạy
 │   │       └── Services/                   # Client HTTP gọi tới "GymManagement API"
 │   │
 │   └── Server/                             # <<component>> Server
@@ -204,8 +204,8 @@ GymManagement.sln
   - Gửi thông báo chào mừng qua `SMS Sending Gateway`.
 - [x] **Task 2.4: `BillingService Component` (Kết nối Authenticated + Database API + Payment API):**
   - Lập hóa đơn POS, gọi `Payment API` (VietQR) sinh mã QR động.
-  - Xác nhận nhận tiền: Đổi hóa đơn sang `PAID` và kích hoạt thẻ `ACTIVE` trong 1 Transaction.
-  - Xử lý hoàn tiền hóa đơn (`REFUNDED`) và thu hồi thẻ (`CANCELLED`).
+  - Xác nhận nhận tiền: Đổi hóa đơn sang `PAID` và kích hoạt gói tập `ACTIVE` trong 1 Transaction.
+  - Xử lý hoàn tiền hóa đơn (`REFUNDED`) và thu hồi gói tập (`CANCELLED`).
   - Gửi email hóa đơn điện tử qua `SMS Sending Gateway`.
 - [x] **Task 2.5: `PtService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
   - Quản lý lịch rảnh PT (`PTAvailability`), phân công PT phụ trách.
@@ -255,7 +255,7 @@ GymManagement.sln
 
 #### 4.2. `Member/PT Web Portal` (Blazor Server)
 - [ ] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.
-- [ ] **Task 4.2.2: Phân hệ Cổng Hội viên:** Thẻ số cá nhân (QR code), Đặt/Hủy ca PT, Biểu đồ InBody, Lịch sử tập, Đánh giá sao PT.
+- [ ] **Task 4.2.2: Phân hệ Cổng Hội viên:** Mã QR gói tập cá nhân (QR code), Đặt/Hủy ca PT, Biểu đồ InBody, Lịch sử tập, Đánh giá sao PT.
 - [ ] **Task 4.2.3: Phân hệ Cổng Huấn luyện viên (PT):** Thời khóa biểu tuần, Đăng ký slot rảnh, Danh sách học viên, Ghi nhận InBody, Xác nhận hoàn tất ca dạy.
 
 ---

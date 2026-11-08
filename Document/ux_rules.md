@@ -4,7 +4,7 @@
 
 > **Mục đích tài liệu:** Tài liệu này quy định toàn bộ tiêu chuẩn **Trải nghiệm Người dùng & Luồng Tương tác Nghiệp vụ (UX - User Experience)** cho toàn bộ lập trình viên và AI Agent khi triển khai giao diện, quản lý trạng thái, xử lý sự kiện và kiểm soát ngoại lệ trên 2 ứng dụng client: **WinUI 3 Desktop App** (dành riêng cho Admin) và **Blazor Server Web App** (dành cho Hội viên và Huấn luyện viên cá nhân PT).
 > **Triết lý UX Cốt lõi (Core UX Philosophy):** 
-> * **Đối với Hội viên & PT (Web Portal):** Thao tác tức thì (Zero-Friction), thẻ tập điện tử quét mã trong 1 chạm, minh bạch lượt tập và lịch hẹn, cảnh báo hủy ca trước 2 giờ rõ ràng.
+> * **Đối với Hội viên & PT (Web Portal):** Thao tác tức thì (Zero-Friction), gói tập điện tử quét mã QR trong 1 chạm, minh bạch lượt tập và lịch hẹn, cảnh báo hủy ca trước 2 giờ rõ ràng.
 > * **Đối với Ban quản trị Admin (Desktop App):** Tốc độ quầy cực nhanh (< 1 giây điểm danh), an toàn giao dịch tài chính (VietQR tự động khớp, chống trùng hóa đơn), kiểm soát chống gian lận và trực quan hóa xung đột lịch dạy PT.
 
 ---
@@ -20,13 +20,13 @@ Hệ thống sử dụng bảng màu hiện đại, tương phản cao, tối ư
 | Vai Trò Token | Mã Màu Hex / Tailwind | Ràng Buộc Ứng Dụng Nghiệp Vụ Bắt Buộc |
 | :--- | :--- | :--- |
 | **Nền Chính (Primary Background)** | `#0F172A` (Slate 900) | Giao diện Desktop và Web chỉ sử dụng Dark Mode; Web Portal tối ưu hiển thị rõ nét trên thiết bị di động. |
-| **Bề Mặt Thẻ (Card / Surface)** | `#1E293B` (Slate 800) | Khối hiển thị thông tin thẻ tập, giỏ hàng POS và ca tập; viền `1px solid #334155`. |
+| **Bề Mặt Khối (Card / Surface)** | `#1E293B` (Slate 800) | Khối hiển thị thông tin gói tập, giỏ hàng POS và ca tập; viền `1px solid #334155`. |
 | **Màu Chữ Chính (Primary Text)** | `#F8FAFC` (Slate 50) | Dùng cho tiêu đề, nội dung và thông tin quan trọng; bảo đảm tương phản tốt trên nền tối. |
-| **Màu Chữ Phụ (Muted Text)** | `#94A3B8` (Slate 400) | Dùng cho nhãn phụ, ngày hết hạn, mã định danh thẻ tập và chú thích chỉ số InBody. |
+| **Màu Chữ Phụ (Muted Text)** | `#94A3B8` (Slate 400) | Dùng cho nhãn phụ, ngày hết hạn, mã định danh gói tập và chú thích chỉ số InBody. |
 | **Điểm Nhấn Hành Động (Primary Accent)** | `#0EA5E9` (Cyan/Sky) hoặc `#2563EB` (Blue) | Đúng 1 màu nổi bật cho các nút CTA chính: Check-in, Thanh toán, Đặt lịch PT, Đăng ký gói tập. |
 | **Trạng Thái Thành Công (Success)** | `#16A34A` / `text-green-400` | Sử dụng cho: Check-in hợp lệ, Mở cổng Turnstile, `ACTIVE`, `PAID`, Đặt lịch PT thành công. |
-| **Trạng Thái Cảnh Báo (Warning)** | `#D97706` / `text-amber-400` | Sử dụng cho: Thẻ sắp hết hạn ($\le 7$ ngày), Thẻ bảo lưu `FROZEN`, Hủy ca tập $< 2\text{h}$ tính phí phạt, Lượt tập còn ít ($\le 2$). |
-| **Trạng Thái Lỗi / Bị Khóa (Danger)** | `#DC2626` / `text-red-400` | Sử dụng cho: Thẻ hết hạn `EXPIRED`, Thẻ bị hủy `CANCELLED`, Điểm danh thất bại (Hết lượt/Sai mã), Trùng lịch dạy PT. |
+| **Trạng Thái Cảnh Báo (Warning)** | `#D97706` / `text-amber-400` | Sử dụng cho: Gói tập sắp hết hạn ($\le 7$ ngày), Gói tập bảo lưu `FROZEN`, Hủy ca tập $< 2\text{h}$ tính phí phạt, Lượt tập còn ít ($\le 2$). |
+| **Trạng Thái Lỗi / Bị Khóa (Danger)** | `#DC2626` / `text-red-400` | Sử dụng cho: Gói tập hết hạn `EXPIRED`, Gói tập bị hủy `CANCELLED`, Điểm danh thất bại (Hết lượt/Sai mã), Trùng lịch dạy PT. |
 | **Trạng Thái PT & Lịch Tập (PT Accent)** | `#8B5CF6` (Purple/Violet) | Điểm nhấn chuyên biệt nhận diện ca dạy PT, chỉ số InBody và lịch biểu huấn luyện viên. |
 
 ### 1.2. Kiểu Chữ, Vùng Bấm (Touch Targets) & Tương Tác Phím Tắt
@@ -46,20 +46,20 @@ Hệ thống sử dụng bảng màu hiện đại, tương phản cao, tối ư
 
 Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo tư duy **Mobile-First Responsive**, tối ưu cho hội viên và huấn luyện viên sử dụng trên điện thoại di động khi đến phòng tập.
 
-### 2.1. Giai đoạn 1: Đăng nhập Một Chạm & Thẻ Hội Viên Số (Digital Membership Card - UC01 & UC02)
-* **Thẻ Tập Số Tức Thời (Zero-Delay Digital Card):**
-  * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay lập tức Thẻ Hội Viên Điện Tử ở vị trí trên cùng.
-  * Thẻ hiển thị rõ: Họ tên hội viên (`User.FullName`), Ảnh đại diện, Tên gói tập hiện tại (`PackagePlan.Name`), Trạng thái thẻ (`MemberSubscription.Status`), Số ngày còn lại (tính từ `MemberSubscription.EndDate`) và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
+### 2.1. Giai đoạn 1: Đăng nhập Một Chạm & Gói Tập Hội Viên Số (Digital Membership Card - UC01 & UC02)
+* **Gói Tập Số Tức Thời (Zero-Delay Digital Card):**
+  * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay lập tức Khối Thông Tin Gói Tập Điện Tử ở vị trí trên cùng.
+  * Khối hiển thị rõ: Họ tên hội viên (`User.FullName`), Ảnh đại diện, Tên gói tập hiện tại (`PackagePlan.Name`), Trạng thái gói tập (`MemberSubscription.Status`), Số ngày còn lại (tính từ `MemberSubscription.EndDate`) và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
 * **Cơ Chế Mã QR Động Chống Gian Lận (Dynamic QR Check-in):**
   * Dashboard hiển thị nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện riêng ở kích thước tối thiểu **240 × 240 px**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
   * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm máy quét đọc được.
   * Trang QR hiển thị tên và ảnh nhỏ của hội viên để đối chiếu; thông tin nhạy cảm không được nhúng trực tiếp vào mã.
   * Mã có thời hạn ngắn, được cấp và xác thực an toàn từ máy chủ, tự làm mới mỗi **60 giây**. Hiển thị đếm ngược rõ ràng và trạng thái đang làm mới.
   * Có nút `"Làm mới mã QR"`; nếu mất mạng hoặc làm mới thất bại, hiển thị thông báo và trạng thái mã hiện tại, không giả vờ rằng mã mới đã được cấp.
-  * Khi mã hết hạn hoặc thẻ không hợp lệ, ẩn mã cũ và thông báo rõ lý do. Không yêu cầu ứng dụng tự thay đổi độ sáng thiết bị.
-* **Cảnh Báo Hết Hạn & Đóng Băng Thẻ (Smart Expiry & Freeze Alert):**
-  * Khi thẻ còn dưới 7 ngày hoặc dưới 3 lượt tập: Hiển thị thanh thông báo màu vàng hổ phách mời gia hạn kèm nút `"Gia hạn ngay"` dẫn thẳng tới cổng thanh toán VietQR.
-  * Nếu thẻ đang ở trạng thái `FROZEN`: Hiển thị rõ ngày kết thúc bảo lưu và nút `"Yêu cầu mở thẻ sớm"`.
+  * Khi mã hết hạn hoặc gói tập không hợp lệ, ẩn mã cũ và thông báo rõ lý do. Không yêu cầu ứng dụng tự thay đổi độ sáng thiết bị.
+* **Cảnh Báo Hết Hạn & Bảo Lưu Gói Tập (Smart Expiry & Freeze Alert):**
+  * Khi gói tập còn dưới 7 ngày hoặc dưới 3 lượt tập: Hiển thị thanh thông báo màu vàng hổ phách mời gia hạn kèm nút `"Gia hạn ngay"` dẫn thẳng tới cổng thanh toán VietQR.
+  * Nếu gói tập đang ở trạng thái `FROZEN`: Hiển thị rõ ngày kết thúc bảo lưu và nút `"Yêu cầu mở gói tập sớm"`.
 
 ### 2.2. Giai đoạn 2: Khám Phá Gói Tập & Thanh Toán VietQR Sandbox (Catalog & POS Payment - UC03 & UC07)
 * **Bảng Giá & So Sánh Gói Tập Minh Bạch (Freemium to Premium Catalog):**
@@ -73,8 +73,8 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
     * Client lắng nghe kết quả qua SignalR / WebSocket hoặc cơ chế Polling 2 giây/lần.
     * Ngay khi nhận được tín hiệu thanh toán thành công từ Webhook ngân hàng:
       1. Tự động đóng modal QR code ngay lập tức (không cần tải lại trang).
-      2. Hiệu ứng chúc mừng tinh tế (Checkmark xanh) kèm thông báo `"Kích hoạt thẻ tập thành công!"`.
-      3. Cập nhật ngay trạng thái thẻ sang `ACTIVE` và cộng đủ số lượt tập.
+      2. Hiệu ứng chúc mừng tinh tế (Checkmark xanh) kèm thông báo `"Kích hoạt gói tập thành công!"`.
+      3. Cập nhật ngay trạng thái gói tập sang `ACTIVE` và cộng đủ số lượt tập.
       4. Cung cấp nút xem/tải Hóa đơn điện tử PDF.
 
 ### 2.3. Giai đoạn 3: Đặt Lịch Tập Với Huấn Luyện Viên Cá Nhân (PT Booking - UC05)
@@ -83,7 +83,7 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   * Các khung giờ đã có người đặt hoặc PT bận được làm mờ (`opacity-40 cursor-not-allowed`) kèm nhãn `"Đã kín"`.
 * **Ràng Buộc Quy Tắc Hủy Ca Trước 2 Giờ (Strict 2-Hour Cancellation Rule):**
   * Khi hội viên xem danh sách ca tập đã đặt:
-    * Nếu thời gian hiện tại cách giờ bắt đầu ca tập **$\ge 2$ giờ**: Nút `"Hủy ca tập"` hiển thị bình thường. Khi xác nhận, hoàn lại 1 lượt tập `RemainingPtSessions` về thẻ mà không phạt.
+    * Nếu thời gian hiện tại cách giờ bắt đầu ca tập **$\ge 2$ giờ**: Nút `"Hủy ca tập"` hiển thị bình thường. Khi xác nhận, hoàn lại 1 lượt tập `RemainingPtSessions` về gói tập mà không phạt.
     * Nếu thời gian hiện tại cách giờ bắt đầu ca tập **$< 2$ giờ**: Nút `"Hủy ca tập"` đổi sang màu đỏ cảnh báo. Khi click, bật hộp thoại cảnh báo: `"Chú ý: Hủy ca tập trước dưới 2 tiếng sẽ bị tính là một buổi tập đã sử dụng theo nội quy phòng tập. Bạn có chắc chắn muốn hủy?"`.
 * **Giao Diện Huấn Luyện Viên (PT View Workflow):**
   * PT đăng nhập xem được ngay: Danh sách ca dạy trong ngày theo dòng thời gian (Timeline), thông tin hội viên của ca đó, số điện thoại liên hệ nhanh, và trạng thái hội viên đã check-in hay chưa.
@@ -150,9 +150,9 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ### 3.4. Phân Hệ Quản Lý Hội Viên & Nhập Chỉ Số Sức Khỏe (Member & InBody Management - UC02 & UC06)
 * **Bảng Dữ Liệu Hội Viên Đa Năng (DataGrid with Action Chips):**
-  * Hỗ trợ tìm kiếm, phân trang mượt mà, lọc theo trạng thái thẻ (`ACTIVE`, `FROZEN`, `EXPIRED`).
-  * Nút hành động nhanh trên từng dòng: `Xem chi tiết`, `Gia hạn thẻ`, `Bảo lưu thẻ (Freeze)`, `Nhập InBody`.
-* **Quy Trình Bảo Lưu Thẻ (Freeze Subscription Dialog):**
+  * Hỗ trợ tìm kiếm, phân trang mượt mà, lọc theo trạng thái gói tập (`ACTIVE`, `FROZEN`, `EXPIRED`).
+  * Nút hành động nhanh trên từng dòng: `Xem chi tiết`, `Gia hạn gói tập`, `Bảo lưu gói tập (Freeze)`, `Nhập InBody`.
+* **Quy Trình Bảo Lưu Gói Tập (Freeze Subscription Dialog):**
   * Nhân viên chọn Ngày bắt đầu bảo lưu (`FreezeStartDate`) và Ngày kết thúc (`FreezeEndDate`).
   * Hệ thống tự động tính số ngày bảo lưu và hiển thị ngày hết hạn mới dự kiến:
     $$\text{EndDate mới} = \text{EndDate cũ} + \text{Số ngày bảo lưu}$$
@@ -180,8 +180,8 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 | Thành Phần Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Quản Trị Viên (WinUI 3 - Desktop) |
 | :--- | :--- | :--- |
-| **Điểm danh & Ra vào (UC04)** | Mở Thẻ điện tử trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, đối chiếu ảnh chân dung, hiển thị trạng thái xanh/đỏ và âm thanh phản hồi. |
-| **Gói tập & Thanh toán (UC03, UC07)** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt thẻ trong 3 giây. | Admin chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt K80, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt. |
+| **Điểm danh & Ra vào (UC04)** | Mở mã QR gói tập trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, đối chiếu ảnh chân dung, hiển thị trạng thái xanh/đỏ và âm thanh phản hồi. |
+| **Gói tập & Thanh toán (UC03, UC07)** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt gói tập trong 3 giây. | Admin chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt K80, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt. |
 | **Lịch Huấn luyện viên PT (UC05)** | Xem lịch rảnh của PT trên lưới tuần, đặt ca tập chỉ với 2 click; cảnh báo phạt nếu hủy ca $<2$ tiếng. | PT xem danh sách học viên theo Timeline ca dạy; Quản trị viên xếp lịch PT, phát hiện và chặn đứng xung đột trùng giờ. |
 | **Chỉ số Sức khỏe InBody (UC06)** | Xem biểu đồ trực quan biến thiên cân nặng, tỷ lệ mỡ và khối lượng cơ qua từng mốc thời gian. | Nhân viên đo nhập số liệu trên form có kiểm tra biên an toàn (Guard clauses), tự động tính chỉ số BMI ngay tức thì. |
-| **Quản lý & Báo cáo (UC08, UC10)** | Nhận thông báo tự động khi thẻ sắp hết hạn hoặc đến giờ hẹn tập cùng huấn luyện viên. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/CSV và sổ kiểm toán. |
+| **Quản lý & Báo cáo (UC08, UC10)** | Nhận thông báo tự động khi gói tập sắp hết hạn hoặc đến giờ hẹn tập cùng huấn luyện viên. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/CSV và sổ kiểm toán. |

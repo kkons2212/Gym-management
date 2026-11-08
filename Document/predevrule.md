@@ -75,7 +75,7 @@ flowchart TB
     %% Interactions between Users and Containers
     Admin -->|"Thao tác quản trị trên máy trạm quầy [Desktop GUI]"| DesktopApp
     PT -->|"Đăng ký lịch rảnh, xem học viên qua [HTTPS]"| WebApp
-    Member -->|"Xem thẻ số QR, đặt lịch tập qua [HTTPS]"| WebApp
+    Member -->|"Xem mã QR gói tập, đặt lịch tập qua [HTTPS]"| WebApp
 
     %% Interactions inside Containers
     DesktopApp -->|"Gọi dịch vụ / API nghiệp vụ [JSON/HTTPS]"| ApiApp
@@ -115,7 +115,7 @@ flowchart TB
 | :--- | :--- | :--- | :--- |
 | **Person** | **Admin / Lễ tân / Thu ngân** | Người dùng vận hành | Nhân viên phòng gym thực hiện tiếp đón, đăng ký hội viên mới, quét check-in vào phòng, thu tiền hóa đơn POS, phân công/xếp ca PT và xem báo cáo tài chính. |
 | **Person** | **Huấn luyện viên (PT)** | Người dùng chuyên môn | Nhân viên trực tiếp giảng dạy: Đăng ký ca rảnh theo tuần, xem học viên được phân công, cập nhật chỉ số InBody và bấm xác nhận hoàn tất ca dạy. |
-| **Person** | **Hội viên (Member)** | Khách hàng tập luyện | Khách hàng sử dụng ứng dụng di động để xuất trình thẻ số QR, đặt lịch hẹn với PT phụ trách cố định, đổi/hủy ca tập và chấm điểm sao dịch vụ. |
+| **Person** | **Hội viên (Member)** | Khách hàng tập luyện | Khách hàng sử dụng ứng dụng di động để xuất trình mã QR gói tập, đặt lịch hẹn với PT phụ trách cố định, đổi/hủy ca tập và chấm điểm sao dịch vụ. |
 | **Container** | **Desktop Application** | C# .NET 8, WinUI 3 (Windows App SDK) | Ứng dụng Desktop chạy trực tiếp trên máy tính Windows tại quầy lễ tân: Tối ưu cho thao tác nghiệp vụ liên tục, hỗ trợ phím tắt, in nhiệt hóa đơn K80 và kết nối webcam quét QR cục bộ. |
 | **Container** | **Member & PT Portal** | C# .NET 8, Blazor Server | Ứng dụng Web chuẩn Responsive (chạy tốt trên trình duyệt máy tính, máy tính bảng và điện thoại di động): Cho phép Hội viên và PT truy cập mọi lúc mọi nơi mà không cần cài đặt qua Store. |
 | **Container** | **API Application / Core Backend** | C# .NET 8, ASP.NET Core Web API | Bộ não xử lý nghiệp vụ trung tâm: Cung cấp API RESTful (JSON/HTTPS), điều phối xác thực JWT, phân quyền RBAC, kiểm tra xung đột lịch dạy, quy tắc phạt thời gian và quản lý giao dịch. |
@@ -162,7 +162,7 @@ flowchart TB
 ### 3.1. Tầng 1: Presentation Layer (Giao diện người dùng)
 * **1.1 Desktop Admin Client (`GymManagement.Desktop` - WinUI 3):**
   * Dành cho Quản trị viên (Admin) đảm nhiệm toàn bộ công tác vận hành tại quầy lẫn quản trị cơ sở.
-  * Đảm nhiệm toàn diện: Tiếp nhận hội viên mới, quét webcam QR check-in tốc độ cao, lập hóa đơn thu tiền POS, xử lý gia hạn/bảo lưu thẻ, xếp lịch trực quan cho PT, cấu hình hệ thống và xem Dashboard báo cáo quản trị.
+  * Đảm nhiệm toàn diện: Tiếp nhận hội viên mới, quét webcam QR check-in tốc độ cao, lập hóa đơn thu tiền POS, xử lý gia hạn/bảo lưu gói tập, xếp lịch trực quan cho PT, cấu hình hệ thống và xem Dashboard báo cáo quản trị.
 * **1.2 Member & PT Portal (`GymManagement.Web` - Blazor Server):**
   * Cổng tác nghiệp trực tuyến chuẩn Responsive dành cho Hội viên và Huấn luyện viên.
   * Phía Hội viên: Gói tập số (mã QR check-in cá nhân), đặt/đổi/hủy lịch tập PT, theo dõi chỉ số thể hình InBody, đánh giá chất lượng ca dạy (1–5 sao).
@@ -177,7 +177,7 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
 * **2.2 Member & Subscription Lifecycle Module (`IMemberService`):**
   * Tiếp nhận đăng ký mới, tính toán ngày hết hạn, sinh chuỗi định danh QR, gia hạn/nâng cấp gói, bảo lưu thời hạn (`FROZEN`), hủy đăng ký gói (`CANCELLED`), cập nhật hồ sơ cá nhân (UC02, UC09).
 * **2.3 Check-in & Access Control Module (`ICheckInService`):**
-  * Chốt chặn kiểm soát vào phòng: Kiểm tra trạng thái thẻ (`ACTIVE`), kiểm tra hạn dùng, số buổi còn lại và khung giờ hợp lệ; tự động trừ buổi tập đối với gói tính theo lượt, ghi nhận lịch sử ra/vào (UC03).
+  * Chốt chặn kiểm soát vào phòng: Kiểm tra trạng thái gói tập (`ACTIVE`), kiểm tra hạn dùng, số buổi còn lại và khung giờ hợp lệ; tự động trừ buổi tập đối với gói tính theo lượt, ghi nhận lịch sử ra/vào (UC03).
 * **2.4 PT Scheduling & Progress Module (`IPtService`):**
   * Quản trị hồ sơ PT, phân công PT cố định cho học viên, thuật toán kiểm tra chống xung đột lịch dạy (Overlapping Check), hội viên đặt/đổi/hủy ca (áp dụng quy tắc phạt không hoàn buổi nếu hủy $< 2\text{h}$), cập nhật số đo InBody định kỳ, xác nhận hoàn thành ca tập, ghi nhận đánh giá sao (UC04, UC08, UC10).
 * **2.5 Billing & Financial Module (`IBillingService`):**
@@ -252,8 +252,8 @@ graph TD
     Report[2.6 Reporting & BI Module<br>Tổng hợp Views/Queries]
     Notify[External: Notification Adapter]
 
-    Billing -->|1. Kích hoạt thẻ ACTIVE khi thanh toán thành công| Member
-    Billing -->|2. Thu hồi/chuyển trạng thái thẻ sang CANCELLED khi hoàn tiền| Member
+    Billing -->|1. Kích hoạt gói tập ACTIVE khi thanh toán thành công| Member
+    Billing -->|2. Thu hồi/chuyển trạng thái gói tập sang CANCELLED khi hoàn tiền| Member
     CheckIn -->|3. Kiểm tra hạn, số buổi & trừ buổi theo lượt| Member
     CheckIn -->|4. Kiểm tra khung giờ mở/đóng cửa| Config
     PT -->|5. Kiểm tra số buổi PT còn lại & trừ buổi khi hoàn thành| Member
@@ -266,9 +266,9 @@ graph TD
 ```
 
 1. **Luồng Thanh toán & Kích hoạt Gói tập (UC02 + UC05):**
-   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo gói tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin thẻ cho khách hàng.
+   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo gói tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin gói tập cho khách hàng.
 2. **Luồng Điểm danh Check-in Vào phòng (UC03):**
-   * Quét QR hoặc nhập SĐT $\rightarrow$ `CheckInModule` tiếp nhận $\rightarrow$ gọi `MemberModule` tra cứu bảng `MemberSubscription` để kiểm tra điều kiện (thẻ `ACTIVE`, không bị `FROZEN` hay `LOCKED`, còn hạn và số buổi) $\rightarrow$ gọi `ConfigModule` đối soát khung giờ mở cửa $\rightarrow$ nếu hợp lệ, tự động trừ 1 buổi tập (với gói theo lượt) và ghi bản ghi vào bảng `CheckInLog`.
+   * Quét QR hoặc nhập SĐT $\rightarrow$ `CheckInModule` tiếp nhận $\rightarrow$ gọi `MemberModule` tra cứu bảng `MemberSubscription` để kiểm tra điều kiện (gói tập `ACTIVE`, không bị `FROZEN` hay `LOCKED`, còn hạn và số buổi) $\rightarrow$ gọi `ConfigModule` đối soát khung giờ mở cửa $\rightarrow$ nếu hợp lệ, tự động trừ 1 buổi tập (với gói theo lượt) và ghi bản ghi vào bảng `CheckInLog`.
 3. **Luồng Đặt, Đổi, Hủy & Hoàn tất Ca dạy PT (UC04 + UC08 + UC10):**
    * **Đặt/Đổi lịch:** `PtModule` gọi `MemberModule` kiểm tra `RemainingPtSessions > 0` trong `MemberSubscription` $\rightarrow$ kiểm tra chống trùng lịch trong `PTAvailability` $\rightarrow$ ghi nhận ca hẹn vào `PTTrainingSession`.
    * **Hủy ca:** `PtModule` gọi `ConfigModule` kiểm tra quy định thời gian hủy tối thiểu: nếu hủy trước $\ge 2\text{h}$ thì hoàn lại 1 buổi tập vào `MemberSubscription`; nếu sát giờ tập $< 2\text{h}$ thì áp dụng quy tắc phạt không hoàn lại buổi.
@@ -298,7 +298,7 @@ Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuâ
 * Không sử dụng các Entity nội bộ của CSDL (`[User]`, `MemberSubscription`, `Invoice`) để hiển thị trực tiếp lên DataGrid hoặc ViewModels nhằm tránh rò rỉ cấu trúc dữ liệu và lỗi Lazy Loading/Tracking.
 
 ### Quy tắc 3: Toàn vẹn Giao dịch (Transactional Integrity)
-* Mọi luồng xử lý có tác động đến từ 2 bảng trở lên (ví dụ: Tạo hóa đơn + Kích hoạt thẻ, hoặc Điểm danh + Trừ buổi tập) bắt buộc phải được bao bọc trong một **Database Transaction** duy nhất (sử dụng Unit of Work hoặc `IDbContextTransaction`).
+* Mọi luồng xử lý có tác động đến từ 2 bảng trở lên (ví dụ: Tạo hóa đơn + Kích hoạt gói tập, hoặc Điểm danh + Trừ buổi tập) bắt buộc phải được bao bọc trong một **Database Transaction** duy nhất (sử dụng Unit of Work hoặc `IDbContextTransaction`).
 * Nếu bất kỳ bước nào trong quy trình thất bại, toàn bộ giao dịch phải được Rollback về trạng thái ban đầu và trả về mã lỗi rõ ràng cho tầng Presentation.
 
 ### Quy tắc 4: Phân quyền & Kiểm tra Bảo mật Chặt chẽ (RBAC Enforcement)

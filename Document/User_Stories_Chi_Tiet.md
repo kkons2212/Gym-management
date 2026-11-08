@@ -58,7 +58,7 @@
 * **Story point:** `5`
 * **Tiêu chí chấp nhận:**
   * Cho phép Admin nhập thông tin gói tập: Tên gói, Đơn giá, Thời hạn (ngày/tháng), Số buổi tập, Số ngày bảo lưu tối đa, và Mô tả quyền lợi.
-  * Ràng buộc xóa gói tập: Khi Admin yêu cầu xóa gói tập đang có hội viên sở hữu thẻ còn hạn sử dụng, hệ thống từ chối xóa dữ liệu và thông báo: *"Gói tập đang có hội viên sử dụng, chỉ có thể chuyển sang trạng thái Ngừng kinh doanh"*.
+  * Ràng buộc xóa gói tập: Khi Admin yêu cầu xóa gói tập đang có hội viên sở hữu gói tập còn hạn sử dụng, hệ thống từ chối xóa dữ liệu và thông báo: *"Gói tập đang có hội viên sử dụng, chỉ có thể chuyển sang trạng thái Ngừng kinh doanh"*.
   * Cho phép chuyển trạng thái gói tập sang `DISCONTINUED` (Ngừng kinh doanh) để không cho phép đăng ký mới nhưng vẫn duy trì quyền lợi cho hội viên cũ.
 * **Danh sách task:**
   * **Task 7.2.1:** *(Backend)* Xây dựng API quản lý gói tập; viết hàm kiểm tra ràng buộc khóa ngoại với bảng gói tập còn hiệu lực trước khi xóa.
@@ -70,7 +70,7 @@
 * **Độ ưu tiên:** `Should have`
 * **Story point:** `3`
 * **Tiêu chí chấp nhận:**
-  * Cho phép Admin cấu hình: Giờ mở cửa, Giờ đóng cửa, Thời gian tối thiểu cho phép hủy ca tập PT (mặc định: 2 giờ), Giới hạn số ngày bảo lưu thẻ tối đa trong năm.
+  * Cho phép Admin cấu hình: Giờ mở cửa, Giờ đóng cửa, Thời gian tối thiểu cho phép hủy ca tập PT (mặc định: 2 giờ), Giới hạn số ngày bảo lưu gói tập tối đa trong năm.
   * Khi nhấn "Lưu tham số", hệ thống kiểm tra dữ liệu hợp lệ (không để trống, giờ kết thúc lớn hơn giờ bắt đầu) và cập nhật thành công trong < 1 giây.
   * Các tham số mới được áp dụng ngay lập tức cho các Use Case liên quan (UC02, UC03, UC10) mà không cần khởi động lại máy chủ.
 * **Danh sách task:**
@@ -85,7 +85,7 @@
 ### Epic 03: Quản trị Hội viên & Vòng đời Gói tập (UC02)
 
 #### ● User story 02.1: Đăng ký hội viên mới và phát hành gói tập (New Member Registration)
-* **Mô tả:** Là một Nhân viên Lễ tân / Admin, tôi cần nhập thông tin khách hàng, chọn gói tập và hoàn tất kích hoạt thẻ để khách hàng trở thành hội viên chính thức của phòng gym.
+* **Mô tả:** Là một Nhân viên Lễ tân / Admin, tôi cần nhập thông tin khách hàng, chọn gói tập và hoàn tất kích hoạt gói tập để khách hàng trở thành hội viên chính thức của phòng gym.
 * **Độ ưu tiên:** `Must have`
 * **Story point:** `8`
 * **Tiêu chí chấp nhận:**
@@ -99,17 +99,17 @@
   * **Task 2.1.3:** *(Database)* Thiết kế bảng `MEMBERS` và `MEMBERSHIP_CARDS`, thiết lập Unique Index cho `phone` và `cccd`.
 
 #### ● User story 02.2: Tra cứu hồ sơ và Gia hạn / Nâng cấp gói tập (Card Renewal & Upgrade)
-* **Mô tả:** Là một Nhân viên Lễ tân / Admin, tôi cần tìm kiếm hội viên theo SĐT/tên và thực hiện gia hạn hoặc nâng cấp gói thẻ để hội viên tiếp tục tập luyện mà không cần tạo hồ sơ mới.
+* **Mô tả:** Là một Nhân viên Lễ tân / Admin, tôi cần tìm kiếm hội viên theo SĐT/tên và thực hiện gia hạn hoặc nâng cấp gói tập để hội viên tiếp tục tập luyện mà không cần tạo hồ sơ mới.
 * **Độ ưu tiên:** `Must have`
 * **Story point:** `5`
 * **Tiêu chí chấp nhận:**
-  * Thanh tìm kiếm hỗ trợ tra cứu theo SĐT, Họ tên, hoặc Mã thẻ; trả về kết quả trong thời gian < 1 giây.
+  * Thanh tìm kiếm hỗ trợ tra cứu theo SĐT, Họ tên, hoặc Mã gói tập; trả về kết quả trong thời gian < 1 giây.
   * Khi chọn "Gia hạn / Nâng cấp": Cho phép chọn thêm số tháng gia hạn hoặc đổi sang gói tập cấp cao hơn.
-  * Hệ thống tự động tính chi phí chênh lệch hoặc phí gia hạn. Sau khi xác nhận thanh toán, hệ thống cộng dồn ngày hết hạn mới (nếu thẻ cũ còn hạn) hoặc kích hoạt lại nếu thẻ đã hết hạn.
+  * Hệ thống tự động tính chi phí chênh lệch hoặc phí gia hạn. Sau khi xác nhận thanh toán, hệ thống cộng dồn ngày hết hạn mới (nếu gói tập cũ còn hạn) hoặc kích hoạt lại nếu gói tập đã hết hạn.
 * **Danh sách task:**
-  * **Task 2.2.1:** *(Backend)* Xây dựng API gia hạn/nâng cấp thẻ; tính toán ngày hết hạn mới dựa trên trạng thái thẻ hiện tại.
-  * **Task 2.2.2:** *(Frontend)* Thiết kế pop-up "Gia hạn / Nâng cấp" hiển thị thông tin thẻ hiện tại và bảng tính phí tự động.
-  * **Task 2.2.3:** *(Database)* Thiết kế bảng `MEMBERSHIP_HISTORY` để lưu lại toàn bộ các lần gia hạn, nâng cấp thẻ.
+  * **Task 2.2.1:** *(Backend)* Xây dựng API gia hạn/nâng cấp gói tập; tính toán ngày hết hạn mới dựa trên trạng thái gói tập hiện tại.
+  * **Task 2.2.2:** *(Frontend)* Thiết kế pop-up "Gia hạn / Nâng cấp" hiển thị thông tin gói tập hiện tại và bảng tính phí tự động.
+  * **Task 2.2.3:** *(Database)* Thiết kế bảng `MEMBERSHIP_HISTORY` để lưu lại toàn bộ các lần gia hạn, nâng cấp gói tập.
 
 #### ● User story 02.3: Bảo lưu gói tập cho hội viên (Membership Freeze)
 * **Mô tả:** Là một Nhân viên Lễ tân / Admin, tôi cần thao tác tạm dừng hiệu lực gói tập trong một khoảng thời gian cho hội viên có nhu cầu chính đáng, nhằm bảo lưu quyền lợi tập luyện.
@@ -117,24 +117,24 @@
 * **Story point:** `5`
 * **Tiêu chí chấp nhận:**
   * Cho phép chọn Ngày bắt đầu, Ngày kết thúc bảo lưu và nhập Lý do bảo lưu.
-  * Hệ thống kiểm tra điều kiện: Nếu gói thẻ không hỗ trợ bảo lưu hoặc đã vượt quá số ngày bảo lưu cho phép, hệ thống từ chối và thông báo: *"Thẻ không đủ điều kiện thực hiện thao tác này theo quy định"*.
-  * Nếu hợp lệ, hệ thống chuyển trạng thái thẻ sang `FROZEN`, tự động kéo dài ngày hết hạn của thẻ tương ứng với số ngày bảo lưu và lưu lịch sử giao dịch.
+  * Hệ thống kiểm tra điều kiện: Nếu gói tập không hỗ trợ bảo lưu hoặc đã vượt quá số ngày bảo lưu cho phép, hệ thống từ chối và thông báo: *"Gói tập không đủ điều kiện thực hiện thao tác này theo quy định"*.
+  * Nếu hợp lệ, hệ thống chuyển trạng thái gói tập sang `FROZEN`, tự động kéo dài ngày hết hạn của gói tập tương ứng với số ngày bảo lưu và lưu lịch sử giao dịch.
 * **Danh sách task:**
-  * **Task 2.3.1:** *(Backend)* Xây dựng API bảo lưu gói tập, kiểm tra logic ràng buộc chính sách gói và tự động cập nhật ngày hết hạn thẻ (`end_date`).
+  * **Task 2.3.1:** *(Backend)* Xây dựng API bảo lưu gói tập, kiểm tra logic ràng buộc chính sách gói và tự động cập nhật ngày hết hạn gói tập (`end_date`).
   * **Task 2.3.2:** *(Frontend)* Thiết kế giao diện nhập thời gian bảo lưu có bộ chọn lịch (Datepicker) kèm kiểm tra khoảng ngày hợp lệ.
   * **Task 2.3.3:** *(Database)* Thiết kế bảng `CARD_FREEZE_LOGS` lưu vết lịch sử: ngày bắt đầu, ngày kết thúc, lý do và người duyệt.
 
 #### ● User story 02.4: Khóa hoặc Hủy gói tập (Card Deactivation & Cancellation)
-* **Mô tả:** Là một Admin, tôi cần khóa tạm thời hoặc hủy gói tập của hội viên khi bị mất thẻ hoặc vi phạm quy định, nhằm ngăn chặn việc sử dụng trái phép.
+* **Mô tả:** Là một Admin, tôi cần khóa tạm thời hoặc hủy gói tập của hội viên khi vi phạm quy định, nhằm ngăn chặn việc sử dụng trái phép.
 * **Độ ưu tiên:** `Should have`
 * **Story point:** `3`
 * **Tiêu chí chấp nhận:**
-  * Cho phép chọn lý do khóa/hủy: Vi phạm quy chế phòng tập, Mất thẻ, hoặc Hoàn tiền hợp đồng.
-  * Khi bấm "Xác nhận Khóa/Hủy", hệ thống lập tức cập nhật trạng thái thẻ thành `LOCKED` hoặc `CANCELLED`.
-  * Mã thẻ bị khóa sẽ bị hệ thống từ chối ngay lập tức khi quét check-in tại quầy điểm danh.
+  * Cho phép chọn lý do khóa/hủy: Vi phạm quy chế phòng tập hoặc Hoàn tiền hợp đồng.
+  * Khi bấm "Xác nhận Khóa/Hủy", hệ thống lập tức cập nhật trạng thái gói tập thành `LOCKED` hoặc `CANCELLED`.
+  * Gói tập bị khóa sẽ bị hệ thống từ chối ngay lập tức khi quét check-in tại quầy điểm danh.
 * **Danh sách task:**
   * **Task 2.4.1:** *(Backend)* Xây dựng API cập nhật trạng thái gói tập; đẩy tín hiệu vô hiệu hóa quyền check-in.
-  * **Task 2.4.2:** *(Frontend)* Thiết kế Modal xác nhận khóa/hủy thẻ có cảnh báo rủi ro màu đỏ và bắt buộc chọn lý do.
+  * **Task 2.4.2:** *(Frontend)* Thiết kế Modal xác nhận khóa/hủy gói tập có cảnh báo rủi ro màu đỏ và bắt buộc chọn lý do.
   * **Task 2.4.3:** *(Database)* Cập nhật trường `card_status` trong bảng `MEMBERSHIP_CARDS` và lưu biên bản vào `AUDIT_LOGS`.
 
 #### ● User story 02.5: Tra cứu và cập nhật thông tin cá nhân hội viên (UC02.2 - Member Profile Update)
@@ -157,7 +157,7 @@
 ### Epic 04: Quản lý Thanh toán & Hóa đơn Dòng tiền (UC05)
 
 #### ● User story 05.1: Lập hóa đơn và thanh toán đa phương thức (Payment Processing)
-* **Mô tả:** Là một Nhân viên Thu ngân / Lễ tân, tôi cần tạo hóa đơn thu tiền cho các dịch vụ (gói thẻ, thuê PT, nước uống/đồ tập) và tiếp nhận thanh toán qua Tiền mặt/VietQR/Thẻ để ghi nhận doanh thu chính xác.
+* **Mô tả:** Là một Nhân viên Thu ngân / Lễ tân, tôi cần tạo hóa đơn thu tiền cho các dịch vụ (gói tập, thuê PT, nước uống/đồ tập) và tiếp nhận thanh toán qua Tiền mặt/VietQR/Quẹt thẻ POS để ghi nhận doanh thu chính xác.
 * **Độ ưu tiên:** `Must have`
 * **Story point:** `8`
 * **Tiêu chí chấp nhận:**
@@ -189,7 +189,7 @@
 * **Tiêu chí chấp nhận:**
   * Cho phép chọn hóa đơn cần xử lý, nhập số tiền hoàn, phương thức hoàn tiền và lý do hủy/hoàn tiền.
   * Kiểm tra điều kiện hoàn tiền: Nếu hóa đơn đã quá hạn hoàn hủy theo quy định hoặc dịch vụ đã qua sử dụng nhiều buổi, hệ thống từ chối và thông báo: *"Hóa đơn không đủ điều kiện hoàn tiền theo quy định"*.
-  * Nếu hợp lệ, hệ thống chuyển trạng thái hóa đơn sang `REFUNDED`, tự động thu hồi/khóa gói thẻ tương ứng và ghi nhận khoản chi giảm trừ doanh thu trong sổ quỹ.
+  * Nếu hợp lệ, hệ thống chuyển trạng thái hóa đơn sang `REFUNDED`, tự động thu hồi/khóa gói tập tương ứng và ghi nhận khoản chi giảm trừ doanh thu trong sổ quỹ.
 * **Danh sách task:**
   * **Task 5.3.1:** *(Backend)* Xây dựng API hoàn tiền hóa đơn; xử lý transaction hoàn tác trạng thái gói tập và ghi sổ quỹ.
   * **Task 5.3.2:** *(Frontend)* Thiết kế form xử lý hoàn tiền có bước đối soát số tiền hoàn và lý do hủy dịch vụ.
@@ -207,13 +207,13 @@
 * **Story point:** `5`
 * **Tiêu chí chấp nhận:**
   * Khi quét mã QR, hệ thống tiếp nhận mã định danh và phản hồi kết quả trong thời gian < 2 giây.
-  * Kiểm tra điều kiện: Thẻ phải ở trạng thái `ACTIVE`, còn hạn sử dụng, còn số buổi và đúng khung giờ tập (không bị bảo lưu hay trùng lặp quét liên tiếp).
+  * Kiểm tra điều kiện: Gói tập phải ở trạng thái `ACTIVE`, còn hạn sử dụng, còn số buổi và đúng khung giờ tập (không bị bảo lưu hay trùng lặp quét liên tiếp).
   * Nếu hợp lệ: Hệ thống ghi nhận 1 lượt check-in vào CSDL, tự động trừ 1 buổi tập (nếu gói tính theo lượt), hiển thị ảnh hội viên và thông báo *"Check-in thành công"*.
-  * Nếu không hợp lệ: Hệ thống phát tín hiệu từ chối và hiển thị rõ lý do: *"Gói tập đã hết hạn"*, *"Thẻ đang bảo lưu"*, hoặc *"Không đúng khung giờ"*, kèm liên kết chuyển nhanh sang UC02 để gia hạn.
+  * Nếu không hợp lệ: Hệ thống phát tín hiệu từ chối và hiển thị rõ lý do: *"Gói tập đã hết hạn"*, *"Gói tập đang bảo lưu"*, hoặc *"Không đúng khung giờ"*, kèm liên kết chuyển nhanh sang UC02 để gia hạn.
 * **Danh sách task:**
   * **Task 3.1.1:** *(Backend)* Xây dựng API điểm danh `/api/v1/checkin/scan` xử lý kiểm tra đa điều kiện và trừ buổi tập trong 1 Database Transaction duy nhất.
   * **Task 3.1.2:** *(Frontend)* Xây dựng giao diện màn hình "Quản Lý Check-in" tự động focus ô quét mã, có âm thanh báo thành công/thất bại.
-  * **Task 3.1.3:** *(Database)* Thiết kế bảng `CHECKIN_LOGS` lưu lịch sử: `card_id`, `checkin_time`, `status`, `rejection_reason`.
+  * **Task 3.1.3:** *(Database)* Thiết kế bảng `CHECKIN_LOGS` lưu lịch sử: `subscription_id`, `checkin_time`, `status`, `rejection_reason`.
 
 #### ● User story 03.2: Check-in thủ công qua Số điện thoại / Mã hội viên (Manual Check-in)
 * **Mô tả:** Là một Nhân viên Lễ tân, tôi cần nhập Số điện thoại hoặc Mã hội viên thủ công khi điện thoại khách hết pin để hỗ trợ khách vào phòng tập thuận tiện.
@@ -221,10 +221,10 @@
 * **Story point:** `3`
 * **Tiêu chí chấp nhận:**
   * Cho phép lễ tân nhập SĐT hoặc Mã hội viên vào thanh tìm kiếm tại màn hình Quản lý Check-in và bấm Enter.
-  * Hệ thống tra cứu và hiển thị thông tin thẻ, hạn dùng và ảnh chân dung nhận diện của hội viên.
-  * Lễ tân đối chiếu khuôn mặt và nhấn nút "Xác nhận vào phòng"; hệ thống ghi nhận lượt check-in tương tự như quét thẻ tự động.
+  * Hệ thống tra cứu và hiển thị thông tin gói tập, hạn dùng và ảnh chân dung nhận diện của hội viên.
+  * Lễ tân đối chiếu khuôn mặt và nhấn nút "Xác nhận vào phòng"; hệ thống ghi nhận lượt check-in tương tự như quét QR tự động.
 * **Danh sách task:**
-  * **Task 3.2.1:** *(Backend)* Xây dựng API tra cứu nhanh thông tin hội viên theo SĐT/Mã thẻ phục vụ điểm danh thủ công.
+  * **Task 3.2.1:** *(Backend)* Xây dựng API tra cứu nhanh thông tin hội viên theo SĐT/Mã gói tập phục vụ điểm danh thủ công.
   * **Task 3.2.2:** *(Frontend)* Thiết kế khu vực nhập SĐT nhanh và Card thông tin tóm tắt hội viên kèm nút bấm xác nhận.
   * **Task 3.2.3:** *(Database)* Tối ưu hóa Index tìm kiếm trên cột `phone` của bảng `MEMBERS`.
 
@@ -397,11 +397,11 @@
 * **Độ ưu tiên:** `Must have`
 * **Story point:** `3`
 * **Tiêu chí chấp nhận:**
-  * Hiển thị chi tiết: Tên gói thẻ, Ngày bắt đầu, Ngày hết hạn, Số ngày còn lại, Số buổi tập PT còn lại (ví dụ: 8/12 buổi) và Trạng thái thẻ (Đang hoạt động, Bảo lưu, Hết hạn).
+  * Hiển thị chi tiết: Tên gói tập, Ngày bắt đầu, Ngày hết hạn, Số ngày còn lại, Số buổi tập PT còn lại (ví dụ: 8/12 buổi) và Trạng thái gói tập (Đang hoạt động, Bảo lưu, Hết hạn).
   * Nếu hội viên chưa có gói tập nào, hiển thị thông báo: *"Chưa có gói tập"* kèm gợi ý liên hệ quầy lễ tân để đăng ký.
 * **Danh sách task:**
   * **Task 9.2.1:** *(Backend)* Xây dựng API tra cứu chi tiết gói tập của hội viên đang đăng nhập.
-  * **Task 9.2.2:** *(Frontend)* Thiết kế thẻ hiển thị gói tập (Membership Digital Card) đẹp mắt trên ứng dụng di động.
+  * **Task 9.2.2:** *(Frontend)* Thiết kế khối hiển thị gói tập (Membership Digital Card) đẹp mắt trên ứng dụng di động.
   * **Task 9.2.3:** *(Database)* Viết câu truy vấn tối ưu lấy gói tập đang hoạt động gần nhất từ bảng `MEMBERSHIP_CARDS`.
 
 #### ● User story 09.3: Hội viên tra cứu lịch sử tập luyện và điểm danh (UC 9.2 - Member Workout & Check-In History)
