@@ -3,14 +3,22 @@
     x:Class="GymManagement.Desktop.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:GymManagement.Desktop.Converters"
     xmlns:local="using:GymManagement.Desktop">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="ms-appx:///Styles/ColorTokens.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+
+            <!-- Converters -->
+            <converters:StatusToBrushConverter x:Key="StatusToBrushConverter" />
+            <converters:CurrencyFormatterConverter x:Key="CurrencyFormatterConverter" />
+            <converters:BmiEvaluationConverter x:Key="BmiEvaluationConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

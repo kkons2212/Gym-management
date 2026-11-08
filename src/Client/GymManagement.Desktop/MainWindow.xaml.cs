@@ -1,27 +1,65 @@
 using Microsoft.UI.Xaml;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.UI.Xaml.Input;
+using GymManagement.Desktop.Services.Session;
+using GymManagement.Desktop.ViewModels;
+using GymManagement.Desktop.Views;
 
 namespace GymManagement.Desktop;
 
-/// <summary>
-/// The application window. This hosts a Frame that displays pages. Add your
-/// UI and logic to MainPage.xaml / MainPage.xaml.cs instead of here so you
-/// can use Page features such as navigation events and the Loaded lifecycle.
-/// </summary>
 public sealed partial class MainWindow : Window
 {
+    private readonly IAdminSessionService _sessionService;
+
     public MainWindow()
     {
         InitializeComponent();
 
+        _sessionService = App.GetService<IAdminSessionService>();
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
-        AppWindow.SetIcon("Assets/AppIcon.ico");
+        try
+        {
+            AppWindow.SetIcon("Assets/AppIcon.ico");
+        }
+        catch
+        {
+            // Fallback if icon path is not loaded in sandbox
+        }
 
-        // Navigate the root frame to the main page on startup.
+        // Hook login viewmodel success event
+        var loginVm = App.GetService<LoginViewModel>();
+        loginVm.OnLoginSuccess += OnLoginSuccessful;
+
+        if (_sessionService.IsAuthenticated)
+        {
+            RootFrame.Navigate(typeof(MainPage));
+        }
+        else
+        {
+            RootFrame.Navigate(typeof(LoginPage));
+        }
+
+        // Global keyboard accelerators for F1, F2, F3, F5
+        if (Content is FrameworkElement rootElement)
+        {
+            rootElement.KeyDown += OnWindowKeyDown;
+        }
+    }
+
+    private void OnLoginSuccessful()
+    {
+        var shellVm = App.GetService<ShellViewModel>();
+        shellVm.UpdateUserInfo();
         RootFrame.Navigate(typeof(MainPage));
+    }
+
+    private void OnWindowKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (RootFrame.Content is MainPage mainPage)
+        {
+            mainPage.HandleShortcut(e.Key);
+        }
     }
 }

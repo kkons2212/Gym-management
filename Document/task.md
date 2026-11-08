@@ -214,9 +214,8 @@ GymManagement.sln
   - PT ghi nhận chỉ số InBody và xác nhận hoàn tất ca tập.
   - Hội viên đánh giá chấm điểm sao (1–5 sao).
 - [ ] **Task 2.6: `SystemSettingService Component` (Kết nối Authenticated + Database API):**
-  - Quản trị tài khoản nhân viên (chặn Super Admin tự khóa tài khoản).
+  - Quản trị tài khoản người dùng và phân quyền (chặn Admin tự khóa tài khoản).
   - Quản lý danh mục gói tập (kiểm tra ràng buộc trước khi chuyển sang `DISCONTINUED`).
-  - Quản lý tham số vận hành chung của cơ sở.
 - [ ] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
   - Tổng hợp số liệu đa chiều: Doanh thu thực thu, biến động hội viên, lưu lượng check-in, hiệu suất PT.
   - Xuất dữ liệu báo cáo ra file Excel (.xlsx) và PDF.
@@ -226,8 +225,9 @@ GymManagement.sln
 ### GIAI ĐOẠN 3: HIỆN THỰC CỔNG GIAO TIẾP `GYMMANAGEMENT API` (SERVER API)
 *Mục tiêu: Đóng gói API Gateway cung cấp giao diện RESTful chính thức cho Client Component.*
 
-- [ ] **Task 3.1:** Cấu hình Middleware xử lý lỗi toàn cục (`ApiResponse<T>`, `ApiErrorResponse`).
-- [ ] **Task 3.2:** Cấu hình Middleware bảo mật cổng **`Authenticated`** (xác thực JWT Bearer & Role Claims: `Admin`, `PT`, `Member`).
+- [x] **Task 3.2:** Cấu hình xác thực JWT và bảo vệ `Authenticated` với fallback yêu cầu đăng nhập cùng role policy `Admin`, `PT`, `Member`; cho phép truy cập ẩn danh `/health`.
+  - Cấu hình bắt buộc: `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey` (tối thiểu 32 byte UTF-8); cung cấp bằng secret store hoặc environment variables (`Jwt__...`), không commit signing key.
+- [x] **Task 3.1:** Cấu hình Middleware xử lý lỗi toàn cục (`ApiResponse<T>`, `ApiErrorResponse`), chuẩn hóa lỗi validation, not found, business rule và lỗi không dự kiến.
 - [ ] **Task 3.3:** Xây dựng các API Controllers công khai giao tiếp `GymManagement API`:
   - `AuthController` (`/api/v1/auth/*`)
   - `MembersController` (`/api/v1/members/*`)
@@ -243,15 +243,15 @@ GymManagement.sln
 *Mục tiêu: Xây dựng hai ứng dụng khách độc lập kết nối vào cổng "GymManagement API".*
 
 #### 4.1. `Admin Desktop App` (WinUI 3)
-- [ ] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
-- [ ] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
+- [x] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
+- [x] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
   - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực).
   - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
   - Quản lý hội viên, gia hạn, bảo lưu gói tập.
-- [ ] **Task 4.1.3: Màn hình quản trị cơ sở:**
+- [x] **Task 4.1.3: Màn hình quản trị cơ sở:**
   - Dashboard tổng quan kinh doanh.
   - Điều phối lịch huấn luyện viên PT (Calendar View).
-  - Danh mục gói tập, tham số vận hành và báo cáo BI đa chiều.
+  - Danh mục gói tập, quản lý tài khoản người dùng và báo cáo BI đa chiều.
 
 #### 4.2. `Member/PT Web Portal` (Blazor Server)
 - [ ] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.

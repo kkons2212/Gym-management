@@ -69,8 +69,17 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
         CancellationToken cancellationToken = default)
     {
-        int validPageIndex = pageIndex < 1 ? 1 : pageIndex;
-        int validPageSize = pageSize < 1 ? 10 : pageSize;
+        int validPageIndex = pageIndex;
+        if (pageIndex < 1)
+        {
+            validPageIndex = 1;
+        }
+
+        int validPageSize = pageSize;
+        if (pageSize < 1)
+        {
+            validPageSize = 10;
+        }
 
         IQueryable<T> query = _dbSet.AsNoTracking();
 
@@ -104,9 +113,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     /// <inheritdoc />
     public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
-        return predicate == null
-            ? await _dbSet.AsNoTracking().CountAsync(cancellationToken)
-            : await _dbSet.AsNoTracking().CountAsync(predicate, cancellationToken);
+        if (predicate == null)
+        {
+            return await _dbSet.AsNoTracking().CountAsync(cancellationToken);
+        }
+
+        return await _dbSet.AsNoTracking().CountAsync(predicate, cancellationToken);
     }
 
     // ====================================================================

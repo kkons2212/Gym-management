@@ -157,11 +157,13 @@ public class UnitOfWork : IUnitOfWork
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        await ExecuteTransactionAsync<bool>(async () =>
+        async Task<bool> ActionWrapperAsync()
         {
             await action();
             return true;
-        }, cancellationToken);
+        }
+
+        await ExecuteTransactionAsync<bool>(ActionWrapperAsync, cancellationToken);
     }
 
     // ====================================================================
