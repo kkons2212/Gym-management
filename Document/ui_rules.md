@@ -54,7 +54,7 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
 ### 2.1. Thẻ Tập Hội Viên Điện Tử (`DigitalCard.razor`)
 * **Bố cục Thẻ Số Cao Cấp (Digital Membership Card):**
   * Kích thước tỷ lệ thẻ ATM tiêu chuẩn ($1.58:1$), nền tối thể thao sang trọng (`bg-gradient-to-br from-slate-900 to-slate-800`), viền kim loại mảnh `border border-slate-700`.
-  * **Góc trên bên trái:** Logo phòng gym + Tên gói tập hiện tại (`PackagePlan.PlanName`) kèm chip hạng gói (Standard: Bạc, VIP: Vàng ánh kim).
+  * **Góc trên bên trái:** Logo phòng gym + Tên gói tập hiện tại (`PackagePlan.Name`) kèm chip hạng gói (Standard: Bạc, VIP: Vàng ánh kim).
   * **Góc trên bên phải:** Chip trạng thái tròn:
     * `ACTIVE`: Chấm xanh lá `#16A34A` nhấp nháy nhẹ.
     * `FROZEN`: Chấm vàng `#D97706` kèm nhãn `"Đang bảo lưu"`.
@@ -95,13 +95,13 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
   * 2 Nút hành động: `"Giữ Lại Ca Tập"` (Nút chính) và `"Xác Nhận Hủy"` (Nút phụ viền đỏ).
 
 ### 2.4. Bảng Tiến Trình Sức Khỏe InBody (`InBodyDashboard.razor`)
-* **Hàng 4 Thẻ Chỉ Số Sức Khỏe (Metric Cards Grid):**
-  * Cân nặng (`kg`), Chiều cao (`cm`), Tỷ lệ mỡ (`%`), Khối lượng cơ (`kg`).
+* **Hàng 4 Thẻ Chỉ Số Sức Khỏe (Metric Cards Grid - Khớp Bảng MemberBodyMetric):**
+  * Cân nặng (`WeightKg` - kg), Chiều cao (`HeightCm` - cm), Tỷ lệ mỡ (`BodyFatPercentage` - %), Khối lượng cơ xương (`SkeletalMuscleMass` - kg).
 * **Thanh Trực Quan Hóa Phân Loại BMI (BMI Visual Gauge):**
   * Thanh dải màu ngang chia 4 phân vùng: Xanh dương (< 18.5: Gầy), Xanh lá (18.5 - 24.9: Chuẩn), Vàng (25 - 29.9: Thừa cân), Đỏ ($\ge 30$: Béo phì).
-  * Con trỏ kim vị trí chỉ chính xác số đo BMI của hội viên kèm nhãn trạng thái lớn.
+  * Con trỏ kim vị trí chỉ chính xác số đo `Bmi` của hội viên kèm nhãn trạng thái lớn.
 * **Biểu Đồ Tiến Trình Theo Lịch Sử Đo (Line Chart):**
-  * Biểu đồ đường mượt mà hiển thị biến thiên cân nặng và tỷ lệ mỡ qua các lần đo, giúp hội viên nhìn thấy rõ kết quả tập luyện.
+  * Biểu đồ đường mượt mà hiển thị biến thiên cân nặng (`WeightKg`) và tỷ lệ mỡ (`BodyFatPercentage`) qua các lần đo lịch sử (`measured_at`), giúp hội viên nhìn thấy rõ kết quả tập luyện.
 
 ---
 
@@ -143,17 +143,26 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
       * Lý do từ chối in chữ đậm: `"Thẻ đã hết hạn ngày 20/10/2026"` hoặc `"Gói tập đã hết lượt vào phòng"`.
 
 ### 3.3. Màn Hình POS Thu Ngân & Xuất Hóa Đơn (`PosBillingPage.xaml`)
-* **Bố Cục 2 Khối Thao Tác:**
+* **Bố Cục 2 Khối Thao Tác (Khớp 100% Thuộc Tính Bảng Invoice & PackagePlan):**
   * **Khối Danh Mục & Sản Phẩm (Bên Trái):**
-    * Ô tìm kiếm gói tập nhanh theo tên/mã gói.
-    * Lưới danh thiếp gói tập (Card Grid) cho phép click 1 chạm để thêm vào hóa đơn thanh toán.
+    * Ô tìm kiếm gói tập nhanh theo tên hoặc mã (`PackagePlan.PlanId`, `PackagePlan.Name`).
+    * Lưới danh thiếp gói tập (Card Grid) hiển thị đơn giá niêm yết (`PackagePlan.Price`), thời hạn (`DurationDays`), số buổi gym (`MaxCheckInSessions`), số buổi PT (`TotalPtSessions`). Click 1 chạm để nạp vào hóa đơn.
   * **Khối Chi Tiết Hóa Đơn & Thu Tiền (Bên Phải):**
-    * Thông tin người mua: Ô tìm kiếm hội viên gợi ý nhanh (Auto-suggest box).
-    * Bảng danh sách mục hàng: Tên gói, Đơn giá, Thời hạn, Chiết khấu (`DiscountAmount`), Thành tiền.
-    * Bảng tổng kết tiền:
-      * Tạm tính: `1,200,000 đ`
-      * Giảm giá: `- 100,000 đ`
-      * **Tổng thanh toán:** `1,100,000 đ` (`text-3xl font-bold text-sky-600`).
+    * Thông tin người mua: Ô tìm kiếm hội viên gợi ý nhanh (Auto-suggest box) liên kết `User.UserID`.
+    * Bảng chi tiết hóa đơn thanh toán:
+      * Mã gói tập: `PackagePlan.PlanId`
+      * Tên gói tập: `PackagePlan.Name`
+      * Thời hạn & Quyền lợi: `DurationDays` ngày, `MaxCheckInSessions` lượt gym, `TotalPtSessions` buổi PT
+      * Đơn giá gói: `PackagePlan.Price` (định dạng tiền tệ VNĐ)
+      * Tạm tính: `Invoice.SubtotalAmount` (gán trực tiếp bằng `PackagePlan.Price`)
+      * Loại giao dịch: `Invoice.TransactionType` (`SUBSCRIPTION_PURCHASE` hoặc `SUBSCRIPTION_RENEWAL`)
+    * Bảng tổng kết thanh toán:
+      * **Tổng thanh toán (`Invoice.TotalAmount`):** Đồng bộ chính xác với tiền niêm yết của gói (`TotalAmount = CAST(SubtotalAmount AS INT)` - ví dụ: `1,200,000 đ`).
+      * **Ràng buộc nghiệp vụ CSDL:** Tuyệt đối không có ô nhập mã giảm giá, voucher hay dòng trừ chiết khấu vì bảng `Invoice` trong CSDL không có cột lưu trữ giảm giá.
+      * Mã hóa đơn: `Invoice.InvoiceCode` sinh tự động duy nhất (ví dụ: `INV-20261108-001`).
+      * Phương thức thanh toán: `Invoice.PaymentMethod` lưu các giá trị chuẩn (`CASH`, `VIETQR`, `CREDIT_CARD`).
+      * Ngày ghi nhận thanh toán: `Invoice.paid_at` (gán ngày hiện tại khi giao dịch thành công).
+      * Trường hợp hoàn tiền (nếu có): Hiển thị trường `Invoice.RefundAmount` và lý do `Invoice.RefundReason`.
 * **Bộ Nút Chọn Phương Thức Thanh Toán Lớn:**
   * 3 Nút bấm kích thước lớn dễ chạm trên màn hình cảm ứng:
     * `[Tiền Mặt]`
@@ -184,9 +193,9 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
     * `EXPIRED`: Chip đỏ nhạt.
   * Cột thao tác nhanh: Nút icon Xem, Gia hạn, Bảo lưu, Đo InBody.
 * **Hộp Thoại Nhập Số Đo InBody (`InBodyDialog.xaml`):**
-  * Giao diện nhập liệu dạng lưới 2 cột:
-    * Cột 1: Chiều cao (`cm`), Cân nặng (`kg`), Tỷ lệ mỡ (`%`), Khối lượng cơ (`kg`).
-    * Cột 2: Bảng đồng hồ tính BMI tự động hiển thị ngay khi nhập xong chiều cao & cân nặng, kèm đánh giá thể trạng tức thì (Bình thường / Thừa cân / Béo phì).
+  * Giao diện nhập liệu dạng lưới 2 cột khớp các thuộc tính bảng `MemberBodyMetric`:
+    * Cột 1: Chiều cao (`HeightCm` - cm), Cân nặng (`WeightKg` - kg), Tỷ lệ mỡ (`BodyFatPercentage` - %), Khối lượng cơ xương (`SkeletalMuscleMass` - kg), Ghi chú (`Notes`).
+    * Cột 2: Bảng đồng hồ tính `Bmi` tự động (`Bmi = WeightKg / ((HeightCm / 100) * (HeightCm / 100))`) hiển thị ngay khi nhập xong chiều cao & cân nặng, kèm đánh giá thể trạng tức thì (Bình thường / Thừa cân / Béo phì). Tự động gán `UserID`, `measured_at` và `RecordedByPtId`.
 
 ### 3.6. Bảng Điều Khiển Thống Kê Doanh Thu (`DashboardPage.xaml`)
 * **4 Thẻ Chỉ Số KPI Phẳng (Flat KPI Cards):**
