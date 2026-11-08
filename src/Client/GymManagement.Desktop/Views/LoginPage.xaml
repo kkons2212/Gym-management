@@ -37,6 +37,7 @@
                         <TextBlock Text="Tên đăng nhập / Email" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
                         <TextBox x:Name="TxtUsername"
                                  Text="{x:Bind ViewModel.Username, Mode=TwoWay}"
+                                 KeyDown="Input_KeyDown"
                                  PlaceholderText="admin@gymsystem.vn"
                                  Height="40" />
                     </StackPanel>
@@ -45,6 +46,7 @@
                         <TextBlock Text="Mật khẩu" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
                         <PasswordBox x:Name="TxtPassword"
                                      PasswordChanged="TxtPassword_PasswordChanged"
+                                     KeyDown="Input_KeyDown"
                                      PlaceholderText="Nhập mật khẩu..."
                                      Height="40" />
                     </StackPanel>
