@@ -5,6 +5,7 @@ using GymManagement.Server.Core.DTOs.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using GymManagement.Server.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("PtOnly", policy => policy.RequireRole("PT"));
     options.AddPolicy("MemberOnly", policy => policy.RequireRole("Member"));
 });
+
+// Đăng ký 3 Cổng Adapters ngoại vi (VietQR, Notification, CameraScanner)
+builder.Services.AddServerDataAdapters(builder.Configuration);
+
+// Đăng ký Database API (GymDbContext, GenericRepository, UnitOfWork)
+builder.Services.AddServerDataRepositories(builder.Configuration);
 
 var app = builder.Build();
 

@@ -177,13 +177,13 @@ GymManagement.sln
 - [ ] **Task 1.1.5:** `[Type: Database]` `[Module: Server / Data]` Cấu hình `GymDbContext` thiết lập toàn bộ khóa ngoại (FKs) và Unique Constraints (`QrCode`, `InvoiceCode`, `Phone`).
 
 #### 1.2. Hiện thực Interface "Database API" (Unit of Work & Repositories)
-- [ ] **Task 1.2.1:** `[Type: DAL / Repository]` `[Module: Server / Data]` Triển khai `GenericRepository<T>` hỗ trợ CRUD an toàn.
-- [ ] **Task 1.2.2:** `[Type: DAL / Repository]` `[Module: Server / Data]` Xây dựng `IUnitOfWork` và `UnitOfWork` điều phối transaction ACID cho các nghiệp vụ đa bảng.
+- [x] **Task 1.2.1:** `[Type: DAL / Repository]` `[Module: Server / Data]` Triển khai `GenericRepository<T>` hỗ trợ CRUD an toàn.
+- [x] **Task 1.2.2:** `[Type: DAL / Repository]` `[Module: Server / Data]` Xây dựng `IUnitOfWork` và `UnitOfWork` điều phối transaction ACID cho các nghiệp vụ đa bảng.
 
 #### 1.3. Cổng giao tiếp Third Party Service
-- [ ] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.
-- [ ] **Task 1.3.2:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`SMS Sending Gateway`**: Xây dựng `NotificationAdapter` gửi Email hóa đơn/SMS tới `Email/SMS Provider`.
-- [ ] **Task 1.3.3:** `[Type: Adapter]` `[Module: Server / Data]` Xây dựng `CameraScannerAdapter` giải mã QR điểm danh.
+- [x] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.
+- [x] **Task 1.3.2:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`SMS Sending Gateway`**: Xây dựng `NotificationAdapter` gửi Email hóa đơn/SMS tới `Email/SMS Provider`.
+- [x] **Task 1.3.3:** `[Type: Adapter]` `[Module: Server / Data]` Xây dựng `CameraScannerAdapter` giải mã QR điểm danh.
 
 ---
 
@@ -247,7 +247,7 @@ GymManagement.sln
 - [ ] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
 - [ ] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
   - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực).
-  - Thu ngân POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
+  - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
   - Quản lý hội viên, gia hạn, bảo lưu gói tập.
 - [ ] **Task 4.1.3: Màn hình quản trị cơ sở:**
   - Dashboard tổng quan kinh doanh.
