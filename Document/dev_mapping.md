@@ -7,11 +7,11 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **21 / 33 Tasks (63.6%)**
+* **Tiến độ Hoàn thành:** **22 / 33 Tasks (66.7%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.4, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.2, Task 2.4, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
   * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
@@ -38,6 +38,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 | **Task 2.1** | AuthService Component (Xác thực & Cấp phát JWT) | UC01 / US 01.1 (Đăng nhập Username/Email, BCrypt, Status == ACTIVE, cấp JWT) | `Server.Core` | `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs`, `Services/AuthService.cs`, `DTOs/Identity/IdentityDtos.cs` | `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 tests) | `[User]`, `Role` | `569ff68` |
+| **Task 2.2** | CheckInService Component | UC03 (US 03.1, 03.2, 03.3 - Check-in QR/Phone, trừ buổi, CheckInLog) | `Server.Core`, `Server.Data` | `Contracts/ICheckInService.cs`, `DTOs/CheckIn/CheckInDtos.cs`, `Entities/CheckInEntities.cs`, `Services/CheckInService.cs`, `GymDbContext.cs` | `tests/GymManagement.Server.UnitTests/Services/CheckInServiceTests.cs` (21 tests) | `CheckInLog`, `MemberSubscription`, `[User]`, `PackagePlan` | `2cedcaa` |
 | **Task 2.4** | BillingService Component | UC05 (POS, VietQR, hóa đơn, hoàn tiền nội bộ) | `Server.Core`, `Server.Data`, `Server.Api` | `Entities/BillingEntities.cs`, `Contracts/IBillingService.cs`, `Services/BillingService.cs`, `GymDbContext.cs`, VietQR adapter DTO/options, `Program.cs` | `BillingServiceTests.cs` (5 tests), `VietQrAdapterTests.cs` (4 tests), `GymDbContextBillingModelTests.cs` | `Invoice`, `MemberSubscription`, `PackagePlan`, `[User]` | `794f318` |
 | **Task 2.5** | PtService Component (UC04, UC08, UC10) | UC04, UC08, UC10 (PT profile, lịch rảnh, đặt/hủy/đổi ca, InBody, đánh giá) | `Server.Core` | `Enums/PtSessionStatus.cs`, `DTOs/PT/PtDtos.cs`, `Contracts/IPtService.cs`, `Services/PtService.cs` | `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 tests) | `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]` | `03e9053` |
 | **Task 2.6** | SystemSettingService Component (UC07) | UC07 (Quản trị tài khoản, phân quyền nhân sự, quản lý danh mục gói tập) | `Server.Core` | `Contracts/ISystemSettingService.cs`, `DTOs/Settings/*`, `Services/SystemSettingService.cs` | `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 tests) | `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `Invoice` | `41ca333` |
@@ -314,6 +315,30 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Khóa ký JWT:** Tự động fallback và kiểm tra độ dài khóa tối thiểu 32 bytes UTF-8 (`HmacSha256`).
   - **Chuẩn hóa vai trò:** Tự động chuẩn hóa `ADMIN` -> `Admin`, `TRAINER` / `PT` -> `PT`, `MEMBER` -> `Member` để khớp chặt chẽ với Authorize policies trong `Program.cs`.
   - **DoD 6:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), mọi rẽ nhánh dùng `if / else` có khối `{ ... }`, bố cục fields ở đầu class, phương thức nghiệp vụ không dùng expression-bodied `=>`.
+
+### 📌 [Task 2.2] Hiện thực CheckInService Component (UC03 / US 03.1, 03.2, 03.3)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `2cedcaa` | **Nhánh:** `feat/task-2.2-check-in-service`
+* **Phân hệ nghiệp vụ liên quan:**
+  - UC03 (Quản lý Check-in & Điểm danh hội viên)
+  - US 03.1 (Điểm danh hội viên tại quầy lễ tân qua quét mã QR động xoay vòng 60s hoặc mã QR tĩnh)
+  - US 03.2 (Điểm danh thủ công bằng số điện thoại khi hội viên quên điện thoại hoặc camera quầy hỏng)
+  - US 03.3 (Thẩm định điều kiện đa tầng: trạng thái gói tập ACTIVE, hạn sử dụng EndDate, số lượt còn lại RemainingCheckInSessions > 0; tự động trừ 1 buổi và ghi nhật ký CheckInLog)
+* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Entities, Services) & `Server.Data` (GymDbContext)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Contracts/ICheckInService.cs` (Khai báo 5 methods: `CheckInAsync`, `CheckInWithQrAsync`, `ManualCheckInAsync`, `GetTodayCheckInLogsAsync`, `GetCurrentAttendanceCountAsync`)
+  - `src/Server/GymManagement.Server.Core/DTOs/CheckIn/CheckInDtos.cs` (Khai báo các Record DTOs: `CheckInRequest`, `CheckInResponse`, `CheckInLogDto`)
+  - `src/Server/GymManagement.Server.Core/Entities/CheckInEntities.cs` (Entity `CheckInLog` ánh xạ chuẩn DDL SQL Server với bảng `CheckInLog`)
+  - `src/Server/GymManagement.Server.Core/Services/CheckInService.cs` (Hiện thực toàn bộ logic kiểm soát điểm danh: xác thực QR động/tĩnh, tra cứu số điện thoại, kiểm tra gói tập FROZEN/CANCELLED/EXPIRED/hết lượt, trừ buổi và ghi log CheckInLog bằng Transaction ACID)
+  - `src/Server/GymManagement.Server.Data/Persistence/GymDbContext.cs` (Bổ sung `DbSet<CheckInLog> CheckInLogs`)
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/CheckInServiceTests.cs` (21 test cases — 21/21 pass 100%)
+  - Coverage: Điểm danh thành công qua QR động và QR tĩnh, điểm danh thủ công qua SĐT, từ chối khi không có QR/SĐT, từ chối khi không tìm thấy hội viên, từ chối khi chưa có gói tập, từ chối khi gói tập bảo lưu FROZEN (ghi log DENIED), từ chối khi gói tập bị hủy CANCELLED (ghi log DENIED), từ chối khi gói tập EXPIRED (ghi log DENIED), tự động cập nhật EXPIRED khi quá ngày EndDate, từ chối khi RemainingCheckInSessions <= 0 (ghi log DENIED), xử lý token động hết hạn, mã QR sai định dạng, bọc ngoại lệ trong ACID transaction, tính năng GetTodayCheckInLogsAsync và GetCurrentAttendanceCountAsync.
+* **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`, `PackagePlan`
+* **Ràng buộc nghiệp vụ & Giao dịch:**
+  - **Giao dịch ACID:** Mọi thao tác thành công (trừ 1 session trong `MemberSubscription` và thêm bản ghi SUCCESS vào `CheckInLog`) đều được bọc trong `_unitOfWork.ExecuteTransactionAsync` đảm bảo tính toàn vẹn tuyệt đối.
+  - **Ghi nhật ký từ chối (DENIED log):** Khi gặp bất kỳ vi phạm điều kiện gói tập nào (FROZEN, CANCELLED, EXPIRED, hết lượt), hệ thống lập tức ghi nhận 1 bản ghi `CheckInLog` với trạng thái `DENIED`, kèm lý do vi phạm chi tiết và `VerifiedByAdminId` để kiểm toán lễ tân.
+  - **Chuẩn hóa thuật ngữ:** Tuyệt đối dùng thuật ngữ "gói tập" trong toàn bộ mã nguồn, thông báo lỗi và nhật ký hệ thống.
+  - **DoD 6:** 100% không toán tử 3 ngôi (`? :`), toàn bộ rẽ nhánh dùng khối `if / else`, trường dữ liệu ở đầu file, không dùng expression-bodied `=>` cho phương thức nghiệp vụ.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
