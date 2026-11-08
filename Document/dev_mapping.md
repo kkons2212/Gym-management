@@ -7,11 +7,11 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **19 / 33 Tasks (57.6%)**
+* **Tiến độ Hoàn thành:** **20 / 33 Tasks (60.6%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
   * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
@@ -37,6 +37,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
+| **Task 2.1** | AuthService Component (Xác thực & Cấp phát JWT) | UC01 / US 01.1 (Đăng nhập Username/Email, BCrypt, Status == ACTIVE, cấp JWT) | `Server.Core` | `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs`, `Services/AuthService.cs`, `DTOs/Identity/IdentityDtos.cs` | `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 tests) | `[User]`, `Role` | `569ff68` |
 | **Task 2.5** | PtService Component (UC04, UC08, UC10) | UC04, UC08, UC10 (PT profile, lịch rảnh, đặt/hủy/đổi ca, InBody, đánh giá) | `Server.Core` | `Enums/PtSessionStatus.cs`, `DTOs/PT/PtDtos.cs`, `Contracts/IPtService.cs`, `Services/PtService.cs` | `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 tests) | `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]` | `03e9053` |
 | **Task 2.6** | SystemSettingService Component (UC07) | UC07 (Quản trị tài khoản, phân quyền nhân sự, quản lý danh mục gói tập) | `Server.Core` | `Contracts/ISystemSettingService.cs`, `DTOs/Settings/*`, `Services/SystemSettingService.cs` | `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 tests) | `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `Invoice` | `41ca333` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | UC01, UC02, UC04, UC05, UC07, UC10 | `src/Client/GymManagement.Desktop`, `Core/DTOs` | CheckIn, PosBilling, Members, PtSchedule, PackagePlans, Dashboard, Settings, Dialogs | WinUI 3 Release Compilation 0 Errors | 9 bảng DDL | `89c525a` |
@@ -258,6 +259,31 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Chốt chặn tự hạ quyền:** Admin không thể tự đổi vai trò của mình thành vai trò khác Admin (`currentUserName == targetUserName && newRoleId != "ADMIN"`).
   - **Toàn vẹn xóa gói tập:** Gói đã có `MemberSubscription` hoặc `Invoice` không bị xóa vật lý; chuyển cờ `is_Active = 0` (ngừng kinh doanh) để bảo toàn quyền lợi của hội viên.
   - **Cú pháp tuân thủ `dev_rule.md`:** 100% không dùng toán tử 3 ngôi `? :`, không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ fields/constants đặt ở đầu file.
+
+---
+
+### 📌 [Task 2.1] Hiện thực AuthService Component (UC01 / US 01.1)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `569ff68` | **Nhánh:** `feat/task-2.1-auth-service`
+* **Phân hệ nghiệp vụ liên quan:**
+  - UC01 (Đăng nhập và Xác thực)
+  - US 01.1 (Đăng nhập hệ thống theo vai trò: Admin, PT, Member; xác thực BCrypt; cấp phát JWT token mở cổng Authenticated)
+* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Services)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs` (Định nghĩa 4 phương thức: `LoginAsync`, `ValidateTokenAsync`, `HashPassword`, `VerifyPassword`)
+  - `src/Server/GymManagement.Server.Core/Services/AuthService.cs` (Hiện thực xác thực danh tính, băm/so sánh BCrypt, kiểm tra cờ Status == ACTIVE / LOCKED, sinh và giải mã JWT token)
+  - `src/Server/GymManagement.Server.Core/DTOs/Identity/IdentityDtos.cs` (Record DTOs: `LoginRequest`, `LoginResponse`, `UserSessionDto`)
+  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (Thêm package `BCrypt.Net-Next`, `System.IdentityModel.Tokens.Jwt`, `Microsoft.Extensions.Configuration.Abstractions`)
+  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (Chuẩn hóa TargetFramework sang `net8.0` đồng bộ toàn solution và CI runner)
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 test cases — 18/18 pass 100%)
+  - Coverage: Đăng nhập hợp lệ bằng Username/Email, cấp JWT token và refresh token, mật khẩu không chính xác, tài khoản không tồn tại, tài khoản LOCKED, tài khoản INACTIVE, mật khẩu rỗng/tên đăng nhập rỗng, mật khẩu null trong DB, giải mã JWT token hợp lệ, token rỗng/token sai chữ ký hoặc hết hạn, băm mật khẩu BCrypt, xác thực mã băm BCrypt, chuẩn hóa vai trò TRAINER -> PT.
+* **Bảng CSDL liên quan:** `[User]`, `Role`
+* **Ràng buộc nghiệp vụ & Bảo mật:**
+  - **Bảo mật thông tin đăng nhập:** Nếu sai mật khẩu hoặc không tìm thấy user, đều ném `UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không chính xác.")` để chống liệt kê tài khoản (User Enumeration).
+  - **Khóa tài khoản:** Nếu `Status == "LOCKED"`, ném `BusinessRuleException("Tài khoản đã bị khóa.")`. Nếu khác `ACTIVE`, ném `BusinessRuleException("Tài khoản chưa được kích hoạt hoặc đã ngừng hoạt động.")`.
+  - **Khóa ký JWT:** Tự động fallback và kiểm tra độ dài khóa tối thiểu 32 bytes UTF-8 (`HmacSha256`).
+  - **Chuẩn hóa vai trò:** Tự động chuẩn hóa `ADMIN` -> `Admin`, `TRAINER` / `PT` -> `PT`, `MEMBER` -> `Member` để khớp chặt chẽ với Authorize policies trong `Program.cs`.
+  - **DoD 6:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), mọi rẽ nhánh dùng `if / else` có khối `{ ... }`, bố cục fields ở đầu class, phương thức nghiệp vụ không dùng expression-bodied `=>`.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

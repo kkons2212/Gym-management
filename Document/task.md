@@ -190,7 +190,7 @@ GymManagement.sln
 ### GIAI ĐOẠN 2: HIỆN THỰC 7 SERVICE COMPONENTS TRONG `SERVER` (SERVER CORE)
 *Mục tiêu: Xây dựng toàn bộ các Service Components bên trong Server kết nối qua cổng "Authenticated" và "Database API".*
 
-- [ ] **Task 2.1: `AuthService Component` (Cửa ngõ xác thực & Cấp phát Authenticated):**
+- [x] **Task 2.1: `AuthService Component` (Cửa ngõ xác thực & Cấp phát Authenticated):**
   - Xác thực tên đăng nhập/mật khẩu qua BCrypt.
   - Kiểm tra trạng thái tài khoản `Status == ACTIVE`.
   - Sinh JWT Token đóng vai trò chìa khóa mở cổng `Authenticated` cho toàn bộ các service khác.
