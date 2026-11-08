@@ -230,7 +230,7 @@ flowchart LR
      * `src/GymManagement.Api`: Tầng giao tiếp HTTP API (ASP.NET Core Web API).
      * `src/GymManagement.Core`: Tầng miền nghiệp vụ độc lập (Domain Entities, Contracts, DTOs, Services, Exceptions).
      * `src/GymManagement.Infrastructure`: Tầng dữ liệu & tích hợp ngoại vi (EF Core 8, Configurations, Repositories, Adapters).
-     * `src/GymManagement.Desktop`: Tầng giao diện quản trị WinUI 3 MVVM (Dành cho Admin, Lễ tân, Thu ngân).
+     * `src/GymManagement.Desktop`: Tầng giao diện quản trị WinUI 3 MVVM (Dành riêng cho Admin).
      * `src/GymManagement.Web`: Tầng cổng thông tin hội viên Blazor Server (Dành cho Hội viên & PT).
      * `tests/GymManagement.Server.UnitTests`: Kiểm thử đơn vị các nghiệp vụ tại `Core`.
      * `tests/GymManagement.Server.DataTests`: Kiểm thử truy xuất dữ liệu EF Core tại `Infrastructure`.
@@ -254,7 +254,7 @@ flowchart LR
 4. **Phân tách Ngữ cảnh Miền Nghiệp vụ (Contextual Domain Separation):**
    * Bên trong các thư mục lớn (`DTOs/`, `ViewModels/`, `Views/`, `Components/`), bắt buộc phân nhóm theo miền chức năng hoặc tác nhân:
      * Ví dụ trong DTOs: `DTOs/Identity/`, `DTOs/Members/`, `DTOs/CheckIn/`, `DTOs/PTSchedules/`, `DTOs/Billing/`, `DTOs/Reports/`.
-     * Ví dụ trong ViewModels: `ViewModels/Admin/`, `ViewModels/Receptionist/`, `ViewModels/Cashier/`.
+     * Ví dụ trong ViewModels: `ViewModels/CheckIn/`, `ViewModels/Billing/`, `ViewModels/Members/`, `ViewModels/PtSchedule/`.
 
 ---
 

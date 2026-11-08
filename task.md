@@ -246,7 +246,7 @@ GymManagement.sln
 - [ ] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
 - [ ] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
   - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực).
-  - Thu ngân POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
+  - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
   - Quản lý hội viên, gia hạn, bảo lưu gói tập.
 - [ ] **Task 4.1.3: Màn hình quản trị cơ sở:**
   - Dashboard tổng quan kinh doanh.
