@@ -222,7 +222,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - `src/Server/GymManagement.Server.Core/Contracts/IPtService.cs` (17 method signatures chia 6 nhóm nghiệp vụ)
   - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (PtService sealed class, 5 entity stubs, ACID transactions)
   - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (thêm InternalsVisibleTo cho UnitTests và DynamicProxyGenAssembly2)
-  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (đổi TargetFramework sang net10.0)
+  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (giữ TargetFramework net8.0 đồng bộ toàn solution)
 * **Kiểm thử tương ứng (Verification):**
   - `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 test cases — 16/16 pass 100%)
   - Coverage: SaveTrainer (phone/email duplicate), SetTrainerStatus (not found), CheckDeactivation (has students / no students), AssignPt (max student limit), BookSession (slot booked / no PT sessions), CancelSession (late / wrong status), SubmitRating (out of range / already rated / not completed), RecordInBody (invalid weight)
