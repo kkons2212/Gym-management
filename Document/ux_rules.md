@@ -1,11 +1,11 @@
 # USER EXPERIENCE & INTERACTION FLOW RULES (UX SYSTEM RULES)
 ## Hệ Thống Quản Lý Phòng Tập Thể Thao (Gym Management System)
-### WinUI 3 Desktop (Admin/Staff) & Blazor Server (Member/PT Portal)
+### WinUI 3 Desktop (Admin) & Blazor Server (Member/PT Portal)
 
-> **Mục đích tài liệu:** Tài liệu này quy định toàn bộ tiêu chuẩn **Trải nghiệm Người dùng & Luồng Tương tác Nghiệp vụ (UX - User Experience)** cho toàn bộ lập trình viên và AI Agent khi triển khai giao diện, quản lý trạng thái, xử lý sự kiện và kiểm soát ngoại lệ trên 2 ứng dụng client: **WinUI 3 Desktop App** (dành cho Admin, Lễ tân, Thu ngân) và **Blazor Server Web App** (dành cho Hội viên và Huấn luyện viên cá nhân PT).
+> **Mục đích tài liệu:** Tài liệu này quy định toàn bộ tiêu chuẩn **Trải nghiệm Người dùng & Luồng Tương tác Nghiệp vụ (UX - User Experience)** cho toàn bộ lập trình viên và AI Agent khi triển khai giao diện, quản lý trạng thái, xử lý sự kiện và kiểm soát ngoại lệ trên 2 ứng dụng client: **WinUI 3 Desktop App** (dành riêng cho Admin) và **Blazor Server Web App** (dành cho Hội viên và Huấn luyện viên cá nhân PT).
 > **Triết lý UX Cốt lõi (Core UX Philosophy):** 
 > * **Đối với Hội viên & PT (Web Portal):** Thao tác tức thì (Zero-Friction), thẻ tập điện tử quét mã trong 1 chạm, minh bạch lượt tập và lịch hẹn, cảnh báo hủy ca trước 2 giờ rõ ràng.
-> * **Đối với Nhân viên & Ban quản lý (Desktop App):** Tốc độ quầy cực nhanh (< 1 giây điểm danh), an toàn giao dịch tài chính (VietQR tự động khớp, chống trùng hóa đơn), kiểm soát chống gian lận thẻ tập và trực quan hóa xung đột lịch dạy PT.
+> * **Đối với Ban quản trị Admin (Desktop App):** Tốc độ quầy cực nhanh (< 1 giây điểm danh), an toàn giao dịch tài chính (VietQR tự động khớp, chống trùng hóa đơn), kiểm soát chống gian lận và trực quan hóa xung đột lịch dạy PT.
 
 ---
 
@@ -21,7 +21,7 @@ Hệ thống sử dụng bảng màu hiện đại, tương phản cao, tối ư
 | :--- | :--- | :--- |
 | **Nền Chính (Primary Background)** | `#0F172A` (Dark) / `#FFFFFF` (Light) | Giao diện Desktop hỗ trợ Fluent Dark/Light; Web Portal tối ưu hiển thị rõ nét trên thiết bị di động. |
 | **Bề Mặt Thẻ (Card / Surface)** | `#1E293B` (Dark) / `#F8FAFC` (Light) | Khối hiển thị thông tin thẻ tập, giỏ hàng POS, ca tập với viền `1px solid #334155` (Dark) hoặc `#E2E8F0` (Light). |
-| **Màu Chữ Chính (Primary Text)** | `#F8FAFC` (Dark) / `#0F172A` (Light) | Độ tương phản WCAG AAA ($\ge 7:1$) bảo đảm nhìn rõ từ xa tại quầy lễ tân và màn hình turnstile. |
+| **Màu Chữ Chính (Primary Text)** | `#F8FAFC` (Dark) / `#0F172A` (Light) | Độ tương phản WCAG AAA ($\ge 7:1$) bảo đảm nhìn rõ từ xa tại quầy làm việc Admin và màn hình turnstile. |
 | **Màu Chữ Phụ (Muted Text)** | `#94A3B8` (Dark) / `#64748B` (Light) | Dùng cho nhãn phụ, ngày hết hạn, mã định danh thẻ tập, chú thích chỉ số InBody. |
 | **Điểm Nhấn Hành Động (Primary Accent)** | `#0EA5E9` (Cyan/Sky) hoặc `#2563EB` (Blue) | Đúng 1 màu nổi bật cho các nút CTA chính: Check-in, Thanh toán, Đặt lịch PT, Đăng ký gói tập. |
 | **Trạng Thái Thành Công (Success)** | `#16A34A` (`bg-green-600` / `#DCFCE7`) | Sử dụng cho: Check-in hợp lệ, Mở cổng Turnstile, `ACTIVE`, `PAID`, Đặt lịch PT thành công. |
@@ -34,11 +34,11 @@ Hệ thống sử dụng bảng màu hiện đại, tương phản cao, tối ư
 * **Font chữ hệ thống:** Sử dụng phông chữ Sans-serif hiện đại (`Segoe UI Variable` trên WinUI 3 Desktop và `Inter` / `system-ui` trên Blazor Web) hỗ trợ hiển thị tiếng Việt hoàn hảo, không lỗi dấu.
 * **Quy chuẩn vùng bấm (Touch & Click Target):**
   * Trên Web Mobile (Hội viên): Mọi nút bấm, tab và mã QR phải có kích thước tối thiểu **$44\text{px} \times 44\text{px}$** với khoảng đệm tối thiểu $8\text{px}$.
-  * Trên Desktop (Lễ tân/Thu ngân): Nút quét thẻ và thanh toán lớn, dễ click chuột nhanh hoặc hỗ trợ màn hình cảm ứng POS tại quầy.
+  * Trên Desktop (Admin): Nút quét QR và thanh toán lớn, dễ click chuột nhanh hoặc hỗ trợ màn hình cảm ứng POS tại quầy.
 * **Hỗ trợ phím tắt quầy (POS & Check-in Shortcuts):**
-  * Màn hình lễ tân/thu ngân hỗ trợ phím tắt thao tác nhanh: `F1` (Mở ô quét mã Check-in), `F2` (Tạo hóa đơn mới), `F3` (Tìm hội viên nhanh), `F5` (Làm mới bảng lịch PT), `Enter` (Xác nhận thanh toán / In hóa đơn), `Esc` (Đóng hộp thoại).
+  * Màn hình Admin hỗ trợ phím tắt thao tác nhanh: `F1` (Bật camera quét mã QR Check-in), `F2` (Tạo hóa đơn mới), `F3` (Tìm hội viên nhanh), `F5` (Làm mới bảng lịch PT), `Enter` (Xác nhận thanh toán / In hóa đơn), `Esc` (Đóng hộp thoại).
 * **Hiệu ứng chuyển động (Motion & Feedback):**
-  * Tinh giản, nhanh gọn (`duration-150` đến `duration-200`). Cấm các hiệu ứng chuyển động rườm rà làm chậm tốc độ điểm danh và thu ngân tại quầy.
+  * Tinh giản, nhanh gọn (`duration-150` đến `duration-200`). Cấm các hiệu ứng chuyển động rườm rà làm chậm tốc độ điểm danh và thanh toán tại quầy.
 
 ---
 
@@ -97,32 +97,37 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ---
 
-## 3. QUY CHUẨN TRẢI NGHIỆM BAN QUẢN LÝ & NHÂN VIÊN (ADMIN & STAFF WORKFLOW - WINUI 3 DESKTOP)
+## 3. QUY CHUẨN TRẢI NGHIỆM DÀNH CHO ADMIN (ADMIN WORKFLOW - WINUI 3 DESKTOP)
 
-Ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thiết kế theo tư duy **Desktop-First MVVM**, phục vụ màn hình quầy lễ tân và văn phòng điều hành với tốc độ xử lý tức thì, mật độ thông tin cao và giao diện phẳng Fluent Design.
+Ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thiết kế theo tư duy **Desktop-First MVVM**, phục vụ màn hình làm việc của Admin tại quầy tiếp đón với tốc độ xử lý tức thì, mật độ thông tin cao và giao diện phẳng Fluent Design.
 
 ### 3.1. Phân Hệ Quầy Điểm Danh & Cổng Tự Động (Turnstile Check-in Counter - UC04)
 * **Tốc Độ Xử Lý Điểm Danh < 1 Giây:**
   * Luồng check-in là luồng quan trọng bậc nhất của phòng gym, không được phép trễ nải gây ùn tắc tại cửa ra vào.
-* **Giao Diện Màn Hình Điểm Danh Quầy Lễ Tân (Chia 2 Cột Rõ Ràng):**
-  * **Cột Trái (Camera Scanner / Thiết bị đọc mã):** Luồng quét mã QR/mã vạch trực tiếp từ camera hoặc máy quét chuyên dụng USB, ô nhập mã thẻ luôn ở trạng thái tự động Focus để sẵn sàng nhận tín hiệu máy quét không cần click chuột.
-  * **Cột Phải (Kết Quả Xác Minh Hội Viên Tức Thì):**
-    * Khi mã thẻ được quét hợp lệ: Màn hình nháy viền xanh lá, phát âm thanh báo thành công ("Beep" ngắn), hiển thị to rõ: Ảnh đại diện hội viên, Họ tên, Gói tập, Số buổi còn lại (`RemainingCheckInSessions`), và tín hiệu `"ĐÃ MỞ CỔNG TURNSTILE"`.
-    * Khi thẻ hết hạn hoặc không hợp lệ: Màn hình đổi nền cảnh báo đỏ, phát âm thanh cảnh báo lỗi ("Buzz"), hiển thị nguyên nhân chi tiết (ví dụ: `"Thẻ đã hết hạn từ ngày 15/10/2026"`, `"Gói tập đã hết lượt vào phòng"`, `"Thẻ đang bị đóng băng"`).
-* **Nút Ghi Đè Thủ Công (Manual Receptionist Override):**
-  * Trường hợp hội viên quên thẻ hoặc cổng turnstile kẹt cơ khí, lễ tân có nút `"Cho phép vào thủ công (Manual Check-in)"` kèm bắt buộc chọn lý do để lưu vào vết kiểm toán (`CheckInLog`).
+* **Giao Diện Màn Hình Điểm Danh Quầy Tiếp Đón (Chia 2 Cột Rõ Ràng):**
+  * **Cột Trái (Camera Quét Mã QR Hội Viên):**
+    * Hệ thống **hoàn toàn không dùng thẻ vật lý và không sử dụng đầu đọc thẻ USB**. Hội viên mở mã QR điện tử động trên ứng dụng Web/Mobile của mình.
+    * Màn hình Admin trang bị nút lớn `"Bật Camera Quét Mã QR"` (phím tắt `F1`). Khi kích hoạt, webcam quầy sẽ mở lên để nhận diện và giải mã chuỗi `QrCode` từ màn hình điện thoại hội viên theo thời gian thực.
+    * Kèm theo ô nhập nhanh Số điện thoại (`User.Phone`) để tra cứu tài khoản nếu hội viên hết pin hoặc quên điện thoại.
+  * **Cột Phải (Kết Quả Xác Minh Từ Backend Tức Thì):**
+    * Desktop App đóng vai trò Presentation: Không tự kiểm tra điều kiện nghiệp vụ cục bộ mà gửi chuỗi QR/SĐT lên `GymManagement API` (`POST /api/v1/checkin`).
+    * Toàn bộ việc kiểm tra tính hợp lệ của **Gói tập trong tài khoản hội viên** (`MemberSubscription.Status == ACTIVE`, còn hạn sử dụng `EndDate >= Today`, còn lượt vào phòng `RemainingCheckInSessions > 0`, kiểm tra gói có đang tạm ngưng bảo lưu `FROZEN` hay không) đều được **Backend** (`CheckInService`) xử lý tập trung và trừ lượt tập trong database transaction.
+    * **Khi Check-in Hợp Lệ (Backend trả về Success):** Màn hình nháy viền xanh lá `#16A34A`, phát âm thanh báo thành công ("Beep" ngắn), hiển thị to rõ: Ảnh chân dung hội viên, Họ tên, Tên gói tập trong tài khoản, Số buổi gym còn lại (`RemainingCheckInSessions`), và tín hiệu `"ĐÃ MỞ CỔNG TURNSTILE"`.
+    * **Khi Gói Tập Không Hợp Lệ (Backend trả về BusinessRuleException):** Màn hình đổi nền cảnh báo đỏ `#DC2626`, phát âm thanh cảnh báo lỗi ("Buzz"), hiển thị nguyên nhân chi tiết do Backend phản hồi (ví dụ: *"Gói tập trong tài khoản đã hết hạn vào ngày 15/10/2026"*, *"Gói tập đã hết số lượt vào phòng"*, *"Gói tập đang tạm ngưng bảo lưu"*).
+* **Nút Ghi Đè Thủ Công (Manual Override):**
+  * Trường hợp hội viên hết pin điện thoại hoặc cổng turnstile kẹt cơ khí, Admin tra cứu tài khoản hội viên qua SĐT và dùng nút `"Cho phép vào thủ công (Manual Check-in)"` kèm bắt buộc chọn lý do để lưu vào vết kiểm toán (`CheckInLog`, ghi nhận `VerifiedByAdminId`).
 
-### 3.2. Phân Hệ Thu Ngân, Bán Gói & Xuất Hóa Đơn (POS & Billing Workflow - UC07)
+### 3.2. Phân Hệ Bán Gói & Xuất Hóa Đơn (POS & Billing Workflow - UC07)
 * **Tối Ưu Hóa Quy Trình Tạo Hóa Đơn (3-Step Fast Checkout Khớp Bảng Invoice):**
-  1. **Bước 1 - Tìm / Chọn Hội viên:** Ô tìm kiếm thông minh hỗ trợ gõ tên, số điện thoại (`User.Phone`) hoặc mã thẻ có gợi ý tự động (Auto-complete dropdown) trong $< 300\text{ms}$ để liên kết `Invoice.UserID`.
+  1. **Bước 1 - Tìm / Chọn Hội viên:** Ô tìm kiếm thông minh hỗ trợ gõ tên hoặc số điện thoại (`User.Phone`) có gợi ý tự động (Auto-complete dropdown) trong $< 300\text{ms}$ để liên kết `Invoice.UserID`.
   2. **Bước 2 - Chọn Gói Tập / Dịch Vụ:** Lưới các gói tập (`PackagePlan`) hiển thị tên gói (`PackagePlan.Name`), đơn giá niêm yết (`PackagePlan.Price`), thời hạn (`DurationDays`), số buổi gym (`MaxCheckInSessions`) và số buổi kèm PT (`TotalPtSessions`). Hệ thống tự động gán `Invoice.SubtotalAmount = PackagePlan.Price` và `Invoice.TotalAmount = CAST(PackagePlan.Price AS INT)`.
-     * **Ràng Buộc Tuyệt Đối Về Giá:** Không có trường giảm giá hay mã ưu đãi vì bảng `Invoice` trong CSDL vật lý chỉ gồm các trường: `SubtotalAmount`, `TotalAmount`, `RefundAmount`, `RefundReason`, `PaymentMethod`, `TransactionType`, `paid_at`. Hóa đơn phản ánh đúng 100% giá niêm yết của gói.
+     * **Ràng Buộc Tuyệt Đối Về Giá:** Không có trường giảm giá hay mã ưu đãi vì bảng `Invoice` trong CSDL vật lý chỉ gồm các trường: `SubtotalAmount`, `TotalAmount`, `RefundAmount`, `RefundReason`, `PaymentMethod`, `TransactionType`, `paid_at`, `CreatedByAdminId`. Hóa đơn phản ánh đúng 100% giá niêm yết của gói.
   3. **Bước 3 - Chọn Phương Thức Thanh Toán:**
      * Nút bấm lớn chuyển đổi nhanh các giá trị lưu vào `Invoice.PaymentMethod`: `Tiền mặt (CASH)`, `Chuyển khoản VietQR (VIETQR)`, `Thẻ ngân hàng / Quẹt thẻ POS (CREDIT_CARD)`.
      * Xác định loại giao dịch lưu vào `Invoice.TransactionType`: `SUBSCRIPTION_PURCHASE` (đăng ký mới) hoặc `SUBSCRIPTION_RENEWAL` (gia hạn).
 * **Cơ Chế Khóa An Toàn Khi Chờ Thanh Toán VietQR:**
   * Khi chọn VietQR: Màn hình hiển thị cửa sổ bật lên (Dialog) có mã QR động lớn và tổng số tiền thanh toán `Invoice.TotalAmount`.
-  * Nút `"Xác nhận thu tiền thủ công"` bị vô hiệu hóa trong 10 giây đầu để khuyến khích chờ hệ thống đối soát tự động qua Webhook, tránh nhân viên bấm nhầm khi tiền chưa vào tài khoản.
+  * Nút `"Xác nhận thu tiền thủ công"` bị vô hiệu hóa trong 10 giây đầu để khuyến khích chờ hệ thống đối soát tự động qua Webhook, tránh Admin bấm nhầm khi tiền chưa vào tài khoản.
 * **Tự Động Sinh Hóa Đơn & Mở Khóa Dịch Vụ (ACID Integrity):**
   * Ngay khi giao dịch hoàn tất: Tạo bản ghi `Invoice` (sinh mã `InvoiceCode` duy nhất), cập nhật `MemberSubscription` mới hoặc gia hạn thêm ngày (`EndDate`) / lượt (`RemainingCheckInSessions`, `RemainingPtSessions`) cho gói cũ trong cùng 1 transaction CSDL.
   * Hộp thoại in hóa đơn xuất hiện tức thì với nút in nhanh `Enter` hoặc đóng `Esc`.
@@ -168,12 +173,12 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ---
 
-## 4. MA TRẬN ĐỐI CHIẾU TRẢI NGHIỆM: HỘI VIÊN / PT (WEB) VS. NHÂN VIÊN / ADMIN (DESKTOP)
+## 4. MA TRẬN ĐỐI CHIẾU TRẢI NGHIỆM: HỘI VIÊN / PT (WEB) VS. QUẢN TRỊ VIÊN ADMIN (DESKTOP)
 
-| Thành Phần Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Lễ Tân & Quản Trị (WinUI 3 - Desktop) |
+| Thành Phần Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Quản Trị Viên (WinUI 3 - Desktop) |
 | :--- | :--- | :--- |
-| **Điểm danh & Ra vào (UC04)** | Mở Thẻ điện tử trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình quầy lễ tân tiếp nhận quét trong $<1\text{s}$, đối chiếu ảnh chân dung, hiển thị trạng thái xanh/đỏ và âm thanh phản hồi. |
-| **Gói tập & Thanh toán (UC03, UC07)** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt thẻ trong 3 giây. | Thu ngân POS chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt. |
+| **Điểm danh & Ra vào (UC04)** | Mở Thẻ điện tử trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, đối chiếu ảnh chân dung, hiển thị trạng thái xanh/đỏ và âm thanh phản hồi. |
+| **Gói tập & Thanh toán (UC03, UC07)** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt thẻ trong 3 giây. | Admin chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt K80, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt. |
 | **Lịch Huấn luyện viên PT (UC05)** | Xem lịch rảnh của PT trên lưới tuần, đặt ca tập chỉ với 2 click; cảnh báo phạt nếu hủy ca $<2$ tiếng. | PT xem danh sách học viên theo Timeline ca dạy; Quản trị viên xếp lịch PT, phát hiện và chặn đứng xung đột trùng giờ. |
 | **Chỉ số Sức khỏe InBody (UC06)** | Xem biểu đồ trực quan biến thiên cân nặng, tỷ lệ mỡ và khối lượng cơ qua từng mốc thời gian. | Nhân viên đo nhập số liệu trên form có kiểm tra biên an toàn (Guard clauses), tự động tính chỉ số BMI ngay tức thì. |
 | **Quản lý & Báo cáo (UC08, UC10)** | Nhận thông báo tự động khi thẻ sắp hết hạn hoặc đến giờ hẹn tập cùng huấn luyện viên. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/CSV và sổ kiểm toán. |

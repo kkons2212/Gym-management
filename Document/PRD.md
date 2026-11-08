@@ -14,10 +14,10 @@
 Hệ thống Quản lý Phòng tập Thể thao vận hành dựa trên sự phối hợp chặt chẽ giữa ba nhóm tác nhân chính:
 * **Hội viên (Member):** Khách hàng sử dụng dịch vụ tập luyện, tra cứu gói tập, chủ động đặt/đổi/hủy lịch hẹn với huấn luyện viên (PT), theo dõi tiến độ thể hình (InBody) và đánh giá chất lượng dịch vụ.
 * **Huấn luyện viên cá nhân (Personal Trainer - PT):** Nhân sự chuyên môn trực tiếp giảng dạy; chủ động đăng ký khung giờ làm việc rảnh, theo dõi lịch dạy tuần, quản lý học viên phụ trách, cập nhật chỉ số thể chất và xác nhận hoàn tất ca tập.
-* **Nhân viên vận hành & Quản trị viên (Admin / Lễ tân / Thu ngân):** Tiếp nhận khách hàng, phát hành gói tập, thu ngân và xuất hóa đơn, kiểm soát ra/vào phòng tập (Check-in), phân công PT, cấu hình danh mục gói tập và theo dõi báo cáo doanh thu tài chính.
+* **Quản trị viên (Admin):** Tiếp nhận khách hàng, phát hành gói tập, thu tiền và xuất hóa đơn, kiểm soát ra/vào phòng tập (Check-in), phân công PT, cấu hình danh mục gói tập và theo dõi báo cáo doanh thu tài chính.
 
 Hệ thống được thiết kế theo **kiến trúc 3 lớp (3-Tier Architecture)**:
-1. **Presentation Layer:** Ứng dụng Desktop (WinUI 3) dành cho Admin/Lễ tân/Thu ngân và Ứng dụng Web/Mobile (Blazor Server) dành cho Hội viên và PT.
+1. **Presentation Layer:** Ứng dụng Desktop (WinUI 3) dành cho Admin và Ứng dụng Web/Mobile (Blazor Server) dành cho Hội viên và PT.
 2. **Business Logic Layer (Core):** Đảm nhiệm toàn bộ quy tắc nghiệp vụ, tính toán ngày hết hạn, kiểm tra xung đột lịch dạy, quy tắc hoàn hủy và quản lý trạng thái.
 3. **Data Access Layer (Infrastructure):** Quản lý lưu trữ CSDL (SQL Server qua EF Core), giao dịch ACID (Unit of Work) và tích hợp cổng thanh toán VietQR, camera quét mã QR.
 
@@ -25,7 +25,7 @@ Hệ thống được thiết kế theo **kiến trúc 3 lớp (3-Tier Architect
 
 ## 2. Ma trận Phân quyền Tác nhân (Actor Matrix - 10 Phân hệ)
 
-| STT | Mã Phân Hệ | Tên Phân Hệ Nghiệp Vụ | Hội viên (Member) | Huấn luyện viên (PT) | Quản trị viên (Admin / Staff) |
+| STT | Mã Phân Hệ | Tên Phân Hệ Nghiệp Vụ | Hội viên (Member) | Huấn luyện viên (PT) | Quản trị viên (Admin) |
 | :---: | :---: | :--- | :---: | :---: | :---: |
 | 1.0 | **UC01** | Đăng nhập và Xác thực | x | x | x |
 | 2.0 | **UC02** | Quản lý hội viên và gói tập | | | x |
@@ -51,9 +51,9 @@ graph TD
     B4 --> B5
 ```
 
-1. **B1: Cấu hình Nền tảng & Tiếp nhận Hội viên (UC07, UC02):** Super Admin thiết lập danh mục gói tập và tài khoản nhân sự. Khi có khách hàng, Lễ tân tiếp nhận thông tin và tạo hồ sơ hội viên mới.
+1. **B1: Cấu hình Nền tảng & Tiếp nhận Hội viên (UC07, UC02):** Admin thiết lập danh mục gói tập và tài khoản người dùng. Khi có khách hàng, Admin tiếp nhận thông tin và tạo hồ sơ hội viên mới.
 2. **B2: Thanh toán & Kích hoạt Gói dịch vụ (UC05, UC02):** Lập hóa đơn, thu tiền (Tiền mặt, VietQR, POS). Hệ thống chuyển hóa đơn sang `PAID`, kích hoạt gói tập `ACTIVE`, tạo mã QR định danh và gửi thông báo điện tử.
-3. **B3: Tuyến Điểm danh Check-in Thường nhật (UC03):** Lễ tân quét mã QR hoặc nhập SĐT. Hệ thống kiểm tra điều kiện (trạng thái `ACTIVE`, còn hạn, còn buổi, đúng khung giờ), ghi nhận lượt check-in và trừ buổi tập theo lượt.
+3. **B3: Tuyến Điểm danh Check-in Thường nhật (UC03):** Admin bật camera quét mã QR hoặc nhập SĐT. Hệ thống kiểm tra điều kiện bên backend (trạng thái `ACTIVE`, còn hạn, còn buổi), ghi nhận lượt check-in và trừ buổi tập.
 4. **B4: Điều phối & Giảng dạy Dịch vụ PT (UC04, UC08, UC10):** Admin gán cố định PT phụ trách cho hội viên. PT đăng ký lịch rảnh theo tuần. Hội viên chọn ca trống của PT để đặt lịch (hoặc đổi/hủy ca). Sau buổi tập, PT cập nhật chỉ số InBody và xác nhận hoàn tất; Hội viên gửi đánh giá chất lượng (1–5 sao).
 5. **B5: Quản trị Vòng đời Thẻ, Tài chính & Báo cáo (UC02, UC05, UC06):** Xử lý ngoại lệ (gia hạn, nâng cấp, bảo lưu `FROZEN`, hủy đăng ký gói hoặc khóa thẻ); xử lý hoàn tiền hóa đơn theo quy định; trích xuất báo cáo doanh thu tài chính và hiệu suất hoạt động phòng tập.
 
@@ -88,7 +88,7 @@ graph TD
 * **Mô tả:** Là Super Admin, tôi cần tạo mới tài khoản nhân viên và gán vai trò quyền hạn tương ứng để phân công công việc.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `5`
 * **Tiêu chí chấp nhận (AC):**
-  * Nhập thông tin: Họ tên, Email, SĐT, Tên đăng nhập, Mật khẩu ban đầu và chọn vai trò (Admin, Lễ tân, Thu ngân, PT).
+  * Nhập thông tin: Họ tên, Email, SĐT, Tên đăng nhập, Mật khẩu ban đầu và chọn vai trò (Admin, PT, Member).
   * Kiểm tra trùng lặp: Nếu Email hoặc Tên đăng nhập đã tồn tại, báo lỗi chi tiết bên dưới trường dữ liệu vi phạm.
   * Lưu thành công: Cấp tài khoản mới trạng thái `ACTIVE` vào CSDL.
 * **Danh sách task triển khai 3 lớp:**
@@ -159,7 +159,7 @@ graph TD
 ### Epic 03: Quản lý Hội viên & Vòng đời Gói tập (Tương ứng UC02)
 
 #### ● User Story 02.1: Đăng ký hội viên mới cùng gói tập (Tương ứng UC 02.1)
-* **Mô tả:** Là Lễ tân / Admin, tôi cần nhập thông tin khách hàng, chọn gói tập, thu tiền và hoàn tất kích hoạt gói tập để khách hàng trở thành hội viên chính thức.
+* **Mô tả:** Là Admin, tôi cần nhập thông tin khách hàng, chọn gói tập, thu tiền và hoàn tất kích hoạt gói tập để khách hàng trở thành hội viên chính thức.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `8`
 * **Tiêu chí chấp nhận (AC):**
   * Nhập: Họ tên, Số điện thoại, Email, CCCD, Ngày sinh, Ngày bắt đầu hiệu lực và Gói tập.
@@ -184,7 +184,7 @@ graph TD
   * *(Data Access):* Update bảng `[User]`, ghi vết thay đổi vào `Log`.
 
 #### ● User Story 02.3: Gia hạn hoặc Nâng cấp gói tập cho hội viên (Tương ứng UC 02.3)
-* **Mô tả:** Là Admin / Lễ tân, tôi cần gia hạn thêm thời gian hoặc đổi gói tập lên hạng cao hơn cho hội viên.
+* **Mô tả:** Là Admin, tôi cần gia hạn thêm thời gian hoặc đổi gói tập lên hạng cao hơn cho hội viên.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `5`
 * **Tiêu chí chấp nhận (AC):**
   * Cho phép chọn số tháng gia hạn thêm hoặc chọn gói tập mới có cấp bậc cao hơn.
@@ -196,7 +196,7 @@ graph TD
   * *(Data Access):* Cập nhật `[User]ubscription` và thêm bản ghi vào `[User]ubscription`.
 
 #### ● User Story 02.4: Bảo lưu gói tập cho hội viên (Tương ứng UC 02.4)
-* **Mô tả:** Là Admin / Lễ tân, tôi cần tạm dừng hiệu lực gói tập của hội viên trong một khoảng thời gian nhất định theo quy chế.
+* **Mô tả:** Là Admin, tôi cần tạm dừng hiệu lực gói tập của hội viên trong một khoảng thời gian nhất định theo quy chế.
 * **Độ ưu tiên:** `Should have` | **Story Point:** `5`
 * **Tiêu chí chấp nhận (AC):**
   * Nhập Ngày bắt đầu, Ngày kết thúc bảo lưu và Lý do bắt buộc.
@@ -224,19 +224,19 @@ graph TD
 ### Epic 04: Quản lý Thanh toán & Hóa đơn Dòng tiền (Tương ứng UC05)
 
 #### ● User Story 05.1: Lập hóa đơn và thu tiền đa phương thức (Tương ứng UC 5.1)
-* **Mô tả:** Là Thu ngân / Lễ tân, tôi cần lập hóa đơn thu tiền cho các dịch vụ (gói tập, thuê PT, nước uống/phụ kiện) và thu tiền qua Tiền mặt/VietQR/Thẻ.
+* **Mô tả:** Là Admin, tôi cần lập hóa đơn thu tiền cho các gói dịch vụ và thu tiền qua Tiền mặt/VietQR/Thẻ POS.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `8`
 * **Tiêu chí chấp nhận (AC):**
   * Chọn hội viên, chọn gói tập niêm yết và tính tổng thanh toán theo giá gói (khớp 100% bảng Invoice: SubtotalAmount, TotalAmount).
   * Hỗ trợ 3 phương thức thanh toán: Tiền mặt, Chuyển khoản VietQR (hiển thị mã QR động có sẵn số tiền và nội dung chuyển khoản chuẩn NAPAS), và Quẹt thẻ POS.
   * Sau khi xác nhận: Lưu hóa đơn trạng thái `PAID`, kích hoạt dịch vụ tương ứng và tự động phát hành hóa đơn điện tử gửi qua Email cho hội viên.
 * **Danh sách task triển khai 3 lớp:**
-  * *(Presentation):* Giao diện quầy thu ngân POS: chọn dịch vụ, tính tiền thối, hiển thị QR thanh toán động.
+  * *(Presentation):* Giao diện quầy POS bán gói: chọn gói tập, hiển thị QR thanh toán động.
   * *(Business Logic):* Tích hợp thư viện sinh chuỗi VietQR chuẩn, xử lý kích hoạt dịch vụ sau thanh toán.
   * *(Data Access):* Lưu bản ghi vào bảng `Invoice` và `Invoice`.
 
 #### ● User Story 05.2: Tra cứu, in lại và xuất hóa đơn điện tử (Tương ứng UC 5.2)
-* **Mô tả:** Là Thu ngân / Admin, tôi cần tìm kiếm lịch sử hóa đơn để in phiếu thu nhiệt hoặc xuất file PDF khi khách hàng yêu cầu đối soát.
+* **Mô tả:** Là Admin, tôi cần tìm kiếm lịch sử hóa đơn để in phiếu thu nhiệt hoặc xuất file PDF khi khách hàng yêu cầu đối soát.
 * **Độ ưu tiên:** `Should have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
   * Tra cứu theo Mã hóa đơn, SĐT hội viên hoặc khoảng ngày lập hóa đơn trong < 1 giây.
@@ -277,32 +277,32 @@ graph TD
 ### Epic 05: Quản lý Check-in & Kiểm soát Vào phòng (Tương ứng UC03)
 
 #### ● User Story 03.1: Điểm danh tự động bằng quét mã QR (Tương ứng UC 3.1)
-* **Mô tả:** Là Lễ tân, tôi cần quét mã QR trên điện thoại của hội viên để hệ thống tự động kiểm tra điều kiện và mở quyền vào phòng tập tức thì.
+* **Mô tả:** Là Admin, tôi cần bật camera quét mã QR trên điện thoại của hội viên để hệ thống gửi yêu cầu kiểm tra điều kiện bên backend và mở quyền vào phòng tập tức thì.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `5`
 * **Tiêu chí chấp nhận (AC):**
   * Quét mã QR, hệ thống nhận dạng mã và phản hồi kết quả trong < 2 giây.
-  * Kiểm tra điều kiện: Thẻ phải ở trạng thái `ACTIVE`, còn hạn sử dụng, còn số buổi và đúng khung giờ quy định (không bị `FROZEN` hoặc `LOCKED`, không quét trùng liên tiếp trong vòng 5 phút).
+  * Kiểm tra điều kiện bên backend: Gói tập trong tài khoản phải ở trạng thái `ACTIVE`, còn hạn sử dụng, còn số buổi và không bị `FROZEN`.
   * Hợp lệ: Ghi nhận 1 lượt check-in thành công, trừ 1 buổi tập (nếu gói tính theo lượt), hiển thị ảnh chân dung và phát âm thanh báo thành công.
-  * Không hợp lệ: Phát âm thanh cảnh báo từ chối và hiển thị rõ lý do (*"Gói tập đã hết hạn"*, *"Thẻ đang bảo lưu"*, *"Không đúng khung giờ tập"*).
+  * Không hợp lệ: Phát âm thanh cảnh báo từ chối và hiển thị rõ lý do (*"Gói tập đã hết hạn"*, *"Thẻ đang bảo lưu"*).
 * **Danh sách task triển khai 3 lớp:**
-  * *(Presentation):* Màn hình "Quản lý Check-in" tích hợp thư viện đọc Camera Scanner, tự động kích hoạt chế độ chờ quét.
+  * *(Presentation):* Màn hình "Quản lý Check-in" tích hợp Camera Scanner, tự động kích hoạt chế độ chờ quét.
   * *(Business Logic):* Hàm `CheckInWithQrAsync` xử lý kiểm tra đa điều kiện và trừ buổi trong 1 Transaction duy nhất.
-  * *(Data Access):* Lưu bản ghi vào `CheckInLog` và cập nhật `remaining_sessions` trong `[User]ubscription`.
+  * *(Data Access):* Lưu bản ghi vào `CheckInLog` (gắn `VerifiedByAdminId`) và cập nhật `RemainingCheckInSessions` trong `MemberSubscription`.
 
-#### ● User Story 03.2: Điểm danh thủ công qua Số điện thoại / Mã hội viên (Tương ứng UC 3.2)
-* **Mô tả:** Là Lễ tân, tôi cần nhập SĐT hoặc Mã hội viên thủ công khi khách quên điện thoại hoặc máy hết pin để hỗ trợ vào phòng tập.
+#### ● User Story 03.2: Điểm danh thủ công qua Số điện thoại (Tương ứng UC 3.2)
+* **Mô tả:** Là Admin, tôi cần nhập SĐT thủ công khi khách quên điện thoại hoặc máy hết pin để hỗ trợ vào phòng tập.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
-  * Nhập SĐT hoặc Mã hội viên vào ô tìm kiếm nhanh tại màn hình Check-in và bấm Enter.
+  * Nhập SĐT vào ô tìm kiếm nhanh tại màn hình Check-in và bấm Enter.
   * Hiển thị thông tin gói thẻ, hạn dùng và ảnh chân dung nhận diện của hội viên.
-  * Lễ tân đối chiếu khuôn mặt và nhấn nút "Xác nhận vào phòng"; hệ thống ghi nhận check-in tương tự như quét QR.
+  * Admin đối chiếu khuôn mặt và nhấn nút "Xác nhận vào phòng"; hệ thống ghi nhận check-in tương tự như quét QR (lưu `CheckInLog.VerifiedByAdminId`).
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Khung nhập SĐT nhanh và Card hiển thị tóm tắt thông tin hội viên kèm ảnh chân dung.
   * *(Business Logic):* Hàm `ManualCheckInAsync` trong `ICheckInService`.
   * *(Data Access):* Truy vấn tìm kiếm theo `phone` trên bảng `[User]` (được đánh Unique Index).
 
 #### ● User Story 03.3: Tra cứu và giám sát lịch sử ra/vào phòng tập (Tương ứng UC 3.3)
-* **Mô tả:** Là Lễ tân / Quản lý ca, tôi cần xem danh sách các lượt điểm danh trong ngày theo ca để nắm bắt lưu lượng phòng tập.
+* **Mô tả:** Là Admin, tôi cần xem danh sách các lượt điểm danh trong ngày theo ca để nắm bắt lưu lượng phòng tập.
 * **Độ ưu tiên:** `Should have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
   * Hiển thị danh sách các lượt check-in trong ngày theo thời gian thực (lượt mới nhất xếp trên cùng).
