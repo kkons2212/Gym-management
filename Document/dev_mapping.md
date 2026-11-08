@@ -7,7 +7,7 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **13 / 33 Tasks (39.4%)**
+* **Tiến độ Hoàn thành:** **14 / 33 Tasks (42.4%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
@@ -28,6 +28,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.2** | Scaffolding 3 Server Projects | Hạ tầng Server | `src/Server/` | `Server.Core`, `Server.Data`, `Server.Api` | `tests/GymManagement.Server.UnitTests` | 9 bảng DDL | `f92e2c7` |
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
+| **Task 3.1** | Global API error handling | GymManagement API | `Server.Api/Middleware` | `GlobalExceptionHandlingMiddleware.cs`, `ApiErrorResponse.cs`, `Program.cs` | `ApiPipelineTests` | N/A | — |
 | **Task 3.2** | JWT authentication and role policies | GymManagement API | `Server.Api/Configuration`, `Program.cs` | `JwtOptions.cs`, `Program.cs` | `JwtAuthenticationTests` | N/A | — |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
 | **Task 1.2.1** | Interface Database API: GenericRepository | Toàn bộ 10 Epics (CRUD an toàn) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/GenericRepository.cs`, `Contracts/Data/IGenericRepository.cs` | `tests/GymManagement.Server.DataTests/Repositories/GenericRepositoryTests.cs` (13 tests) | 9 bảng CSDL | `04a79c7` |
@@ -106,6 +107,16 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - `tests/GymManagement.Server.ApiTests/JwtAuthenticationTests.cs`
 * **Kiểm thử tương ứng:** API integration tests kiểm tra health anonymous, JWT thiếu/sai, role policy Admin và định dạng phản hồi 401/403.
 * **Cấu hình JWT:** Bắt buộc cung cấp issuer, audience và signing key tối thiểu 32 byte qua secret store hoặc environment variables; không có khóa mặc định trong repository.
+
+### 📌 [Task 3.1] Chuẩn hóa lỗi API
+* **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.1-global-errors`
+* **Ranh giới thành phần:** `Server.Api` và `Server.Core` DTO dùng chung
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Api/Middleware/GlobalExceptionHandlingMiddleware.cs`
+  - `src/Server/GymManagement.Server.Api/Program.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Common/ApiErrorResponse.cs`
+  - `tests/GymManagement.Server.ApiTests/ApiPipelineTests.cs`
+* **Kiểm thử tương ứng:** API integration tests kiểm tra ánh xạ lỗi, lỗi model validation, ẩn thông tin lỗi nội bộ và anonymous health check.
 
 ### 📌 [Task 1.3.1, 1.3.2, 1.3.3] Cổng Giao Tiếp Dịch Vụ Bên Ngoài (External Adapters: VietQR, Notification, CameraScanner)
 * **Ngày hoàn tất:** 08/11/2026 | **Commit:** `b2f0cab` | **Nhánh:** `feat/task-1.3-external-adapters`
