@@ -1,9 +1,13 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using RequiredAttribute = System.ComponentModel.DataAnnotations.RequiredAttribute;
 
 namespace GymManagement.Server.ApiTests;
@@ -37,7 +41,7 @@ public sealed class ApiPipelineTests : IClassFixture<ApiApplicationFactory>
         string expectedErrorCode,
         string expectedMessage)
     {
-        using var client = _factory.CreateClient();
+        using var client = _factory.CreateAuthenticatedClient();
 
         using var response = await client.GetAsync(path);
         using var body = await System.Text.Json.JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -50,7 +54,7 @@ public sealed class ApiPipelineTests : IClassFixture<ApiApplicationFactory>
     [Fact]
     public async Task UnexpectedException_ShouldNotExposeInternalDetails()
     {
-        using var client = _factory.CreateClient();
+        using var client = _factory.CreateAuthenticatedClient();
 
         using var response = await client.GetAsync("/test-api/errors/unexpected");
         using var body = await System.Text.Json.JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -63,7 +67,7 @@ public sealed class ApiPipelineTests : IClassFixture<ApiApplicationFactory>
     [Fact]
     public async Task InvalidModelState_ShouldReturnStandardValidationResponse()
     {
-        using var client = _factory.CreateClient();
+        using var client = _factory.CreateAuthenticatedClient();
 
         using var response = await client.PostAsJsonAsync("/test-api/validation", new { });
         using var body = await System.Text.Json.JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -84,14 +88,40 @@ public sealed class ApiPipelineTests : IClassFixture<ApiApplicationFactory>
 
 public sealed class ApiApplicationFactory : WebApplicationFactory<Program>
 {
+    private const string Issuer = "GymManagement.ApiPipelineTests";
+    private const string Audience = "GymManagement.ApiPipelineTests.Client";
+    private const string SigningKey = "test-signing-key-with-at-least-32-bytes";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("Jwt:Issuer", Issuer);
+        builder.UseSetting("Jwt:Audience", Audience);
+        builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.ConfigureServices(services =>
         {
             services
                 .AddControllers()
                 .AddApplicationPart(typeof(TestApiController).Assembly);
         });
+    }
+
+    public HttpClient CreateAuthenticatedClient()
+    {
+        var client = CreateClient();
+        var signingCredentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
+            SecurityAlgorithms.HmacSha256);
+        var token = new JwtSecurityToken(
+            issuer: Issuer,
+            audience: Audience,
+            claims: new[] { new Claim(ClaimTypes.Role, "Admin") },
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddMinutes(5),
+            signingCredentials: signingCredentials);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            new JwtSecurityTokenHandler().WriteToken(token));
+        return client;
     }
 }
 

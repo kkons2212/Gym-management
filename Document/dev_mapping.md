@@ -30,6 +30,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
 | **Task 3.1** | Global API error handling | GymManagement API | `Server.Api/Middleware` | `GlobalExceptionHandlingMiddleware.cs`, `ApiErrorResponse.cs`, `Program.cs` | `ApiPipelineTests` | N/A | — |
+| **Task 3.2** | JWT authentication and role policies | GymManagement API | `Server.Api/Configuration`, `Program.cs` | `JwtOptions.cs`, `Program.cs` | `JwtAuthenticationTests` | N/A | — |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
 | **Task 1.2.1** | Interface Database API: GenericRepository | Toàn bộ 10 Epics (CRUD an toàn) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/GenericRepository.cs`, `Contracts/Data/IGenericRepository.cs` | `tests/GymManagement.Server.DataTests/Repositories/GenericRepositoryTests.cs` (13 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.2.2** | Interface Database API: UnitOfWork (ACID) | Toàn bộ 10 Epics (Transaction ACID) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/UnitOfWork.cs`, `Contracts/Data/IUnitOfWork.cs`, `Persistence/GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Repositories/UnitOfWorkTests.cs` (9 tests) | 9 bảng CSDL | `04a79c7` |
@@ -99,6 +100,16 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 
 ---
 
+### 📌 [Task 3.2] Xác thực JWT và phân quyền theo vai trò
+* **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.2-jwt-authentication`
+* **Ranh giới thành phần:** `Server.Api`
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Api/Configuration/JwtOptions.cs`
+  - `src/Server/GymManagement.Server.Api/Program.cs`
+  - `tests/GymManagement.Server.ApiTests/JwtAuthenticationTests.cs`
+* **Kiểm thử tương ứng:** API integration tests kiểm tra health anonymous, JWT thiếu/sai, role policy Admin và định dạng phản hồi 401/403.
+* **Cấu hình JWT:** Bắt buộc cung cấp issuer, audience và signing key tối thiểu 32 byte qua secret store hoặc environment variables; không có khóa mặc định trong repository.
+
 ### 📌 [Task 3.1] Chuẩn hóa lỗi API
 * **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.1-global-errors`
 * **Ranh giới thành phần:** `Server.Api` và `Server.Core` DTO dùng chung
@@ -164,7 +175,6 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **DIP (Dependency Inversion):** `IGenericRepository<T>` và `IUnitOfWork` nằm hoàn toàn trong `Server.Core`, không phụ thuộc EF Core hay SQL Server.
   - **ACID Transaction Guarantee:** `UnitOfWork.ExecuteTransactionAsync` tự động mở transaction, ghi log chi tiết khi phát sinh exception, tự động gọi `RollbackAsync` và làm sạch bộ theo dõi trạng thái (`ChangeTracker.Clear()`) để đảm bảo tính cô lập và nhất quán tuyệt đối.
   - **Hiệu năng & An toàn:** Dùng `AsNoTracking()` cho tất cả các truy vấn đọc, và quản lý repository instances qua `ConcurrentDictionary` để tránh khởi tạo dư thừa đối tượng.
-
 ---
 
 ### 📌 [Task 4.1] Toàn Diện Phân Hệ Quản Trị Admin Desktop App (WinUI 3 MVVM)
