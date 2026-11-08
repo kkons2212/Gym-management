@@ -30,12 +30,7 @@ public sealed partial class MainWindow : Window
 
         // Hook login viewmodel success event
         var loginVm = App.GetService<LoginViewModel>();
-        loginVm.OnLoginSuccess += () =>
-        {
-            var shellVm = App.GetService<ShellViewModel>();
-            shellVm.UpdateUserInfo();
-            RootFrame.Navigate(typeof(MainPage));
-        };
+        loginVm.OnLoginSuccess += OnLoginSuccessful;
 
         if (_sessionService.IsAuthenticated)
         {
@@ -51,6 +46,13 @@ public sealed partial class MainWindow : Window
         {
             rootElement.KeyDown += OnWindowKeyDown;
         }
+    }
+
+    private void OnLoginSuccessful()
+    {
+        var shellVm = App.GetService<ShellViewModel>();
+        shellVm.UpdateUserInfo();
+        RootFrame.Navigate(typeof(MainPage));
     }
 
     private void OnWindowKeyDown(object sender, KeyRoutedEventArgs e)

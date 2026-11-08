@@ -13,9 +13,15 @@ public sealed partial class PosBillingPage : Page
 
     public PosBillingPage()
     {
-        InitializeComponent();
         DataContext = App.GetService<PosBillingViewModel>();
-        Loaded += async (s, e) => await ViewModel.InitializeAsync();
+        InitializeComponent();
+        Loaded += async (s, e) =>
+        {
+            if (ViewModel != null)
+            {
+                await ViewModel.InitializeAsync();
+            }
+        };
     }
 
     private void OnPackageSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -32,22 +38,40 @@ public sealed partial class PosBillingPage : Page
         {
             ViewModel.SelectedPaymentMethod = method;
 
-            BtnCash.Background = method == "CASH" ? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentPrimaryBrush"] : null;
-            BtnVietQr.Background = method == "VIETQR" ? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentPrimaryBrush"] : null;
-            BtnCard.Background = method == "CREDIT_CARD" ? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentPrimaryBrush"] : null;
+            var accentBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentPrimaryBrush"];
+            BtnCash.Background = null;
+            BtnVietQr.Background = null;
+            BtnCard.Background = null;
+
+            if (method == "CASH")
+            {
+                BtnCash.Background = accentBrush;
+            }
+            else if (method == "VIETQR")
+            {
+                BtnVietQr.Background = accentBrush;
+            }
+            else if (method == "CREDIT_CARD")
+            {
+                BtnCard.Background = accentBrush;
+            }
         }
     }
 
     private void OnPurchaseSelected(object sender, RoutedEventArgs e)
     {
         if (ViewModel != null)
+        {
             ViewModel.TransactionType = "SUBSCRIPTION_PURCHASE";
+        }
     }
 
     private void OnRenewalSelected(object sender, RoutedEventArgs e)
     {
         if (ViewModel != null)
+        {
             ViewModel.TransactionType = "SUBSCRIPTION_RENEWAL";
+        }
     }
 
     private async void OnProcessCheckoutClicked(object sender, RoutedEventArgs e)

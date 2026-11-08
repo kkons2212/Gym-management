@@ -148,8 +148,17 @@ public class MockApiClient : IApiClient
         // Kích hoạt hoặc gia hạn gói cho hội viên
         var index = _members.FindIndex(m => m.UserId == member.UserId);
         var newEndDate = DateTime.Today.AddDays(plan.DurationDays);
-        var newGymSessions = (plan.MaxCheckInSessions ?? 30) + (request.TransactionType == "SUBSCRIPTION_RENEWAL" ? member.RemainingCheckInSessions : 0);
-        var newPtSessions = (plan.TotalPtSessions ?? 0) + (request.TransactionType == "SUBSCRIPTION_RENEWAL" ? member.RemainingPtSessions : 0);
+
+        int additionalGymSessions = 0;
+        int additionalPtSessions = 0;
+        if (request.TransactionType == "SUBSCRIPTION_RENEWAL")
+        {
+            additionalGymSessions = member.RemainingCheckInSessions;
+            additionalPtSessions = member.RemainingPtSessions;
+        }
+
+        var newGymSessions = (plan.MaxCheckInSessions ?? 30) + additionalGymSessions;
+        var newPtSessions = (plan.TotalPtSessions ?? 0) + additionalPtSessions;
 
         _members[index] = member with
         {

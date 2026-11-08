@@ -16,9 +16,14 @@ public sealed partial class FreezeSubscriptionDialog : ContentDialog
         _currentEndDate = currentEndDate;
 
         TxtMemberName.Text = $"Hội viên: {memberName}";
-        TxtCurrentEnd.Text = currentEndDate.HasValue
-            ? $"Hạn hiện tại: {currentEndDate.Value:dd/MM/yyyy}"
-            : "Chưa kích hoạt gói";
+        if (currentEndDate.HasValue)
+        {
+            TxtCurrentEnd.Text = $"Hạn hiện tại: {currentEndDate.Value:dd/MM/yyyy}";
+        }
+        else
+        {
+            TxtCurrentEnd.Text = "Chưa kích hoạt gói";
+        }
 
         DpStart.Date = DateTimeOffset.Now;
         DpEnd.Date = DateTimeOffset.Now.AddDays(14);
@@ -32,7 +37,10 @@ public sealed partial class FreezeSubscriptionDialog : ContentDialog
 
     private void UpdateCalculations()
     {
-        if (DpStart == null || DpEnd == null || TxtDaysFrozen == null || TxtProjectedEnd == null) return;
+        if (DpStart == null || DpEnd == null || TxtDaysFrozen == null || TxtProjectedEnd == null)
+        {
+            return;
+        }
 
         var start = DpStart.Date.DateTime;
         var end = DpEnd.Date.DateTime;

@@ -9,9 +9,15 @@ public sealed partial class DashboardPage : Page
 
     public DashboardPage()
     {
-        InitializeComponent();
         DataContext = App.GetService<DashboardViewModel>();
-        Loaded += async (s, e) => await ViewModel.LoadDashboardCommand.ExecuteAsync(null);
+        InitializeComponent();
+        Loaded += async (s, e) =>
+        {
+            if (ViewModel != null)
+            {
+                await ViewModel.LoadDashboardCommand.ExecuteAsync(null);
+            }
+        };
     }
 }
 

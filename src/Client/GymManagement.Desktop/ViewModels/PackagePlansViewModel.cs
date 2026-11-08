@@ -100,6 +100,13 @@ public partial class PackagePlansViewModel : ObservableObject
         try
         {
             IsLoading = true;
+
+            int totalPtSessions = 0;
+            if (NewIsPtIncluded)
+            {
+                totalPtSessions = (int)NewTotalPtSessions;
+            }
+
             var plan = new PackagePlanDto(
                 $"PLAN{DateTime.Now:mmss}",
                 NewName.Trim(),
@@ -107,7 +114,7 @@ public partial class PackagePlansViewModel : ObservableObject
                 (decimal)NewPrice,
                 (int)NewDurationDays,
                 (int)NewMaxCheckInSessions,
-                NewIsPtIncluded ? (int)NewTotalPtSessions : 0,
+                totalPtSessions,
                 NewIsPtIncluded,
                 "ACTIVE"
             );

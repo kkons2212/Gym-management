@@ -62,7 +62,11 @@ public partial class CheckInCounterViewModel : ObservableObject
     [RelayCommand]
     private async Task CheckInByQrAsync()
     {
-        if (string.IsNullOrWhiteSpace(QrCodeInput)) return;
+        if (string.IsNullOrWhiteSpace(QrCodeInput))
+        {
+            return;
+        }
+
         await ProcessCheckInAsync(new CheckInRequest(QrCode: QrCodeInput.Trim()));
         QrCodeInput = string.Empty;
     }
@@ -70,14 +74,22 @@ public partial class CheckInCounterViewModel : ObservableObject
     [RelayCommand]
     private async Task CheckInByPhoneAsync()
     {
-        if (string.IsNullOrWhiteSpace(SearchPhone)) return;
+        if (string.IsNullOrWhiteSpace(SearchPhone))
+        {
+            return;
+        }
+
         await ProcessCheckInAsync(new CheckInRequest(Phone: SearchPhone.Trim()));
     }
 
     [RelayCommand]
     private async Task ManualOverrideAsync(string reason)
     {
-        if (string.IsNullOrWhiteSpace(SearchPhone)) return;
+        if (string.IsNullOrWhiteSpace(SearchPhone))
+        {
+            return;
+        }
+
         await ProcessCheckInAsync(new CheckInRequest(Phone: SearchPhone.Trim(), Notes: $"Override thủ công: {reason}"));
     }
 

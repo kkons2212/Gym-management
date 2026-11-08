@@ -1,4 +1,5 @@
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 
@@ -18,8 +19,10 @@ public class StatusToBrushConverter : IValueConverter
         };
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }
 
 public class CurrencyFormatterConverter : IValueConverter
@@ -27,14 +30,22 @@ public class CurrencyFormatterConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is decimal d)
+        {
             return $"{d:N0} đ";
+        }
+
         if (value is int i)
+        {
             return $"{i:N0} đ";
+        }
+
         return "0 đ";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }
 
 public class BmiEvaluationConverter : IValueConverter
@@ -43,56 +54,108 @@ public class BmiEvaluationConverter : IValueConverter
     {
         if (value is decimal bmi)
         {
-            if (bmi < 18.5m) return "Thiếu cân (Gầy)";
-            if (bmi < 25.0m) return "Bình thường (Chuẩn)";
-            if (bmi < 30.0m) return "Thừa cân";
+            if (bmi < 18.5m)
+            {
+                return "Thiếu cân (Gầy)";
+            }
+
+            if (bmi < 25.0m)
+            {
+                return "Bình thường (Chuẩn)";
+            }
+
+            if (bmi < 30.0m)
+            {
+                return "Thừa cân";
+            }
+
             return "Béo phì";
         }
+
         return "Chưa xác định";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }
 
 public class BoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        return (value is true) ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+        if (value is true)
+        {
+            return Visibility.Visible;
+        }
+
+        return Visibility.Collapsed;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }
 
 public class InvertedBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        return (value is true) ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+        if (value is true)
+        {
+            return Visibility.Collapsed;
+        }
+
+        return Visibility.Visible;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }
 
 public class StringFormatConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value == null) return string.Empty;
+        if (value == null)
+        {
+            return string.Empty;
+        }
+
         if (parameter is string format)
         {
-            if (value is DateTime dt) return dt.ToString(format);
-            if (value is TimeSpan ts) return ts.ToString(format);
+            if (value is DateTime dt)
+            {
+                return dt.ToString(format);
+            }
+
+            if (value is TimeSpan ts)
+            {
+                return ts.ToString(format);
+            }
+
             return string.Format(format, value);
         }
-        if (value is DateTime d) return d.ToString("dd/MM/yyyy");
-        if (value is TimeSpan t) return t.ToString(@"hh\:mm");
+
+        if (value is DateTime d)
+        {
+            return d.ToString("dd/MM/yyyy");
+        }
+
+        if (value is TimeSpan t)
+        {
+            return t.ToString(@"hh\:mm");
+        }
+
         return value.ToString() ?? string.Empty;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw freshNotSupported();
-    private static NotSupportedException freshNotSupported() => new();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
 }

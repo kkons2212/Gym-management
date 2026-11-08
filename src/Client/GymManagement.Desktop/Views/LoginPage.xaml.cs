@@ -9,8 +9,8 @@ public sealed partial class LoginPage : Page
 
     public LoginPage()
     {
-        InitializeComponent();
         DataContext = App.GetService<LoginViewModel>();
+        InitializeComponent();
         TxtPassword.Password = ViewModel.Password;
     }
 

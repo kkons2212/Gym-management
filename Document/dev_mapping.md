@@ -196,9 +196,12 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
     - `MainPage.xaml` / `MainWindow.xaml` (Giao diện Shell Sidebar điều hướng mượt mà, phím tắt F1-F5)
   - **Dịch vụ & Tiện ích:** `IApiClient`, `MockApiClient`, `AdminSessionService`, `AudioFeedbackService`, Value Converters, Design Tokens màu tối
 * **Kiểm thử tương ứng (Verification):**
+  - Unit Tests: `tests/GymManagement.Server.UnitTests/DTOs/AdminDesktopDtoTests.cs` (5 tests mới cho DTOs: PackagePlanDto, CheckInRequest, CreateInvoiceRequest, FreezeSubscriptionRequest, BookPtSlotRequest; 100% Pass).
   - Biên dịch Release `dotnet build src/Client/GymManagement.Desktop -c Release`: 100% thành công (0 errors, 0 warnings kiến trúc).
   - Xác thực kiến trúc Pre-dev Rule 1: Không có tham chiếu tới `GymManagement.Server.Data`.
-* **Ghi chú kiến trúc:** Tuân thủ triệt để vai trò duy nhất Quản trị viên (`Admin`), thanh toán đúng theo giá niêm yết (không chiết khấu/voucher), điểm danh bằng camera quét QR từ màn hình điện thoại hội viên kèm nhập số điện thoại thủ công.
+* **Ghi chú kiến trúc & Chuẩn hóa theo `dev_rule.md`:**
+  - **DoD 6 (Cú pháp rẽ nhánh & Bố cục):** Triệt tiêu 100% toán tử 3 ngôi (`? :`), toàn bộ rẽ nhánh sử dụng `if / else` tường minh có khối `{ ... }`; loại bỏ các expression-bodied methods trên hàm nghiệp vụ; tách biệt named methods riêng cho các event handlers; toàn bộ fields/properties tập trung ở đầu class.
+  - **Nghiệp vụ phòng gym:** Tuân thủ triệt để vai trò duy nhất Quản trị viên (`Admin`), thanh toán đúng theo giá niêm yết (không chiết khấu/voucher), điểm danh bằng camera quét QR từ màn hình điện thoại hội viên kèm nhập số điện thoại thủ công.
 
 ---
 

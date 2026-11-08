@@ -11,8 +11,8 @@ public sealed partial class CheckInCounterPage : Page
 
     public CheckInCounterPage()
     {
-        InitializeComponent();
         DataContext = App.GetService<CheckInCounterViewModel>();
+        InitializeComponent();
         Loaded += (s, e) => TxtQrInput.Focus(FocusState.Programmatic);
     }
 
