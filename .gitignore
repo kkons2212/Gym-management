@@ -192,7 +192,7 @@ src/**/*.user
 *.nupkg
 *.snupkg
 .nuget/
-packages/
+/packages/
 
 # WinUI 3 / MSIX packaging artifacts
 AppPackages/

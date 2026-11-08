@@ -1,30 +1,111 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="GymManagement.Desktop.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:GymManagement.Desktop"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:viewModels="using:GymManagement.Desktop.ViewModels"
+    Background="{StaticResource BgCanvasBrush}">
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-        <TextBlock
-            Text="{x:Bind ViewModel.Greeting, Mode=OneWay}"
-            Style="{StaticResource TitleTextBlockStyle}" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-            <Button Command="{x:Bind ViewModel.IncrementCommand}">
-                <FontIcon Glyph="&#xE710;" FontSize="14" />
-            </Button>
-            <TextBlock
-                Text="{x:Bind ViewModel.Counter, Mode=OneWay}"
-                VerticalAlignment="Center"
-                MinWidth="40"
-                TextAlignment="Center"
-                Style="{StaticResource BodyStrongTextBlockStyle}" />
-            <Button Command="{x:Bind ViewModel.DecrementCommand}">
-                <FontIcon Glyph="&#xE738;" FontSize="14" />
-            </Button>
-        </StackPanel>
-    </StackPanel>
+    <Grid>
+        <NavigationView x:Name="NavView"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        PaneDisplayMode="Left"
+                        OpenPaneLength="260"
+                        CompactPaneLength="48"
+                        SelectionChanged="NavView_SelectionChanged">
+            <!-- Header -->
+            <NavigationView.PaneHeader>
+                <Border Padding="16,14" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="GYM MANAGEMENT"
+                                   FontSize="11" FontWeight="Bold"
+                                   Foreground="{StaticResource AccentPrimaryBrush}"
+                                   CharacterSpacing="100" />
+                        <TextBlock Text="Cổng Quản Trị Viên"
+                                   FontSize="16" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </NavigationView.PaneHeader>
+
+            <!-- Menu Items -->
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Quầy Điểm Danh (F1)" Tag="CheckIn">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8B9;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Bán Gói &amp; POS (F2)" Tag="Pos">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Quản Lý Hội Viên (F3)" Tag="Members">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE716;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Lịch Biểu HLV PT (F5)" Tag="Schedule">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE787;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Danh Mục Gói Tập" Tag="Packages">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8F1;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Báo Cáo Doanh Thu BI" Tag="Dashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Quản Trị Tài Khoản" Tag="Settings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE77B;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <!-- Footer: Current Admin & Logout -->
+            <NavigationView.PaneFooter>
+                <Border Padding="12" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,1,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind ShellVm.AdminDisplayName, Mode=OneWay}"
+                                       FontWeight="SemiBold" FontSize="12"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <Border Background="#16A34A" CornerRadius="4" Padding="6,1" HorizontalAlignment="Left">
+                                <TextBlock Text="{x:Bind ShellVm.AdminRoleName, Mode=OneWay}"
+                                           FontSize="9" FontWeight="Bold" Foreground="#FFFFFF" />
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                ToolTipService.ToolTip="Đăng xuất"
+                                Click="BtnLogout_Click"
+                                Background="Transparent" BorderThickness="0"
+                                Padding="8">
+                            <FontIcon Glyph="&#xF3B1;" FontSize="14" Foreground="{StaticResource StatusDangerBrush}" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </NavigationView.PaneFooter>
+
+            <!-- Content Area -->
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+    </Grid>
 </Page>

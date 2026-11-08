@@ -7,12 +7,13 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **14 / 33 Tasks (42.4%)**
+* **Tiến độ Hoàn thành:** **16 / 33 Tasks (48.5%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3)
-  * ⚪ **Khối Giao Diện (Client Component - WinUI 3 & Blazor):** Khung ứng dụng đã sẵn sàng, chờ tích hợp nghiệp vụ (Giai đoạn 4.0)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 3.1)
+  * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
+  * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
 ---
 
@@ -36,6 +37,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
+| **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | UC01, UC02, UC04, UC05, UC07, UC10 | `src/Client/GymManagement.Desktop`, `Core/DTOs` | CheckIn, PosBilling, Members, PtSchedule, PackagePlans, Dashboard, Settings, Dialogs | WinUI 3 Release Compilation 0 Errors | 9 bảng DDL | `89c525a` |
 
 ---
 
@@ -173,6 +175,31 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **DIP (Dependency Inversion):** `IGenericRepository<T>` và `IUnitOfWork` nằm hoàn toàn trong `Server.Core`, không phụ thuộc EF Core hay SQL Server.
   - **ACID Transaction Guarantee:** `UnitOfWork.ExecuteTransactionAsync` tự động mở transaction, ghi log chi tiết khi phát sinh exception, tự động gọi `RollbackAsync` và làm sạch bộ theo dõi trạng thái (`ChangeTracker.Clear()`) để đảm bảo tính cô lập và nhất quán tuyệt đối.
   - **Hiệu năng & An toàn:** Dùng `AsNoTracking()` cho tất cả các truy vấn đọc, và quản lý repository instances qua `ConcurrentDictionary` để tránh khởi tạo dư thừa đối tượng.
+---
+
+### 📌 [Task 4.1] Toàn Diện Phân Hệ Quản Trị Admin Desktop App (WinUI 3 MVVM)
+* **Ngày hoàn tất:** 08/11/2026 | **Nhánh:** `feat/task-4.1-admin-desktop`
+* **Phân hệ nghiệp vụ liên quan:** UC01 (Xác thực Admin), UC02 (Hồ sơ hội viên & InBody), UC04 (Quầy điểm danh Check-in & Camera QR), UC05 (Lịch huấn luyện viên PT), UC07 (Bán gói & POS VietQR), UC10 (Báo cáo kinh doanh BI đa chiều & Quản lý gói tập/tài khoản).
+* **Ranh giới thành phần:** `src/Client/GymManagement.Desktop`, `src/Server/GymManagement.Server.Core/DTOs/*` (Tuyệt đối không tham chiếu `Server.Data`).
+* **Mã nguồn tạo / sửa:**
+  - **DTOs (`Server.Core`):** `Identity`, `CheckIn`, `Billing`, `Members`, `PTSchedules`, `Reports`, `Packages`
+  - **ViewModels (`Client.Desktop`):** `LoginViewModel`, `CheckInCounterViewModel`, `PosBillingViewModel`, `MembersViewModel`, `PtScheduleViewModel`, `PackagePlansViewModel`, `DashboardViewModel`, `SettingsViewModel`, `ShellViewModel`, `FreezeSubscriptionViewModel`, `InBodyEntryViewModel`
+  - **Views & Dialogs (`Client.Desktop`):**
+    - `LoginPage.xaml` / `.xaml.cs` (Xác thực đăng nhập Admin)
+    - `CheckInCounterPage.xaml` / `.xaml.cs` (Camera scanner QR code, tín hiệu đèn xanh/đỏ, âm thanh beep/buzz, ghi đè thủ công có lý do)
+    - `PosBillingPage.xaml` / `.xaml.cs` (Lập hóa đơn POS, dialog VietQR chuẩn NAPAS 247, mô phỏng 10s thanh toán thành công, in hóa đơn K80)
+    - `MembersPage.xaml` / `.xaml.cs` (Tìm kiếm hội viên, xem chi tiết gói, Dialog bảo lưu `FreezeSubscriptionDialog`, Dialog đo chỉ số `InBodyEntryDialog` với gauge BMI tức thì)
+    - `PtSchedulePage.xaml` / `.xaml.cs` (Lịch làm việc PT, chống xung đột thời gian collision, trạng thái màu sắc)
+    - `PackagePlansPage.xaml` / `.xaml.cs` (Quản lý và tạo mới gói tập)
+    - `DashboardPage.xaml` / `.xaml.cs` (Báo cáo doanh thu BI đa chiều, tỷ lệ lấp đầy PT, giờ cao điểm check-in)
+    - `SettingsPage.xaml` / `.xaml.cs` (Quản lý tài khoản Admin/PT, khóa tài khoản có chốt chặn bảo mật không khóa chính mình)
+    - `MainPage.xaml` / `MainWindow.xaml` (Giao diện Shell Sidebar điều hướng mượt mà, phím tắt F1-F5)
+  - **Dịch vụ & Tiện ích:** `IApiClient`, `MockApiClient`, `AdminSessionService`, `AudioFeedbackService`, Value Converters, Design Tokens màu tối
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch Release `dotnet build src/Client/GymManagement.Desktop -c Release`: 100% thành công (0 errors, 0 warnings kiến trúc).
+  - Xác thực kiến trúc Pre-dev Rule 1: Không có tham chiếu tới `GymManagement.Server.Data`.
+* **Ghi chú kiến trúc:** Tuân thủ triệt để vai trò duy nhất Quản trị viên (`Admin`), thanh toán đúng theo giá niêm yết (không chiết khấu/voucher), điểm danh bằng camera quét QR từ màn hình điện thoại hội viên kèm nhập số điện thoại thủ công.
+
 ---
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]

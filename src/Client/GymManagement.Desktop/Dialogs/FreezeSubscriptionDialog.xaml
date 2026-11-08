@@ -1,0 +1,50 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.FreezeSubscriptionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Bảo Lưu Gói Tập Hội Viên"
+    PrimaryButtonText="Xác Nhận Bảo Lưu"
+    CloseButtonText="Hủy Bỏ"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="440">
+        <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="6">
+                <TextBlock x:Name="TxtMemberName" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="TxtCurrentEnd" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+        </Border>
+
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Text="Ngày bắt đầu nghỉ:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+                <DatePicker x:Name="DpStart" HorizontalAlignment="Stretch" DateChanged="OnDateChanged" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Text="Ngày tập lại:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+                <DatePicker x:Name="DpEnd" HorizontalAlignment="Stretch" DateChanged="OnDateChanged" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Spacing="6">
+            <TextBlock Text="Lý do bảo lưu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBox x:Name="TxtReason" PlaceholderText="Nhập lý do (ví dụ: Công tác, nghỉ ốm...)" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <!-- Projected Calculation Box -->
+        <Border Background="#1E293B" BorderBrush="#0EA5E9" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="TxtDaysFrozen" Text="Số ngày bảo lưu: 0 ngày" Foreground="{StaticResource AccentPrimaryBrush}" FontWeight="SemiBold" FontSize="13" />
+                <TextBlock x:Name="TxtProjectedEnd" Text="Hạn mới dự kiến: ..." Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</ContentDialog>
+
