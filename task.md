@@ -194,9 +194,9 @@ GymManagement.sln
   - Xác thực tên đăng nhập/mật khẩu qua BCrypt.
   - Kiểm tra trạng thái tài khoản `Status == ACTIVE`.
   - Sinh JWT Token đóng vai trò chìa khóa mở cổng `Authenticated` cho toàn bộ các service khác.
-- [ ] **Task 2.2: `CheckInService Component` (Kết nối Authenticated + Database API):**
+- [x] **Task 2.2: `CheckInService Component` (Kết nối Authenticated + Database API):**
   - Tiếp nhận mã quét QR từ quầy.
-  - Kiểm tra điều kiện: thẻ `ACTIVE`, còn hạn, còn buổi, đúng giờ.
+  - Kiểm tra điều kiện: gói tập `ACTIVE`, còn hạn, còn buổi, đúng giờ.
   - Trừ 1 lượt tập và ghi vết vào `CheckInLog`.
 - [ ] **Task 2.3: `MemberService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
   - Đăng ký mới, gia hạn, nâng cấp gói tập, sinh chuỗi mã `QrCode`.
