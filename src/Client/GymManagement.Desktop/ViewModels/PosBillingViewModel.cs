@@ -81,16 +81,27 @@ public partial class PosBillingViewModel : ObservableObject
         {
             var pkgs = await _apiClient.GetPackagePlansAsync();
             Packages.Clear();
-            foreach (var p in pkgs) Packages.Add(p);
+            foreach (var p in pkgs)
+            {
+                Packages.Add(p);
+            }
 
             var mems = await _apiClient.GetMembersAsync();
             Members.Clear();
-            foreach (var m in mems) Members.Add(m);
+            foreach (var m in mems)
+            {
+                Members.Add(m);
+            }
 
             if (Packages.Count > 0)
+            {
                 SelectPackage(Packages[0]);
+            }
+
             if (Members.Count > 0)
+            {
                 SelectedMember = Members[0];
+            }
         }
         finally
         {
@@ -143,7 +154,10 @@ public partial class PosBillingViewModel : ObservableObject
     [RelayCommand]
     public async Task FinalizeInvoiceAsync()
     {
-        if (SelectedMember == null || SelectedPackage == null) return;
+        if (SelectedMember == null || SelectedPackage == null)
+        {
+            return;
+        }
 
         IsLoading = true;
         try

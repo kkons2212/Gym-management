@@ -76,7 +76,10 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     public async Task ToggleLockUserAsync(UserSessionDto user)
     {
-        if (user == null) return;
+        if (user == null)
+        {
+            return;
+        }
 
         // Guardrail: Không được khóa chính tài khoản admin đang đăng nhập
         if (user.UserId == _sessionService.CurrentUser?.UserId)

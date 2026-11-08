@@ -12,9 +12,9 @@ public sealed partial class MainPage : Page
 
     public MainPage()
     {
-        InitializeComponent();
         ShellVm = App.GetService<ShellViewModel>();
         DataContext = ShellVm;
+        InitializeComponent();
 
         Loaded += MainPage_Loaded;
     }

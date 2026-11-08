@@ -37,7 +37,10 @@ public partial class LoginViewModel : ObservableObject
     [RelayCommand]
     private async Task LoginAsync()
     {
-        if (IsLoading) return;
+        if (IsLoading)
+        {
+            return;
+        }
 
         IsLoading = true;
         HasError = false;

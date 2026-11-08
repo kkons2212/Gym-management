@@ -13,9 +13,15 @@ public sealed partial class MembersPage : Page
 
     public MembersPage()
     {
-        InitializeComponent();
         DataContext = App.GetService<MembersViewModel>();
-        Loaded += async (s, e) => await ViewModel.InitializeAsync();
+        InitializeComponent();
+        Loaded += async (s, e) =>
+        {
+            if (ViewModel != null)
+            {
+                await ViewModel.InitializeAsync();
+            }
+        };
     }
 
     private async void OnSearchQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)

@@ -126,8 +126,15 @@ public partial class PtScheduleViewModel : ObservableObject
         }
     }
 
-    partial void OnStartTimeChanged(TimeSpan value) => CheckForCollisions();
-    partial void OnEndTimeChanged(TimeSpan value) => CheckForCollisions();
+    partial void OnStartTimeChanged(TimeSpan value)
+    {
+        CheckForCollisions();
+    }
+
+    partial void OnEndTimeChanged(TimeSpan value)
+    {
+        CheckForCollisions();
+    }
     partial void OnSelectedPtChanged(UserSessionDto? value)
     {
         _ = LoadScheduleAsync();

@@ -8,9 +8,45 @@ public sealed partial class InBodyEntryDialog : ContentDialog
 {
     public decimal HeightCm => (decimal)NbHeight.Value;
     public decimal WeightKg => (decimal)NbWeight.Value;
-    public decimal? BodyFatPercentage => double.IsNaN(NbBodyFat.Value) ? null : (decimal)NbBodyFat.Value;
-    public decimal? SkeletalMuscleMass => double.IsNaN(NbMuscle.Value) ? null : (decimal)NbMuscle.Value;
-    public string? Notes => string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
+
+    public decimal? BodyFatPercentage
+    {
+        get
+        {
+            if (double.IsNaN(NbBodyFat.Value))
+            {
+                return null;
+            }
+
+            return (decimal)NbBodyFat.Value;
+        }
+    }
+
+    public decimal? SkeletalMuscleMass
+    {
+        get
+        {
+            if (double.IsNaN(NbMuscle.Value))
+            {
+                return null;
+            }
+
+            return (decimal)NbMuscle.Value;
+        }
+    }
+
+    public string? Notes
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(TxtNotes.Text))
+            {
+                return null;
+            }
+
+            return TxtNotes.Text.Trim();
+        }
+    }
 
     public InBodyEntryDialog(string memberName)
     {
@@ -26,7 +62,10 @@ public sealed partial class InBodyEntryDialog : ContentDialog
 
     private void UpdateBmi()
     {
-        if (TxtBmiValue == null || TxtBmiClassification == null || BrdBmiTag == null) return;
+        if (TxtBmiValue == null || TxtBmiClassification == null || BrdBmiTag == null)
+        {
+            return;
+        }
 
         var h = (decimal)NbHeight.Value;
         var w = (decimal)NbWeight.Value;
