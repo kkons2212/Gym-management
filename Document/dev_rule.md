@@ -16,7 +16,7 @@ flowchart TD
         direction TB
         C1["Chương 1: Quy trình Vòng đời 1 Task & Git Workflow"]
         C2["Chương 2: Nguyên tắc Thiết kế Cốt lõi (KISS, YAGNI, DRY, SOLID...)"]
-        C3["Chương 3: Quy chuẩn Mã nguồn C# 12 & .NET 8 (Naming, Member Layout)"]
+        C3["Chương 3: Quy chuẩn Hệ thống Đặt tên & Mã nguồn C# 12 / .NET 8"]
         C4["Chương 4: Quy tắc Triển khai theo từng Tầng Kiến trúc (Layer Rules)"]
         C5["Chương 5: Quy tắc Xử lý Lỗi, Logging & Định dạng API Response"]
         C6["Chương 6: Tiêu chuẩn Kiểm thử Đơn vị & Tích hợp (Testing Standards)"]
@@ -69,57 +69,64 @@ Mọi task khi được thực hiện đều phải tuân thủ nghiêm ngặt q
 
 ---
 
-### 1.2. Quy chuẩn Đặt tên Nhánh Git (Git Branching Rules)
+### 1.2. Quy chuẩn Đặt tên Nhánh Git (Git Branch Naming Conventions)
 
-Toàn bộ tên nhánh **BẮT BUỘC SỬ DỤNG TIẾNG ANH (100% ENGLISH)**, viết thường hoàn toàn, phân tách bằng dấu gạch ngang (`kebab-case`):
+Để bảo đảm tích hợp CI/CD mượt mà, truy vết chính xác đến từng User Story (trong PRD) / Task (trong roadmap) và **triệt tiêu rủi ro lỗi giới hạn đường dẫn 260 ký tự trên hệ điều hành Windows**, toàn bộ lập trình viên và AI Agent **BẮT BUỘC PHẢI TUÂN THỦ 100%** chuẩn đặt tên nhánh sau:
 
-$$\text{Cú pháp chuẩn:} \quad \mathbf{\langle type\rangle/\langle task-id\rangle-\langle short-description\rangle} \quad \text{hoặc} \quad \mathbf{\langle type\rangle/\langle feature-name\rangle}$$
+$$\text{Cú pháp chuẩn:} \quad \mathbf{\langle type\rangle/\langle story-id\rangle-\langle short-description\rangle} \quad \text{hoặc} \quad \mathbf{\langle type\rangle/\langle task-id\rangle-\langle short-description\rangle}$$
 
-| Loại Nhánh (`type`) | Mục Đích Sử Dụng | Ví Dụ Đặt Tên Hợp Lệ |
-| :--- | :--- | :--- |
-| **`feature/`** | Phát triển tính năng mới hoặc thực hiện task trong roadmap | `feature/task-0.1-sln-setup`<br>`feature/task-2.2-checkin-service`<br>`feature/desktop-admin-pos`<br>`feature/web-member-portal` |
-| **`fix/`** | Vá lỗi phát hiện trong quá trình kiểm thử hoặc vận hành | `fix/qr-code-decoding-error`<br>`fix/pt-slot-collision`<br>`fix/invoice-total-rounding` |
-| **`refactor/`** | Tái cấu trúc mã nguồn mà không làm thay đổi hành vi nghiệp vụ | `refactor/unit-of-work-cleanup`<br>`refactor/extract-vietqr-adapter` |
-| **`test/`** | Thêm mới hoặc bổ sung các ca kiểm thử tự động | `test/add-billing-unit-tests`<br>`test/pt-schedule-collision-tests` |
-| **`docs/`** | Cập nhật tài liệu kỹ thuật, quy chuẩn hoặc hướng dẫn | `docs/dev-rules-and-mapping`<br>`docs/update-prd-usecases` |
-| **`ci/`** | Tinh chỉnh workflow GitHub Actions hoặc cấu hình runner | `ci/setup-windows-runner`<br>`ci/add-gitleaks-scanner` |
+* **Danh mục Loại Nhánh Hợp Lệ (`<type>`):**
+  * `feat/`: Phát triển tính năng mới (ví dụ: `feat/us-02.1-member-registration`, `feat/us-04.1-qr-turnstile-checkin`).
+  * `fix/`: Vá lỗi phát hiện trong quá trình kiểm thử hoặc vận hành (ví dụ: `fix/us-05.2-pt-slot-collision`, `fix/login-lockout-timer`).
+  * `test/`: Thêm mới hoặc bổ sung test suite mà không làm thay đổi code nghiệp vụ (ví dụ: `test/us-07.1-vietqr-payment-mock`).
+  * `refactor/`: Tái cấu trúc mã nguồn nhưng giữ nguyên hành vi nghiệp vụ (ví dụ: `refactor/unit-of-work-cleanup`).
+  * `chore/`: Cập nhật cấu hình build, dependencies NuGet, CI/CD hoặc bảo trì repository (ví dụ: `chore/ci-workflow-dotnet8`).
+  * `docs/`: Cập nhật tài liệu kỹ thuật, quy chuẩn kiến trúc (ví dụ: `docs/dev-rules-naming-conventions`).
+* **Định danh User Story / Task (`<story-id>`):**
+  * Bắt buộc tham chiếu chính xác mã Agile User Story trong [`PRD.md`](PRD.md) (ví dụ: `us-01.1` đến `us-10.4`) hoặc Task ID trong [`task.md`](task.md) (ví dụ: `task-2.2`).
+* **Mô tả ngắn gọn (`<short-description>`):**
+  * Gồm 2 đến 4 từ tiếng Anh viết thường, phân tách bằng dấu gạch ngang (`kebab-case`), mô tả đúng phạm vi cốt lõi của nhánh (ví dụ: `member-registration`, `turnstile-checkin`, `pt-schedule-collision`).
+* ❌ **CẤM TUYỆT ĐỐI (STRICTLY BANNED):**
+  * **Cấm sử dụng đường dẫn file làm tên nhánh** (ví dụ: `feat/src/GymManagement.Core/Services/CheckInService.cs`). Đường dẫn dài sẽ vượt giới hạn 260 ký tự của Windows, làm hỏng terminal Git và mất tính ngữ cảnh của User Story.
+  * **Cấm đặt tên nhánh chung chung, tối nghĩa** (ví dụ: `update`, `patch`, `test1`, `my-branch`, `fix-bug`, `dev-new`).
 
 > [!CAUTION]
-> **Quy tắc An toàn Nhánh Chính:** Nhánh `main` là nhánh sản phẩm ổn định. Mọi thay đổi đều phải thông qua Pull Request (PR) từ nhánh `feature/*` hoặc `fix/*` và phải vượt qua bài kiểm tra `CI Quality Gate` trước khi merge.
+> **Quy tắc An toàn Nhánh Chính:** Nhánh `main` là nhánh sản phẩm ổn định. Mọi thay đổi đều phải thông qua Pull Request (PR) từ nhánh `feat/*` hoặc `fix/*` và phải vượt qua bài kiểm tra `CI Quality Gate` trước khi merge.
 
 ---
 
-### 1.3. Quy chuẩn Thông điệp Commit Git (Git Commit Message Rules)
+### 1.3. Quy chuẩn Thông điệp Commit Git (Conventional Commits Standard)
 
 Mọi commit message **BẮT BUỘC VIẾT BẰNG TIẾNG ANH (100% ENGLISH)** theo chuẩn **Conventional Commits**:
 
-$$\text{Cú pháp:} \quad \mathbf{\langle type\rangle(\langle scope\rangle): \langle action\ verb\ in\ present\ tense\rangle\ \langle short\ description\rangle\ [(Task\ X.Y)]}$$
+$$\text{Cú pháp:} \quad \mathbf{\langle type\rangle(\langle scope\rangle): \langle action\ verb\ in\ present\ tense\rangle\ \langle short\ description\rangle}$$
 
-#### Danh mục `type` hợp lệ:
-* `feat`: Thêm tính năng mới hoặc hoàn tất một chức năng task nghiệp vụ.
-* `fix`: Sửa lỗi (bug fix).
-* `docs`: Thay đổi hoặc thêm mới tài liệu tài liệu.
-* `style`: Định dạng code, dấu cách, thụt dòng (không ảnh hưởng logic).
-* `refactor`: Tái cấu trúc code (không thêm tính năng, không sửa bug).
-* `perf`: Cải thiện hiệu năng xử lý.
-* `test`: Thêm hoặc chỉnh sửa unit test / integration test.
-* `build`: Thay đổi hệ thống build, cập nhật NuGet dependencies, .NET SDK.
-* `ci`: Thay đổi file cấu hình CI/CD (`.github/workflows/*.yml`).
-* `chore`: Các tác vụ bảo trì lặt vặt (dọn dẹp file, chỉnh `.gitignore`).
-
-#### Danh mục `scope` khuyến nghị theo kiến trúc hệ thống:
-* `server/api`, `server/core`, `server/data`, `client/desktop`, `client/web`, `db`, `ci`, `docs`, `standards`.
-
-#### Ví dụ Commit Messages Chuẩn Mẫu:
-* `feat(server/core): implement CheckInService logic and QR validation (Task 2.2)`
-* `feat(server/data): configure EF Core 9 physical tables and configurations (Task 1.1)`
-* `fix(server/pt): prevent double-booking for the same trainer time slot (Task 2.4)`
-* `test(server/core): add unit tests for subscription renewal and penalty calculation (Task 2.3)`
-* `docs(standards): add dev_rule.md and dev_mapping.md for project-wide execution (Task 0.0b)`
-* `ci(workflow): enable windows-latest runner for WinUI 3 desktop build (Task 5.0)`
-
-> [!TIP]
-> **Nguyên tắc ngữ pháp:** Luôn sử dụng thể mệnh lệnh ở thì hiện tại (**Imperative, Present Tense**): dùng `add`, `implement`, `fix`, `refactor`; **KHÔNG DÙNG** `added`, `implementing`, `fixed`. Không viết hoa chữ cái đầu tiên sau dấu hai chấm và không để dấu chấm ở cuối dòng tiêu đề.
+* **Danh mục `type` hợp lệ:**
+  * `feat`: Thêm tính năng mới hoặc hoàn tất một chức năng task nghiệp vụ.
+  * `fix`: Sửa lỗi (bug fix).
+  * `test`: Thêm hoặc chỉnh sửa unit test / integration test.
+  * `refactor`: Tái cấu trúc code (không đổi hành vi, không thêm tính năng, không sửa bug).
+  * `perf`: Cải thiện hiệu năng xử lý (query, bộ nhớ, UI rendering).
+  * `docs`: Thay đổi hoặc thêm mới tài liệu kỹ thuật.
+  * `build`: Thay đổi hệ thống build, cập nhật gói NuGet, cấu hình .NET SDK.
+  * `ci`: Chỉnh sửa cấu hình workflow GitHub Actions (`.github/workflows/*.yml`).
+  * `chore`: Các tác vụ bảo trì phụ trợ (dọn dẹp repo, cập nhật `.gitignore`).
+  * `style`: Định dạng khoảng trắng, thụt dòng, không ảnh hưởng logic thực thi.
+* **Danh mục `scope` khuyến nghị:**
+  * Theo mã User Story / Task: `us-01.1`, `us-02.1`, `us-04.2`, `task-2.2`...
+  * Hoặc theo phân hệ kỹ thuật: `server/api`, `server/core`, `server/data`, `client/desktop`, `client/web`, `db`, `ci`, `docs`, `standards`.
+* **Quy tắc ngữ pháp & định dạng bắt buộc:**
+  * Luôn sử dụng thể mệnh lệnh ở thì hiện tại (**Imperative, Present Tense**): dùng `add`, `implement`, `fix`, `refactor`, `prevent`, `configure`; **KHÔNG DÙNG** `added`, `implementing`, `fixed`.
+  * Mô tả ngắn gọn (**ngắn hơn 72 ký tự**).
+  * Viết thường chữ cái đầu tiên sau dấu hai chấm.
+  * **Không để dấu chấm (`.`) ở cuối dòng tiêu đề**.
+* **Ví dụ Commit Messages Chuẩn Mẫu:**
+  * `feat(us-04.1): implement CheckInService logic and QR validation`
+  * `feat(server/data): configure EF Core 9 physical tables and configurations`
+  * `fix(us-05.2): prevent double-booking for the same trainer time slot`
+  * `test(us-02.3): add unit tests for subscription renewal and penalty calculation`
+  * `docs(standards): add system-wide naming conventions to dev_rule.md`
+  * `ci(workflow): enable windows-latest runner for WinUI 3 desktop build`
 
 ---
 
@@ -206,33 +213,166 @@ flowchart LR
 
 ---
 
-## CHƯƠNG 3: QUY CHUẨN MÃ NGUỒN C# 12 & .NET 8 (CODING STANDARDS)
+## CHƯƠNG 3: QUY CHUẨN ĐẶT TÊN TOÀN HỆ THỐNG & MÃ NGUỒN C# 12 / .NET 8 (SYSTEM-WIDE NAMING CONVENTIONS & CODING STANDARDS)
 
-### 3.1. Quy tắc Đặt tên Hàm / Phương thức (Function & Method Naming)
-* **Cú pháp chung:** Sử dụng **`PascalCase`**, luôn bắt đầu bằng **Động từ thể hiện hành động rõ ràng (`Verb + Noun`)**:
-  * Truy vấn dữ liệu: `GetByIdAsync`, `GetActiveSubscriptionsByMemberIdAsync`, `FindTrainerAvailabilityAsync`.
-  * Thao tác nghiệp vụ: `RegisterMemberAsync`, `RenewSubscriptionAsync`, `CheckInAsync`, `CancelSessionAsync`, `CalculateLateCancellationPenalty`.
-  * Xác thực / Kiểm tra: `ValidateCheckInEligibilityAsync`, `VerifyPasswordHash`, `EnsureScheduleNoConflictAsync`.
-* **Hàm trả về kiểu Boolean:** Bắt buộc bắt đầu bằng các trợ động từ nghi vấn: **`Is...`**, **`Has...`**, **`Can...`**, **`Should...`**:
-  * Ví dụ: `IsSubscriptionActive()`, `HasRemainingSessions()`, `CanCancelWithoutPenalty()`, `IsSlotOverlapping()`.
-* **Hậu tố Asynchronous:** Mọi hàm `async` bắt buộc có hậu tố **`Async`** và luôn nhận tham số `CancellationToken cancellationToken = default` ở vị trí cuối cùng.
-* **Cấm kỵ:** Tuyệt đối không đặt tên hàm mơ hồ hoặc tối nghĩa như: `DoWork()`, `Process()`, `Handle()`, `ExecuteData()`.
+Để bảo đảm toàn bộ hệ thống Gym Management đạt **tính tự giải thích cao (self-explanatory), dễ đọc, dễ bảo trì và rõ ràng về ngữ cảnh nghiệp vụ ngay từ cái nhìn đầu tiên**, toàn bộ mã nguồn phải tuân thủ nghiêm ngặt hệ thống quy chuẩn đặt tên dưới đây:
 
-### 3.2. Quy tắc Đặt tên Biến & Hằng số (Variable & Constant Naming)
-* **Biến cục bộ & Tham số hàm (Local Variables & Parameters):**
-  * Sử dụng **`camelCase`** (ví dụ: `memberId`, `subscriptionPlan`, `checkInTime`, `cancellationToken`).
-  * Tên biến phải có ý nghĩa biểu đạt ngữ cảnh; **cấm đặt tên biến 1 chữ cái** (ví dụ: `x`, `y`, `d`, `temp`), ngoại trừ biến đếm vòng lặp ngắn (`i`, `j`, `k`).
-* **Biến Boolean:** Bắt buộc có tiền tố trạng thái rõ nghĩa:
-  * Ví dụ: `isActive`, `hasPaid`, `isExpired`, `canCheckIn`, `isRefunded`.
-* **Biến thành viên của lớp (Private Instance Fields):**
-  * Bắt buộc có tiền tố gạch dưới **`_`** kèm **`camelCase`** (ví dụ: `_unitOfWork`, `_logger`, `_dateTimeProvider`, `_notificationAdapter`).
-* **Hằng số (Constants):**
-  * Sử dụng **`UPPER_SNAKE_CASE`** hoặc **`PascalCase`** có nghĩa cố định rõ ràng.
-  * Ví dụ: `public const int CANCELLATION_GRACE_PERIOD_HOURS = 2;`, `public const int DEFAULT_PAGE_SIZE = 20;`.
-* **Biến Static Readonly:**
-  * Dùng tiền tố **`s_`** kèm `camelCase` hoặc `_camelCase` (ví dụ: `private static readonly TimeSpan s_defaultTimeout = TimeSpan.FromSeconds(30);`).
+### 3.1. Quy chuẩn Đặt tên Thư mục & Bố cục Cây Dự án (Directory & Folder Naming)
 
-### 3.3. Quy tắc Vị trí Khai báo Thành viên trong File (File Member Layout & Declaration Order)
+1. **Cấu trúc Thư mục Cấp Giải pháp (Solution Root Structure):**
+   * Sử dụng tên thư mục viết thường ngắn gọn theo quy chuẩn quốc tế:
+     * `src/`: Chứa toàn bộ mã nguồn sản phẩm (Production Projects).
+     * `tests/`: Chứa toàn bộ mã nguồn kiểm thử tự động (Unit / Data / Integration Tests).
+     * `docs/`: Chứa tài liệu thiết kế hệ thống, PRD, predevrule, sơ đồ kiến trúc.
+
+2. **Quy chuẩn Đặt tên Thư mục Dự án con (Project Directories):**
+   * Sử dụng **`PascalCase`**, tên thư mục dự án **phải trùng khớp 100% với tên Assembly & Root Namespace**:
+     * `src/GymManagement.Api`: Tầng giao tiếp HTTP API (ASP.NET Core Web API).
+     * `src/GymManagement.Core`: Tầng miền nghiệp vụ độc lập (Domain Entities, Contracts, DTOs, Services, Exceptions).
+     * `src/GymManagement.Infrastructure`: Tầng dữ liệu & tích hợp ngoại vi (EF Core 8, Configurations, Repositories, Adapters).
+     * `src/GymManagement.Desktop`: Tầng giao diện quản trị WinUI 3 MVVM (Dành cho Admin, Lễ tân, Thu ngân).
+     * `src/GymManagement.Web`: Tầng cổng thông tin hội viên Blazor Server (Dành cho Hội viên & PT).
+     * `tests/GymManagement.Server.UnitTests`: Kiểm thử đơn vị các nghiệp vụ tại `Core`.
+     * `tests/GymManagement.Server.DataTests`: Kiểm thử truy xuất dữ liệu EF Core tại `Infrastructure`.
+     * `tests/GymManagement.Server.ApiTests`: Kiểm thử tích hợp Endpoints qua `WebApplicationFactory`.
+
+3. **Quy chuẩn Đặt tên Thư mục Bên trong từng Project:**
+   * Sử dụng **`PascalCase`**, danh từ số nhiều phản ánh đúng vai trò kỹ thuật hoặc nhóm chức năng:
+     * `Controllers/`: Chứa các bộ điều hướng HTTP API.
+     * `Services/`: Chứa các lớp cài đặt nghiệp vụ (Implementations).
+     * `Contracts/`: Chứa các giao diện dịch vụ (Service Interfaces).
+     * `DTOs/`: Chứa các đối tượng truyền nhận dữ liệu (`Requests/`, `Responses/`, `Common/`).
+     * `Entities/`: Chứa 9 lớp thực thể ánh xạ 9 bảng CSDL vật lý.
+     * `Configurations/`: Chứa các lớp Fluent API EntityTypeConfiguration cho EF Core.
+     * `Repositories/`: Chứa các lớp truy xuất kho dữ liệu.
+     * `Adapters/`: Chứa các lớp chuyển đổi tích hợp bên thứ ba (VietQR, Email, Máy quét barcode).
+     * `ViewModels/`: Chứa các ViewModel cho WinUI 3 Desktop MVVM.
+     * `Views/`: Chứa các XAML Page / UserControl / Dialog cho WinUI 3 Desktop.
+     * `Pages/`: Chứa các trang Blazor có định tuyến (Routable Razor Pages).
+     * `Components/`: Chứa các Blazor Component tái sử dụng (`Cards/`, `Modals/`, `Charts/`).
+
+4. **Phân tách Ngữ cảnh Miền Nghiệp vụ (Contextual Domain Separation):**
+   * Bên trong các thư mục lớn (`DTOs/`, `ViewModels/`, `Views/`, `Components/`), bắt buộc phân nhóm theo miền chức năng hoặc tác nhân:
+     * Ví dụ trong DTOs: `DTOs/Identity/`, `DTOs/Members/`, `DTOs/CheckIn/`, `DTOs/PTSchedules/`, `DTOs/Billing/`, `DTOs/Reports/`.
+     * Ví dụ trong ViewModels: `ViewModels/Admin/`, `ViewModels/Receptionist/`, `ViewModels/Cashier/`.
+
+---
+
+### 3.2. Ma trận Quy chuẩn Đặt tên File & Module Toàn Hệ thống (File & Module Naming Matrix)
+
+| Tầng / Nền tảng | Thành phần / Module | Quy chuẩn Đặt tên | Cú pháp Pattern | Ví dụ Chuẩn trong GymManagement |
+| :--- | :--- | :--- | :--- | :--- |
+| **Server API** | ASP.NET Core Controller | `PascalCase.cs` | `<DomainPlural>Controller.cs` | `MembersController.cs`, `CheckInController.cs`, `InvoicesController.cs`, `PtSessionsController.cs` |
+| **Server Core** | Service Contract (Giao diện) | `IPascalCase.cs` | `I<Domain>Service.cs` | `IMemberService.cs`, `ICheckInService.cs`, `IBillingService.cs`, `IPtService.cs` |
+| **Server Core** | Service Implementation | `PascalCase.cs` | `<Domain>Service.cs` | `MemberService.cs`, `CheckInService.cs`, `BillingService.cs`, `PtService.cs` |
+| **Server Core** | Incoming Request Payload | `PascalCase.cs` | `<Action><Domain>Request.cs` | `RegisterMemberRequest.cs`, `CheckInRequest.cs`, `CreateInvoiceRequest.cs`, `BookPtSessionRequest.cs` |
+| **Server Core** | Outgoing Response Payload | `PascalCase.cs` | `<Domain><Action>Response.cs` | `MemberProfileResponse.cs`, `CheckInResultResponse.cs`, `RevenueReportResponse.cs`, `LoginResponse.cs` |
+| **Server Core** | Internal Data Transfer Object | `PascalCase.cs` | `<Domain>Dto.cs` | `MemberDto.cs`, `InvoiceDto.cs`, `SubscriptionDto.cs`, `PtSessionDto.cs` |
+| **Server Core** | Domain Entity (9 Bảng CSDL) | `PascalCase.cs` | `<EntityName>.cs` | `User.cs`, `Role.cs`, `PackagePlan.cs`, `MemberSubscription.cs`, `CheckInLog.cs`, `Invoice.cs`, `MemberBodyMetric.cs`, `PTAvailability.cs`, `PTTrainingSession.cs` |
+| **Server Core** | Domain Exception | `PascalCase.cs` | `<Condition>Exception.cs` | `SubscriptionExpiredException.cs`, `PtScheduleCollisionException.cs`, `ValidationException.cs`, `NotFoundException.cs` |
+| **Server Infra** | EF Core DbContext | `PascalCase.cs` | `<ContextName>DbContext.cs` | `GymManagementDbContext.cs` |
+| **Server Infra** | Entity Type Configuration | `PascalCase.cs` | `<Entity>Configuration.cs` | `UserConfiguration.cs`, `MemberSubscriptionConfiguration.cs`, `InvoiceConfiguration.cs` |
+| **Server Infra** | Repository Interface / Class | `IPascalCase.cs` / `PascalCase.cs` | `I<Domain>Repository.cs`, `<Domain>Repository.cs` | `IInvoiceRepository.cs`, `InvoiceRepository.cs`, `IGenericRepository.cs` |
+| **Server Infra** | Third-party Adapter | `PascalCase.cs` | `<Service>Adapter.cs` | `VietQrPaymentAdapter.cs`, `EmailNotificationAdapter.cs`, `BarcodeScannerAdapter.cs` |
+| **Desktop (WinUI 3)**| MVVM ViewModel | `PascalCase.cs` | `<Feature>ViewModel.cs` | `MembersViewModel.cs`, `CheckInCounterViewModel.cs`, `PosBillingViewModel.cs`, `PtScheduleViewModel.cs` |
+| **Desktop (WinUI 3)**| XAML Page / View | `PascalCase.xaml` + `.cs` | `<Feature>Page.xaml` | `MembersPage.xaml`, `CheckInCounterPage.xaml`, `PosBillingPage.xaml` |
+| **Desktop (WinUI 3)**| XAML Dialog / Modal | `PascalCase.xaml` + `.cs` | `<Action><Domain>Dialog.xaml` | `RenewSubscriptionDialog.xaml`, `CreateMemberDialog.xaml`, `ConfirmPaymentDialog.xaml` |
+| **Web (Blazor)** | Routable Razor Page | `PascalCase.razor` | `<Feature>Page.razor` | `MemberPortalPage.razor`, `PtSessionBookingPage.razor`, `HealthMetricPage.razor` |
+| **Web (Blazor)** | Reusable UI Component | `PascalCase.razor` | `<ComponentName>.razor` | `DigitalMembershipCard.razor`, `PtCalendarView.razor`, `BodyMetricChart.razor`, `QrScannerModal.razor` |
+| **Testing** | Unit Test File | `PascalCase.cs` | `<TargetClass>Tests.cs` | `MemberServiceTests.cs`, `CheckInServiceTests.cs`, `BillingServiceTests.cs` |
+| **Testing** | Data / EF Core Test File | `PascalCase.cs` | `<Entity>DataTests.cs` | `MemberSubscriptionDataTests.cs`, `InvoiceDataTests.cs` |
+| **Testing** | API Integration Test File | `PascalCase.cs` | `<Domain>ApiTests.cs` | `CheckInApiTests.cs`, `BillingApiTests.cs`, `MembersApiTests.cs` |
+| **Database** | SQL Schema & Migrations | `snake_case.sql` / `PascalCase.sql` | `V<Version>__<description>.sql` | `GymManagement_Physical_Model.sql`, `V1__init_schema.sql`, `V2__seed_demo_data.sql` |
+
+---
+
+### 3.3. Quy chuẩn Đặt tên Lớp, Giao diện, Kiểu Dữ liệu & DTOs (Class, Interface, Type & DTO Naming)
+
+1. **Lớp (Class), Bản ghi (Record), Cấu trúc (Struct):**
+   * Sử dụng **`PascalCase`**, danh từ số ít phản ánh đúng bản chất thực thể hoặc trách nhiệm:
+     * Entity CSDL: `User`, `Role`, `PackagePlan`, `MemberSubscription`, `CheckInLog`, `Invoice`.
+     * Service: `MemberService`, `BillingService`, `CheckInService`.
+     * Validator: `RegisterMemberValidator`, `CreateInvoiceValidator`.
+
+2. **Giao diện (Interface):**
+   * Bắt buộc có tiền tố **`I`** đi liền với **`PascalCase`**:
+     * Hợp đồng nghiệp vụ: `IMemberService`, `ICheckInService`, `IBillingService`, `IAuthService`.
+     * Kho dữ liệu & Mẫu thiết kế: `IUnitOfWork`, `IGenericRepository<T>`, `IInvoiceRepository`.
+     * Cổng tích hợp: `IVietQrAdapter`, `INotificationAdapter`.
+
+3. **Mô hình DTOs (Data Transfer Objects & Schemas):**
+   * Bắt buộc có hậu tố định hướng rõ ràng:
+     * **Chiều dữ liệu nhận vào (Incoming Client Request):** Dùng hậu tố **`*Request`** (ví dụ: `RegisterMemberRequest`, `CheckInRequest`, `RenewSubscriptionRequest`, `CreateInvoiceRequest`).
+     * **Chiều dữ liệu trả về (Outgoing Backend Response):** Dùng hậu tố **`*Response`** (ví dụ: `CheckInResponse`, `LoginResponse`, `MemberProfileResponse`, `DailyRevenueResponse`).
+     * **Đối tượng dữ liệu nội bộ / chia sẻ (Internal DTO):** Dùng hậu tố **`*Dto`** (ví dụ: `MemberDto`, `SubscriptionDto`, `InvoiceDto`, `TrainerSlotDto`).
+
+4. **Lớp ViewModel (WinUI 3 MVVM):**
+   * Bắt buộc có hậu tố **`*ViewModel`** (ví dụ: `MembersViewModel`, `CheckInCounterViewModel`, `PosBillingViewModel`).
+
+5. **Kiểu Liệt kê (Enum) & Giá trị Liệt kê (Enum Values):**
+   * Tên kiểu Enum dùng **`PascalCase`**, danh từ số ít (ví dụ: `SubscriptionStatus`, `PaymentStatus`, `CheckInResult`, `UserRoleType`).
+   * Giá trị bên trong Enum: Dùng **`PascalCase`** hoặc **`UPPER_SNAKE_CASE`** cố định (ví dụ: `SubscriptionStatus.Active`, `SubscriptionStatus.Expired`, `SubscriptionStatus.Frozen`, `SubscriptionStatus.Cancelled`).
+
+6. **Lớp Ngoại lệ Miền (Domain Exceptions):**
+   * Bắt buộc có hậu tố **`*Exception`** (ví dụ: `SubscriptionExpiredException`, `PtScheduleCollisionException`, `ValidationException`, `NotFoundException`).
+
+---
+
+### 3.4. Quy chuẩn Đặt tên Hàm, Phương thức, Command & Sự kiện (Function, Method & Event Naming)
+
+1. **Phương thức Nghiệp vụ & Hàm (Methods & Functions):**
+   * Cú pháp **`PascalCase`**, luôn bắt đầu bằng **Động từ thể hiện hành động rõ ràng (`Verb + Noun`)**:
+     * **Truy vấn (Queries):** `GetByIdAsync`, `ListActiveMembersAsync`, `FindTrainerAvailabilityAsync`, `CalculateRemainingDays`.
+     * **Biến đổi trạng thái (Mutations):** `RegisterMemberAsync`, `RenewSubscriptionAsync`, `CheckInAsync`, `ProcessPaymentAsync`, `CancelSessionAsync`.
+     * **Tính toán nghiệp vụ (Calculations):** `CalculateLateCancellationPenalty`, `ComputeBmiMetric`, `CalculateTotalAmount`.
+     * **Xác thực / Ràng buộc (Validation & Guard):** `ValidateCheckInEligibilityAsync`, `VerifyPasswordHash`, `EnsureScheduleNoConflictAsync`.
+   * **Cấm kỵ:** Tuyệt đối không đặt tên hàm chung chung hoặc mơ hồ: `DoWork()`, `Process()`, `Handle()`, `ExecuteData()`.
+
+2. **Phương thức Bất đồng bộ (Asynchronous Methods):**
+   * Mọi hàm `async` bắt buộc có hậu tố **`Async`** và luôn nhận `CancellationToken cancellationToken = default` ở tham số cuối cùng.
+
+3. **Phương thức / Thuộc tính Kiểm tra Điều kiện (Boolean Methods & Properties):**
+   * Bắt buộc bắt đầu bằng các trợ động từ trạng thái nghi vấn: **`Is...`**, **`Has...`**, **`Can...`**, **`Should...`**:
+     * Ví dụ: `IsSubscriptionActive()`, `HasRemainingSessions()`, `CanCancelWithoutPenalty()`, `IsSlotOverlapping()`, `ShouldChargeCancellationFee()`.
+
+4. **Lệnh trong MVVM (RelayCommands cho WinUI 3 Desktop):**
+   * Đặt tên theo hành động kèm hậu tố **`*Command`**:
+     * Khi dùng thuộc tính `[RelayCommand]` của CommunityToolkit.Mvvm trên hàm `CheckInAsync()`, hệ thống tự sinh ra thuộc tính `CheckInCommand`.
+     * Khi khai báo thuộc tính thủ công: `SearchMembersCommand`, `SubmitPaymentCommand`, `ExportReportCommand`, `RefreshDataCommand`.
+
+5. **Bộ xử lý Sự kiện & Callbacks (Event Handlers):**
+   * Bắt đầu bằng tiền tố **`On`** + `<TênSựKiện>` hoặc **`Handle`** + `<TênSựKiện>`:
+     * Ví dụ trong Service / Core: `OnQrCodeScanned`, `OnPaymentStatusChanged`, `OnSessionCancelled`.
+     * Ví dụ trong UI Code-behind / Component: `HandleMemberSelected`, `HandlePaymentCompleted`, `BtnCheckIn_Click`, `Page_Loaded`.
+
+---
+
+### 3.5. Quy chuẩn Đặt tên Biến, Thuộc tính, Trường dữ liệu & Hằng số (Variables, Properties, Fields & Constants)
+
+1. **Thuộc tính Công khai (Public Properties):**
+   * Sử dụng **`PascalCase`** (ví dụ: `RemainingSessions`, `FullName`, `ExpireDate`, `PhoneNumber`, `IsActive`).
+
+2. **Biến Cục bộ & Tham số Hàm (Local Variables & Method Parameters):**
+   * Sử dụng **`camelCase`** (ví dụ: `memberId`, `subscriptionPlan`, `checkInTime`, `cancellationToken`).
+   * Tên biến phải có ý nghĩa biểu đạt ngữ cảnh; **cấm đặt tên biến 1 chữ cái** (ví dụ: `x`, `y`, `d`, `temp`), ngoại trừ biến đếm vòng lặp ngắn (`i`, `j`, `k`).
+
+3. **Biến Boolean (Boolean Variables):**
+   * Bắt buộc có tiền tố trạng thái rõ nghĩa:
+     * Ví dụ: `isActive`, `hasPaid`, `isExpired`, `canCheckIn`, `isRefunded`, `isLoaded`.
+
+4. **Trường Dữ liệu Riêng của Lớp (Private Instance Fields):**
+   * Bắt buộc có tiền tố gạch dưới **`_`** kèm **`camelCase`** (ví dụ: `_unitOfWork`, `_logger`, `_dateTimeProvider`, `_notificationAdapter`).
+
+5. **Hằng số Cố định (Constants):**
+   * Sử dụng **`UPPER_SNAKE_CASE`** hoặc **`PascalCase`** có nghĩa cố định rõ ràng:
+     * Ví dụ: `public const int CANCELLATION_GRACE_PERIOD_HOURS = 2;`, `public const int DEFAULT_PAGE_SIZE = 20;`, `public const decimal VAT_RATE = 0.08m;`.
+
+6. **Biến Tĩnh Chỉ Đọc (Static Readonly Fields):**
+   * Dùng tiền tố **`s_`** kèm `camelCase` hoặc `_camelCase` (ví dụ: `private static readonly TimeSpan s_defaultTimeout = TimeSpan.FromSeconds(30);`).
+
+---
+
+### 3.6. Quy tắc Vị trí Khai báo Thành viên trong File (File Member Layout & Declaration Order)
 > [!IMPORTANT]
 > **QUY TẮC BẤT DI BẤT DỊCH VỀ VỊ TRÍ BIẾN TOÀN CỤC / CLASS FIELDS:**
 > * Toàn bộ các biến cấp độ lớp (Constants, Static fields, Private readonly fields, Injected Dependencies, Properties) **BẮT BUỘC PHẢI KHAI BÁO TẬP TRUNG TẠI ĐẦU CLASS / ĐẦU FILE**.
@@ -298,7 +438,9 @@ public class MemberService : IMemberService
 }
 ```
 
-### 3.4. Tính năng Hiện đại của C# 12 & .NET 8
+---
+
+### 3.7. Chuẩn Tính năng Hiện đại của C# 12 & .NET 8
 * Sử dụng **File-scoped namespace** (`namespace GymManagement.Server.Core.Services;`).
 * Bật **Nullable Reference Types** (`<Nullable>enable</Nullable>`) trên toàn solution. Tuyệt đối không dùng toán tử `!` (null-forgiving) trừ khi đã kiểm tra null chặt chẽ.
 * Dùng **Primary Constructors** cho DI khi không cần gán logic phức tạp trong Constructor.
@@ -306,6 +448,8 @@ public class MemberService : IMemberService
   ```csharp
   public record MemberDto(Guid UserId, string FullName, string Phone, string Email, string Status);
   ```
+* Dùng **Collection Expressions** (`[...]`) thay thế cho `new List<T>()` hoặc `new[] { ... }`.
+* Ưu tiên dùng `required` keyword hoặc `init-only properties` cho các model khởi tạo tường minh.
 
 ---
 
@@ -366,15 +510,45 @@ Không bắt lỗi chung chung bằng `Exception`. Hãy sử dụng các Custom 
 
 ## CHƯƠNG 6: QUY CHUẨN KIỂM THỬ ĐƠN VỊ & TÍCH HỢP (TESTING STANDARDS)
 
-### 6.1. Cấu trúc Thư mục Tests
-* `tests/GymManagement.Server.UnitTests`: Kiểm thử 7 Core Services (Mock toàn bộ Repositories qua `Moq`).
-* `tests/GymManagement.Server.DataTests`: Kiểm thử EF Core, DbContext và ràng buộc 9 bảng CSDL.
-* `tests/GymManagement.Server.ApiTests`: Kiểm thử tích hợp Endpoints qua `WebApplicationFactory`.
+### 6.1. Quy chuẩn Vị trí Thư mục & Đặt tên File Test (Unit Test Placement & Naming Standard)
 
-### 6.2. Quy tắc Đặt tên Test Method
-Cú pháp chuẩn: `[TênPhươngThức]_[ĐiềuKiệnĐầuVào]_[KếtQuảKỳVọng]`
-* Ví dụ: `CheckInAsync_WhenSubscriptionIsExpired_ThrowsBusinessRuleException`
-* Ví dụ: `BookSessionAsync_WhenSlotAlreadyBooked_ThrowsScheduleConflictException`
+Để bảo đảm bộ test dễ dàng định vị, tự động hóa trong CI và **ánh xạ chính xác 1-to-1 với mã nguồn sản phẩm (Production Code)**:
+
+1. **Cấu trúc Thư mục Tests Phản chiếu Cấu trúc Mã nguồn (1-to-1 Mirroring):**
+   * Mọi thư mục bên trong project kiểm thử phải phản chiếu cấu trúc cây thư mục của project sản phẩm mục tiêu:
+     * `src/GymManagement.Core/Services/CheckInService.cs` $\rightarrow$ `tests/GymManagement.Server.UnitTests/Services/CheckInServiceTests.cs`
+     * `src/GymManagement.Core/Services/MemberService.cs` $\rightarrow$ `tests/GymManagement.Server.UnitTests/Services/MemberServiceTests.cs`
+     * `src/GymManagement.Infrastructure/Configurations/InvoiceConfiguration.cs` $\rightarrow$ `tests/GymManagement.Server.DataTests/Configurations/InvoiceConfigurationTests.cs`
+     * `src/GymManagement.Api/Controllers/CheckInController.cs` $\rightarrow$ `tests/GymManagement.Server.ApiTests/Controllers/CheckInControllerTests.cs`
+
+2. **Quy chuẩn Đặt tên File Test:**
+   * Bắt buộc sử dụng tên class mục tiêu kèm hậu tố **`Tests.cs`**:
+     * Unit Test lớp nghiệp vụ: `<ClassName>Tests.cs` (ví dụ: `CheckInServiceTests.cs`, `BillingServiceTests.cs`, `PtServiceTests.cs`).
+     * Data Test truy xuất CSDL: `<EntityName>DataTests.cs` (ví dụ: `MemberSubscriptionDataTests.cs`, `InvoiceDataTests.cs`).
+     * Integration Test Controller/Endpoint: `<Domain>ApiTests.cs` hoặc `<ControllerName>Tests.cs` (ví dụ: `CheckInApiTests.cs`, `MembersApiTests.cs`).
+
+---
+
+### 6.2. Quy tắc Đặt tên Ca Kiểm thử (Test Method Naming Pattern)
+
+Mọi phương thức test bắt buộc tuân theo quy tắc 3 phần phân tách bằng dấu gạch dưới (`_`):
+
+$$\text{Cú pháp chuẩn:} \quad \mathbf{[MethodUnderTest]\_[StateUnderTest]\_[ExpectedBehavior]}$$
+
+* **Thành phần 1 (`[MethodUnderTest]`):** Tên của phương thức hoặc hành vi đang được kiểm thử.
+* **Thành phần 2 (`[StateUnderTest]`):** Bối cảnh hoặc điều kiện đầu vào của ca kiểm thử (`When...`, `Given...`, hoặc trạng thái cụ thể).
+* **Thành phần 3 (`[ExpectedBehavior]`):** Kết quả kỳ vọng (`Should...`, `Returns...`, `Throws...`).
+
+#### Bảng Ví dụ Ca Kiểm thử Chuẩn theo Nghiệp vụ Phòng Gym:
+| Phân hệ Nghiệp vụ | Tên Test Method Chuẩn Mẫu | Ý Nghĩa Kiểm Thử |
+| :--- | :--- | :--- |
+| **Check-in (UC04)** | `CheckInAsync_WhenSubscriptionIsExpired_ThrowsBusinessRuleException` | Quét thẻ đã hết hạn $\rightarrow$ Báo lỗi BusinessRuleException |
+| **Check-in (UC04)** | `CheckInAsync_WhenValidQrCodeAndHasSessions_DeductsRemainingSessionAndReturnsSuccess` | Quét thẻ hợp lệ $\rightarrow$ Trừ 1 lượt tập và trả về thành công |
+| **PT Booking (UC05)** | `BookSessionAsync_WhenSlotAlreadyBooked_ThrowsScheduleConflictException` | Đặt trùng khung giờ PT $\rightarrow$ Báo lỗi xung đột lịch |
+| **PT Booking (UC05)** | `CancelSessionAsync_WhenLessThanTwoHoursBeforeStart_ChargesCancellationPenalty` | Hủy ca tập $< 2\text{h}$ $\rightarrow$ Tính phí phạt hủy muộn |
+| **Billing & POS (UC07)** | `CreateInvoiceAsync_WhenCashPaymentCompleted_ActivatesSubscriptionInstantly` | Thanh toán tiền mặt $\rightarrow$ Kích hoạt thẻ tập ngay lập tức |
+| **Billing & POS (UC07)** | `ProcessVietQrCallbackAsync_WhenChecksumInvalid_ReturnsUnauthorized` | Callback VietQR sai mã checksum $\rightarrow$ Từ chối xử lý |
+| **InBody Metrics (UC06)** | `CalculateBmi_WhenHeightAndWeightValid_ReturnsAccurateBmiScore` | Tính toán chỉ số BMI chính xác từ chiều cao, cân nặng |
 
 ### 6.3. Mô hình Arrange - Act - Assert (AAA)
 Mọi test case phải phân tách rõ ràng 3 khối:
@@ -409,9 +583,9 @@ Một task trong `task.md` chỉ được phép chuyển trạng thái sang `[x]
 - [ ] **DoD 3 (Async & Cancellation):** Mọi hàm I/O đều là `async/await` và có `CancellationToken`.
 - [ ] **DoD 4 (CSDL Chuẩn):** Thao tác dữ liệu đúng 9 bảng, không tự tạo bảng mới ngoài DDL.
 - [ ] **DoD 5 (Kiểm thử):** Có ít nhất 1 Unit/Integration Test tương ứng, test chạy Pass 100%.
-- [ ] **DoD 6 (Bố cục & Đặt tên Tiếng Anh):** Tên file, class, hàm (`Verb + Noun`), biến hoàn toàn bằng **Tiếng Anh chuẩn**. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**.
+- [ ] **DoD 6 (Bố cục & Quy chuẩn Đặt tên Toàn Hệ thống):** Đặt tên thư mục, file, class, interface (`I*`), DTOs (`*Request`, `*Response`, `*Dto`), hàm (`Verb + Noun`), biến và ca test tuân thủ 100% Ma trận Chương 3 & Chương 6. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**.
 - [ ] **DoD 7 (Code Cleanliness):** Chạy `dotnet format` không còn lỗi format hay warning nghiêm trọng.
 - [ ] **DoD 8 (Biên dịch Không Lỗi):** `dotnet build` đạt 0 Errors.
-- [ ] **DoD 9 (Git Branch & Commit Tiếng Anh):** Tên nhánh chuẩn kebab-case tiếng Anh (`feature/task-X.Y-...`), thông điệp commit chuẩn Conventional Commits tiếng Anh (`feat(...)`, `fix(...)`). Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
+- [ ] **DoD 9 (Git Branch & Commit Tiếng Anh):** Tên nhánh chuẩn kebab-case tiếng Anh (`<type>/<story-id>-<short-description>`), thông điệp commit chuẩn Conventional Commits tiếng Anh (`<type>(<scope>): <action>`). Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
 - [ ] **DoD 10 (Sổ Ánh Xạ Kỹ Thuật):** Đã ghi lại nhật ký ánh xạ kỹ thuật chi tiết của task vào [`dev_mapping.md`](dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL, commit hash).
 
