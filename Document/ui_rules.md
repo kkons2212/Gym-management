@@ -1,6 +1,6 @@
 # VISUAL USER INTERFACE RULES (UI SYSTEM RULES)
 ## Hệ Thống Quản Lý Phòng Tập Thể Thao (Gym Management System)
-### WinUI 3 Desktop (Admin/Staff) & Blazor Server (Member/PT Portal)
+### WinUI 3 Desktop (Admin) & Blazor Server (Member/PT Portal)
 
 > **Mục đích tài liệu:** Tài liệu này quy định toàn bộ **Quy chuẩn Giao diện Thị giác (UI - Visual User Interface)**, Design Tokens, cấu trúc Component, bố cục lưới và hệ thống màu sắc dành cho các lập trình viên và AI Agent khi xây dựng mã nguồn XAML (`WinUI 3 Desktop`) và HTML/CSS/Tailwind/Razor (`Blazor Server Web`).
 > **Triết lý Thiết kế Cốt lõi (Core Visual Philosophy):** Tối giản, Đậm chất Thể thao Năng động (Athletic Modernism), Tương phản cao phù hợp môi trường phòng tập, Màu sắc chuẩn ngữ nghĩa — **tuyệt đối không sử dụng hiệu ứng màu mè lòe loẹt, chuyển sắc gradient rối mắt, hoặc hoạt ảnh rườm rà gây chậm trễ thao tác**.
@@ -113,43 +113,46 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
 
 ---
 
-## 3. QUY CHUẨN THÀNH PHẦN GIAO DIỆN QUẢN TRỊ & NHÂN VIÊN (WINUI 3 DESKTOP)
+## 3. QUY CHUẨN THÀNH PHẦN GIAO DIỆN QUẢN TRỊ (WINUI 3 DESKTOP - DÀNH CHO ADMIN)
 
-Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thiết kế theo tư duy **Desktop-First MVVM**, phục vụ màn hình máy tính quầy lễ tân với mật độ thông tin cao, thao tác bàn phím nhạy và giao diện Fluent Design phẳng.
+Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thiết kế theo tư duy **Desktop-First MVVM**, phục vụ màn hình máy tính làm việc của Admin với mật độ thông tin cao, thao tác bàn phím nhạy và giao diện Fluent Design phẳng.
 
 ### 3.1. Khung Giao Diện Chính (App Shell & Navigation - `MainWindow.xaml`)
 * **Cột Điều Hướng Trái (NavigationView):**
   * Độ rộng mở rộng `w-64` ($256\text{px}$), hỗ trợ thu gọn về dạng icon (`Compact Mode` $48\text{px}$).
-  * Bố cục mục chức năng theo phân quyền RBAC:
+  * Bố cục mục chức năng của Admin:
     1. `Quầy Điểm Danh & Cổng Tự Động` (F1)
-    2. `Bán Gói & Thu Ngân POS` (F2)
+    2. `Bán Gói & Thanh Toán POS` (F2)
     3. `Quản Lý Hội Viên & Thẻ Tập` (F3)
     4. `Lịch Biểu Huấn Luyện Viên PT`
     5. `Đo & Quản Lý InBody`
     6. `Báo Cáo & Thống Kê Doanh Thu`
-    7. `Cấu Hình & Sổ Kiểm Toán Hệ Thống` (Dành riêng Admin)
+    7. `Cấu Hình & Sổ Kiểm Toán Hệ Thống`
 * **Thanh Tiêu Đề Trên Cùng (App TitleBar):**
-  * Tích hợp thanh tìm kiếm hội viên toàn cục nhanh và thông tin nhân viên đang đăng nhập kèm Badge phân quyền (`Admin`, `Lễ Tân`, `Thu Ngân`).
+  * Tích hợp thanh tìm kiếm hội viên toàn cục nhanh, thông tin Admin đang đăng nhập kèm Badge vai trò (`Admin`), và nút chuyển đổi Dark/Light mode.
 
 ### 3.2. Màn Hình Quầy Điểm Danh Cửa Ra Vào (`CheckInCounterPage.xaml`)
-* **Bố Cục 2 Cột:**
-  * **Cột Trái ($40\%$ Chiều rộng) - Hai Phần Tiếp Nhận Điểm Danh:**
-    1. **Quét QR để xác nhận:** Khu vực quét riêng bằng camera hoặc đầu đọc QR USB, có chỉ dẫn `"Đưa mã QR hội viên vào vùng quét"`, trạng thái sẵn sàng/đang quét và lỗi camera/đầu đọc nếu có. Ô nhận dữ liệu từ đầu đọc giữ focus khi màn hình sẵn sàng.
-    2. **Nhập mã hội viên thủ công:** Ô nhập mã hội viên riêng, có nhãn rõ ràng và nút `"Tra cứu"`; hỗ trợ Enter để gửi. Hiển thị lỗi ngay cạnh ô nếu mã trống, sai định dạng hoặc không tìm thấy hội viên.
-    * Hai phần dùng chung kết quả xác minh ở cột phải. Nhập mã thủ công là phương thức xác minh bình thường, không tự bỏ qua điều kiện thẻ hoặc thay thế thao tác ghi đè có kiểm soát.
-  * **Cột Phải ($60\%$ Chiều rộng) - Kết Quả Xác Minh Hội Viên:**
-    * Trạng thái ban đầu hiển thị `"Sẵn sàng tiếp nhận hội viên..."` và hướng dẫn chọn quét QR hoặc nhập mã hội viên.
-    * **Khi Check-in Hợp Lệ từ một trong hai cách:**
-      * Hiển thị trạng thái thành công màu xanh `#16A34A` và thông báo `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"`.
+* **Bố Cục 2 Cột Đối Xứng:**
+  * **Cột Trái ($40\%$ Chiều rộng) - Khu vực Camera Quét Mã QR:**
+    * Hệ thống **hoàn toàn không dùng thẻ vật lý hay đầu đọc thẻ USB**. Hội viên xuất trình mã QR điện tử trên ứng dụng di động/web.
+    * Nút bấm hành động lớn: `[Bật Camera Quét Mã QR (F1)]` kích hoạt webcam quầy để quét mã QR từ điện thoại hội viên theo thời gian thực.
+    * Kèm theo ô tìm kiếm nhanh Số điện thoại (`User.Phone`) dùng cho trường hợp hội viên hết pin hoặc quên điện thoại.
+    * Nút thao tác nhanh: `"Cho vào thủ công (Override)"` (kèm chọn lý do) và `"Mở cổng kiểm tra"`.
+  * **Cột Phải ($60\%$ Chiều rộng) - Bảng Hiển Thị Kết Quả Điểm Danh Từ Backend:**
+    * Khi chưa quét: Hiển thị biểu tượng camera chờ quét với thông báo *"Sẵn sàng tiếp nhận hội viên..."*.
+    * Toàn bộ việc kiểm tra trạng thái thẻ/gói tập (`ACTIVE`, còn hạn, còn lượt) được thực hiện bên **Backend**; Desktop hiển thị kết quả từ API phản hồi.
+    * **Khi Check-in Hợp Lệ (Backend trả về Success):**
+      * Toàn bộ viền khung nháy sáng màu xanh lá `#16A34A`.
+      * Băng rôn lớn trên cùng: `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"` (`bg-green-600 text-white text-xl font-bold p-4 rounded-t-lg`).
       * Ảnh chân dung hội viên kích thước lớn ($140\text{px} \times 140\text{px}$, bo tròn).
-      * Thông tin chi tiết: Họ tên (`text-2xl font-bold`), mã hội viên, tên gói tập.
-      * Chip số lượt còn lại nổi bật: `"Còn 18 lượt tập gym"` / `"Còn 5 buổi tập PT"`.
-    * **Khi Check-in Thất Bại:**
-      * Hiển thị trạng thái từ chối màu đỏ `#DC2626` và thông báo `"TỪ CHỐI CHECK-IN • CỔNG KHÓA"`.
-      * Nêu rõ lý do, ví dụ `"Thẻ đã hết hạn ngày 20/10/2026"` hoặc `"Gói tập đã hết lượt vào phòng"`; không chỉ dựa vào màu sắc hoặc âm thanh.
-    * Sau khi hiện kết quả, đưa màn hình về trạng thái sẵn sàng cho lượt tiếp theo mà không xóa kết quả trước khi nhân viên kịp đọc.
+      * Thông tin chi tiết: Họ tên in hoa to rõ (`text-2xl font-bold`), Tên gói tập trong tài khoản.
+      * Chip số lượt còn lại to nổi bật: `"Còn 18 lượt tập gym"` / `"Còn 5 buổi tập PT"`.
+    * **Khi Check-in Thất Bại (Backend trả về Lỗi):**
+      * Toàn bộ viền khung nháy sáng cảnh báo đỏ `#DC2626`.
+      * Băng rôn lớn trên cùng: `"TỪ CHỐI CHECK-IN • CỔNG KHÓA"` (`bg-red-600 text-white text-xl font-bold p-4 rounded-t-lg`).
+      * Lý do từ chối do Backend trả về in chữ đậm: *"Gói tập trong tài khoản đã hết hạn vào ngày 20/10/2026"* hoặc *"Gói tập đã hết lượt vào phòng"*.
 
-### 3.3. Màn Hình POS Thu Ngân & Xuất Hóa Đơn (`PosBillingPage.xaml`)
+### 3.3. Màn Hình POS Bán Gói & Xuất Hóa Đơn (`PosBillingPage.xaml`)
 * **Bố Cục 2 Khối Thao Tác (Khớp 100% Thuộc Tính Bảng Invoice & PackagePlan):**
   * **Khối Danh Mục & Sản Phẩm (Bên Trái):**
     * Ô tìm kiếm gói tập nhanh theo tên hoặc mã (`PackagePlan.PlanId`, `PackagePlan.Name`).
@@ -217,7 +220,7 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 
 ## 4. MA TRẬN ĐỐI CHIẾU THÀNH PHẦN UI: WINUI 3 DESKTOP VS. BLAZOR WEB
 
-| Thành Phần Giao Diện | Ứng Dụng WinUI 3 Desktop (Quầy Lễ Tân / Admin) | Ứng Dụng Blazor Server Web (Hội Viên / PT) |
+| Thành Phần Giao Diện | Ứng Dụng WinUI 3 Desktop (Quản Trị Admin) | Ứng Dụng Blazor Server Web (Hội Viên / PT) |
 | :--- | :--- | :--- |
 | **Thẻ Hội Viên & Điểm Danh** | Màn hình tiếp nhận quét 2 cột, hiển thị ảnh chân dung lớn, đèn báo xanh/đỏ, nút ghi đè thủ công. | Thẻ điện tử di động cao cấp, mã QR động tự làm mới mỗi 60s, chip đếm số buổi còn lại. |
 | **Thanh Toán & Hóa Đơn** | Màn hình POS thu ngân đầy đủ tính năng, chọn nhanh hội viên, bảng giá, cửa sổ VietQR sandbox có nút giả lập và in nhiệt. | Danh mục gói dạng thẻ cuộn dọc, modal mã QR sandbox có đếm ngược 10 phút, nút giả lập thanh toán và cập nhật trạng thái sau xác nhận từ máy chủ. |
