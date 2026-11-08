@@ -7,11 +7,11 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **12 / 33 Tasks (36.4%)**
+* **Tiến độ Hoàn thành:** **14 / 33 Tasks (42.4%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 2 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, **Task 2.3**)
   * ⚪ **Khối Giao Diện (Client Component - WinUI 3 & Blazor):** Khung ứng dụng đã sẵn sàng, chờ tích hợp nghiệp vụ (Giai đoạn 4.0)
 
 ---
@@ -34,6 +34,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
+| **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
 
 ---
 
@@ -153,6 +154,26 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Hiệu năng & An toàn:** Dùng `AsNoTracking()` cho tất cả các truy vấn đọc, và quản lý repository instances qua `ConcurrentDictionary` để tránh khởi tạo dư thừa đối tượng.
 
 ---
+
+### 📌 [Task 2.3] Hiện thực MemberService Component (UC02, UC09)
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** *(pending)* | **Nhánh:** `feat/task-2.3-member-service`
+* **Phân hệ nghiệp vụ liên quan:** UC02.1–UC02.5 (Đăng ký, cập nhật, gia hạn, bảo lưu, hủy gói tập), UC09.1–UC09.2 (Hội viên xem profile & lịch sử tập)
+* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Enums, Services)
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Enums/SubscriptionStatus.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Members/MemberDtos.cs` (12 record types)
+  - `src/Server/GymManagement.Server.Core/Contracts/IMemberService.cs` (9 methods)
+  - `src/Server/GymManagement.Server.Core/Services/MemberService.cs`
+  - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj`
+  - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj`
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/MemberServiceTests.cs` (13 tests — 13/13 pass)
+* **Bảng CSDL liên quan:** `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog`
+* **Ràng buộc nghiệp vụ & Giao dịch:**
+  - RegisterMember: tạo `[User]` + `MemberSubscription` trong 1 Transaction, sinh QrCode unique, `EndDate = StartDate + DurationDays`
+  - FreezeSubscription: `EndDate += (FreezeEndDate - FreezeStartDate)`, Status → FROZEN
+  - CancelSubscription: lý do hủy bắt buộc, Status → CANCELLED, giữ lịch sử
+  - Welcome Email: fire-and-forget, lỗi chỉ log Warning
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

@@ -198,7 +198,7 @@ GymManagement.sln
   - Tiếp nhận mã quét QR từ quầy.
   - Kiểm tra điều kiện: thẻ `ACTIVE`, còn hạn, còn buổi, đúng giờ.
   - Trừ 1 lượt tập và ghi vết vào `CheckInLog`.
-- [ ] **Task 2.3: `MemberService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
+- [x] **Task 2.3: `MemberService Component` (Kết nối Authenticated + Database API + SMS Gateway):**
   - Đăng ký mới, gia hạn, nâng cấp gói tập, sinh chuỗi mã `QrCode`.
   - Bảo lưu gói tập (`FROZEN`), tính toán kéo dài ngày hết hạn.
   - Gửi thông báo chào mừng qua `SMS Sending Gateway`.
