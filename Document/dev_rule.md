@@ -27,45 +27,124 @@ flowchart TD
 
 ---
 
-## CHƯƠNG 1: QUY TRÌNH VÒNG ĐỜI THỰC HIỆN 1 TASK (TASK LIFECYCLE)
+## CHƯƠNG 1: QUY TRÌNH VÒNG ĐỜI TASK & CHIẾN LƯỢC QUẢN LÝ GIT
+
+### 1.1. Quy trình 8 bước Thực thi 1 Task (Task Lifecycle)
 
 Mọi task khi được thực hiện đều phải tuân thủ nghiêm ngặt quy trình 8 bước sau:
 
 ```text
 [1. Nhận diện Task trong task.md] 
        ↓ 
-[2. Đối soát PRD (UC/AC) & predevrule.md (Ranh giới kiến trúc)] 
+[2. Tạo nhánh Git chuẩn tiếng Anh: feature/task-X.Y-name] 
        ↓ 
-[3. Viết Mã Nguồn theo Chuẩn C# 12 & .NET 8] 
+[3. Đối soát PRD (UC/AC) & predevrule.md (Ranh giới kiến trúc)] 
        ↓ 
-[4. Viết Unit / Integration Tests (Mô hình AAA)] 
+[4. Lập trình C# 12 & .NET 8 (Tên tiếng Anh, Comment nghiệp vụ tiếng Việt)] 
        ↓ 
-[5. Chạy Kiểm tra Cục bộ: dotnet build + dotnet format + dotnet test] 
+[5. Viết Unit / Integration Tests (AAA Pattern)] 
        ↓ 
-[6. Commit theo Chuẩn Conventional Commits] 
+[6. Kiểm tra Cục bộ: dotnet build + dotnet format + dotnet test] 
        ↓ 
-[7. Đánh dấu [x] trong task.md & Ghi nhận vào Document/dev_mapping.md]
+[7. Commit chuẩn Conventional Commits tiếng Anh] 
        ↓ 
-[8. Đẩy lên GitHub xác thực qua CI Quality Gate]
+[8. Tích [x] task.md, Cập nhật dev_mapping.md & Push CI Quality Gate]
 ```
 
-### Chi tiết 8 bước thực thi:
+#### Chi tiết 8 bước thực thi:
 1. **Bước 1: Nhận diện Task:** Đọc rõ `Task ID`, `[Type: ...]`, `[Module: ...]`. Chỉ tập trung giải quyết đúng phạm vi của task đó, không sửa lan man sang các module khác.
-2. **Bước 2: Đối chiếu Nghiệp vụ:** Tra cứu mã Use Case tương ứng trong Phần II của [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) và bảng Ma trận truy vết (RTM) để hiểu rõ Tiêu chí chấp nhận (Acceptance Criteria - AC).
-3. **Bước 3: Lập trình:** Viết code tuân thủ ranh giới 3 lớp và Dependency Rule (Presentation $\rightarrow$ Core Contracts $\rightarrow$ Data Access).
-4. **Bước 4: Kiểm thử song hành (Test-Alongside):** Viết test ngay trong thư mục `tests/` tương ứng (`UnitTests`, `DataTests`, hoặc `ApiTests`).
-5. **Bước 5: Thẩm định chất lượng cục bộ:**
+2. **Bước 2: Tạo nhánh Git mới:** Tạo nhánh riêng từ `main` theo đúng quy chuẩn đặt tên tiếng Anh (mục 1.2). Tuyệt đối không commit trực tiếp lên nhánh `main`.
+3. **Bước 3: Đối chiếu Nghiệp vụ:** Tra cứu mã Use Case tương ứng trong Phần II của [`PRD.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/PRD.md) và bảng Ma trận truy vết (RTM) để hiểu rõ Tiêu chí chấp nhận (Acceptance Criteria - AC).
+4. **Bước 4: Lập trình:** Viết mã nguồn tuân thủ ranh giới 3 lớp và Dependency Rule (Presentation $\rightarrow$ Core Contracts $\rightarrow$ Data Access).
+5. **Bước 5: Kiểm thử song hành (Test-Alongside):** Viết test ngay trong thư mục `tests/` tương ứng (`UnitTests`, `DataTests`, hoặc `ApiTests`).
+6. **Bước 6: Thẩm định chất lượng cục bộ:**
    * `dotnet build GymManagement.sln -c Release` (0 Errors).
    * `dotnet format GymManagement.sln --verify-no-changes` (Đạt chuẩn formatting).
    * `dotnet test --no-build` (100% test cases pass).
-6. **Bước 6: Quy ước Git Commit:**
-   * Cú pháp chuẩn Conventional Commits: `<type>(<scope>): <mô tả ngắn ngọn>`
-   * Các type hợp lệ: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `ci:`, `docs:`.
-   * Ví dụ: `feat(server/member): implement QR code generation and subscription renewal (Task 2.3)`
-7. **Bước 7: Đóng Task & Ghi Sổ Ánh Xạ Kỹ Thuật (`dev_mapping.md`):**
+7. **Bước 7: Commit theo chuẩn:** Commit code với thông điệp Conventional Commits bằng **Tiếng Anh 100%** (mục 1.3).
+8. **Bước 8: Đóng Task & Ghi Sổ Ánh Xạ Kỹ Thuật:**
    * Đổi `[ ]` thành `[x]` trong cả `task.md` và `Document/task.md`.
-   * **Bắt buộc:** Ghi nhận thông tin chi tiết của task vừa hoàn thành vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL liên quan, commit hash).
-8. **Bước 8: Xác thực qua CI:** Đẩy commit lên branch trên GitHub và đảm bảo `CI Quality Gate` báo trạng thái Xanh (Pass).
+   * Ghi nhận thông tin chi tiết vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md).
+   * Đẩy nhánh lên GitHub, mở Pull Request và xác nhận `CI Quality Gate` báo Xanh.
+
+---
+
+### 1.2. Quy chuẩn Đặt tên Nhánh Git (Git Branching Rules)
+
+Toàn bộ tên nhánh **BẮT BUỘC SỬ DỤNG TIẾNG ANH (100% ENGLISH)**, viết thường hoàn toàn, phân tách bằng dấu gạch ngang (`kebab-case`):
+
+$$\text{Cú pháp chuẩn:} \quad \mathbf{\langle type\rangle/\langle task-id\rangle-\langle short-description\rangle} \quad \text{hoặc} \quad \mathbf{\langle type\rangle/\langle feature-name\rangle}$$
+
+| Loại Nhánh (`type`) | Mục Đích Sử Dụng | Ví Dụ Đặt Tên Hợp Lệ |
+| :--- | :--- | :--- |
+| **`feature/`** | Phát triển tính năng mới hoặc thực hiện task trong roadmap | `feature/task-0.1-sln-setup`<br>`feature/task-2.2-checkin-service`<br>`feature/desktop-admin-pos`<br>`feature/web-member-portal` |
+| **`fix/`** | Vá lỗi phát hiện trong quá trình kiểm thử hoặc vận hành | `fix/qr-code-decoding-error`<br>`fix/pt-slot-collision`<br>`fix/invoice-total-rounding` |
+| **`refactor/`** | Tái cấu trúc mã nguồn mà không làm thay đổi hành vi nghiệp vụ | `refactor/unit-of-work-cleanup`<br>`refactor/extract-vietqr-adapter` |
+| **`test/`** | Thêm mới hoặc bổ sung các ca kiểm thử tự động | `test/add-billing-unit-tests`<br>`test/pt-schedule-collision-tests` |
+| **`docs/`** | Cập nhật tài liệu kỹ thuật, quy chuẩn hoặc hướng dẫn | `docs/dev-rules-and-mapping`<br>`docs/update-prd-usecases` |
+| **`ci/`** | Tinh chỉnh workflow GitHub Actions hoặc cấu hình runner | `ci/setup-windows-runner`<br>`ci/add-gitleaks-scanner` |
+
+> [!CAUTION]
+> **Quy tắc An toàn Nhánh Chính:** Nhánh `main` là nhánh sản phẩm ổn định. Mọi thay đổi đều phải thông qua Pull Request (PR) từ nhánh `feature/*` hoặc `fix/*` và phải vượt qua bài kiểm tra `CI Quality Gate` trước khi merge.
+
+---
+
+### 1.3. Quy chuẩn Thông điệp Commit Git (Git Commit Message Rules)
+
+Mọi commit message **BẮT BUỘC VIẾT BẰNG TIẾNG ANH (100% ENGLISH)** theo chuẩn **Conventional Commits**:
+
+$$\text{Cú pháp:} \quad \mathbf{\langle type\rangle(\langle scope\rangle): \langle action\ verb\ in\ present\ tense\rangle\ \langle short\ description\rangle\ [(Task\ X.Y)]}$$
+
+#### Danh mục `type` hợp lệ:
+* `feat`: Thêm tính năng mới hoặc hoàn tất một chức năng task nghiệp vụ.
+* `fix`: Sửa lỗi (bug fix).
+* `docs`: Thay đổi hoặc thêm mới tài liệu tài liệu.
+* `style`: Định dạng code, dấu cách, thụt dòng (không ảnh hưởng logic).
+* `refactor`: Tái cấu trúc code (không thêm tính năng, không sửa bug).
+* `perf`: Cải thiện hiệu năng xử lý.
+* `test`: Thêm hoặc chỉnh sửa unit test / integration test.
+* `build`: Thay đổi hệ thống build, cập nhật NuGet dependencies, .NET SDK.
+* `ci`: Thay đổi file cấu hình CI/CD (`.github/workflows/*.yml`).
+* `chore`: Các tác vụ bảo trì lặt vặt (dọn dẹp file, chỉnh `.gitignore`).
+
+#### Danh mục `scope` khuyến nghị theo kiến trúc hệ thống:
+* `server/api`, `server/core`, `server/data`, `client/desktop`, `client/web`, `db`, `ci`, `docs`, `standards`.
+
+#### Ví dụ Commit Messages Chuẩn Mẫu:
+* `feat(server/core): implement CheckInService logic and QR validation (Task 2.2)`
+* `feat(server/data): configure EF Core 9 physical tables and configurations (Task 1.1)`
+* `fix(server/pt): prevent double-booking for the same trainer time slot (Task 2.4)`
+* `test(server/core): add unit tests for subscription renewal and penalty calculation (Task 2.3)`
+* `docs(standards): add dev_rule.md and dev_mapping.md for project-wide execution (Task 0.0b)`
+* `ci(workflow): enable windows-latest runner for WinUI 3 desktop build (Task 5.0)`
+
+> [!TIP]
+> **Nguyên tắc ngữ pháp:** Luôn sử dụng thể mệnh lệnh ở thì hiện tại (**Imperative, Present Tense**): dùng `add`, `implement`, `fix`, `refactor`; **KHÔNG DÙNG** `added`, `implementing`, `fixed`. Không viết hoa chữ cái đầu tiên sau dấu hai chấm và không để dấu chấm ở cuối dòng tiêu đề.
+
+---
+
+### 1.4. Chính sách Phân định Ngôn ngữ Toàn Dự án (Bilingual Language Policy)
+
+Để đảm bảo tính quốc tế hóa cao của mã nguồn kỹ thuật nhưng vẫn giữ trọn vẹn ngữ nghĩa nghiệp vụ thực tế tại phòng gym Việt Nam:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      MA TRẬN PHÂN ĐỊNH NGÔN NGỮ HỆ THỐNG                        │
+├────────────────────────────────────────┬────────────────────────────────────────┤
+│     100% TIẾNG ANH (STRICTLY ENGLISH)  │      TIẾNG VIỆT (VIETNAMESE DOMAIN)    │
+├────────────────────────────────────────┼────────────────────────────────────────┤
+│ 1. Tên File & Thư mục                  │ 1. Tài liệu Nghiệp vụ                  │
+│    (CheckInService.cs, src/Server/...) │    (PRD.md, predevrule.md, task.md...) │
+│ 2. Định danh Mã nguồn C#               │ 2. Sổ Ánh Xạ & Kế hoạch Thực thi       │
+│    (Class, Interface, Method, Variable)│    (dev_mapping.md, dev_rule.md)       │
+│ 3. Tên Nhánh Git (Branch Names)        │ 3. Chú thích Code Nghiệp vụ phức tạp   │
+│    (feature/task-2.2-checkin-service)  │    (Giải thích phạt hủy ca < 2 tiếng)  │
+│ 4. Thông điệp Commit Git               │ 4. Chuỗi Hiển thị Giao diện Người dùng │
+│    (feat(server/core): implement...)   │    (Nhãn form POS, nút bấm, menu)      │
+│ 5. Tiêu đề Pull Request & Code Review  │ 5. Thông báo Lỗi Người dùng Cuối       │
+│    (PR #12: feat(server): Add Auth)    │    ("Gói tập đã hết hạn sử dụng")      │
+└────────────────────────────────────────┴────────────────────────────────────────┘
+```
 
 ---
 
@@ -330,8 +409,9 @@ Một task trong `task.md` chỉ được phép chuyển trạng thái sang `[x]
 - [ ] **DoD 3 (Async & Cancellation):** Mọi hàm I/O đều là `async/await` và có `CancellationToken`.
 - [ ] **DoD 4 (CSDL Chuẩn):** Thao tác dữ liệu đúng 9 bảng, không tự tạo bảng mới ngoài DDL.
 - [ ] **DoD 5 (Kiểm thử):** Có ít nhất 1 Unit/Integration Test tương ứng, test chạy Pass 100%.
-- [ ] **DoD 6 (Bố cục & Đặt tên):** Tên hàm bắt đầu bằng động từ (`Verb + Noun`), biến có ý nghĩa ngữ cảnh, và **toàn bộ hằng số/biến toàn cục/fields BẮT BUỘC nằm ở đầu file, không khai báo rải rác**.
+- [ ] **DoD 6 (Bố cục & Đặt tên Tiếng Anh):** Tên file, class, hàm (`Verb + Noun`), biến hoàn toàn bằng **Tiếng Anh chuẩn**. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**.
 - [ ] **DoD 7 (Code Cleanliness):** Chạy `dotnet format` không còn lỗi format hay warning nghiêm trọng.
 - [ ] **DoD 8 (Biên dịch Không Lỗi):** `dotnet build` đạt 0 Errors.
-- [ ] **DoD 9 (CI Green):** Đẩy lên Git và Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
-- [ ] **DoD 10 (Sổ Ánh Xạ Kỹ Thuật):** Đã ghi lại nhật ký ánh xạ kỹ thuật chi tiết của task vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL, commit).
+- [ ] **DoD 9 (Git Branch & Commit Tiếng Anh):** Tên nhánh chuẩn kebab-case tiếng Anh (`feature/task-X.Y-...`), thông điệp commit chuẩn Conventional Commits tiếng Anh (`feat(...)`, `fix(...)`). Pipeline CI trên GitHub Actions báo trạng thái Xanh (Pass).
+- [ ] **DoD 10 (Sổ Ánh Xạ Kỹ Thuật):** Đã ghi lại nhật ký ánh xạ kỹ thuật chi tiết của task vào [`Document/dev_mapping.md`](file:///c:/Users/nguye/Desktop/Gym-management/Document/dev_mapping.md) (mã nguồn, kiểm thử, bảng CSDL, commit hash).
+
