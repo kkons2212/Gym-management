@@ -177,8 +177,8 @@ GymManagement.sln
 - [ ] **Task 1.1.5:** `[Type: Database]` `[Module: Server / Data]` Cấu hình `GymDbContext` thiết lập toàn bộ khóa ngoại (FKs) và Unique Constraints (`QrCode`, `InvoiceCode`, `Phone`).
 
 #### 1.2. Hiện thực Interface "Database API" (Unit of Work & Repositories)
-- [ ] **Task 1.2.1:** `[Type: DAL / Repository]` `[Module: Server / Data]` Triển khai `GenericRepository<T>` hỗ trợ CRUD an toàn.
-- [ ] **Task 1.2.2:** `[Type: DAL / Repository]` `[Module: Server / Data]` Xây dựng `IUnitOfWork` và `UnitOfWork` điều phối transaction ACID cho các nghiệp vụ đa bảng.
+- [x] **Task 1.2.1:** `[Type: DAL / Repository]` `[Module: Server / Data]` Triển khai `GenericRepository<T>` hỗ trợ CRUD an toàn.
+- [x] **Task 1.2.2:** `[Type: DAL / Repository]` `[Module: Server / Data]` Xây dựng `IUnitOfWork` và `UnitOfWork` điều phối transaction ACID cho các nghiệp vụ đa bảng.
 
 #### 1.3. Cổng giao tiếp Third Party Service
 - [x] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.

@@ -1,13 +1,17 @@
 using GymManagement.Server.Core.Contracts.Adapters;
+using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Adapters;
 using GymManagement.Server.Data.Adapters;
+using GymManagement.Server.Data.Persistence;
+using GymManagement.Server.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GymManagement.Server.Data;
 
 /// <summary>
-/// Mở rộng IServiceCollection để đăng ký các thành phần tầng Data và External Adapters.
+/// Mở rộng IServiceCollection để đăng ký các thành phần tầng Data, Repositories và External Adapters.
 /// </summary>
 public static class DependencyInjection
 {
@@ -35,5 +39,27 @@ public static class DependencyInjection
 
         return services;
     }
-}
 
+    /// <summary>
+    /// Đăng ký Database API bao gồm GymDbContext, GenericRepository và UnitOfWork vào hệ thống DI.
+    /// </summary>
+    public static IServiceCollection AddServerDataRepositories(
+        this IServiceCollection services,
+        IConfiguration? configuration = null)
+    {
+        // 1. Cấu hình GymDbContext với SQL Server
+        string connectionString = configuration?.GetConnectionString("DefaultConnection")
+            ?? "Server=(localdb)\\mssqllocaldb;Database=GymManagementDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+
+        services.AddDbContext<GymDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString);
+        });
+
+        // 2. Đăng ký Generic Repository và Unit of Work
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        return services;
+    }
+}
