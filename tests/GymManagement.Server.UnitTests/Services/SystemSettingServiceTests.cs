@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using FluentAssertions;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using GymManagement.Server.Core.Services;
 using Microsoft.Extensions.Logging;
@@ -412,7 +413,7 @@ public class SystemSettingServiceTests
             Name = "Gói Thử Nghiệm",
             Price = 100000m,
             DurationDays = 7,
-            is_Active = 1
+            IsActive = 1
         };
 
         _packageRepoMock.Setup(p => p.GetByIdAsync("TEMP1", It.IsAny<CancellationToken>()))
@@ -444,7 +445,7 @@ public class SystemSettingServiceTests
             Name = "Gói VIP 1 Năm",
             Price = 5000000m,
             DurationDays = 365,
-            is_Active = 1
+            IsActive = 1
         };
 
         _packageRepoMock.Setup(p => p.GetByIdAsync("VIP1Y", It.IsAny<CancellationToken>()))
@@ -461,7 +462,7 @@ public class SystemSettingServiceTests
         result.IsHardDeleted.Should().BeFalse();
         result.IsDiscontinued.Should().BeTrue();
         result.Message.Should().Contain("Ngừng kinh doanh (DISCONTINUED)");
-        plan.is_Active.Should().Be(0);
+        plan.IsActive.Should().Be(0);
 
         _packageRepoMock.Verify(p => p.Update(plan), Times.Once);
         _packageRepoMock.Verify(p => p.Remove(It.IsAny<PackagePlan>()), Times.Never);
@@ -472,7 +473,7 @@ public class SystemSettingServiceTests
     public async Task GetPackagePlansAsync_WhenIncludeInactiveFalse_ReturnsOnlyActivePlans()
     {
         // Arrange
-        var activePlan = new PackagePlan { PlanId = "ACT", Name = "Active", Price = 500000m, DurationDays = 30, is_Active = 1 };
+        var activePlan = new PackagePlan { PlanId = "ACT", Name = "Active", Price = 500000m, DurationDays = 30, IsActive = 1 };
 
         _packageRepoMock.Setup(p => p.FindAsync(It.IsAny<Expression<Func<PackagePlan, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PackagePlan> { activePlan });

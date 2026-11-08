@@ -21,5 +21,12 @@ public interface IVietQrAdapter
     /// Giả lập thanh toán thành công (chế độ Sandbox phục vụ phát triển & kiểm thử).
     /// </summary>
     Task<PaymentVerificationResult> SimulatePaymentSuccessAsync(string transactionReference, CancellationToken cancellationToken = default);
-}
 
+    /// <summary>
+    /// Giả lập thanh toán Sandbox với số tiền đã xác nhận.
+    /// </summary>
+    Task<PaymentVerificationResult> SimulatePaymentSuccessAsync(
+        string transactionReference,
+        decimal paidAmount,
+        CancellationToken cancellationToken = default);
+}

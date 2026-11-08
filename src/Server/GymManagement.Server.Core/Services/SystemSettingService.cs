@@ -4,6 +4,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -454,7 +455,7 @@ public sealed class SystemSettingService : ISystemSettingService
 
         string cleanName = request.Name.Trim();
         var duplicateName = await packageRepo.FindSingleOrDefaultAsync(
-            p => p.Name == cleanName && p.is_Active == 1,
+            p => p.Name == cleanName && p.IsActive == 1,
             cancellationToken);
 
         if (duplicateName != null)
@@ -475,9 +476,9 @@ public sealed class SystemSettingService : ISystemSettingService
         newPlan.Price = request.Price;
         newPlan.DurationDays = request.DurationDays;
         newPlan.MaxCheckInSessions = request.MaxCheckInSessions;
-        newPlan.is_PtIncluded = ptIncludedByte;
+        newPlan.IsPtIncluded = ptIncludedByte;
         newPlan.TotalPtSessions = request.TotalPtSessions;
-        newPlan.is_Active = 1;
+        newPlan.IsActive = 1;
 
         await packageRepo.AddAsync(newPlan, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -529,7 +530,7 @@ public sealed class SystemSettingService : ISystemSettingService
 
         string cleanName = request.Name.Trim();
         var duplicateName = await packageRepo.FindSingleOrDefaultAsync(
-            p => p.Name == cleanName && p.PlanId != cleanPlanId && p.is_Active == 1,
+            p => p.Name == cleanName && p.PlanId != cleanPlanId && p.IsActive == 1,
             cancellationToken);
 
         if (duplicateName != null)
@@ -548,7 +549,7 @@ public sealed class SystemSettingService : ISystemSettingService
         plan.Price = request.Price;
         plan.DurationDays = request.DurationDays;
         plan.MaxCheckInSessions = request.MaxCheckInSessions;
-        plan.is_PtIncluded = ptIncludedByte;
+        plan.IsPtIncluded = ptIncludedByte;
         plan.TotalPtSessions = request.TotalPtSessions;
 
         packageRepo.Update(plan);
@@ -589,7 +590,7 @@ public sealed class SystemSettingService : ISystemSettingService
         if (hasSubscriptions)
         {
             // Không xóa vật lý — chuyển sang ngừng kinh doanh (DISCONTINUED)
-            plan.is_Active = 0;
+            plan.IsActive = 0;
             packageRepo.Update(plan);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -654,7 +655,7 @@ public sealed class SystemSettingService : ISystemSettingService
         }
         else
         {
-            plans = await packageRepo.FindAsync(p => p.is_Active == 1, cancellationToken);
+            plans = await packageRepo.FindAsync(p => p.IsActive == 1, cancellationToken);
         }
 
         var results = new List<PackagePlanDto>();
@@ -687,18 +688,18 @@ public sealed class SystemSettingService : ISystemSettingService
     private static PackagePlanDto MapToPackagePlanDto(PackagePlan plan)
     {
         bool isPt = false;
-        if (plan.is_PtIncluded.HasValue)
+        if (plan.IsPtIncluded.HasValue)
         {
-            if (plan.is_PtIncluded.Value == 1)
+            if (plan.IsPtIncluded.Value == 1)
             {
                 isPt = true;
             }
         }
 
         string status = StatusDiscontinued;
-        if (plan.is_Active.HasValue)
+        if (plan.IsActive.HasValue)
         {
-            if (plan.is_Active.Value == 1)
+            if (plan.IsActive.Value == 1)
             {
                 status = StatusActive;
             }
@@ -750,29 +751,6 @@ internal sealed class Role
 {
     public string RoleID { get; set; }
     public string? RoleName { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng PackagePlan.</summary>
-internal sealed class PackagePlan
-{
-    public string PlanId { get; set; }
-    public string? Name { get; set; }
-    public string? Description { get; set; }
-    public int? DurationDays { get; set; }
-    public decimal? Price { get; set; }
-    public int? MaxCheckInSessions { get; set; }
-    public byte? is_PtIncluded { get; set; }
-    public int? TotalPtSessions { get; set; }
-    public byte? is_Active { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng Invoice.</summary>
-internal sealed class Invoice
-{
-    public string InvoiceId { get; set; }
-    public string SubscriptionId { get; set; }
-    public string UserName { get; set; }
-    public string? Status { get; set; }
 }
 
 #pragma warning restore CS8618

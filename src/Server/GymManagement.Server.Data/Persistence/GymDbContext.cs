@@ -1,3 +1,4 @@
+using GymManagement.Server.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagement.Server.Data.Persistence;
@@ -8,6 +9,11 @@ namespace GymManagement.Server.Data.Persistence;
 /// </summary>
 public class GymDbContext : DbContext
 {
+    public DbSet<User> Users => Set<User>();
+    public DbSet<MemberSubscription> MemberSubscriptions => Set<MemberSubscription>();
+    public DbSet<PackagePlan> PackagePlans => Set<PackagePlan>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+
     // ====================================================================
     // 1. CONSTRUCTOR
     // ====================================================================

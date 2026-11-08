@@ -5,6 +5,7 @@ using System.Text;
 using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Identity;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

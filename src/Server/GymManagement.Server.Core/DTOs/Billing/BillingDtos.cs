@@ -17,7 +17,9 @@ public record InvoiceDto(
     DateTime? PaidAt,
     string MemberName,
     string PlanName,
-    string? CreatedByAdminName
+    string? CreatedByAdminName,
+    string Status = "PENDING",
+    decimal? RefundAmount = null
 );
 
 public record VietQrPayloadDto(
@@ -28,4 +30,3 @@ public record VietQrPayloadDto(
     string TransferContent,
     int ExpirySeconds
 );
-

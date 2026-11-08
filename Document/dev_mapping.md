@@ -7,11 +7,11 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **20 / 33 Tasks (60.6%)**
+* **Tiến độ Hoàn thành:** **21 / 33 Tasks (63.6%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.4, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
   * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
@@ -38,6 +38,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 | **Task 2.1** | AuthService Component (Xác thực & Cấp phát JWT) | UC01 / US 01.1 (Đăng nhập Username/Email, BCrypt, Status == ACTIVE, cấp JWT) | `Server.Core` | `src/Server/GymManagement.Server.Core/Contracts/IAuthService.cs`, `Services/AuthService.cs`, `DTOs/Identity/IdentityDtos.cs` | `tests/GymManagement.Server.UnitTests/Services/AuthServiceTests.cs` (18 tests) | `[User]`, `Role` | `569ff68` |
+| **Task 2.4** | BillingService Component | UC05 (POS, VietQR, hóa đơn, hoàn tiền nội bộ) | `Server.Core`, `Server.Data`, `Server.Api` | `Entities/BillingEntities.cs`, `Contracts/IBillingService.cs`, `Services/BillingService.cs`, `GymDbContext.cs`, VietQR adapter DTO/options, `Program.cs` | `BillingServiceTests.cs` (5 tests), `VietQrAdapterTests.cs` (4 tests), `GymDbContextBillingModelTests.cs` | `Invoice`, `MemberSubscription`, `PackagePlan`, `[User]` | `794f318` |
 | **Task 2.5** | PtService Component (UC04, UC08, UC10) | UC04, UC08, UC10 (PT profile, lịch rảnh, đặt/hủy/đổi ca, InBody, đánh giá) | `Server.Core` | `Enums/PtSessionStatus.cs`, `DTOs/PT/PtDtos.cs`, `Contracts/IPtService.cs`, `Services/PtService.cs` | `tests/GymManagement.Server.UnitTests/Services/PtServiceTests.cs` (16 tests) | `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`, `[User]` | `03e9053` |
 | **Task 2.6** | SystemSettingService Component (UC07) | UC07 (Quản trị tài khoản, phân quyền nhân sự, quản lý danh mục gói tập) | `Server.Core` | `Contracts/ISystemSettingService.cs`, `DTOs/Settings/*`, `Services/SystemSettingService.cs` | `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 tests) | `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `Invoice` | `41ca333` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | UC01, UC02, UC04, UC05, UC07, UC10 | `src/Client/GymManagement.Desktop`, `Core/DTOs` | CheckIn, PosBilling, Members, PtSchedule, PackagePlans, Dashboard, Settings, Dialogs | WinUI 3 Release Compilation 0 Errors | 9 bảng DDL | `89c525a` |
@@ -221,7 +222,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - `src/Server/GymManagement.Server.Core/Enums/PtSessionStatus.cs` (6 trạng thái: Booked, Completed, Cancelled, AbsentMember, AbsentPt, Postponed)
   - `src/Server/GymManagement.Server.Core/DTOs/PT/PtDtos.cs` (15 record types: PtProfileDto, MemberSummaryDto, PtSlotDto, PtSlotUpsertDto, PtSessionDto, + 9 Request types)
   - `src/Server/GymManagement.Server.Core/Contracts/IPtService.cs` (17 method signatures chia 6 nhóm nghiệp vụ)
-  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (PtService sealed class, 5 entity stubs, ACID transactions)
+  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (PtService sealed class, 3 entity stubs; dùng chung entity `User` và `MemberSubscription`, ACID transactions)
   - `src/Server/GymManagement.Server.Core/GymManagement.Server.Core.csproj` (thêm InternalsVisibleTo cho UnitTests và DynamicProxyGenAssembly2)
   - `tests/GymManagement.Server.UnitTests/GymManagement.Server.UnitTests.csproj` (đổi TargetFramework sang net10.0)
 * **Kiểm thử tương ứng (Verification):**
@@ -235,8 +236,37 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Mọi luồng đa bảng** (BookSession, CancelSession, RescheduleSession, CompleteSession, ConfirmResult, RecordInBody) đều bọc trong `ExecuteTransactionAsync`.
   - **SMS không block nghiệp vụ:** `SendSessionReminderSafeAsync` catch exception riêng, chỉ log Warning.
 * **Ghi chú kiến trúc:**
-  - Entity stubs (`User`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `MemberBodyMetric`) là `internal` placeholder, đặt tên đúng theo bảng SQL (không có suffix). Sẽ được thay bằng EF Core entity thật khi hoàn thành Task 1.1.x mà không cần thay đổi service logic.
+  - `PTAvailability`, `PTTrainingSession` và `MemberBodyMetric` vẫn là entity stubs `internal`; `User` và `MemberSubscription` đã được chuyển sang entity dùng chung trong `Server.Core.Entities` để BillingService có thể dùng persistence mapping.
   - `GetPtStudentsAsync` trả `MemberSummaryDto` (không phải `PtProfileDto`) để phản ánh đúng domain — học viên là Member, không phải PT.
+
+### 📌 [Task 2.4] Hiện thực BillingService Component (UC05)
+* **Ngày hoàn tất:** 08/11/2026
+* **Phân hệ nghiệp vụ liên quan:** UC05 — POS, thanh toán VietQR, hóa đơn và hoàn tiền nội bộ.
+* **Ranh giới thành phần:** `Server.Core`, VietQR adapter trong `Server.Data`, đăng ký DI trong `Server.Api`.
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Contracts/IBillingService.cs`
+  - `src/Server/GymManagement.Server.Core/Entities/BillingEntities.cs`
+  - `src/Server/GymManagement.Server.Core/Services/BillingService.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Billing/BillingDtos.cs`
+  - `src/Server/GymManagement.Server.Core/DTOs/Adapters/VietQrDtos.cs`
+  - `src/Server/GymManagement.Server.Core/Contracts/Adapters/IVietQrAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`
+  - `src/Server/GymManagement.Server.Data/Persistence/GymDbContext.cs`
+  - `src/Server/GymManagement.Server.Api/Program.cs`
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/BillingServiceTests.cs` (5 tests)
+  - `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests)
+  - `tests/GymManagement.Server.DataTests/Persistence/GymDbContextBillingModelTests.cs` (1 test)
+  - Xác nhận: UnitTests 26/26, DataTests 37/37, ApiTests 13/13.
+* **Bảng CSDL liên quan:** `Invoice`, `MemberSubscription`, `PackagePlan`, `[User]`.
+* **Ràng buộc nghiệp vụ & Giao dịch:**
+  - Tạo hóa đơn và subscription trạng thái `PENDING` cùng transaction; chỉ bật subscription `ACTIVE` sau khi xác nhận thanh toán.
+  - VietQR xác minh đúng mã giao dịch và số tiền; phương thức tiền mặt được xác nhận nội bộ.
+  - Hoàn tiền chỉ cập nhật nội bộ `Invoice=REFUNDED`, `MemberSubscription=CANCELLED`, không thực hiện chuyển tiền qua ngân hàng.
+  - Gửi email biên lai sau khi transaction thanh toán commit; lỗi gửi được ghi log và không đảo ngược thanh toán.
+* **Ghi chú phạm vi:**
+  - Đã ánh xạ EF Core cho bốn bảng cần thiết của billing (`Invoice`, `MemberSubscription`, `PackagePlan`, `[User]`); các bảng và ràng buộc còn lại vẫn thuộc Task 1.1.x.
+  - Chưa tạo API controller hay kết nối Desktop API vì không thuộc Task 2.4.
 
 ### 📌 [Task 2.6] Hiện thực SystemSettingService Component (UC07)
 * **Ngày hoàn tất:** 08/11/2026 | **Commit:** `41ca333` | **Nhánh:** `feat/task-2.6-system-setting-service`
@@ -249,7 +279,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - `src/Server/GymManagement.Server.Core/DTOs/Settings/PackageSettingDtos.cs` (CreatePackagePlanRequest, UpdatePackagePlanRequest, DeletePackageResultDto)
   - `src/Server/GymManagement.Server.Core/Contracts/ISystemSettingService.cs` (10 method signatures chia 2 nhóm nghiệp vụ)
   - `src/Server/GymManagement.Server.Core/Services/SystemSettingService.cs` (SystemSettingService sealed class, chốt chặn bảo mật, 3 entity stubs)
-  - `src/Server/GymManagement.Server.Core/Services/PtService.cs` (bổ sung PasswordHash, Gender vào User stub dùng chung)
+  - `src/Server/GymManagement.Server.Core/Entities/BillingEntities.cs` (entity `User` dùng chung có PasswordHash, Gender, CreatedAt)
 * **Kiểm thử tương ứng (Verification):**
   - `tests/GymManagement.Server.UnitTests/Services/SystemSettingServiceTests.cs` (17 test cases — 17/17 pass 100%)
   - Coverage: CreateUser (valid, duplicate username, duplicate phone, role not found, username > 10 chars), UpdateUser (self-demoting admin, user not found, valid update), SetUserStatus (admin self-lockout, user not found, valid update), CreatePackagePlan (price <= 0, duplicate planId, valid), UpdatePackagePlan (not found), DeletePackagePlan (no subscriptions -> hard delete, with subscriptions -> discontinued), GetPackagePlans (active only).

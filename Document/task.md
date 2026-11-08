@@ -202,7 +202,7 @@ GymManagement.sln
   - Đăng ký mới, gia hạn, nâng cấp gói tập, sinh chuỗi mã `QrCode`.
   - Bảo lưu gói tập (`FROZEN`), tính toán kéo dài ngày hết hạn.
   - Gửi thông báo chào mừng qua `SMS Sending Gateway`.
-- [ ] **Task 2.4: `BillingService Component` (Kết nối Authenticated + Database API + Payment API):**
+- [x] **Task 2.4: `BillingService Component` (Kết nối Authenticated + Database API + Payment API):**
   - Lập hóa đơn POS, gọi `Payment API` (VietQR) sinh mã QR động.
   - Xác nhận nhận tiền: Đổi hóa đơn sang `PAID` và kích hoạt thẻ `ACTIVE` trong 1 Transaction.
   - Xử lý hoàn tiền hóa đơn (`REFUNDED`) và thu hồi thẻ (`CANCELLED`).
