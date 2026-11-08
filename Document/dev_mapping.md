@@ -32,7 +32,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 3.1** | Global API error handling | GymManagement API | `Server.Api/Middleware` | `GlobalExceptionHandlingMiddleware.cs`, `ApiErrorResponse.cs`, `Program.cs` | `ApiPipelineTests` | N/A | — |
 | **Task 3.2** | JWT authentication and role policies | GymManagement API | `Server.Api/Configuration`, `Program.cs` | `JwtOptions.cs`, `Program.cs` | `JwtAuthenticationTests` | N/A | — |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
-| **Task 1.1.1 - 1.1.5** | Thực thể CSDL & Cấu hình 9 bảng (SQL Server Database) | Toàn bộ 10 Epics (9 bảng vật lý chuẩn DDL) | `Server.Core` (Entities) & `Server.Data` (Configurations & DbContext) | `src/Server/GymManagement.Server.Core/Entities/*` (9 entities), `src/Server/GymManagement.Server.Data/Configurations/*` (9 configs), `GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Persistence/GymDbContextAllEntitiesModelTests.cs` (5 tests) | Toàn bộ 9 bảng (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`) | — |
+| **Task 1.1.1 - 1.1.5** | Thực thể CSDL & Cấu hình 9 bảng (SQL Server Database) | Toàn bộ 10 Epics (9 bảng vật lý chuẩn DDL) | `Server.Core` (Entities) & `Server.Data` (Configurations & DbContext) | `src/Server/GymManagement.Server.Core/Entities/*` (9 entities), `src/Server/GymManagement.Server.Data/Configurations/*` (9 configs), `GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Persistence/GymDbContextAllEntitiesModelTests.cs` (5 tests) | Toàn bộ 9 bảng (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`) | `afb9ef9` |
 | **Task 1.2.1** | Interface Database API: GenericRepository | Toàn bộ 10 Epics (CRUD an toàn) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/GenericRepository.cs`, `Contracts/Data/IGenericRepository.cs` | `tests/GymManagement.Server.DataTests/Repositories/GenericRepositoryTests.cs` (13 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.2.2** | Interface Database API: UnitOfWork (ACID) | Toàn bộ 10 Epics (Transaction ACID) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Repositories/UnitOfWork.cs`, `Contracts/Data/IUnitOfWork.cs`, `Persistence/GymDbContext.cs` | `tests/GymManagement.Server.DataTests/Repositories/UnitOfWorkTests.cs` (9 tests) | 9 bảng CSDL | `04a79c7` |
 | **Task 1.3.1** | Cổng Payment API (VietQR Adapter) | UC05 (Thanh toán POS, VietQR động) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/VietQrAdapter.cs`, `Contracts/Adapters/IVietQrAdapter.cs`, `DTOs/Adapters/VietQrDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/VietQrAdapterTests.cs` (4 tests) | `Invoice` | `b2f0cab` |
@@ -289,7 +289,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 ---
 
 ### 📌 [Task 1.1.1 – 1.1.5] Thực Thể CSDL & Cấu Hình 9 Bảng (SQL Server Database)
-* **Ngày hoàn tất:** 08/11/2026 | **Nhánh:** `feat/task-1.1-sql-entities-configuration`
+* **Ngày hoàn tất:** 08/11/2026 | **Commit:** `afb9ef9` | **Nhánh:** `feat/task-1.1-sql-entities-configuration`
 * **Phân hệ nghiệp vụ liên quan:** Nền tảng dữ liệu cho toàn bộ 10 Epics (UC01 – UC10)
 * **Ranh giới thành phần:** `Server.Core` (Entities) và `Server.Data` (Configurations & DbContext)
 * **Mã nguồn tạo / sửa:**
