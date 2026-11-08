@@ -54,7 +54,7 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
 ### 2.1. Thẻ Tập Hội Viên Điện Tử (`DigitalCard.razor`)
 * **Bố cục Thẻ Số Cao Cấp (Digital Membership Card):**
   * Kích thước tỷ lệ thẻ ATM tiêu chuẩn ($1.58:1$), nền tối thể thao sang trọng (`bg-gradient-to-br from-slate-900 to-slate-800`), viền kim loại mảnh `border border-slate-700`.
-  * **Góc trên bên trái:** Logo phòng gym + Tên gói tập hiện tại (`PackagePlan.Name`) kèm chip hạng gói (Standard: Bạc, VIP: Vàng ánh kim).
+  * **Góc trên bên trái:** Logo phòng gym + Tên gói tập hiện tại (`PackagePlan.Name`).
   * **Góc trên bên phải:** Chip trạng thái tròn:
     * `ACTIVE`: Chấm xanh lá `#16A34A` nhấp nháy nhẹ.
     * `FROZEN`: Chấm vàng `#D97706` kèm nhãn `"Đang bảo lưu"`.
