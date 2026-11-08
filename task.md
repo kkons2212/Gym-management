@@ -213,7 +213,7 @@ GymManagement.sln
   - Hủy ca tập: Nếu $< 2\text{h}$ phạt trừ buổi, nếu $\ge 2\text{h}$ bảo lưu buổi; gửi thông báo qua `SMS Sending Gateway`.
   - PT ghi nhận chỉ số InBody và xác nhận hoàn tất ca tập.
   - Hội viên đánh giá chấm điểm sao (1–5 sao).
-- [ ] **Task 2.6: `SystemSettingService Component` (Kết nối Authenticated + Database API):**
+- [x] **Task 2.6: `SystemSettingService Component` (Kết nối Authenticated + Database API):**
   - Quản trị tài khoản người dùng và phân quyền (chặn Admin tự khóa tài khoản).
   - Quản lý danh mục gói tập (kiểm tra ràng buộc trước khi chuyển sang `DISCONTINUED`).
 - [ ] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
