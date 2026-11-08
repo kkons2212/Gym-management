@@ -86,12 +86,13 @@ public class AdminDesktopDtoTests
     {
         // Arrange
         const string subscriptionId = "SUB01";
-        var startDate = DateTime.Today;
-        var endDate = DateTime.Today.AddDays(14);
+        var startDate = DateOnly.FromDateTime(DateTime.Today);
+        var endDate = DateOnly.FromDateTime(DateTime.Today.AddDays(14));
         const string reason = "Đi công tác";
+        const string adminUserName = "admin01";
 
         // Act
-        var request = new FreezeSubscriptionRequest(subscriptionId, startDate, endDate, reason);
+        var request = new FreezeSubscriptionRequest(subscriptionId, startDate, endDate, reason, adminUserName);
 
         // Assert
         request.SubscriptionId.Should().Be(subscriptionId);

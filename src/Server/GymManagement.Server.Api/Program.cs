@@ -2,7 +2,9 @@ using System.Security.Claims;
 using System.Text;
 using GymManagement.Server.Api.Configuration;
 using GymManagement.Server.Api.Middleware;
+using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.DTOs.Common;
+using GymManagement.Server.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -99,6 +101,7 @@ builder.Services.AddAuthorization(options =>
 
 // Đăng ký 3 Cổng Adapters ngoại vi (VietQR, Notification, CameraScanner)
 builder.Services.AddServerDataAdapters(builder.Configuration);
+builder.Services.AddScoped<IBillingService, BillingService>();
 
 // Đăng ký Database API (GymDbContext, GenericRepository, UnitOfWork)
 builder.Services.AddServerDataRepositories(builder.Configuration);

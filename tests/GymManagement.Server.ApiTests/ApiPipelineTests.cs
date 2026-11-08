@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using GymManagement.Server.Core.Exceptions;
+using GymManagement.Server.Core.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -29,6 +30,15 @@ public sealed class ApiPipelineTests : IClassFixture<ApiApplicationFactory>
         using var response = await client.GetAsync("/health");
 
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public void BillingService_ShouldBeRegisteredInDependencyInjection()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var billingService = scope.ServiceProvider.GetRequiredService<IBillingService>();
+
+        Assert.NotNull(billingService);
     }
 
     [Theory]

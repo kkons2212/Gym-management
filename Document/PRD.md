@@ -47,7 +47,7 @@ graph TD
     B1[B1. Cấu hình Nền tảng & Tiếp nhận Hội viên<br>UC07, UC02] --> B2[B2. Thanh toán & Kích hoạt Gói tập<br>UC05, UC02]
     B2 --> B3[B3. Điểm danh Check-in Vào phòng<br>UC03]
     B2 --> B4[B4. Điều phối & Thực hiện Dịch vụ PT<br>UC04, UC08, UC10]
-    B3 --> B5[B5. Quản trị Vòng đời Thẻ, Doanh thu & Báo cáo<br>UC02, UC05, UC06]
+    B3 --> B5[B5. Quản trị Vòng đời Gói tập, Doanh thu & Báo cáo<br>UC02, UC05, UC06]
     B4 --> B5
 ```
 
@@ -55,7 +55,7 @@ graph TD
 2. **B2: Thanh toán & Kích hoạt Gói dịch vụ (UC05, UC02):** Lập hóa đơn, thu tiền (Tiền mặt, VietQR, POS). Hệ thống chuyển hóa đơn sang `PAID`, kích hoạt gói tập `ACTIVE`, tạo mã QR định danh và gửi thông báo điện tử.
 3. **B3: Tuyến Điểm danh Check-in Thường nhật (UC03):** Admin bật camera quét mã QR hoặc nhập SĐT. Hệ thống kiểm tra điều kiện bên backend (trạng thái `ACTIVE`, còn hạn, còn buổi), ghi nhận lượt check-in và trừ buổi tập.
 4. **B4: Điều phối & Giảng dạy Dịch vụ PT (UC04, UC08, UC10):** Admin gán cố định PT phụ trách cho hội viên. PT đăng ký lịch rảnh theo tuần. Hội viên chọn ca trống của PT để đặt lịch (hoặc đổi/hủy ca). Sau buổi tập, PT cập nhật chỉ số InBody và xác nhận hoàn tất; Hội viên gửi đánh giá chất lượng (1–5 sao).
-5. **B5: Quản trị Vòng đời Thẻ, Tài chính & Báo cáo (UC02, UC05, UC06):** Xử lý ngoại lệ (gia hạn, nâng cấp, bảo lưu `FROZEN`, hủy đăng ký gói hoặc khóa thẻ); xử lý hoàn tiền hóa đơn theo quy định; trích xuất báo cáo doanh thu tài chính và hiệu suất hoạt động phòng tập.
+5. **B5: Quản trị Vòng đời Gói tập, Tài chính & Báo cáo (UC02, UC05, UC06):** Xử lý ngoại lệ (gia hạn, nâng cấp, bảo lưu `FROZEN`, hủy đăng ký gói hoặc khóa gói tập); xử lý hoàn tiền hóa đơn theo quy định; trích xuất báo cáo doanh thu tài chính và hiệu suất hoạt động phòng tập.
 
 ---
 
@@ -154,7 +154,7 @@ graph TD
 
 ---
 
-## THEME 2: QUẢN TRỊ HỘI VIÊN, VÒNG ĐỜI THẺ & TÀI CHÍNH
+## THEME 2: QUẢN TRỊ HỘI VIÊN, VÒNG ĐỜI GÓI TẬP & TÀI CHÍNH
 
 ### Epic 03: Quản lý Hội viên & Vòng đời Gói tập (Tương ứng UC02)
 
@@ -164,15 +164,15 @@ graph TD
 * **Tiêu chí chấp nhận (AC):**
   * Nhập: Họ tên, Số điện thoại, Email, CCCD, Ngày sinh, Ngày bắt đầu hiệu lực và Gói tập.
   * Kiểm tra trùng lặp: Nếu SĐT hoặc CCCD đã tồn tại trong hệ thống, báo lỗi *"Hội viên đã tồn tại trong hệ thống"*.
-  * Tự động tính tiền, ghi nhận phương thức thanh toán (Tiền mặt / Chuyển khoản QR / Thẻ POS).
-  * Kích hoạt thẻ trạng thái `ACTIVE`, tự động tính ngày hết hạn, sinh chuỗi mã định danh kèm mã QR duy nhất và kích hoạt gửi SMS/Email xác nhận.
+  * Tự động tính tiền, ghi nhận phương thức thanh toán (Tiền mặt / Chuyển khoản QR / Quẹt thẻ POS).
+  * Kích hoạt gói tập trạng thái `ACTIVE`, tự động tính ngày hết hạn, sinh chuỗi mã định danh kèm mã QR duy nhất và kích hoạt gửi SMS/Email xác nhận.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Wizard biểu mẫu đăng ký 2 bước (Thông tin cá nhân $\rightarrow$ Gói tập & Thu tiền).
   * *(Business Logic):* Transaction kích hoạt: Tạo Member $\rightarrow$ Tạo Gói tập $\rightarrow$ Tạo Hóa đơn $\rightarrow$ Tạo QR string.
-  * *(Data Access):* Lưu vào bảng `[User]`, `[User]ubscription`, `Invoice` trong cùng một Database Transaction.
+  * *(Data Access):* Lưu vào bảng `[User]`, `MemberSubscription`, `Invoice` trong cùng một Database Transaction.
 
 #### ● User Story 02.2: Cập nhật thông tin cá nhân hội viên (Tương ứng UC 02.2)
-* **Mô tả:** Là Admin, tôi cần tìm kiếm hội viên theo từ khóa (SĐT, Họ tên, Mã thẻ) và cập nhật thông tin liên hệ khi có thay đổi.
+* **Mô tả:** Là Admin, tôi cần tìm kiếm hội viên theo từ khóa (SĐT, Họ tên, Mã gói tập) và cập nhật thông tin liên hệ khi có thay đổi.
 * **Độ ưu tiên:** `Must have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
   * Tìm kiếm tức thì trong < 1 giây theo SĐT, Họ tên hoặc Mã hội viên.
@@ -189,11 +189,11 @@ graph TD
 * **Tiêu chí chấp nhận (AC):**
   * Cho phép chọn số tháng gia hạn thêm hoặc chọn gói tập mới có cấp bậc cao hơn.
   * Hệ thống tự động tính chi phí gia hạn hoặc phí chênh lệch nâng cấp.
-  * Sau khi xác nhận thanh toán: Kéo dài ngày hết hạn tương ứng (nếu thẻ cũ còn hạn) hoặc kích hoạt lại nếu thẻ đã hết hạn; lưu vết lịch sử giao dịch.
+  * Sau khi xác nhận thanh toán: Kéo dài ngày hết hạn tương ứng (nếu gói tập cũ còn hạn) hoặc kích hoạt lại nếu gói tập đã hết hạn; lưu vết lịch sử giao dịch.
 * **Danh sách task triển khai 3 lớp:**
-  * *(Presentation):* Popup "Gia hạn / Nâng cấp" hiển thị thẻ hiện tại và bảng tính tiền chênh lệch tự động.
-  * *(Business Logic):* Tính toán ngày hết hạn mới dựa trên trạng thái thẻ hiện tại, tạo hóa đơn thu tiền.
-  * *(Data Access):* Cập nhật `[User]ubscription` và thêm bản ghi vào `[User]ubscription`.
+  * *(Presentation):* Popup "Gia hạn / Nâng cấp" hiển thị gói tập hiện tại và bảng tính tiền chênh lệch tự động.
+  * *(Business Logic):* Tính toán ngày hết hạn mới dựa trên trạng thái gói tập hiện tại, tạo hóa đơn thu tiền.
+  * *(Data Access):* Cập nhật `MemberSubscription` và thêm bản ghi vào `MemberSubscription`.
 
 #### ● User Story 02.4: Bảo lưu gói tập cho hội viên (Tương ứng UC 02.4)
 * **Mô tả:** Là Admin, tôi cần tạm dừng hiệu lực gói tập của hội viên trong một khoảng thời gian nhất định theo quy chế.
@@ -201,11 +201,11 @@ graph TD
 * **Tiêu chí chấp nhận (AC):**
   * Nhập Ngày bắt đầu, Ngày kết thúc bảo lưu và Lý do bắt buộc.
   * Kiểm tra điều kiện: Nếu gói tập không hỗ trợ bảo lưu hoặc đã vượt quá số ngày/số lần cho phép, từ chối thực hiện và thông báo lỗi.
-  * Nếu hợp lệ: Chuyển trạng thái thẻ sang `FROZEN`, tự động dời ngày hết hạn của thẻ bù đúng số ngày bảo lưu và gửi thông báo cho hội viên.
+  * Nếu hợp lệ: Chuyển trạng thái gói tập sang `FROZEN`, tự động dời ngày hết hạn của gói tập bù đúng số ngày bảo lưu và gửi thông báo cho hội viên.
 * **Danh sách task triển khai 3 lớp:**
-  * *(Presentation):* Form đăng ký bảo lưu thẻ kèm bộ chọn khoảng ngày (Date Range Picker).
-  * *(Business Logic):* Hàm `FreezeCardAsync` kiểm tra chính sách gói và tính toán dời ngày hết hạn `end_date`.
-  * *(Data Access):* Cập nhật trạng thái trong `[User]ubscription` và lưu vào `[User]ubscription`.
+  * *(Presentation):* Form đăng ký bảo lưu gói tập kèm bộ chọn khoảng ngày (Date Range Picker).
+  * *(Business Logic):* Hàm `FreezeSubscriptionAsync` kiểm tra chính sách gói và tính toán dời ngày hết hạn `end_date`.
+  * *(Data Access):* Cập nhật trạng thái trong `MemberSubscription` và lưu vào `MemberSubscription`.
 
 #### ● User Story 02.5: Hủy đăng ký gói tập của hội viên (Tương ứng UC 02.5)
 * **Mô tả:** Là Admin, tôi cần chấm dứt hiệu lực gói tập của hội viên khi có vi phạm hoặc theo yêu cầu đặc biệt.
@@ -216,8 +216,8 @@ graph TD
   * Quy tắc an toàn: Không xóa gói khỏi danh mục, không khóa tài khoản đăng nhập của hội viên, không tự động hoàn tiền và lưu lại toàn bộ lịch sử sử dụng.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Modal cảnh báo hủy gói màu cam/đỏ kèm ô nhập lý do bắt buộc.
-  * *(Business Logic):* Hàm `LockOrCancelCardAsync` chuyển trạng thái thẻ, vô hiệu hóa quyền check-in.
-  * *(Data Access):* Cập nhật trạng thái thẻ trong `[User]ubscription` và ghi nhật ký vào `Log`.
+  * *(Business Logic):* Hàm `LockOrCancelSubscriptionAsync` chuyển trạng thái gói tập, vô hiệu hóa quyền check-in.
+  * *(Data Access):* Cập nhật trạng thái gói tập trong `MemberSubscription` và ghi nhật ký vào `Log`.
 
 ---
 
@@ -255,7 +255,7 @@ graph TD
   * Nếu hợp lệ: Chuyển trạng thái hóa đơn sang `REFUNDED`, thu hồi gói dịch vụ tương ứng và ghi nhận dòng tiền âm vào sổ quỹ doanh thu.
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Form xử lý hoàn tiền có bước đối soát số tiền và lý do.
-  * *(Business Logic):* Transaction hoàn tiền: Đổi trạng thái Hóa đơn $\rightarrow$ Thu hồi thẻ/dịch vụ $\rightarrow$ Ghi giảm trừ doanh thu.
+  * *(Business Logic):* Transaction hoàn tiền: Đổi trạng thái Hóa đơn $\rightarrow$ Thu hồi gói tập/dịch vụ $\rightarrow$ Ghi giảm trừ doanh thu.
   * *(Data Access):* Cập nhật `Invoice` và lưu bản ghi vào `Invoice`.
 
 #### ● User Story 05.4: Xem và xuất báo cáo doanh thu tài chính (Tương ứng UC 5.4)
@@ -283,7 +283,7 @@ graph TD
   * Quét mã QR, hệ thống nhận dạng mã và phản hồi kết quả trong < 2 giây.
   * Kiểm tra điều kiện bên backend: Gói tập trong tài khoản phải ở trạng thái `ACTIVE`, còn hạn sử dụng, còn số buổi và không bị `FROZEN`.
   * Hợp lệ: Ghi nhận 1 lượt check-in thành công, trừ 1 buổi tập (nếu gói tính theo lượt), hiển thị ảnh chân dung và phát âm thanh báo thành công.
-  * Không hợp lệ: Phát âm thanh cảnh báo từ chối và hiển thị rõ lý do (*"Gói tập đã hết hạn"*, *"Thẻ đang bảo lưu"*).
+  * Không hợp lệ: Phát âm thanh cảnh báo từ chối và hiển thị rõ lý do (*"Gói tập đã hết hạn"*, *"Gói tập đang bảo lưu"*).
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Màn hình "Quản lý Check-in" tích hợp Camera Scanner, tự động kích hoạt chế độ chờ quét.
   * *(Business Logic):* Hàm `CheckInWithQrAsync` xử lý kiểm tra đa điều kiện và trừ buổi trong 1 Transaction duy nhất.
@@ -294,7 +294,7 @@ graph TD
 * **Độ ưu tiên:** `Must have` | **Story Point:** `3`
 * **Tiêu chí chấp nhận (AC):**
   * Nhập SĐT vào ô tìm kiếm nhanh tại màn hình Check-in và bấm Enter.
-  * Hiển thị thông tin gói thẻ, hạn dùng và ảnh chân dung nhận diện của hội viên.
+  * Hiển thị thông tin gói tập, hạn dùng và ảnh chân dung nhận diện của hội viên.
   * Admin đối chiếu khuôn mặt và nhấn nút "Xác nhận vào phòng"; hệ thống ghi nhận check-in tương tự như quét QR (lưu `CheckInLog.VerifiedByAdminId`).
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Khung nhập SĐT nhanh và Card hiển thị tóm tắt thông tin hội viên kèm ảnh chân dung.

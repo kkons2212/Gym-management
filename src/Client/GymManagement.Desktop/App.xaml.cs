@@ -37,7 +37,7 @@ public partial class App : Application
         services.AddSingleton<IApiClient, MockApiClient>();
 
         // ViewModels
-        services.AddTransient<LoginViewModel>();
+        services.AddSingleton<LoginViewModel>();
         services.AddTransient<CheckInCounterViewModel>();
         services.AddTransient<PosBillingViewModel>();
         services.AddTransient<MembersViewModel>();

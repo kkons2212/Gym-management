@@ -9,6 +9,12 @@ namespace GymManagement.Server.Data.Persistence;
 /// </summary>
 public class GymDbContext : DbContext
 {
+    public DbSet<User> Users => Set<User>();
+    public DbSet<MemberSubscription> MemberSubscriptions => Set<MemberSubscription>();
+    public DbSet<PackagePlan> PackagePlans => Set<PackagePlan>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<CheckInLog> CheckInLogs => Set<CheckInLog>();
+
     // ====================================================================
     // 1. DBSETS CHO 9 THỰC THỂ CSDL VẬT LÝ
     // ====================================================================

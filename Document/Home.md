@@ -27,15 +27,15 @@ Hành trình nghiệp vụ bắt đầu từ khâu thiết lập nền tảng v�
 ### 2.2. Thanh toán & Kích hoạt Dịch vụ
 Khâu thanh toán và lập hóa đơn tiếp nối ngay sau đó:
 * Hệ thống tự động tính toán tổng chi phí, áp dụng ưu đãi, ghi nhận hình thức thanh toán (tiền mặt, chuyển khoản VietQR, quẹt thẻ POS) và phát hành hóa đơn.
-* Khi giao dịch hoàn tất thành công, gói tập được kích hoạt, mã định danh (mã thẻ / mã QR) được sinh ra và tài khoản cá nhân được cấp để hội viên có thể chủ động theo dõi thông tin gói tập của mình trên ứng dụng di động.
+* Khi giao dịch hoàn tất thành công, gói tập được kích hoạt, mã định danh (mã gói tập / mã QR) được sinh ra và tài khoản cá nhân được cấp để hội viên có thể chủ động theo dõi thông tin gói tập của mình trên ứng dụng di động.
 
 ### 2.3. Tuyến Vận hành Hằng ngày: Điểm danh (Check-in)
 Nghiệp vụ điểm danh (Check-in) đóng vai trò là chốt chặn kiểm soát ra vào:
-* Lễ tân quét mã QR trên ứng dụng của hội viên, hoặc quẹt thẻ từ / nhập số điện thoại tra cứu tại quầy tiếp đón.
-* Hệ thống lập tức tra cứu thông tin thẻ và kiểm tra tính hợp lệ trong thời gian thực:
-  * Trạng thái thẻ có đang hoạt động (`ACTIVE`) hay không.
+* Lễ tân quét mã QR trên ứng dụng của hội viên, hoặc nhập số điện thoại tra cứu tại quầy tiếp đón.
+* Hệ thống lập tức tra cứu thông tin gói tập và kiểm tra tính hợp lệ trong thời gian thực:
+  * Trạng thái gói tập có đang hoạt động (`ACTIVE`) hay không.
   * Còn hạn sử dụng hoặc còn số buổi tập hay không.
-  * Có đang bị bảo lưu (`FROZEN`) hoặc khóa thẻ (`LOCKED`) hay không.
+  * Có đang bị bảo lưu (`FROZEN`) hoặc khóa gói tập (`LOCKED`) hay không.
   * Có đi đúng khung giờ đăng ký hay không.
 * **Kết quả:**
   * **Hợp lệ:** Xác nhận check-in thành công, tự động trừ 1 buổi tập (đối với gói tính theo lượt), lưu vết vào lịch sử ra vào trong ngày.
@@ -50,10 +50,10 @@ Nghiệp vụ điểm danh (Check-in) đóng vai trò là chốt chặn kiểm s
 
 ### 2.5. Vòng đời Gói tập & Xử lý Ngoại lệ
 Trong suốt vòng đời của gói tập, hệ thống linh hoạt hỗ trợ các nghiệp vụ phát sinh và xử lý ngoại lệ:
-* **Gia hạn / Nâng cấp:** Khi thẻ sắp hoặc đã hết hạn, Lễ tân có thể thực hiện gia hạn hoặc nâng cấp thẻ sang gói mới và thu khoản phí chênh lệch.
-* **Bảo lưu thẻ (Freeze):** Khi hội viên có nhu cầu tạm dừng do công tác hoặc ốm đau, tính năng bảo lưu cho phép tạm ngưng thẻ và tự động kéo dài ngày hết hạn tương ứng theo đúng chính sách cho phép.
-* **Khóa / Hủy thẻ:** Trường hợp có vi phạm hoặc sự cố mất thẻ, Admin có thể khóa hoặc hủy thẻ để thu hồi quyền ra vào.
-* **Hoàn tiền / Hủy hóa đơn:** Khi có phát sinh khiếu nại hoặc hủy dịch vụ hợp lệ, chức năng hoàn tiền/hủy hóa đơn sẽ điều chỉnh lại trạng thái thẻ và ghi nhận số tiền hoàn vào nhật ký dòng tiền của hệ thống.
+* **Gia hạn / Nâng cấp:** Khi gói tập sắp hoặc đã hết hạn, Lễ tân có thể thực hiện gia hạn hoặc nâng cấp gói tập sang gói mới và thu khoản phí chênh lệch.
+* **Bảo lưu gói tập (Freeze):** Khi hội viên có nhu cầu tạm dừng do công tác hoặc ốm đau, tính năng bảo lưu cho phép tạm ngưng gói tập và tự động kéo dài ngày hết hạn tương ứng theo đúng chính sách cho phép.
+* **Khóa / Hủy gói tập:** Trường hợp có vi phạm, Admin có thể khóa hoặc hủy gói tập để thu hồi quyền ra vào.
+* **Hoàn tiền / Hủy hóa đơn:** Khi có phát sinh khiếu nại hoặc hủy dịch vụ hợp lệ, chức năng hoàn tiền/hủy hóa đơn sẽ điều chỉnh lại trạng thái gói tập và ghi nhận số tiền hoàn vào nhật ký dòng tiền của hệ thống.
 
 ### 2.6. Báo cáo Quản trị & An toàn Hệ thống
 * **Báo cáo BI:** Cung cấp số liệu tổng thể phục vụ đánh giá hiệu quả kinh doanh. Admin có thể tra cứu và phân tích doanh thu theo khoảng thời gian, theo dõi lưu lượng điểm danh theo từng ca trong ngày, thống kê biến động số lượng hội viên mới/tái gia hạn, cũng như đánh giá hiệu suất giảng dạy và điểm hài lòng của đội ngũ PT, hỗ trợ xuất file Excel hoặc PDF để lưu trữ.
@@ -69,4 +69,4 @@ Trong suốt vòng đời của gói tập, hệ thống linh hoạt hỗ trợ 
 | **B2** | **Thanh toán & Kích hoạt gói tập** | Lập hóa đơn $\rightarrow$ Thu tiền (Tiền mặt / VietQR / Thẻ POS) $\rightarrow$ Hệ thống kích hoạt gói tập, tạo mã định danh (QR) và cấp tài khoản cho hội viên. |
 | **B3** | **Điểm danh Check-in** | Quét mã QR hoặc nhập SĐT $\rightarrow$ Hệ thống kiểm tra điều kiện (hạn dùng, số buổi, khung giờ, trạng thái bảo lưu) $\rightarrow$ Ghi nhận lượt vào phòng và cập nhật lịch sử ra/vào. |
 | **B4** | **Điều phối & Thực hiện dịch vụ PT** | Admin phân công PT $\rightarrow$ PT đăng ký lịch rảnh theo tuần $\rightarrow$ Hội viên đặt lịch tập (chống trùng lịch) $\rightarrow$ Tiến hành buổi tập, PT cập nhật chỉ số InBody và xác nhận hoàn thành (trừ 1 buổi tập) $\rightarrow$ Hội viên gửi đánh giá chất lượng PT. |
-| **B5** | **Quản trị vòng đời thẻ & Báo cáo** | Thực hiện gia hạn, nâng cấp, bảo lưu hoặc khóa/hủy thẻ khi phát sinh $\rightarrow$ Xử lý hoàn tiền/hủy hóa đơn nếu cần $\rightarrow$ Tổng hợp và xuất báo cáo doanh thu, lưu lượng check-in và hiệu suất PT. |
+| **B5** | **Quản trị vòng đời gói tập & Báo cáo** | Thực hiện gia hạn, nâng cấp, bảo lưu hoặc khóa/hủy gói tập khi phát sinh $\rightarrow$ Xử lý hoàn tiền/hủy hóa đơn nếu cần $\rightarrow$ Tổng hợp và xuất báo cáo doanh thu, lưu lượng check-in và hiệu suất PT. |

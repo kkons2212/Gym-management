@@ -455,7 +455,7 @@ public sealed class SystemSettingService : ISystemSettingService
 
         string cleanName = request.Name.Trim();
         var duplicateName = await packageRepo.FindSingleOrDefaultAsync(
-            p => p.Name == cleanName && p.is_Active == 1,
+            p => p.Name == cleanName && p.IsActive == 1,
             cancellationToken);
 
         if (duplicateName != null)
@@ -476,9 +476,9 @@ public sealed class SystemSettingService : ISystemSettingService
         newPlan.Price = request.Price;
         newPlan.DurationDays = request.DurationDays;
         newPlan.MaxCheckInSessions = request.MaxCheckInSessions;
-        newPlan.is_PtIncluded = ptIncludedByte;
+        newPlan.IsPtIncluded = ptIncludedByte;
         newPlan.TotalPtSessions = request.TotalPtSessions;
-        newPlan.is_Active = 1;
+        newPlan.IsActive = 1;
 
         await packageRepo.AddAsync(newPlan, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -530,7 +530,7 @@ public sealed class SystemSettingService : ISystemSettingService
 
         string cleanName = request.Name.Trim();
         var duplicateName = await packageRepo.FindSingleOrDefaultAsync(
-            p => p.Name == cleanName && p.PlanId != cleanPlanId && p.is_Active == 1,
+            p => p.Name == cleanName && p.PlanId != cleanPlanId && p.IsActive == 1,
             cancellationToken);
 
         if (duplicateName != null)
@@ -549,7 +549,7 @@ public sealed class SystemSettingService : ISystemSettingService
         plan.Price = request.Price;
         plan.DurationDays = request.DurationDays;
         plan.MaxCheckInSessions = request.MaxCheckInSessions;
-        plan.is_PtIncluded = ptIncludedByte;
+        plan.IsPtIncluded = ptIncludedByte;
         plan.TotalPtSessions = request.TotalPtSessions;
 
         packageRepo.Update(plan);
@@ -590,7 +590,7 @@ public sealed class SystemSettingService : ISystemSettingService
         if (hasSubscriptions)
         {
             // Không xóa vật lý — chuyển sang ngừng kinh doanh (DISCONTINUED)
-            plan.is_Active = 0;
+            plan.IsActive = 0;
             packageRepo.Update(plan);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -655,7 +655,7 @@ public sealed class SystemSettingService : ISystemSettingService
         }
         else
         {
-            plans = await packageRepo.FindAsync(p => p.is_Active == 1, cancellationToken);
+            plans = await packageRepo.FindAsync(p => p.IsActive == 1, cancellationToken);
         }
 
         var results = new List<PackagePlanDto>();
@@ -688,18 +688,18 @@ public sealed class SystemSettingService : ISystemSettingService
     private static PackagePlanDto MapToPackagePlanDto(PackagePlan plan)
     {
         bool isPt = false;
-        if (plan.is_PtIncluded.HasValue)
+        if (plan.IsPtIncluded.HasValue)
         {
-            if (plan.is_PtIncluded.Value == 1)
+            if (plan.IsPtIncluded.Value == 1)
             {
                 isPt = true;
             }
         }
 
         string status = StatusDiscontinued;
-        if (plan.is_Active.HasValue)
+        if (plan.IsActive.HasValue)
         {
-            if (plan.is_Active.Value == 1)
+            if (plan.IsActive.Value == 1)
             {
                 status = StatusActive;
             }

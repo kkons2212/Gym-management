@@ -99,11 +99,11 @@
 | STT | Mã Use Case | Tên Use Case | Tác nhân | Tóm tắt mục tiêu nghiệp vụ | Tiền điều kiện | Hậu điều kiện chính |
 | :---: | :---: | :--- | :---: | :--- | :--- | :--- |
 | 1 | **UC01** | Đăng nhập | All | Người dùng đăng nhập vào hệ thống bằng tài khoản được cấp. | Đã có tài khoản trong hệ thống. | Cấp JWT/phiên làm việc, điều hướng đúng phân hệ. |
-| 2 | **UC02.1** | Đăng ký hội viên mới cùng gói tập | Admin/Lễ tân | Tạo hồ sơ khách hàng, chọn gói tập, thu tiền và kích hoạt thẻ. | Đã đăng nhập, vào màn hình quản lý hội viên. | Thẻ kích hoạt trạng thái `ACTIVE`, gửi thông báo chào mừng. |
+| 2 | **UC02.1** | Đăng ký hội viên mới cùng gói tập | Admin/Lễ tân | Tạo hồ sơ khách hàng, chọn gói tập, thu tiền và kích hoạt gói tập. | Đã đăng nhập, vào màn hình quản lý hội viên. | Gói tập kích hoạt trạng thái `ACTIVE`, gửi thông báo chào mừng. |
 | 3 | **UC02.2** | Cập nhật thông tin hội viên | Admin | Tìm kiếm và điều chỉnh thông tin liên lạc, địa chỉ của hội viên. | Hội viên đã tồn tại trong CSDL. | Hồ sơ hội viên được cập nhật dữ liệu mới. |
 | 4 | **UC02.3** | Gia hạn / Nâng cấp gói tập | Admin | Tăng thêm thời hạn hoặc chuyển gói tập lên hạng cao hơn. | Hội viên đã có gói tập trong hệ thống. | Ngày hết hạn mới được dời, cập nhật gói mới, ghi nhận thu tiền. |
-| 5 | **UC02.4** | Bảo lưu gói tập | Admin | Tạm ngưng hiệu lực thẻ theo số ngày hợp lệ và bù thời hạn sau. | Thẻ đủ điều kiện bảo lưu theo quy chế gói. | Trạng thái chuyển `FROZEN`, ngày hết hạn được kéo dài tương ứng. |
-| 6 | **UC02.5** | Hủy đăng ký gói tập | Admin | Chấm dứt hiệu lực gói tập hiện tại của hội viên khi có vi phạm/yêu cầu. | Thẻ đang hoạt động trong hệ thống. | Trạng thái thẻ chuyển `Đã hủy` (không xóa gói khỏi danh mục). |
+| 5 | **UC02.4** | Bảo lưu gói tập | Admin | Tạm ngưng hiệu lực gói tập theo số ngày hợp lệ và bù thời hạn sau. | Gói tập đủ điều kiện bảo lưu theo quy chế gói. | Trạng thái chuyển `FROZEN`, ngày hết hạn được kéo dài tương ứng. |
+| 6 | **UC02.5** | Hủy đăng ký gói tập | Admin | Chấm dứt hiệu lực gói tập hiện tại của hội viên khi có vi phạm/yêu cầu. | Gói tập đang hoạt động trong hệ thống. | Trạng thái gói tập chuyển `Đã hủy` (không xóa gói khỏi danh mục). |
 | 7 | **UC 3.1** | Quét mã QR | Admin/Lễ tân | Quét mã QR trên ứng dụng hội viên để kiểm soát vào phòng tập. | Màn hình check-in kết nối camera sẵn sàng. | Ghi nhận lượt check-in, trừ 1 buổi (nếu tính theo lượt). |
 | 8 | **UC 3.2** | Nhập mã hội viên thủ công | Admin/Lễ tân | Nhập SĐT hoặc mã hội viên để điểm danh khi khách không mang điện thoại. | Màn hình check-in mở sẵn sàng. | Tra cứu thông tin, đối chiếu khuôn mặt, ghi nhận check-in. |
 | 9 | **UC 3.3** | Tra cứu lịch sử ra/vào | Admin/Lễ tân | Theo dõi danh sách điểm danh trong ngày theo ca, tên, trạng thái. | Đã đăng nhập hệ thống. | Danh sách lượt check-in hiển thị theo bộ lọc thời gian thực. |

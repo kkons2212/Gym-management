@@ -22,7 +22,9 @@ public record VietQrGenerateResponse(
     string Content,
     decimal Amount,
     DateTime ExpiresAt,
-    string? ErrorMessage = null
+    string? ErrorMessage = null,
+    string? BankAccount = null,
+    string? BankName = null
 );
 
 /// <summary>
@@ -45,6 +47,7 @@ public record VietQrOptions
     public const string SectionName = "VietQr";
 
     public string BankBin { get; init; } = "970422"; // MBBank mặc định
+    public string BankName { get; init; } = "MB Bank";
     public string AccountNo { get; init; } = "0912345678";
     public string AccountName { get; init; } = "CONG TY TNHH PHONG TAP THE THAO";
     public string Template { get; init; } = "compact2";
@@ -53,4 +56,3 @@ public record VietQrOptions
     public bool IsSandbox { get; init; } = true;
     public int TimeoutSeconds { get; init; } = 600; // 10 phút đếm ngược
 }
-
