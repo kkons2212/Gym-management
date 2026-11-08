@@ -7,7 +7,7 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 36 Tasks
-* **Tiến độ Hoàn thành:** **7 / 36 Tasks (19.4%)**
+* **Tiến độ Hoàn thành:** **8 / 36 Tasks (22.2%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
@@ -28,6 +28,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 0.2** | Scaffolding 3 Server Projects | Hạ tầng Server | `src/Server/` | `Server.Core`, `Server.Data`, `Server.Api` | `tests/GymManagement.Server.UnitTests` | 9 bảng DDL | `f92e2c7` |
 | **Task 0.3** | Scaffolding 2 Client Projects | Hạ tầng Client | `src/Client/` | `GymManagement.Desktop`, `GymManagement.Web` | Desktop & Web Build Verification | N/A | `f92e2c7` |
 | **Task 0.4** | Scaffolding 3 Test Projects | Hạ tầng Testing | `tests/` | `Server.UnitTests`, `Server.DataTests`, `Server.ApiTests` | 100% Pass (Sanity Tests) | In-Memory | `f92e2c7` |
+| **Task 3.2** | JWT authentication and role policies | GymManagement API | `Server.Api/Configuration`, `Program.cs` | `JwtOptions.cs`, `Program.cs` | `JwtAuthenticationTests` | N/A | — |
 | **Task 5.0** | Kế hoạch CI toàn diện Server & Client | Toàn bộ 10 Epics | `.github/workflows` | `.github/workflows/ci.yml` | Gitleaks, DDL check, Quality Gate | 9 bảng DDL | `2131cff` |
 
 ---
@@ -88,6 +89,18 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Build Solution: 100% build thành công 0 errors
   - Test Execution: 4/4 test cases passed (100% pass)
 * **Ghi chú kiến trúc:** Tuân thủ Pre-dev Rule 1 (tách biệt ranh giới 3 lớp), không cho phép Client gọi trực tiếp CSDL.
+
+---
+
+### 📌 [Task 3.2] Xác thực JWT và phân quyền theo vai trò
+* **Ngày hoàn tất:** 2026-11-08 | **Nhánh:** `feat/task-3.2-jwt-authentication`
+* **Ranh giới thành phần:** `Server.Api`
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Api/Configuration/JwtOptions.cs`
+  - `src/Server/GymManagement.Server.Api/Program.cs`
+  - `tests/GymManagement.Server.ApiTests/JwtAuthenticationTests.cs`
+* **Kiểm thử tương ứng:** API integration tests kiểm tra health anonymous, JWT thiếu/sai, role policy Admin và định dạng phản hồi 401/403.
+* **Cấu hình JWT:** Bắt buộc cung cấp issuer, audience và signing key tối thiểu 32 byte qua secret store hoặc environment variables; không có khóa mặc định trong repository.
 
 ---
 

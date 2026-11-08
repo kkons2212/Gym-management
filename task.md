@@ -227,7 +227,8 @@ GymManagement.sln
 *Mục tiêu: Đóng gói API Gateway cung cấp giao diện RESTful chính thức cho Client Component.*
 
 - [ ] **Task 3.1:** Cấu hình Middleware xử lý lỗi toàn cục (`ApiResponse<T>`, `ApiErrorResponse`).
-- [ ] **Task 3.2:** Cấu hình Middleware bảo mật cổng **`Authenticated`** (xác thực JWT Bearer & Role Claims: `Admin`, `PT`, `Member`).
+- [x] **Task 3.2:** Cấu hình xác thực JWT và bảo vệ `Authenticated` với fallback yêu cầu đăng nhập cùng role policy `Admin`, `PT`, `Member`; cho phép truy cập ẩn danh `/health`.
+  - Cấu hình bắt buộc: `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey` (tối thiểu 32 byte UTF-8); cung cấp bằng secret store hoặc environment variables (`Jwt__...`), không commit signing key.
 - [ ] **Task 3.3:** Xây dựng các API Controllers công khai giao tiếp `GymManagement API`:
   - `AuthController` (`/api/v1/auth/*`)
   - `MembersController` (`/api/v1/members/*`)
