@@ -1,0 +1,192 @@
+@inject IWebApiClient ApiClient
+
+@if (IsOpen && Session != null)
+{
+    <div class="modal-backdrop" @onclick="HandleClose">
+        <div class="modal-content" style="max-width: 400px; text-align: left;" @onclick:stopPropagation>
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Đổi Lịch Tập PT</h2>
+                <button type="button" @onclick="HandleClose" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Current Session Summary -->
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px;">
+                <div style="color: var(--text-secondary); margin-bottom: 4px;">Ca tập hiện tại:</div>
+                <div style="font-weight: 600; color: var(--text-primary);" class="tabular-nums">
+                    @Session.SessionStartTime.ToString("HH:mm") – @Session.SessionEndTime.ToString("HH:mm") (@Session.SessionStartTime.ToString("dd/MM/yyyy"))
+                </div>
+                <div style="color: var(--text-secondary); margin-top: 2px;">
+                    HLV:&nbsp;<strong>@Session.PtName</strong>
+                </div>
+            </div>
+
+            <!-- Date Selector (Next 7 days) -->
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                Chọn ngày tập mới
+            </label>
+            <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px;">
+                @for (int i = 0; i < 7; i++)
+                {
+                    var date = _today.AddDays(i);
+                    var isSelected = _selectedDate == date;
+                    <button type="button"
+                            @onclick="() => SelectDate(date)"
+                            class="tabular-nums"
+                            style="flex: 0 0 58px; padding: 6px 2px; border-radius: 6px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer;">
+                        <div style="font-size: 10px;">@date.Day.ToString("00")/Th.@date.Month</div>
+                    </button>
+                }
+            </div>
+
+            <!-- Available Slots Grid -->
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                Chọn khung giờ mới
+            </label>
+            @if (_isLoadingSlots)
+            {
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px;">
+                    <div class="skeleton" style="height: 38px; border-radius: 6px;"></div>
+                    <div class="skeleton" style="height: 38px; border-radius: 6px;"></div>
+                </div>
+            }
+            else if (_availableSlots.Count == 0)
+            {
+                <div style="text-align: center; padding: 14px; background: var(--bg-canvas); border-radius: 6px; color: var(--text-secondary); font-size: 12px; margin-bottom: 14px;">
+                    Không có khung giờ trống trong ngày này.
+                </div>
+            }
+            else
+            {
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px; max-height: 180px; overflow-y: auto;">
+                    @foreach (var slot in _availableSlots)
+                    {
+                        var isChosen = _chosenSlot?.AvailabilityId == slot.AvailabilityId;
+                        <button type="button"
+                                disabled="@slot.IsBooked"
+                                @onclick="() => _chosenSlot = slot"
+                                class="@(slot.IsBooked ? "slot-pt-booked" : (isChosen ? "slot-pt-selected" : "slot-pt-open")) tabular-nums"
+                                style="padding: 8px 6px; border-radius: 6px; text-align: center; font-size: 12px; cursor: @(slot.IsBooked ? "not-allowed" : "pointer");">
+                            @slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")
+                        </button>
+                    }
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                    @_errorMessage
+                </div>
+            }
+
+            <!-- Submit Button -->
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@(_chosenSlot == null || _isSubmitting)"
+                    @onclick="ConfirmRescheduleAsync"
+                    style="width: 100%; padding: 12px; font-size: 14px;">
+                @if (_isSubmitting)
+                {
+                    <span>Đang cập nhật lịch…</span>
+                }
+                else
+                {
+                    <span>Xác Nhận Đổi Sang Lịch Mới</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public PtSessionDto? Session { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnRescheduled { get; set; }
+
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _selectedDate;
+    private List<PtSlotDto> _availableSlots = [];
+    private PtSlotDto? _chosenSlot;
+    private bool _isLoadingSlots;
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen && Session != null && _availableSlots.Count == 0)
+        {
+            _selectedDate = _today;
+            _chosenSlot = null;
+            await LoadSlotsAsync();
+        }
+    }
+
+    private async Task SelectDate(DateOnly date)
+    {
+        if (_selectedDate == date) return;
+        _selectedDate = date;
+        _chosenSlot = null;
+        await LoadSlotsAsync();
+    }
+
+    private async Task LoadSlotsAsync()
+    {
+        if (Session == null) return;
+
+        _isLoadingSlots = true;
+        try
+        {
+            var slots = await ApiClient.GetPtAvailableSlotsAsync(Session.PtId, _selectedDate, _selectedDate);
+            _availableSlots = slots.OrderBy(s => s.StartTime).ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isLoadingSlots = false;
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        _chosenSlot = null;
+        _errorMessage = null;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ConfirmRescheduleAsync()
+    {
+        if (Session == null || _chosenSlot == null || _isSubmitting) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new RescheduleSessionRequest(
+                SessionId: Session.SessionId,
+                MemberUserName: Session.MemberUserName,
+                NewAvailabilityId: _chosenSlot.AvailabilityId
+            );
+
+            await ApiClient.ReschedulePtBookingAsync(request);
+            await OnRescheduled.InvokeAsync();
+            await HandleClose();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}
+

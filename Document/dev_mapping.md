@@ -7,13 +7,13 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **23 / 33 Tasks (69.7%)**
+* **Tiến độ Hoàn thành:** **28 / 33 Tasks (84.8%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟢 **Khối Máy Chủ (Server Component):** Đã hoàn tất 100% Giai đoạn 1, 2 & 3 (Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1 – Task 2.7, Task 3.1, Task 3.2, Task 3.3)
-  * 🟡 **Khối Giao Diện Admin Desktop (Task 4.1):** **Đang tái cấu trúc toàn diện (Redo Phase theo Universal UI/UX Rules & New Colors Panel)** — Đã hoàn tất Task 4.1.1 (Admin session & DI), nâng cấp Design Tokens trong `ColorTokens.xaml`, dọn sạch toàn bộ ruột mã nguồn các Views về blank canvas chuẩn (Cách 1), xác thực biên dịch `dotnet build` 0 warnings, 0 errors. Task 4.1.2 & 4.1.3 đang được tái hiện thực từ đầu.
-  * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
+  * 🟢 **Khối Giao Diện Web Portal (Task 4.2):** Đã hoàn tất 100% (Task 4.2.1, 4.2.2, 4.2.3 - Blazor Server Mobile Portal)
 
 ---
 
@@ -37,6 +37,9 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 | **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
+| **Task 4.2.1** | Quản lý phiên làm việc Member & PT | UC01 (Xác thực & Phân quyền Web) | `Client.Web` | `src/Client/GymManagement.Web/Services/*`, `Components/Layout/*`, `Components/Pages/Login.razor` | Blazor Build & Auth State Verification | `[User]`, `Role` | `dd35e13` |
+| **Task 4.2.2** | Cổng Hội viên: QR số, Lịch PT, InBody | UC03, UC05, UC09, UC10 | `Client.Web` | `Components/Member/*`, `Components/Pages/Member/*` | Blazor Build 0 Warnings 0 Errors | `MemberSubscription`, `PackagePlan`, `PTTrainingSession`, `MemberBodyMetric` | `dd35e13` |
+| **Task 4.2.3** | Cổng Huấn luyện viên PT: Lịch dạy, InBody | UC08 (8.1.1, 8.1.2, 8.2.1, 8.2.2, 8.2.3) | `Client.Web` | `Components/PT/*`, `Components/Pages/PT/*` | Blazor Build 0 Warnings 0 Errors | `PTAvailability`, `PTTrainingSession`, `MemberBodyMetric` | `dd35e13` |
 | **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 | **Task 3.3** | API Controllers Component | Toàn bộ 10 Epics (Cổng RESTful API công khai cho Client) | `Server.Api` | `Controllers/ApiControllerBase.cs`, `AuthController.cs`, `MembersController.cs`, `CheckInController.cs`, `PtController.cs`, `InvoicesController.cs`, `ReportsController.cs`, `SettingsController.cs`, `Program.cs` | `tests/GymManagement.Server.ApiTests/Controllers/*Tests.cs` (18 tests mới) | 9 bảng CSDL | `9016fe4` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | Toàn bộ 10 Epics (Admin & Thu ngân) | `Client.Desktop` | `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml`, `Views/*` (In-place Wipe về canvas chuẩn), `ViewModels/*`, `App.xaml(.cs)`, `MainWindow.xaml(.cs)` | Biên dịch WinUI 3 Desktop `0 Warning(s), 0 Error(s)` | 9 bảng CSDL | `6832b09` (WIP) |
@@ -224,6 +227,47 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Xóa bỏ triệt để Entity Stubs:** Loại bỏ hoàn toàn các class placeholder rải rác trong `PtService` và `SystemSettingService`, chuẩn hóa dùng một nguồn sự thật duy nhất (Single Source of Truth) trong `GymManagement.Server.Core.Entities`.
   - **DoD 6 & Cú pháp:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), đặt tên chuẩn, properties hỗ trợ cả PascalCase lẫn alias tương thích ngược.
 
+---
+
+### 📌 [Task 4.2.1, 4.2.2, 4.2.3] Cổng Thông Tin Web Hội Viên & Huấn Luyện Viên PT (Blazor Server)
+* **Ngày hoàn tất:** 09/11/2026 | **Commit:** `dd35e13` (nhánh `feat/task-4.2-member-pt-web-portal`)
+* **Phân hệ nghiệp vụ liên quan:** UC01 (Auth & Session), UC03 (Check-in QR tĩnh chứa mã hội viên), UC05 (VietQR NAPAS 247), UC08 (PT Weekly Schedule, Slots, InBody & Complete), UC09 (Member Profile & Workout History), UC10 (PT Booking, Cancel & Rating).
+* **Ranh giới thành phần:** `src/Client/GymManagement.Web/`
+* **Mã nguồn tạo / sửa:**
+  - **Hạ tầng & Xác thực (Task 4.2.1):**
+    - `Services/IWebApiClient.cs`: Hợp đồng kết nối Client Web với Server.
+    - `Services/CustomAuthenticationStateProvider.cs`: Quản lý phiên làm việc, giải mã vai trò Member/PT.
+    - `Services/MockWebApiClient.cs`: Giả lập dữ liệu tuân thủ 100% CSDL 9 bảng.
+    - `Components/Layout/NavMenu.razor` & `MainLayout.razor`: Mobile-first shell (440px max-width), bottom navigation bar theo vai trò.
+    - `Components/Pages/Login.razor`: Màn hình đăng nhập chuyển hướng tự động theo vai trò.
+    - `wwwroot/app.css`: Token màu 100% Dark Mode (#0F172A, #1E293B, #38BDF8), slot-pt-open trung tính, tabular-nums.
+  - **Cổng Hội Viên (Task 4.2.2):**
+    - `Components/Member/DigitalSubscriptionWidget.razor`: Gói tập số, đếm số buổi còn lại, mã QR hội viên cố định.
+    - `Components/Member/VietQrModal.razor`: Thanh toán chuyển khoản NAPAS 247 (220x220px, 10 phút, simulation sandbox).
+    - `Components/Member/PackageCatalog.razor`: Danh mục gói tập giá niêm yết cố định.
+    - `Components/Member/PtBookingWizard.razor`: Wizard 3 bước (chọn ngày -> lưới slot trung tính -> xác nhận).
+    - `Components/Member/CancelBookingModal.razor`: Chắn bảo vệ hủy ca (< 2h cảnh báo đỏ mất buổi, nút giữ lịch tập làm nút chính).
+    - `Components/Member/RescheduleBookingModal.razor`: Đổi lịch sang khung giờ khác của cùng PT.
+    - `Components/Member/SessionRatingModal.razor`: Đánh giá sao 1-5 và nhận xét buổi tập đã hoàn thành.
+    - `Components/Member/InBodyDashboard.razor`: 4 thẻ chỉ số, thước đo BMI 4 dải màu với kim chỉ, biểu đồ SVG diễn tiến cân nặng.
+    - `Components/Member/WorkoutHistoryTimeline.razor`: Dòng thời gian kết hợp quét mã vào cổng và ca tập PT kèm bộ lọc.
+    - `Components/Pages/Member/*`: `Dashboard.razor`, `Packages.razor`, `PtBooking.razor`, `InBody.razor`, `History.razor`.
+  - **Cổng Huấn Luyện Viên PT (Task 4.2.3):**
+    - `Components/PT/PtAvailabilityGrid.razor`: Lưới bật/tắt lịch rảnh trong tuần (06:00-21:00), khóa slot đã có người đặt.
+    - `Components/PT/PtWeeklySchedule.razor`: Lịch huấn luyện theo tuần, 1-tap hoàn tất ca tập có ghi chú (tuyệt đối KHÔNG có link `tel:`).
+    - `Components/PT/PtStudentsList.razor`: Danh sách học viên phụ trách (số điện thoại văn bản thuần, theo dõi số buổi).
+    - `Components/PT/InBodyEntryModal.razor`: Form nhập chỉ số InBody với cơ chế tự động tính BMI tức thời.
+    - `Components/Pages/PT/*`: `Schedule.razor`, `Availability.razor`, `Students.razor`.
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch toàn bộ Solution: `GymManagement.Web`, `GymManagement.Server.Core`, `GymManagement.Desktop`, `GymManagement.Server.UnitTests` -> **0 Warnings, 0 Errors**.
+  - Kiểm tra giao diện: Tuyệt đối không xuất hiện mã thô `(UC...)` hoặc thẻ UC trên text hiển thị người dùng.
+  - Kiểm tra thuật ngữ: Chỉ dùng "gói tập", không dùng "thẻ tập".
+* **Bảng CSDL liên quan:** `[User]`, `Role`, `PackagePlan`, `MemberSubscription`, `PTAvailability`, `PTTrainingSession`, `CheckInLog`, `Invoice`, `MemberBodyMetric`.
+* **Ràng buộc nghiệp vụ & Kiến trúc:**
+  - Khung giờ PT trung tính (`#334155`), chỉ đổi xanh dương khi chọn, không bao giờ dùng xanh lá cho slot trống.
+  - Chống bấm đúp trên tất cả các nút submit (`_isSubmitting = true`).
+  - Hủy ca dưới 2 giờ bắt buộc xác nhận mất buổi.
+  - Tuân thủ nghiêm ngặt Dark Mode WCAG AA, không hỗ trợ Light Mode.
 ### 📌 [Task 2.7] Hiện thực ReportService Component (UC06)
 * **Ngày hoàn tất:** 09/11/2026 | **Commit:** `ce9e620` (nhánh `feat/task-2.7-report-service`)
 * **Phân hệ nghiệp vụ liên quan:** Epic 06 / UC06 (US 06.1 — Báo cáo thống kê thời gian thực; US 06.2 — Xuất dữ liệu báo cáo sang Excel / PDF).

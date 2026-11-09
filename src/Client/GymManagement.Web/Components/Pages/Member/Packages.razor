@@ -1,0 +1,82 @@
+@page "/member/packages"
+@attribute [Authorize(Roles = "Member")]
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Page Header -->
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+            Danh Mục Gói Tập & Gia Hạn
+        </h1>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+            Đăng ký và thanh toán chuyển khoản tự động qua VietQR NAPAS 247
+        </div>
+    </div>
+
+    <!-- Active Subscription Status Banner -->
+    @if (_currentSub != null)
+    {
+        <div class="gym-card" style="padding: 12px; border-left: 4px solid #34D399; font-size: 12px;">
+            <div style="color: var(--text-secondary); margin-bottom: 2px;">Gói tập hiện tại:</div>
+            <div style="font-size: 14px; font-weight: 700; color: #F8FAFC;">
+                @_currentSub.PlanName
+            </div>
+            <div style="color: var(--text-secondary); margin-top: 4px;" class="tabular-nums">
+                Hạn sử dụng:&nbsp;<strong style="color: #38BDF8;">@_currentSub.EndDate.ToString("dd/MM/yyyy")</strong>
+                &bull;&nbsp;Còn&nbsp;@_currentSub.RemainingCheckInSessions&nbsp;buổi gym, @_currentSub.RemainingPtSessions&nbsp;buổi PT
+            </div>
+        </div>
+    }
+
+    <!-- Package Catalog Component -->
+    <PackageCatalog OnPurchaseRequested="HandlePurchaseRequested" />
+
+    <!-- VietQR Payment Modal -->
+    <VietQrModal IsOpen="_showPaymentModal"
+                 Payload="_vietQrPayload"
+                 OnClose="() => _showPaymentModal = false"
+                 OnPaymentSuccess="HandlePaymentSuccess" />
+</div>
+
+@code {
+    private MemberSubscriptionDetailDto? _currentSub;
+    private bool _showPaymentModal;
+    private VietQrPayloadDto? _vietQrPayload;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentSubAsync();
+    }
+
+    private async Task LoadCurrentSubAsync()
+    {
+        try
+        {
+            _currentSub = await ApiClient.GetMySubscriptionAsync();
+        }
+        catch
+        {
+            _currentSub = null;
+        }
+    }
+
+    private async Task HandlePurchaseRequested(PackagePlanDto plan)
+    {
+        try
+        {
+            _vietQrPayload = await ApiClient.CreateVietQrInvoiceAsync(plan.PlanId);
+            _showPaymentModal = true;
+        }
+        catch
+        {
+            // Error handling
+        }
+    }
+
+    private async Task HandlePaymentSuccess()
+    {
+        _showPaymentModal = false;
+        await LoadCurrentSubAsync();
+    }
+}
+

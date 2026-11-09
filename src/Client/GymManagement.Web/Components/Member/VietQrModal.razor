@@ -1,0 +1,160 @@
+@inject IWebApiClient ApiClient
+@inject IConfiguration Configuration
+@inject IHostEnvironment HostEnvironment
+
+@if (IsOpen && Payload != null)
+{
+    <div class="modal-backdrop" @onclick="HandleClose">
+        <div class="modal-content" style="max-width: 360px; text-align: center;" @onclick:stopPropagation>
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 class="gym-card-title" style="font-size: 16px;">Thanh Toán Chuyển Khoản VietQR</h2>
+                <button type="button" @onclick="HandleClose" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                    ✕
+                </button>
+            </div>
+
+            <!-- VietQR Display (Strict Rule: NAPAS 247, 220x220px) -->
+            <div style="background: #FFFFFF; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 12px;">
+                <img src="@Payload.QrImageUrl" alt="Mã VietQR NAPAS 247" width="220" height="220" style="display: block; border-radius: 6px;" />
+            </div>
+
+            <!-- Payment Info Box -->
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 12px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">Số tiền thanh toán:</span>
+                    <strong class="tabular-nums" style="font-size: 15px; color: #34D399;">
+                        @Payload.Amount.ToString("N0")&nbsp;VNĐ
+                    </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">Nội dung chuyển khoản:</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <code style="font-size: 12px; font-weight: 700; background: #334155; padding: 2px 6px; border-radius: 4px; color: #F8FAFC;">
+                            @Payload.TransferContent
+                        </code>
+                        <button type="button" @onclick="CopyContent" class="btn-secondary" style="min-height: 24px; padding: 0 6px; font-size: 10px;">
+                            @(_copied ? "Đã chép" : "Sao chép")
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Countdown Timer (10 minutes) -->
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 14px;">
+                Mã thanh toán hết hạn sau:&nbsp;<strong class="tabular-nums" style="color: #38BDF8;">@FormatTime(_secondsRemaining)</strong>
+            </div>
+
+            <!-- Sandbox Simulation Button (Controlled via Environment Variable) -->
+            @if (IsSimulationAllowed)
+            {
+                <div style="margin-bottom: 10px;">
+                    <button type="button"
+                            @onclick="HandleSimulatePaymentAsync"
+                            disabled="@_isSimulating"
+                            class="btn-secondary"
+                            style="width: 100%; border-color: #38BDF8; color: #38BDF8;">
+                        @if (_isSimulating)
+                        {
+                            <span style="display: inline-block; width: 14px; height: 14px; border: 2px solid #38BDF8; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
+                            <span>Đang xử lý mô phỏng…</span>
+                        }
+                        else
+                        {
+                            <span>Giả lập thanh toán thành công (Sandbox)</span>
+                        }
+                    </button>
+                </div>
+            }
+
+            <button type="button" @onclick="HandleClose" class="btn-secondary" style="width: 100%;">
+                Hủy Giao Dịch
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public VietQrPayloadDto? Payload { get; set; }
+    [Parameter] public EventCallback OnPaymentSuccess { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private int _secondsRemaining = 600;
+    private System.Threading.Timer? _timer;
+    private bool _copied = false;
+    private bool _isSimulating = false;
+
+    // Ràng buộc biến môi trường chuẩn theo ux_rules.md & ui_rules.md
+    private bool IsSimulationAllowed =>
+        string.Equals(Environment.GetEnvironmentVariable("VIETQR_ENABLE_SIMULATION"), "true", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(Configuration["VIETQR_ENABLE_SIMULATION"], "true", StringComparison.OrdinalIgnoreCase) ||
+        HostEnvironment.IsDevelopment();
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen && Payload != null)
+        {
+            _secondsRemaining = Payload.ExpireSeconds > 0 ? Payload.ExpireSeconds : 600;
+            StartTimer();
+        }
+        else
+        {
+            _timer?.Dispose();
+        }
+    }
+
+    private void StartTimer()
+    {
+        _timer?.Dispose();
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            if (_secondsRemaining > 0)
+            {
+                _secondsRemaining--;
+                await InvokeAsync(StateHasChanged);
+            }
+        }, null, 1000, 1000);
+    }
+
+    private async Task HandleSimulatePaymentAsync()
+    {
+        if (Payload == null || _isSimulating) return;
+
+        _isSimulating = true;
+        try
+        {
+            await Task.Delay(600); // Tác vụ bất đồng bộ
+            await ApiClient.SimulateVietQrPaymentAsync(Payload.InvoiceId ?? string.Empty);
+            await OnPaymentSuccess.InvokeAsync();
+        }
+        finally
+        {
+            _isSimulating = false;
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        _timer?.Dispose();
+        await OnClose.InvokeAsync();
+    }
+
+    private void CopyContent()
+    {
+        _copied = true;
+    }
+
+    private static string FormatTime(int seconds)
+    {
+        int m = seconds / 60;
+        int s = seconds % 60;
+        return $"{m:00}:{s:00}";
+    }
+}

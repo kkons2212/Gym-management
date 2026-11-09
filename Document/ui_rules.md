@@ -172,9 +172,8 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
   * Mã QR điểm danh được tích hợp trực tiếp hoặc mở nhanh 1-chạm qua nút `"Mở mã QR điểm danh"` lớn và trực quan.
   * QR hiển thị ở kích thước tối thiểu $240\text{px} \times 240\text{px}$, co giãn theo viewport nhưng không vượt quá `min(80vw, 320px)`.
   * Đặt QR đen trên nền trắng đặc, có vùng trống (quiet zone) tối thiểu 4 module xung quanh; không phủ logo, chữ, họa tiết, bo góc hoặc hiệu ứng lên vùng mã.
-  * Hiển thị họ tên và mã hội viên bên ngoài vùng quét để đối chiếu. Không đưa thông tin nhạy cảm vào nội dung chuỗi QR.
-  * Bên dưới QR, hiển thị thời gian còn hiệu lực và thời điểm tự làm mới mỗi 60 giây có đồng hồ đếm ngược; có nút `"Làm mới mã QR"`.
-  * Khi QR hết hạn hoặc gói tập không còn hợp lệ, mã cũ được ẩn đi và thay bằng thông báo giải thích rõ ràng.
+  * Hiển thị họ tên và mã hội viên bên ngoài vùng quét để đối chiếu. Mã QR là mã tĩnh chứa mã hội viên, tải 1 lần dùng xuyên suốt gói tập (không tự động xoay vòng hay đổi mã theo thời gian).
+  * Khi gói tập không còn hợp lệ (hết hạn, bảo lưu), mã QR được ẩn đi hoặc làm mờ kèm thông báo giải thích rõ ràng.
 * **Hàng Thông Số Buổi Tập (Session Counters):**
   * Chia 2 cột đều nhau trên khối thông tin gói tập:
     * Cột 1: `"Lượt Gym Còn Lại"` $\rightarrow$ Số lớn nổi bật (`tabular-nums text-2xl font-bold text-sky-400`).
@@ -422,11 +421,8 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 
 | Phân Hệ Nghiệp Vụ | Ứng Dụng WinUI 3 Desktop (Quản Trị Admin) | Ứng Dụng Blazor Server Web (Hội Viên / PT) |
 | :--- | :--- | :--- |
-| **UC01: Đăng Nhập & Xác Thực** | `LoginPage.xaml`: Card trung tâm $420\text{px}$, PasswordBox nút con mắt, CheckBox ghi nhớ, InfoBar đỏ khi sai pass hoặc khóa tài khoản. | `Login.razor`: Mobile card `max-w-md`, form tối giản, tự động điều hướng theo Role (PT vào Lịch, Member vào Cổng hội viên). |
-| **UC02: Hội Viên & Vòng Đời Gói** | `MembersPage.xaml`: Header có nút CTA `"+ Đăng Ký Hội Viên Mới"`, Wizard 2 bước `RegisterMemberWizard.xaml`, Hộp thoại Gia hạn, Bảo lưu `FROZEN`, Hủy gói `CANCELLED`. | `DigitalSubscriptionWidget.razor`: Khối thẻ gói tập số, chip trạng thái tĩnh, đồng hồ đếm ngược số ngày và buổi tập còn lại. |
-| **UC03: Check-in Điểm Danh** | `CheckInCounterPage.xaml`: Màn hình 2 cột, webcam quét $<1$s, tra cứu SĐT + Enter, nút Override lý do, bảng log ra/vào theo ca, banner tĩnh (không âm thanh, không ảnh). | Khối mã QR điểm danh 1-chạm kích thước $240 \times 240\text{px}$, nền trắng đặc, quiet zone 4 modules, tự làm mới mỗi 60 giây. |
-| **UC04 & UC08: Dịch Vụ Huấn Luyện Viên PT** | `PtSchedulePage.xaml`: Bảng lịch tuần đa năng nhiều PT, kéo thả khung giờ, hàng rào viền đỏ chặn đứng xung đột trùng lịch, phân công 1-1, rà soát ca ngoại lệ. | `PtAvailabilityGrid.razor` & `PtWeeklySchedule.razor`: Chọn slot rảnh màu trung tính, xem timeline ca dạy trên điện thoại, nút xác nhận hoàn thành ca 1-chạm. |
-| **UC05: Thanh Toán & Hóa Đơn** | `PosBillingPage.xaml`: POS bán hàng, bảng giá niêm yết không discount, shortcut `[+] Khách mới`, VietQR sandbox toggle, in nhiệt K80 và Modal Hoàn tiền. | `PackageCatalog.razor` & `VietQrModal.razor`: Danh mục gói dạng thẻ cuộn dọc, modal VietQR NAPAS 247 đếm ngược 10 phút, tự kích hoạt gói qua SignalR. |
-| **UC06: Báo Cáo & Thống Kê** | `DashboardPage.xaml`: Dashboard KPI doanh thu thời gian thực, biểu đồ cột giờ cao điểm 17h–20h, bảng xếp hạng PT, xuất Excel/PDF $<3$s. | `WorkoutHistoryTimeline.razor`: Dòng thời gian lịch sử các lượt quét QR vào phòng và các ca tập hoàn thành cùng PT. |
-| **UC07: Phân Quyền & Gói Tập** | `StaffManagementPage.xaml`: Quản lý nhân sự RBAC, chống tự khóa/tự tước quyền, thêm/sửa/ngừng kinh doanh gói `PackagePlan` (`DISCONTINUED`). | Không áp dụng (chỉ dành riêng cho Super Admin trên Desktop). |
-| **UC10: Đặt Lịch PT & Đánh Giá** | Không áp dụng trực tiếp (Admin chỉ giám sát và giải quyết tranh chấp qua `SessionReviewDialog.xaml`). | `PtBookingWizard.razor`: Đặt ca 3 bước trực quan, cảnh báo phạt hủy ca $<2$h (mất buổi tập), component đánh giá 1–5 sao sau buổi tập. |
+| **Gói Tập Hội Viên & Điểm Danh** | Màn hình quét 2 cột, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). | Khối thông tin gói tập số di động, mã QR hội viên cố định, chip đếm số buổi còn lại. |
+| **Thanh Toán & Hóa Đơn** | Màn hình POS thu ngân chọn nhanh hội viên, bảng giá niêm yết, cửa sổ VietQR sandbox có nút giả lập (bật qua biến môi trường) và in nhiệt. | Danh mục gói dạng thẻ cuộn dọc, modal mã QR sandbox có đếm ngược 10 phút, nút giả lập (bật qua biến môi trường) cập nhật trạng thái sau xác nhận từ máy chủ. |
+| **Lịch Tập Huấn Luyện Viên** | Bảng lịch tuần đa năng nhiều PT, kéo thả khung giờ, hàng rào viền đỏ chặn đứng xung đột trùng lịch. | Lưới chọn khung giờ rảnh của PT theo ngày (màu trung tính), modal xác nhận kèm cảnh báo mất buổi nếu hủy ca $<2$ tiếng. |
+| **Chỉ Số Sức Khỏe InBody** | Biểu mẫu nhập số đo chuyên dụng có kiểm tra ngưỡng an toàn y tế và tính tự động chỉ số BMI tức thời. | Thẻ tóm tắt chỉ số thể lực cá nhân, thước đo dải màu BMI trực quan, biểu đồ đường theo dõi tiến trình giảm mỡ. |
+| **Báo Cáo & Quản Trị** | Dashboard KPI doanh thu thời gian thực, biểu đồ cột giờ cao điểm, bảng dữ liệu phân trang và xuất Excel. | Trang hồ sơ cá nhân, lịch sử các ca tập đã tham gia, lịch sử các lần check-in và hóa đơn đã thanh toán. |

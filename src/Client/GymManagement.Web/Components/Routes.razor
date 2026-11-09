@@ -1,6 +1,31 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <div class="mobile-shell" style="padding: 32px 16px; text-align: center;">
+                    <div class="gym-card" style="margin-top: 40px;">
+                        <h2 class="gym-card-title" style="margin-bottom: 8px;">Yêu Cầu Đăng Nhập</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+                            Vui lòng đăng nhập bằng tài khoản Hội viên hoặc Huấn luyện viên để tiếp tục.
+                        </p>
+                        <a href="/login" class="btn-primary" style="text-decoration: none;">Đến Trang Đăng Nhập</a>
+                    </div>
+                </div>
+            </NotAuthorized>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div class="mobile-shell" style="padding: 32px 16px; text-align: center;">
+                <div class="gym-card" style="margin-top: 40px;">
+                    <h2 class="gym-card-title" style="margin-bottom: 8px;">Không Tìm Thấy Trang</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+                        Đường dẫn bạn yêu cầu không tồn tại hoặc đã được thay đổi.
+                    </p>
+                    <a href="/" class="btn-primary" style="text-decoration: none;">Về Trang Chủ</a>
+                </div>
+            </div>
+        </LayoutView>
+    </NotFound>
 </Router>

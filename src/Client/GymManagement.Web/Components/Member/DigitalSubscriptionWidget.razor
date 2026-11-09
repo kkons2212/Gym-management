@@ -1,0 +1,209 @@
+@using GymManagement.Web.Services
+@inject IWebApiClient ApiClient
+@inject IQrCodeService QrService
+@inject NavigationManager Navigation
+
+@if (_isLoading)
+{
+    <div class="gym-card skeleton" style="height: 220px;"></div>
+}
+else if (_subscription == null)
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Bạn Chưa Có Gói Tập Nào</div>
+        <div class="empty-state-text">Đăng ký gói tập ngay hôm nay để bắt đầu rèn luyện thể thao.</div>
+        <a href="/member/packages" class="btn-primary" style="text-decoration: none; display: inline-flex; width: auto;">
+            Xem Danh Mục Gói Tập
+        </a>
+    </div>
+}
+else
+{
+    <!-- Digital Subscription Card -->
+    <div class="gym-card" style="background: linear-gradient(145deg, #1E293B, #0F172A); border: 1px solid var(--border-strong); position: relative; overflow: hidden;">
+        <!-- Top Row: Plan Name & Status Badge -->
+        <div class="gym-card-header">
+            <div>
+                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">
+                    Gói Tập Hiện Tại
+                </span>
+                <span class="gym-card-title" style="font-size: 16px;">@_subscription.PlanName</span>
+            </div>
+            <div>
+                @if (string.Equals(_subscription.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #34D399; background: rgba(6, 78, 59, 0.6); border: 1px solid #059669; border-radius: 9999px;">
+                        Đang hoạt động
+                    </span>
+                }
+                else if (string.Equals(_subscription.Status, "FROZEN", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #FBBF24; background: rgba(120, 53, 15, 0.6); border: 1px solid #D97706; border-radius: 9999px;">
+                        Đang bảo lưu
+                    </span>
+                }
+                else
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #F87171; background: rgba(127, 29, 29, 0.6); border: 1px solid #DC2626; border-radius: 9999px;">
+                        Đã hết hạn
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Session Counters (2 Equal Columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; padding: 14px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+            <div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Lượt Gym Còn Lại</span>
+                <span class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #38BDF8;">
+                    @_subscription.RemainingCheckInSessions
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted); margin-left: 2px;">lượt</span>
+            </div>
+            <div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Buổi PT Còn Lại</span>
+                <span class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #C084FC;">
+                    @_subscription.RemainingPtSessions
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted); margin-left: 2px;">buổi</span>
+            </div>
+        </div>
+
+        <!-- Expiration & PT Info Footer -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-secondary); margin-bottom: 16px;">
+            <div>
+                <span>Hết hạn:&nbsp;</span>
+                <strong style="color: var(--text-primary);">@_subscription.EndDate.ToString("dd/MM/yyyy")</strong>
+            </div>
+            @if (!string.IsNullOrEmpty(_subscription.AssignedPtName))
+            {
+                <div>
+                    <span>HLV:&nbsp;</span>
+                    <strong style="color: #C084FC;">@_subscription.AssignedPtName</strong>
+                </div>
+            }
+        </div>
+
+        <!-- 1-Tap QR Code Access Button -->
+        <button type="button" @onclick="ToggleQrModal" class="btn-primary" style="background: linear-gradient(90deg, #0284C7, #0EA5E9);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/>
+            </svg>
+            <span>Mở Mã QR Điểm Danh Vào Phòng</span>
+        </button>
+
+        <!-- Warning Bar (Amber if < 7 days or < 3 sessions) -->
+        @if (IsExpiringSoon)
+        {
+            <div style="margin-top: 14px; padding: 10px 12px; background: rgba(245, 158, 11, 0.15); border: 1px solid #D97706; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; color: #FCD34D;">Gói tập sắp hết hạn hoặc hết lượt</span>
+                <a href="/member/packages" style="font-size: 12px; font-weight: 700; color: #FBBF24; text-decoration: underline;">
+                    Gia hạn ngay
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- QR Code Pop-up Modal (Mã QR tĩnh chứa mã hội viên, dùng xuyên suốt gói tập) -->
+    @if (_showQrModal)
+    {
+        <div class="modal-backdrop" @onclick="ToggleQrModal">
+            <div class="modal-content" style="max-width: 340px; text-align: center;" @onclick:stopPropagation>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Mã QR Điểm Danh</h2>
+                    <button type="button" @onclick="ToggleQrModal" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- QR Display (Strict Rule: Black on solid white, 240x240px, quiet zone 4 modules, no logo overlay) -->
+                <div style="background: #FFFFFF; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    @if (!string.IsNullOrEmpty(_qrImageBase64))
+                    {
+                        <img src="@_qrImageBase64" width="240" height="240" alt="Mã QR Hội Viên" style="display: block; border-radius: 4px;" />
+                    }
+                    else
+                    {
+                        <div class="skeleton" style="width: 240px; height: 240px; border-radius: 4px;"></div>
+                    }
+                </div>
+
+                <!-- Member Verification Metadata outside QR area -->
+                <div style="margin-bottom: 12px;">
+                    <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">
+                        @_subscription.MemberFullName
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-family: monospace;">
+                        Mã HV: @_subscription.UserName
+                    </div>
+                </div>
+
+                <!-- Guidance Note -->
+                <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                    Mã QR chuẩn quốc tế tạo tự động từ mã hội viên. Sử dụng trực tiếp hoặc lưu về máy để điểm danh tại quầy.
+                </div>
+
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    @if (!string.IsNullOrEmpty(_qrImageBase64))
+                    {
+                        <a href="@_qrImageBase64"
+                           download="QR_@(_subscription.UserName).png"
+                           class="btn-primary"
+                           style="flex: 1; min-height: 38px; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
+                            📥 Tải Về Máy
+                        </a>
+                    }
+                    <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="flex: 1; min-height: 38px; font-size: 13px;">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private MemberSubscriptionDetailDto? _subscription;
+    private bool _isLoading = true;
+    private bool _showQrModal = false;
+    private string _qrCode = string.Empty;
+    private string _qrImageBase64 = string.Empty;
+
+    private bool IsExpiringSoon => _subscription != null &&
+        ((_subscription.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber) <= 7 ||
+         _subscription.RemainingCheckInSessions <= 3);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSubscriptionAsync();
+    }
+
+    public async Task ReloadAsync()
+    {
+        await LoadSubscriptionAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSubscriptionAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _subscription = await ApiClient.GetMySubscriptionAsync();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ToggleQrModal()
+    {
+        _showQrModal = !_showQrModal;
+        if (_showQrModal && string.IsNullOrEmpty(_qrImageBase64) && _subscription != null)
+        {
+            _qrCode = await ApiClient.GetMyCheckInQrCodeAsync();
+            _qrImageBase64 = QrService.GeneratePngBase64(_qrCode, 10);
+        }
+    }
+}

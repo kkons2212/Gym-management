@@ -28,5 +28,10 @@ public record VietQrPayloadDto(
     string BankName,
     decimal Amount,
     string TransferContent,
-    int ExpirySeconds
-);
+    int ExpirySeconds,
+    string? InvoiceId = null
+)
+{
+    public string QrImageUrl => QrDataUrl;
+    public int ExpireSeconds => ExpirySeconds;
+}

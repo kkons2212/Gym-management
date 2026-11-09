@@ -130,17 +130,15 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 ---
 
-### 2.2. Giai đoạn 2: Khối Thông Tin Gói Tập Số & Mã QR Điểm Danh 1-Chạm (Khớp UC09 & UC03)
-* **Khối Gói Tập Số Tức Thời:**
-  * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay Khối Gói Tập Số ở vị trí trên cùng.
-  * Khối hiển thị rõ: Họ tên hội viên (`User.FullName`), Tên gói tập hiện tại (`PackagePlan.Name`), Trạng thái gói tập dạng nhãn chữ tĩnh (`ACTIVE`/`FROZEN`/`EXPIRED`), Số ngày còn lại (tính từ `MemberSubscription.EndDate`) và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
-* **Cơ Chế Mã QR Điểm Danh 1-Chạm:**
-  * Nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện ở kích thước tối thiểu **$240\text{px} \times 240\text{px}$**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
-  * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm webcam/máy quét đọc được.
-  * Trang QR hiển thị Mã hội viên và Họ tên bên ngoài vùng quét để nhân viên quầy đối chiếu; thông tin nhạy cảm không được nhúng trực tiếp vào mã.
-  * Mã có thời hạn ngắn, tự làm mới mỗi **60 giây**. Hiển thị đếm ngược rõ ràng và trạng thái đang làm mới.
-  * Có nút `"Làm mới mã QR"`; nếu mất mạng hoặc làm mới thất bại, hiển thị thông báo lỗi rõ ràng.
-  * Khi mã hết hạn hoặc gói tập không hợp lệ, ẩn mã cũ và thông báo rõ lý do.
+### 2.1. Giai đoạn 1: Đăng nhập Một Chạm & Khối Thông Tin Gói Tập Số (Khớp UC02)
+* **Khối Thông Tin Gói Tập Số (Digital Subscription Widget):**
+  * Sau khi đăng nhập, màn hình chính (Dashboard) hiển thị ngay Khối Thông Tin Gói Tập Số ở vị trí trên cùng.
+  * Khối hiển thị rõ: Họ tên hội viên (`User.FullName`), Tên gói tập hiện tại (`PackagePlan.Name`), Trạng thái gói tập dạng nhãn tĩnh (`MemberSubscription.Status`), Số ngày còn lại (tính từ `MemberSubscription.EndDate`) và Số lượt tập còn lại (`RemainingCheckInSessions`, `RemainingPtSessions`).
+* **Cơ Chế Mã QR Điểm Danh:**
+  * Dashboard hiển thị nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện ở kích thước tối thiểu **240 × 240 px**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
+  * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm máy quét đọc được.
+  * Trang QR hiển thị Mã hội viên và Họ tên để đối chiếu. Mã QR hội viên là mã tĩnh chứa mã hội viên (Member Code), tải một lần dùng xuyên suốt gói tập, không tự động xoay vòng theo thời gian.
+  * Khi gói tập không hợp lệ (hết hạn, bảo lưu), ẩn mã hoặc làm mờ kèm thông báo giải thích rõ lý do.
 * **Cảnh Báo Hết Hạn & Bảo Lưu Gói Tập:**
   * Khi gói tập còn dưới 7 ngày hoặc dưới 3 lượt tập: Hiển thị thanh thông báo màu vàng hổ phách mời gia hạn kèm nút `"Gia hạn ngay"` dẫn thẳng tới màn hình thanh toán VietQR.
   * Nếu gói tập đang ở trạng thái `FROZEN`: Hiển thị rõ ngày kết thúc bảo lưu và nút `"Yêu cầu mở gói tập sớm"`.
@@ -312,11 +310,8 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 | Phân Hệ Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Quản Trị Viên (WinUI 3 - Desktop) |
 | :--- | :--- | :--- |
-| **UC01: Đăng nhập & Xác thực** | Đăng nhập trên mobile card, tự động giải mã Claims và điều hướng vào đúng không gian làm việc. | Đăng nhập quầy, xử lý phiên làm việc JWT, chặn đăng nhập tài khoản bị khóa. |
-| **UC02: Hội viên & Gói tập** | Xem thông tin gói tập hiện tại, ngày hết hạn, cảnh báo mời gia hạn khi còn $\le 7$ ngày. | Tạo hội viên mới qua nút CTA trên Header `MembersPage.xaml` (Wizard 2 bước), gia hạn, bảo lưu dời ngày, hủy gói. |
-| **UC03: Check-in Điểm danh** | Mở mã QR điểm danh 1-chạm kích thước $240 \times 240\text{px}$, tự làm mới mỗi 60 giây có đếm ngược. | Màn hình 2 cột tiếp nhận quét webcam trong $<1$s, kết quả tinh gọn **Mã + Tên**, banner tĩnh (không âm thanh, không ảnh). |
-| **UC04 & UC08: Dịch vụ Huấn luyện viên PT** | PT đăng ký slot rảnh tuần (màu trung tính), xem timeline ca dạy, xác nhận hoàn tất ca 1-chạm trên điện thoại. | Admin phân công PT cố định 1-1, rà soát ca ngoại lệ (hoàn thành, vắng, hoãn), xếp lịch chống trùng giờ viền đỏ rực. |
-| **UC05: Thanh toán & Hóa đơn** | Tự xem bảng giá niêm yết, quét mã VietQR tự động kích hoạt gói trong 3s; hỗ trợ nút Sandbox qua biến môi trường. | Quầy POS chọn nhanh gói tập, shortcut `[+] Khách mới`, xuất hóa đơn in nhiệt K80, xử lý hoàn tiền hóa đơn `REFUNDED`. |
-| **UC06: Báo cáo & Thống kê** | Xem dòng thời gian lịch sử các lần quét QR vào phòng và các ca tập hoàn thành cùng PT. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/PDF $<3$s. |
-| **UC07: Phân quyền & Danh mục** | Không áp dụng (chỉ dành riêng cho Super Admin trên Desktop). | Quản lý nhân sự RBAC (chống tự tước quyền/tự khóa mình), quản lý danh mục gói `PackagePlan` (soft-delete `DISCONTINUED`). |
-| **UC10: Đặt lịch PT & Đánh giá** | Đặt lịch PT 3 bước, cảnh báo phạt mất buổi nếu hủy ca $<2$ tiếng, đổi ca trống, chấm sao 1-5 sao sau buổi tập. | Giám sát lịch dạy, điều phối giải quyết khiếu nại giữa hội viên và huấn luyện viên. |
+| **Điểm danh & Ra vào** | Mở mã QR gói tập trên điện thoại, hiển thị mã QR tĩnh chứa mã hội viên để quét qua quầy check-in. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). |
+| **Gói tập & Thanh toán** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt gói tập trong 3 giây. Hỗ trợ nút giả lập thanh toán sandbox qua biến môi trường. | Admin chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt K80, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt (không khóa cưỡng bức thời gian). Hỗ trợ nút giả lập sandbox qua biến môi trường. |
+| **Lịch Huấn luyện viên PT** | Xem lịch rảnh của PT trên lưới tuần (màu trung tính), đặt ca tập chỉ với 2 click; cảnh báo phạt nếu hủy ca $<2$ tiếng. | PT xem danh sách học viên theo Timeline ca dạy; Quản trị viên xếp lịch PT, phát hiện và chặn đứng xung đột trùng giờ. |
+| **Chỉ số Sức khỏe InBody** | Xem biểu đồ trực quan biến thiên cân nặng, tỷ lệ mỡ và khối lượng cơ qua từng mốc thời gian. | Nhân viên đo nhập số liệu trên form có kiểm tra biên an toàn, tự động tính chỉ số BMI ngay tức thì. |
+| **Quản lý & Báo cáo** | Nhận thông báo tự động khi gói tập sắp hết hạn hoặc đến giờ hẹn tập cùng huấn luyện viên. | Theo dõi Dashboard KPI doanh thu thời gian thực, xem mật độ giờ cao điểm, trích xuất báo cáo Excel/CSV và sổ kiểm toán. |

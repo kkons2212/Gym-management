@@ -1,0 +1,240 @@
+@page "/member/booking"
+@attribute [Authorize(Roles = "Member")]
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 18px;">
+    <!-- Page Header -->
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+            Lịch Tập Với Huấn Luyện Viên (PT)
+        </h1>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+            Đặt lịch tập 1-1, theo dõi ca tập sắp tới và đánh giá chất lượng
+        </div>
+    </div>
+
+    <!-- Booking Wizard Component -->
+    <PtBookingWizard AssignedPtId="@_subscription?.AssignedPtId"
+                     AssignedPtName="@_subscription?.AssignedPtName"
+                     RemainingPtSessions="@(_subscription?.RemainingPtSessions ?? 0)"
+                     OnBookingSuccess="HandleBookingSuccessAsync" />
+
+    <!-- List of Booked & Past Sessions -->
+    <div class="gym-card" style="padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2 class="gym-card-title" style="font-size: 15px; margin: 0;">Lịch Sử & Danh Sách Ca Tập</h2>
+            <button type="button"
+                    @onclick="LoadSessionsAsync"
+                    class="btn-secondary"
+                    style="padding: 4px 8px; font-size: 11px; min-height: 28px;">
+                Làm mới
+            </button>
+        </div>
+
+        @if (_isLoadingSessions)
+        {
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="skeleton" style="height: 68px; border-radius: 8px;"></div>
+                <div class="skeleton" style="height: 68px; border-radius: 8px;"></div>
+            </div>
+        }
+        else if (_sessions.Count == 0)
+        {
+            <div style="text-align: center; padding: 24px 12px; color: var(--text-secondary); font-size: 13px;">
+                Bạn chưa có ca tập nào được ghi nhận.
+            </div>
+        }
+        else
+        {
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                @foreach (var s in _sessions)
+                {
+                    var isFuture = s.SessionStartTime >= DateTime.Now;
+                    var isBooked = s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Booked;
+                    var isCompleted = s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Completed;
+
+                    <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span class="badge" style="background: @GetStatusBg(s.Status); color: @GetStatusColor(s.Status); font-size: 11px;">
+                                @GetStatusLabel(s.Status)
+                            </span>
+                            <span class="tabular-nums" style="font-size: 12px; color: var(--text-secondary);">
+                                @s.SessionStartTime.ToString("HH:mm") – @s.SessionEndTime.ToString("HH:mm") (@s.SessionStartTime.ToString("dd/MM/yyyy"))
+                            </span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <div style="font-weight: 600; color: #F8FAFC;">
+                                HLV:&nbsp;@s.PtName
+                            </div>
+                            @if (isCompleted && s.RatingStars.HasValue)
+                            {
+                                <div style="color: #FBBF24; font-size: 12px;">
+                                    @for (int star = 0; star < s.RatingStars.Value; star++)
+                                    {
+                                        <span>★</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(s.WorkoutNotes))
+                        {
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                                Mục tiêu: @s.WorkoutNotes
+                            </div>
+                        }
+
+                        <!-- Action Buttons -->
+                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-subtle);">
+                            @if (isBooked && isFuture)
+                            {
+                                <button type="button"
+                                        class="btn-secondary"
+                                        @onclick="() => OpenRescheduleModal(s)"
+                                        style="flex: 1; min-height: 32px; font-size: 12px; padding: 4px;">
+                                    Đổi Giờ Tập
+                                </button>
+                                <button type="button"
+                                        class="btn-danger"
+                                        @onclick="() => OpenCancelModal(s)"
+                                        style="flex: 1; min-height: 32px; font-size: 12px; padding: 4px;">
+                                    Hủy Ca Tập
+                                </button>
+                            }
+                            else if (isCompleted)
+                            {
+                                <button type="button"
+                                        class="btn-secondary"
+                                        @onclick="() => OpenRatingModal(s)"
+                                        style="flex: 1; min-height: 32px; font-size: 12px; padding: 4px; color: @(s.RatingStars.HasValue ? "#FBBF24" : "var(--text-primary)");">
+                                    @(s.RatingStars.HasValue ? "Xem / Sửa Đánh Giá" : "Đánh Giá Buổi Tập ★")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Modals -->
+    <CancelBookingModal IsOpen="_showCancelModal"
+                        Session="_selectedSession"
+                        OnClose="() => _showCancelModal = false"
+                        OnCancelled="HandleSessionUpdatedAsync" />
+
+    <RescheduleBookingModal IsOpen="_showRescheduleModal"
+                            Session="_selectedSession"
+                            OnClose="() => _showRescheduleModal = false"
+                            OnRescheduled="HandleSessionUpdatedAsync" />
+
+    <SessionRatingModal IsOpen="_showRatingModal"
+                        Session="_selectedSession"
+                        OnClose="() => _showRatingModal = false"
+                        OnRatingSubmitted="HandleSessionUpdatedAsync" />
+</div>
+
+@code {
+    private MemberSubscriptionDetailDto? _subscription;
+    private List<PtSessionDto> _sessions = [];
+    private bool _isLoadingSessions = true;
+
+    private PtSessionDto? _selectedSession;
+    private bool _showCancelModal;
+    private bool _showRescheduleModal;
+    private bool _showRatingModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            _subscription = await ApiClient.GetMySubscriptionAsync();
+        }
+        catch
+        {
+            _subscription = null;
+        }
+
+        await LoadSessionsAsync();
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        _isLoadingSessions = true;
+        try
+        {
+            var data = await ApiClient.GetMyPtSessionsAsync();
+            _sessions = data.OrderByDescending(s => s.SessionStartTime).ToList();
+        }
+        catch
+        {
+            _sessions = [];
+        }
+        finally
+        {
+            _isLoadingSessions = false;
+        }
+    }
+
+    private async Task HandleBookingSuccessAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task HandleSessionUpdatedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private void OpenCancelModal(PtSessionDto session)
+    {
+        _selectedSession = session;
+        _showCancelModal = true;
+    }
+
+    private void OpenRescheduleModal(PtSessionDto session)
+    {
+        _selectedSession = session;
+        _showRescheduleModal = true;
+    }
+
+    private void OpenRatingModal(PtSessionDto session)
+    {
+        _selectedSession = session;
+        _showRatingModal = true;
+    }
+
+    private string GetStatusLabel(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "Đã Đặt Lịch",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "Đã Hoàn Thành",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "Đã Hủy",
+        GymManagement.Server.Core.Enums.PtSessionStatus.AbsentMember => "Hội Viên Vắng",
+        GymManagement.Server.Core.Enums.PtSessionStatus.AbsentPt => "HLV Vắng",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Postponed => "Đã Hoãn",
+        _ => status.ToString()
+    };
+
+    private string GetStatusBg(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "rgba(56, 189, 248, 0.15)",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "rgba(52, 211, 153, 0.15)",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "rgba(239, 68, 68, 0.15)",
+        _ => "rgba(148, 163, 184, 0.15)"
+    };
+
+    private string GetStatusColor(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "#38BDF8",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "#34D399",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "#F87171",
+        _ => "#94A3B8"
+    };
+}
+

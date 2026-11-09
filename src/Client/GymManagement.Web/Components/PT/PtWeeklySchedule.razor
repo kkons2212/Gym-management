@@ -1,0 +1,284 @@
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Date Navigation Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Lịch Huấn Luyện Trong Tuần</h2>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Theo dõi các ca tập 1-1 và xác nhận hoàn thành buổi tập
+            </div>
+        </div>
+        <button type="button"
+                @onclick="LoadScheduleAsync"
+                class="btn-secondary"
+                style="padding: 4px 8px; font-size: 11px; min-height: 28px;">
+            Làm mới
+        </button>
+    </div>
+
+    <!-- Day Carousel -->
+    <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;">
+        @for (int i = 0; i < 7; i++)
+        {
+            var date = _weekStart.AddDays(i);
+            var isSelected = _selectedDate == date;
+            var sessionCount = _sessions.Count(s => DateOnly.FromDateTime(s.SessionStartTime) == date);
+
+            <button type="button"
+                    @onclick="() => _selectedDate = date"
+                    class="tabular-nums"
+                    style="flex: 0 0 66px; padding: 8px 4px; border-radius: 8px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer;">
+                <div style="font-size: 10px; color: @(isSelected ? "#38BDF8" : "var(--text-secondary)");">
+                    @(date == _today ? "Hôm nay" : $"Thứ {((int)date.DayOfWeek == 0 ? "CN" : ((int)date.DayOfWeek + 1).ToString())}")
+                </div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 2px;">
+                    @date.Day.ToString("00")
+                </div>
+                <div style="font-size: 10px; color: @(sessionCount > 0 ? "#38BDF8" : "var(--text-secondary)");">
+                    @sessionCount&nbsp;ca
+                </div>
+            </button>
+        }
+    </div>
+
+    <!-- Sessions for Selected Day -->
+    @if (_isLoading)
+    {
+        <div class="skeleton" style="height: 80px; border-radius: 8px;"></div>
+        <div class="skeleton" style="height: 80px; border-radius: 8px;"></div>
+    }
+    else if (DaySessions.Count == 0)
+    {
+        <div class="gym-card" style="text-align: center; padding: 32px 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">☕</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Không Có Ca Tập</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                Bạn không có lịch dạy nào trong ngày @_selectedDate.ToString("dd/MM/yyyy").
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            @foreach (var s in DaySessions)
+            {
+                var isBooked = s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Booked;
+                var isCompleted = s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Completed;
+
+                <div class="gym-card" style="padding: 14px; border-left: 4px solid @(isCompleted ? "#34D399" : (isBooked ? "#38BDF8" : "#EF4444"));">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="badge" style="background: @GetStatusBg(s.Status); color: @GetStatusColor(s.Status); font-size: 11px;">
+                            @GetStatusLabel(s.Status)
+                        </span>
+                        <span class="tabular-nums" style="font-size: 12px; font-weight: 600; color: #F8FAFC;">
+                            @s.SessionStartTime.ToString("HH:mm") – @s.SessionEndTime.ToString("HH:mm")
+                        </span>
+                    </div>
+
+                    <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">
+                        Học viên:&nbsp;@s.MemberFullName
+                    </div>
+
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                        Mã học viên:&nbsp;<span class="tabular-nums">@s.MemberUserName</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(s.WorkoutNotes))
+                    {
+                        <div style="background: var(--bg-canvas); border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #CBD5E1; margin-bottom: 10px;">
+                            Ghi chú:&nbsp;@s.WorkoutNotes
+                        </div>
+                    }
+
+                    <!-- 1-Tap Complete Session Button (Active/Past booked sessions) -->
+                    @if (isBooked)
+                    {
+                        <button type="button"
+                                class="btn-primary"
+                                @onclick="() => OpenCompleteModal(s)"
+                                style="width: 100%; min-height: 36px; font-size: 13px; padding: 6px;">
+                            ✓ Xác Nhận Hoàn Thành Buổi Tập
+                        </button>
+                    }
+                    else if (isCompleted && s.RatingStars.HasValue)
+                    {
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding-top: 6px; border-top: 1px dashed var(--border-subtle);">
+                            <span style="color: var(--text-secondary);">Học viên đánh giá:</span>
+                            <span style="color: #FBBF24; font-weight: 600;">
+                                @s.RatingStars.Value&nbsp;★
+                                @if (!string.IsNullOrEmpty(s.ReviewComment))
+                                {
+                                    <span style="color: var(--text-secondary); font-size: 11px;"> &ldquo;@s.ReviewComment&rdquo;</span>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Complete Session Modal -->
+    @if (_showCompleteModal && _selectedSession != null)
+    {
+        <div class="modal-backdrop" @onclick="() => _showCompleteModal = false">
+            <div class="modal-content" style="max-width: 380px; text-align: left;" @onclick:stopPropagation>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 class="gym-card-title" style="font-size: 16px; margin: 0;">Hoàn Thành Ca Tập PT</h3>
+                    <button type="button" @onclick="() => _showCompleteModal = false" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                        ✕
+                    </button>
+                </div>
+
+                <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px;">
+                    <div>Học viên: <strong>@_selectedSession.MemberFullName</strong></div>
+                    <div class="tabular-nums" style="color: var(--text-secondary); margin-top: 2px;">
+                        Ca:&nbsp;@_selectedSession.SessionStartTime.ToString("HH:mm") – @_selectedSession.SessionEndTime.ToString("HH:mm") (@_selectedSession.SessionStartTime.ToString("dd/MM/yyyy"))
+                    </div>
+                </div>
+
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                    Nội dung bài tập & Nhận xét cho học viên
+                </label>
+                <textarea @bind="_completionNotes"
+                          rows="3"
+                          maxlength="300"
+                          placeholder="Ví dụ: Hoàn thành bài đẩy ngực 4 hiệp, form chuẩn, cần chú ý hít thở sâu…"
+                          style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; resize: none; outline: none; margin-bottom: 14px;"></textarea>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                        @_errorMessage
+                    </div>
+                }
+
+                <button type="button"
+                        class="btn-primary"
+                        disabled="@_isSubmitting"
+                        @onclick="ConfirmCompleteAsync"
+                        style="width: 100%; padding: 12px; font-size: 14px;">
+                    @if (_isSubmitting)
+                    {
+                        <span>Đang lưu xác nhận…</span>
+                    }
+                    else
+                    {
+                        <span>Xác Nhận Hoàn Thành</span>
+                    }
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _weekStart;
+    private DateOnly _selectedDate;
+    private List<PtSessionDto> _sessions = [];
+    private bool _isLoading = true;
+
+    private PtSessionDto? _selectedSession;
+    private bool _showCompleteModal;
+    private string _completionNotes = string.Empty;
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _weekStart = _today;
+        _selectedDate = _today;
+        await LoadScheduleAsync();
+    }
+
+    private List<PtSessionDto> DaySessions => _sessions
+        .Where(s => DateOnly.FromDateTime(s.SessionStartTime) == _selectedDate)
+        .OrderBy(s => s.SessionStartTime)
+        .ToList();
+
+    private async Task LoadScheduleAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var endDate = _weekStart.AddDays(7);
+            var data = await ApiClient.GetPtMyWeeklyScheduleAsync(_weekStart, endDate);
+            _sessions = data.ToList();
+        }
+        catch
+        {
+            _sessions = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenCompleteModal(PtSessionDto session)
+    {
+        _selectedSession = session;
+        _completionNotes = session.WorkoutNotes ?? string.Empty;
+        _errorMessage = null;
+        _showCompleteModal = true;
+    }
+
+    private async Task ConfirmCompleteAsync()
+    {
+        if (_selectedSession == null || _isSubmitting) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var session = await ApiClient.GetCurrentUserSessionAsync();
+            var ptUserName = session?.UserId ?? "pt01";
+
+            var req = new PtCompleteSessionRequest(
+                SessionId: _selectedSession.SessionId,
+                PtUserName: ptUserName,
+                WorkoutNotes: string.IsNullOrWhiteSpace(_completionNotes) ? null : _completionNotes.Trim()
+            );
+
+            await ApiClient.CompletePtSessionAsync(req);
+            _showCompleteModal = false;
+            await LoadScheduleAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private string GetStatusLabel(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "Chờ Diễn Ra",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "Đã Hoàn Thành",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "Đã Hủy",
+        _ => status.ToString()
+    };
+
+    private string GetStatusBg(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "rgba(56, 189, 248, 0.15)",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "rgba(52, 211, 153, 0.15)",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "rgba(239, 68, 68, 0.15)",
+        _ => "rgba(148, 163, 184, 0.15)"
+    };
+
+    private string GetStatusColor(GymManagement.Server.Core.Enums.PtSessionStatus status) => status switch
+    {
+        GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "#38BDF8",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "#34D399",
+        GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "#F87171",
+        _ => "#94A3B8"
+    };
+}
+

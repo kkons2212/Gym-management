@@ -1,0 +1,236 @@
+@inject IWebApiClient ApiClient
+
+@if (IsOpen && Student != null)
+{
+    <div class="modal-backdrop" @onclick="HandleClose">
+        <div class="modal-content" style="max-width: 420px; text-align: left;" @onclick:stopPropagation>
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Ghi Nhận Chỉ Số InBody</h2>
+                <button type="button" @onclick="HandleClose" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Student Summary -->
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Học viên: <strong>@Student.FullName</strong></span>
+                    <span class="tabular-nums" style="color: var(--text-secondary);">@Student.UserName</span>
+                </div>
+            </div>
+
+            <!-- Metric Inputs (2x2 Grid) -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Cân nặng (kg) *
+                    </label>
+                    <input type="number"
+                           step="0.1"
+                           min="30"
+                           max="250"
+                           value="@_weightKg"
+                           @oninput="HandleWeightChanged"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Chiều cao (cm) *
+                    </label>
+                    <input type="number"
+                           step="1"
+                           min="100"
+                           max="250"
+                           value="@_heightCm"
+                           @oninput="HandleHeightChanged"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Khối lượng cơ (kg) *
+                    </label>
+                    <input type="number"
+                           step="0.1"
+                           min="10"
+                           max="150"
+                           @bind="_skeletalMuscleMass"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Tỷ lệ mỡ (%) *
+                    </label>
+                    <input type="number"
+                           step="0.1"
+                           min="3"
+                           max="60"
+                           @bind="_bodyFatPercentage"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+            </div>
+
+            <!-- Auto-Calculated BMI Banner -->
+            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; color: var(--text-secondary);">Chỉ số BMI tự động:</span>
+                <span class="tabular-nums" style="font-size: 15px; font-weight: 700; color: #38BDF8;">
+                    @(_calculatedBmi.ToString("N1"))&nbsp;(@GetBmiLabel(_calculatedBmi))
+                </span>
+            </div>
+
+            <!-- Advice & Notes -->
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Lời khuyên / Mục tiêu thể hình
+                </label>
+                <textarea @bind="_notes"
+                          rows="2"
+                          maxlength="250"
+                          placeholder="Ví dụ: Tăng cơ bắp tay và vai, duy trì calo deficit 300 kcal…"
+                          style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 12px; resize: none; outline: none;"></textarea>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                    @_errorMessage
+                </div>
+            }
+
+            <!-- Submit Button -->
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@(_isSubmitting || _weightKg <= 0 || _heightCm <= 0)"
+                    @onclick="SubmitRecordAsync"
+                    style="width: 100%; padding: 12px; font-size: 14px;">
+                @if (_isSubmitting)
+                {
+                    <span>Đang lưu chỉ số…</span>
+                }
+                else
+                {
+                    <span>Lưu Kết Quả InBody</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public MemberSummaryDto? Student { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnRecordSaved { get; set; }
+
+    private decimal _weightKg = 68.0m;
+    private decimal _heightCm = 172m;
+    private decimal _skeletalMuscleMass = 32.5m;
+    private decimal _bodyFatPercentage = 18.0m;
+    private decimal _calculatedBmi = 23.0m;
+    private string _notes = string.Empty;
+
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            RecalculateBmi();
+            _errorMessage = null;
+        }
+    }
+
+    private void HandleWeightChanged(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var val) && val > 0)
+        {
+            _weightKg = val;
+            RecalculateBmi();
+        }
+    }
+
+    private void HandleHeightChanged(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var val) && val > 0)
+        {
+            _heightCm = val;
+            RecalculateBmi();
+        }
+    }
+
+    private void RecalculateBmi()
+    {
+        if (_heightCm > 0 && _weightKg > 0)
+        {
+            decimal heightM = _heightCm / 100.0m;
+            _calculatedBmi = Math.Round(_weightKg / (heightM * heightM), 1);
+        }
+    }
+
+    private string GetBmiLabel(decimal bmi)
+    {
+        if (bmi < 18.5m) return "Gầy";
+        if (bmi < 25.0m) return "Bình thường";
+        if (bmi < 30.0m) return "Thừa cân";
+        return "Béo phì";
+    }
+
+    private async Task HandleClose()
+    {
+        _errorMessage = null;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SubmitRecordAsync()
+    {
+        if (Student == null || _isSubmitting) return;
+
+        if (_weightKg <= 0 || _heightCm <= 0 || _skeletalMuscleMass <= 0 || _bodyFatPercentage <= 0)
+        {
+            _errorMessage = "Vui lòng nhập đầy đủ các chỉ số đo hợp lệ.";
+            return;
+        }
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var session = await ApiClient.GetCurrentUserSessionAsync();
+            var ptUserName = session?.UserId ?? "pt01";
+
+            var req = new RecordInBodyRequest(
+                MemberUserName: Student.UserName,
+                PtUserName: ptUserName,
+                WeightKg: _weightKg,
+                HeightCm: _heightCm,
+                SkeletalMuscleMass: _skeletalMuscleMass,
+                BodyFatPercentage: _bodyFatPercentage,
+                Bmi: _calculatedBmi,
+                Notes: string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim(),
+                LinkedSessionId: null
+            );
+
+            await ApiClient.RecordInBodyAsync(req);
+            await OnRecordSaved.InvokeAsync();
+            await HandleClose();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}
+
