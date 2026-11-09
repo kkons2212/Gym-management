@@ -2,6 +2,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Members;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -73,8 +74,8 @@ public sealed class MemberService : IMemberService
         string? keyword,
         CancellationToken cancellationToken = default)
     {
-        var userRepo = _unitOfWork.Repository<MemberUser>();
-        var subRepo = _unitOfWork.Repository<MemberSubscriptionStub>();
+        var userRepo = _unitOfWork.Repository<User>();
+        var subRepo = _unitOfWork.Repository<MemberSubscription>();
 
         var users = await userRepo.FindAsync(
             u => u.RoleId == RoleIdMember &&
@@ -118,13 +119,13 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(userName);
 
-        var user = await _unitOfWork.Repository<MemberUser>()
+        var user = await _unitOfWork.Repository<User>()
             .FindSingleOrDefaultAsync(
                 u => u.UserName == userName && u.RoleId == RoleIdMember,
                 cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy hội viên với mã: {userName}");
 
-        var activeSub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+        var activeSub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
                 s => s.UserName == userName && s.Status == StatusActive,
                 cancellationToken);
@@ -140,7 +141,7 @@ public sealed class MemberService : IMemberService
         ArgumentNullException.ThrowIfNull(request);
         ValidateRegisterMemberRequest(request);
 
-        var userRepo = _unitOfWork.Repository<MemberUser>();
+        var userRepo = _unitOfWork.Repository<User>();
 
         // Kiểm tra trùng Phone (UC02.1 — phụ 5.2)
         bool phoneExists = await userRepo.ExistsAsync(
@@ -151,7 +152,7 @@ public sealed class MemberService : IMemberService
             throw new ValidationException("Số điện thoại đã được sử dụng bởi hội viên khác.");
 
         // Kiểm tra gói tập tồn tại và đang hoạt động
-        var plan = await _unitOfWork.Repository<PackagePlanStub>()
+        var plan = await _unitOfWork.Repository<PackagePlan>()
             .FindSingleOrDefaultAsync(
                 p => p.PlanId == request.PlanId && p.IsActive == 1,
                 cancellationToken)
@@ -165,7 +166,7 @@ public sealed class MemberService : IMemberService
             string newUserName = $"{MemberIdPrefix}-{memberCount + 1:D4}";
 
             // Tạo tài khoản hội viên trong bảng [User]
-            var newUser = new MemberUser
+            var newUser = new User
             {
                 UserName = newUserName,
                 RoleId = RoleIdMember,
@@ -178,7 +179,7 @@ public sealed class MemberService : IMemberService
             await userRepo.AddAsync(newUser, cancellationToken);
 
             // Sinh SubscriptionId và QrCode duy nhất
-            int subCount = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            int subCount = await _unitOfWork.Repository<MemberSubscription>()
                 .CountAsync(cancellationToken: cancellationToken);
             string newSubId = $"{SubscriptionIdPrefix}-{subCount + 1:D5}";
             string qrCode = GenerateQrCode(newUserName);
@@ -187,7 +188,7 @@ public sealed class MemberService : IMemberService
             var endDate = request.StartDate.AddDays(plan.DurationDays ?? 30);
 
             // Tạo subscription trong bảng MemberSubscription
-            var newSub = new MemberSubscriptionStub
+            var newSub = new MemberSubscription
             {
                 SubscriptionId = newSubId,
                 UserName = newUserName,
@@ -200,7 +201,7 @@ public sealed class MemberService : IMemberService
                 Status = StatusActive,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };
-            await _unitOfWork.Repository<MemberSubscriptionStub>().AddAsync(newSub, cancellationToken);
+            await _unitOfWork.Repository<MemberSubscription>().AddAsync(newSub, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -227,7 +228,7 @@ public sealed class MemberService : IMemberService
         ArgumentNullException.ThrowIfNull(request);
         ValidateUpdateMemberRequest(request);
 
-        var userRepo = _unitOfWork.Repository<MemberUser>();
+        var userRepo = _unitOfWork.Repository<User>();
 
         var user = await userRepo.FindSingleOrDefaultAsync(
             u => u.UserName == request.UserName,
@@ -252,7 +253,7 @@ public sealed class MemberService : IMemberService
             "MemberService.UpdateMember: Cập nhật thông tin hội viên {UserName}",
             request.UserName);
 
-        var activeSub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+        var activeSub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
                 s => s.UserName == request.UserName && s.Status == StatusActive,
                 cancellationToken);
@@ -271,12 +272,17 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(userName);
 
-        var sub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+        var sub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
                 s => s.UserName == userName && s.Status == StatusActive,
                 cancellationToken);
 
-        return sub == null ? null : MapToSubscriptionDetailResponse(sub);
+        if (sub == null)
+        {
+            return null;
+        }
+
+        return MapToSubscriptionDetailResponse(sub);
     }
 
     /// <inheritdoc/>
@@ -286,7 +292,7 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var plan = await _unitOfWork.Repository<PackagePlanStub>()
+        var plan = await _unitOfWork.Repository<PackagePlan>()
             .FindSingleOrDefaultAsync(
                 p => p.PlanId == request.NewPlanId && p.IsActive == 1,
                 cancellationToken)
@@ -295,21 +301,21 @@ public sealed class MemberService : IMemberService
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
             // Lấy subscription cũ để lấy UserName
-            var oldSub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            var oldSub = await _unitOfWork.Repository<MemberSubscription>()
                 .FindSingleOrDefaultAsync(
                     s => s.SubscriptionId == request.SubscriptionId,
                     cancellationToken)
                 ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
 
             // Tạo subscription mới với gói được chọn
-            int subCount = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            int subCount = await _unitOfWork.Repository<MemberSubscription>()
                 .CountAsync(cancellationToken: cancellationToken);
             string newSubId = $"{SubscriptionIdPrefix}-{subCount + 1:D5}";
             string qrCode = GenerateQrCode($"{request.SubscriptionId}-RENEW");
 
             var endDate = request.NewStartDate.AddDays(plan.DurationDays ?? 30);
 
-            var newSub = new MemberSubscriptionStub
+            var newSub = new MemberSubscription
             {
                 SubscriptionId = newSubId,
                 UserName = oldSub.UserName,
@@ -323,7 +329,7 @@ public sealed class MemberService : IMemberService
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };
 
-            await _unitOfWork.Repository<MemberSubscriptionStub>().AddAsync(newSub, cancellationToken);
+            await _unitOfWork.Repository<MemberSubscription>().AddAsync(newSub, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -341,7 +347,7 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var newPlan = await _unitOfWork.Repository<PackagePlanStub>()
+        var newPlan = await _unitOfWork.Repository<PackagePlan>()
             .FindSingleOrDefaultAsync(
                 p => p.PlanId == request.UpgradeToPlanId && p.IsActive == 1,
                 cancellationToken)
@@ -349,7 +355,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            var sub = await _unitOfWork.Repository<MemberSubscription>()
                 .FindSingleOrDefaultAsync(
                     s => s.SubscriptionId == request.SubscriptionId && s.Status == StatusActive,
                     cancellationToken)
@@ -359,7 +365,7 @@ public sealed class MemberService : IMemberService
             sub.PlanId = request.UpgradeToPlanId;
             sub.RemainingCheckInSessions += newPlan.MaxCheckInSessions ?? 0;
             sub.RemainingPtSessions += newPlan.TotalPtSessions ?? 0;
-            _unitOfWork.Repository<MemberSubscriptionStub>().Update(sub);
+            _unitOfWork.Repository<MemberSubscription>().Update(sub);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -380,7 +386,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            var sub = await _unitOfWork.Repository<MemberSubscription>()
                 .FindSingleOrDefaultAsync(
                     s => s.SubscriptionId == request.SubscriptionId,
                     cancellationToken)
@@ -393,13 +399,22 @@ public sealed class MemberService : IMemberService
 
             // Tính số ngày bảo lưu và kéo dài EndDate
             int freezeDays = request.FreezeEndDate.DayNumber - request.FreezeStartDate.DayNumber;
-            var newEndDate = sub.EndDate.AddDays(freezeDays);
+            DateOnly currentEndDate;
+            if (sub.EndDate.HasValue)
+            {
+                currentEndDate = sub.EndDate.Value;
+            }
+            else
+            {
+                currentEndDate = request.FreezeStartDate;
+            }
+            var newEndDate = currentEndDate.AddDays(freezeDays);
 
             sub.Status = StatusFrozen;
             sub.FreezeStartDate = request.FreezeStartDate;
             sub.FreezeEndDate = request.FreezeEndDate;
             sub.EndDate = newEndDate;
-            _unitOfWork.Repository<MemberSubscriptionStub>().Update(sub);
+            _unitOfWork.Repository<MemberSubscription>().Update(sub);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -423,14 +438,14 @@ public sealed class MemberService : IMemberService
 
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscriptionStub>()
+            var sub = await _unitOfWork.Repository<MemberSubscription>()
                 .FindSingleOrDefaultAsync(
                     s => s.SubscriptionId == request.SubscriptionId,
                     cancellationToken)
                 ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
 
             sub.Status = StatusCancelled;
-            _unitOfWork.Repository<MemberSubscriptionStub>().Update(sub);
+            _unitOfWork.Repository<MemberSubscription>().Update(sub);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -452,7 +467,7 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(userName);
 
-        var logs = await _unitOfWork.Repository<CheckInLogStub>()
+        var logs = await _unitOfWork.Repository<CheckInLog>()
             .FindAsync(
                 c => c.UserName == userName &&
                      (fromDate == null || c.CheckInAt >= fromDate) &&
@@ -560,26 +575,34 @@ public sealed class MemberService : IMemberService
     // =========================================================================
 
     private static MemberProfileResponse BuildMemberProfileResponse(
-        MemberUser user,
-        MemberSubscriptionStub? sub)
-        => new(
+        User user,
+        MemberSubscription? sub)
+    {
+        SubscriptionDetailResponse? activeSubResponse = null;
+        if (sub != null)
+        {
+            activeSubResponse = MapToSubscriptionDetailResponse(sub);
+        }
+
+        return new MemberProfileResponse(
             UserName: user.UserName,
             FullName: user.FullName ?? string.Empty,
             Phone: user.Phone ?? string.Empty,
             Email: user.Email ?? string.Empty,
             Status: user.Status ?? string.Empty,
-            ActiveSubscription: sub == null ? null : MapToSubscriptionDetailResponse(sub));
+            ActiveSubscription: activeSubResponse);
+    }
 
-    private static SubscriptionDetailResponse MapToSubscriptionDetailResponse(MemberSubscriptionStub sub)
+    private static SubscriptionDetailResponse MapToSubscriptionDetailResponse(MemberSubscription sub)
     {
         Enum.TryParse<SubscriptionStatus>(sub.Status, ignoreCase: true, out var statusEnum);
         return new SubscriptionDetailResponse(
             SubscriptionId: sub.SubscriptionId,
-            PlanId: sub.PlanId ?? string.Empty,
-            PlanName: sub.PlanId ?? string.Empty,     // placeholder — sẽ resolve JOIN khi có EF Core entity
+            PlanId: sub.PlanId,
+            PlanName: sub.PlanId,     // placeholder — sẽ resolve JOIN khi có EF Core entity
             QrCode: sub.QrCode ?? string.Empty,
             StartDate: sub.StartDate ?? DateOnly.MinValue,
-            EndDate: sub.EndDate,
+            EndDate: sub.EndDate ?? DateOnly.MinValue,
             RemainingCheckInSessions: sub.RemainingCheckInSessions,
             RemainingPtSessions: sub.RemainingPtSessions,
             Status: statusEnum,
@@ -588,68 +611,3 @@ public sealed class MemberService : IMemberService
             AssignedPtId: sub.AssignedPtId);
     }
 }
-
-// =============================================================================
-// ENTITY STUBS
-// Placeholder types ánh xạ trực tiếp với 4 bảng SQL Server liên quan đến Member.
-// Tên đặt theo đúng Ma trận 3.2 dev_rule (tên bảng vật lý).
-// Sẽ được thay bằng EF Core entity chính thức khi hoàn thành Task 1.1.x
-// =============================================================================
-
-#pragma warning disable CS8618
-
-/// <summary>Stub Entity — ánh xạ bảng [User] (hội viên).</summary>
-internal sealed class MemberUser
-{
-    public string UserName { get; set; }
-    public string RoleId { get; set; }
-    public string? FullName { get; set; }
-    public string? Phone { get; set; }
-    public string? Email { get; set; }
-    public string? Status { get; set; }
-    public DateOnly? CreatedAt { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng MemberSubscription.</summary>
-internal sealed class MemberSubscriptionStub
-{
-    public string SubscriptionId { get; set; }
-    public string UserName { get; set; }
-    public string? PlanId { get; set; }
-    public string? QrCode { get; set; }
-    public DateOnly? StartDate { get; set; }
-    public DateOnly EndDate { get; set; }
-    public int RemainingCheckInSessions { get; set; }
-    public int RemainingPtSessions { get; set; }
-    public string? Status { get; set; }
-    public DateOnly? FreezeStartDate { get; set; }
-    public DateOnly? FreezeEndDate { get; set; }
-    public string? AssignedPtId { get; set; }
-    public DateOnly? CreatedAt { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng PackagePlan.</summary>
-internal sealed class PackagePlanStub
-{
-    public string PlanId { get; set; }
-    public string? Name { get; set; }
-    public int? DurationDays { get; set; }
-    public decimal? Price { get; set; }
-    public int? MaxCheckInSessions { get; set; }
-    public byte? IsPtIncluded { get; set; }
-    public int? TotalPtSessions { get; set; }
-    public byte IsActive { get; set; }
-}
-
-/// <summary>Stub Entity — ánh xạ bảng CheckInLog (đọc-only bởi MemberService).</summary>
-internal sealed class CheckInLogStub
-{
-    public string CheckInId { get; set; }
-    public DateOnly? CheckInAt { get; set; }
-    public string? Status { get; set; }
-    public string? DenialReason { get; set; }
-    public string UserName { get; set; }
-    public string? SubscriptionId { get; set; }
-}
-
-#pragma warning restore CS8618
