@@ -9,10 +9,15 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Authentication & Core Services
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/login";
+    });
+builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthenticationStateProvider>());
-builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<IWebApiClient, MockWebApiClient>();
 
 var app = builder.Build();
@@ -22,10 +27,12 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
