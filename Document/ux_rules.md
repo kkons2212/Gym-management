@@ -58,10 +58,8 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 * **Cơ Chế Mã QR Điểm Danh:**
   * Dashboard hiển thị nút `"Mở mã QR điểm danh"` nổi bật; khi mở, QR xuất hiện ở kích thước tối thiểu **240 × 240 px**, co giãn phù hợp màn hình điện thoại mà không bị cắt.
   * QR đen trên nền trắng đặc, giữ vùng trống (quiet zone) tối thiểu 4 module. Không đặt chữ, logo, họa tiết hoặc lớp phủ lên mã để bảo đảm máy quét đọc được.
-  * Trang QR hiển thị Mã hội viên và Họ tên để đối chiếu; thông tin nhạy cảm không được nhúng trực tiếp vào mã.
-  * Mã có thời hạn ngắn, tự làm mới mỗi **60 giây**. Hiển thị đếm ngược rõ ràng và trạng thái đang làm mới.
-  * Có nút `"Làm mới mã QR"`; nếu mất mạng hoặc làm mới thất bại, hiển thị thông báo lỗi rõ ràng.
-  * Khi mã hết hạn hoặc gói tập không hợp lệ, ẩn mã cũ và thông báo rõ lý do.
+  * Trang QR hiển thị Mã hội viên và Họ tên để đối chiếu. Mã QR hội viên là mã tĩnh chứa mã hội viên (Member Code), tải một lần dùng xuyên suốt gói tập, không tự động xoay vòng theo thời gian.
+  * Khi gói tập không hợp lệ (hết hạn, bảo lưu), ẩn mã hoặc làm mờ kèm thông báo giải thích rõ lý do.
 * **Cảnh Báo Hết Hạn & Bảo Lưu Gói Tập:**
   * Khi gói tập còn dưới 7 ngày hoặc dưới 3 lượt tập: Hiển thị thanh thông báo màu vàng hổ phách mời gia hạn kèm nút `"Gia hạn ngay"` dẫn thẳng tới màn hình thanh toán VietQR.
   * Nếu gói tập đang ở trạng thái `FROZEN`: Hiển thị rõ ngày kết thúc bảo lưu và nút `"Yêu cầu mở gói tập sớm"`.
@@ -197,7 +195,7 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 
 | Thành Phần Nghiệp Vụ | Trải Nghiệm Hội Viên & PT (Blazor Server - Mobile) | Trải Nghiệm Quản Trị Viên (WinUI 3 - Desktop) |
 | :--- | :--- | :--- |
-| **Điểm danh & Ra vào** | Mở mã QR gói tập trên điện thoại, hiển thị mã QR động tự đổi mỗi 60 giây để quét qua turnstile. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). |
+| **Điểm danh & Ra vào** | Mở mã QR gói tập trên điện thoại, hiển thị mã QR tĩnh chứa mã hội viên để quét qua quầy check-in. | Màn hình Admin tiếp nhận quét camera trong $<1\text{s}$, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). |
 | **Gói tập & Thanh toán** | Tự xem danh mục gói tập, chọn mua và quét mã VietQR tự động kích hoạt gói tập trong 3 giây. Hỗ trợ nút giả lập thanh toán sandbox qua biến môi trường. | Admin chọn nhanh hội viên, gói tập, xuất hóa đơn in nhiệt K80, kiểm tra tiền về qua Webhook hoặc xác nhận thu tiền mặt (không khóa cưỡng bức thời gian). Hỗ trợ nút giả lập sandbox qua biến môi trường. |
 | **Lịch Huấn luyện viên PT** | Xem lịch rảnh của PT trên lưới tuần (màu trung tính), đặt ca tập chỉ với 2 click; cảnh báo phạt nếu hủy ca $<2$ tiếng. | PT xem danh sách học viên theo Timeline ca dạy; Quản trị viên xếp lịch PT, phát hiện và chặn đứng xung đột trùng giờ. |
 | **Chỉ số Sức khỏe InBody** | Xem biểu đồ trực quan biến thiên cân nặng, tỷ lệ mỡ và khối lượng cơ qua từng mốc thời gian. | Nhân viên đo nhập số liệu trên form có kiểm tra biên an toàn, tự động tính chỉ số BMI ngay tức thì. |

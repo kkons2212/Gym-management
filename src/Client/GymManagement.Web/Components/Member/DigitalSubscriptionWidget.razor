@@ -102,13 +102,13 @@ else
         }
     </div>
 
-    <!-- QR Code Pop-up Modal (Dynamic QR refreshes every 60s) -->
+    <!-- QR Code Pop-up Modal (Mã QR tĩnh chứa mã hội viên, dùng xuyên suốt gói tập) -->
     @if (_showQrModal)
     {
         <div class="modal-backdrop" @onclick="ToggleQrModal">
             <div class="modal-content" style="max-width: 340px; text-align: center;" @onclick:stopPropagation>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h2 class="gym-card-title" style="font-size: 16px;">Mã QR Điểm Danh</h2>
+                    <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Mã QR Điểm Danh</h2>
                     <button type="button" @onclick="ToggleQrModal" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
                         ✕
                     </button>
@@ -132,14 +132,15 @@ else
                         <rect x="10" y="110" width="40" height="40" fill="#000000"/>
                         <rect x="16" y="116" width="28" height="28" fill="#FFFFFF"/>
                         <rect x="22" y="122" width="16" height="16" fill="#000000"/>
-                        <!-- Dynamic Payload Modules -->
+                        <!-- Static Payload Modules generated deterministically from member UserName -->
                         @for (int row = 0; row < 12; row++)
                         {
                             @for (int col = 0; col < 12; col++)
                             {
                                 int x = 60 + (col * 7);
                                 int y = 60 + (row * 7);
-                                bool fill = ((row + col + _countdownSeconds) % 3 == 0) || ((row * col) % 5 == 0);
+                                int seed = Math.Abs((_subscription.UserName.GetHashCode() + (row * 13) + (col * 17)));
+                                bool fill = (seed % 2 == 0) || ((row + col) % 3 == 0);
                                 if (fill)
                                 {
                                     <rect x="@x" y="@y" width="6" height="6" fill="#000000"/>
@@ -159,17 +160,12 @@ else
                     </div>
                 </div>
 
-                <!-- 60s Countdown & Refresh -->
-                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-canvas); padding: 8px 12px; border-radius: 8px; margin-bottom: 16px;">
-                    <span style="font-size: 12px; color: var(--text-secondary);">
-                        Tự làm mới sau:&nbsp;<strong class="tabular-nums" style="color: #38BDF8;">@_countdownSeconds&nbsp;giây</strong>
-                    </span>
-                    <button type="button" @onclick="ManualRefreshQr" class="btn-secondary" style="min-height: 28px; padding: 0 8px; font-size: 11px;">
-                        Làm mới
-                    </button>
+                <!-- Guidance Note -->
+                <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                    Mã QR điểm danh cố định chứa mã hội viên. Sử dụng trực tiếp trước camera tại quầy để điểm danh vào phòng tập.
                 </div>
 
-                <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="width: 100%;">
+                <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="width: 100%; min-height: 40px;">
                     Đóng
                 </button>
             </div>
@@ -182,8 +178,6 @@ else
     private bool _isLoading = true;
     private bool _showQrModal = false;
     private string _qrCode = string.Empty;
-    private int _countdownSeconds = 60;
-    private System.Threading.Timer? _timer;
 
     private bool IsExpiringSoon => _subscription != null &&
         ((_subscription.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber) <= 7 ||
@@ -216,40 +210,9 @@ else
     private async Task ToggleQrModal()
     {
         _showQrModal = !_showQrModal;
-        if (_showQrModal)
+        if (_showQrModal && string.IsNullOrEmpty(_qrCode))
         {
-            _countdownSeconds = 60;
             _qrCode = await ApiClient.GetMyCheckInQrCodeAsync();
-            StartCountdownTimer();
         }
-        else
-        {
-            _timer?.Dispose();
-        }
-    }
-
-    private async Task ManualRefreshQr()
-    {
-        _countdownSeconds = 60;
-        _qrCode = await ApiClient.RefreshCheckInQrCodeAsync();
-    }
-
-    private void StartCountdownTimer()
-    {
-        _timer?.Dispose();
-        _timer = new System.Threading.Timer(async _ =>
-        {
-            if (_countdownSeconds > 1)
-            {
-                _countdownSeconds--;
-                await InvokeAsync(StateHasChanged);
-            }
-            else
-            {
-                _countdownSeconds = 60;
-                _qrCode = await ApiClient.RefreshCheckInQrCodeAsync();
-                await InvokeAsync(StateHasChanged);
-            }
-        }, null, 1000, 1000);
     }
 }

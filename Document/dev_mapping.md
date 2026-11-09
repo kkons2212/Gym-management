@@ -228,7 +228,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 
 ### 📌 [Task 4.2.1, 4.2.2, 4.2.3] Cổng Thông Tin Web Hội Viên & Huấn Luyện Viên PT (Blazor Server)
 * **Ngày hoàn tất:** 09/11/2026 | **Commit:** `dd35e13` (nhánh `feat/task-4.2-member-pt-web-portal`)
-* **Phân hệ nghiệp vụ liên quan:** UC01 (Auth & Session), UC03 (Check-in QR 60s), UC05 (VietQR NAPAS 247), UC08 (PT Weekly Schedule, Slots, InBody & Complete), UC09 (Member Profile & Workout History), UC10 (PT Booking, Cancel & Rating).
+* **Phân hệ nghiệp vụ liên quan:** UC01 (Auth & Session), UC03 (Check-in QR tĩnh chứa mã hội viên), UC05 (VietQR NAPAS 247), UC08 (PT Weekly Schedule, Slots, InBody & Complete), UC09 (Member Profile & Workout History), UC10 (PT Booking, Cancel & Rating).
 * **Ranh giới thành phần:** `src/Client/GymManagement.Web/`
 * **Mã nguồn tạo / sửa:**
   - **Hạ tầng & Xác thực (Task 4.2.1):**
@@ -239,7 +239,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
     - `Components/Pages/Login.razor`: Màn hình đăng nhập chuyển hướng tự động theo vai trò.
     - `wwwroot/app.css`: Token màu 100% Dark Mode (#0F172A, #1E293B, #38BDF8), slot-pt-open trung tính, tabular-nums.
   - **Cổng Hội Viên (Task 4.2.2):**
-    - `Components/Member/DigitalSubscriptionWidget.razor`: Gói tập số, đếm số buổi còn lại, QR quay vòng 60s SVG matrix.
+    - `Components/Member/DigitalSubscriptionWidget.razor`: Gói tập số, đếm số buổi còn lại, mã QR hội viên cố định.
     - `Components/Member/VietQrModal.razor`: Thanh toán chuyển khoản NAPAS 247 (220x220px, 10 phút, simulation sandbox).
     - `Components/Member/PackageCatalog.razor`: Danh mục gói tập giá niêm yết cố định.
     - `Components/Member/PtBookingWizard.razor`: Wizard 3 bước (chọn ngày -> lưới slot trung tính -> xác nhận).

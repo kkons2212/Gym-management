@@ -69,9 +69,8 @@ Giao diện Web Portal (`GymManagement.Web`) được tối ưu hóa cho màn h�
   * Mã QR điểm danh được tích hợp trực tiếp hoặc mở nhanh 1-chạm qua nút `"Mở mã QR điểm danh"` lớn và trực quan.
   * QR hiển thị ở kích thước tối thiểu `240px × 240px`, co giãn theo viewport nhưng không vượt quá `min(80vw, 320px)`.
   * Đặt QR đen trên nền trắng đặc, có vùng trống (quiet zone) tối thiểu 4 module xung quanh; không phủ logo, chữ, họa tiết, bo góc hoặc hiệu ứng lên vùng mã.
-  * Hiển thị họ tên và mã hội viên bên ngoài vùng quét để đối chiếu. Không đưa thông tin nhạy cảm vào nội dung chuỗi QR.
-  * Bên dưới QR, hiển thị thời gian còn hiệu lực và thời điểm tự làm mới mỗi 60 giây; có nút `"Làm mới mã QR"`.
-  * Khi QR hết hạn hoặc gói tập không còn hợp lệ, mã cũ được ẩn đi và thay bằng thông báo giải thích rõ ràng.
+  * Hiển thị họ tên và mã hội viên bên ngoài vùng quét để đối chiếu. Mã QR là mã tĩnh chứa mã hội viên, tải 1 lần dùng xuyên suốt gói tập (không tự động xoay vòng hay đổi mã theo thời gian).
+  * Khi gói tập không còn hợp lệ (hết hạn, bảo lưu), mã QR được ẩn đi hoặc làm mờ kèm thông báo giải thích rõ ràng.
 * **Hàng Thông Số Buổi Tập (Session Counters):**
   * Chia 2 cột đều nhau trên khối thông tin gói tập:
     * Cột 1: `"Lượt Gym Còn Lại"` $\rightarrow$ Số lớn nổi bật (`text-2xl font-bold text-sky-400`).
@@ -231,7 +230,7 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 
 | Thành Phần Giao Diện | Ứng Dụng WinUI 3 Desktop (Quản Trị Admin) | Ứng Dụng Blazor Server Web (Hội Viên / PT) |
 | :--- | :--- | :--- |
-| **Gói Tập Hội Viên & Điểm Danh** | Màn hình quét 2 cột, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). | Khối thông tin gói tập số di động, mã QR động tự làm mới mỗi 60s, chip đếm số buổi còn lại. |
+| **Gói Tập Hội Viên & Điểm Danh** | Màn hình quét 2 cột, kết quả hiển thị tinh gọn **Mã hội viên + Họ tên**, banner tĩnh xanh/đỏ (không âm thanh, không ảnh). | Khối thông tin gói tập số di động, mã QR hội viên cố định, chip đếm số buổi còn lại. |
 | **Thanh Toán & Hóa Đơn** | Màn hình POS thu ngân chọn nhanh hội viên, bảng giá niêm yết, cửa sổ VietQR sandbox có nút giả lập (bật qua biến môi trường) và in nhiệt. | Danh mục gói dạng thẻ cuộn dọc, modal mã QR sandbox có đếm ngược 10 phút, nút giả lập (bật qua biến môi trường) cập nhật trạng thái sau xác nhận từ máy chủ. |
 | **Lịch Tập Huấn Luyện Viên** | Bảng lịch tuần đa năng nhiều PT, kéo thả khung giờ, hàng rào viền đỏ chặn đứng xung đột trùng lịch. | Lưới chọn khung giờ rảnh của PT theo ngày (màu trung tính), modal xác nhận kèm cảnh báo mất buổi nếu hủy ca $<2$ tiếng. |
 | **Chỉ Số Sức Khỏe InBody** | Biểu mẫu nhập số đo chuyên dụng có kiểm tra ngưỡng an toàn y tế và tính tự động chỉ số BMI tức thời. | Thẻ tóm tắt chỉ số thể lực cá nhân, thước đo dải màu BMI trực quan, biểu đồ đường theo dõi tiến trình giảm mỡ. |

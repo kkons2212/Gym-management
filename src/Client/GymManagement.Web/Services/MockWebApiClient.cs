@@ -214,8 +214,7 @@ public sealed class MockWebApiClient : IWebApiClient
     {
         var user = _authStateProvider.CurrentUser;
         string userName = user?.UserId ?? "member01";
-        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        return Task.FromResult($"GYM_MEMBER_{userName}_{timestamp}");
+        return Task.FromResult(userName);
     }
 
     public Task<string> RefreshCheckInQrCodeAsync()
