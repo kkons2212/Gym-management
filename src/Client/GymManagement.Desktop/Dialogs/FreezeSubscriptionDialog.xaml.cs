@@ -6,9 +6,29 @@ public sealed partial class FreezeSubscriptionDialog : ContentDialog
 {
     private readonly DateTime? _currentEndDate;
 
-    public DateTime FreezeStartDate => DpStart.Date.DateTime;
-    public DateTime FreezeEndDate => DpEnd.Date.DateTime;
-    public string Reason => TxtReason.Text;
+    public DateTime FreezeStartDate
+    {
+        get
+        {
+            return DpStart.Date.DateTime;
+        }
+    }
+
+    public DateTime FreezeEndDate
+    {
+        get
+        {
+            return DpEnd.Date.DateTime;
+        }
+    }
+
+    public string Reason
+    {
+        get
+        {
+            return TxtReason.Text;
+        }
+    }
 
     public FreezeSubscriptionDialog(string memberName, DateTime? currentEndDate)
     {
@@ -69,4 +89,3 @@ public sealed partial class FreezeSubscriptionDialog : ContentDialog
         IsPrimaryButtonEnabled = true;
     }
 }
-

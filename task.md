@@ -216,7 +216,7 @@ GymManagement.sln
 - [x] **Task 2.6: `SystemSettingService Component` (Kết nối Authenticated + Database API):**
   - Quản trị tài khoản người dùng và phân quyền (chặn Admin tự khóa tài khoản).
   - Quản lý danh mục gói tập (kiểm tra ràng buộc trước khi chuyển sang `DISCONTINUED`).
-- [ ] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
+- [x] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
   - Tổng hợp số liệu đa chiều: Doanh thu thực thu, biến động hội viên, lưu lượng check-in, hiệu suất PT.
   - Xuất dữ liệu báo cáo ra file Excel (.xlsx) và PDF.
 
@@ -228,7 +228,7 @@ GymManagement.sln
 - [x] **Task 3.2:** Cấu hình xác thực JWT và bảo vệ `Authenticated` với fallback yêu cầu đăng nhập cùng role policy `Admin`, `PT`, `Member`; cho phép truy cập ẩn danh `/health`.
   - Cấu hình bắt buộc: `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey` (tối thiểu 32 byte UTF-8); cung cấp bằng secret store hoặc environment variables (`Jwt__...`), không commit signing key.
 - [x] **Task 3.1:** Cấu hình Middleware xử lý lỗi toàn cục (`ApiResponse<T>`, `ApiErrorResponse`), chuẩn hóa lỗi validation, not found, business rule và lỗi không dự kiến.
-- [ ] **Task 3.3:** Xây dựng các API Controllers công khai giao tiếp `GymManagement API`:
+- [x] **Task 3.3:** Xây dựng các API Controllers công khai giao tiếp `GymManagement API`:
   - `AuthController` (`/api/v1/auth/*`)
   - `MembersController` (`/api/v1/members/*`)
   - `CheckInController` (`/api/v1/checkin/*`)

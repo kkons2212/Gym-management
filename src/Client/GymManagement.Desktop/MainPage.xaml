@@ -28,21 +28,21 @@
                 </Border>
             </NavigationView.PaneHeader>
 
-            <!-- Menu Items -->
+            <!-- Menu Items: 7 Functional Modules (ui_rules.md 3.1) -->
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Quầy Điểm Danh (F1)" Tag="CheckIn">
+                <NavigationViewItem Content="Quầy Điểm Danh &amp; Cổng Tự Động" Tag="CheckIn">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8B9;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Bán Gói &amp; POS (F2)" Tag="Pos">
+                <NavigationViewItem Content="Bán Gói &amp; Thanh Toán POS (F2)" Tag="Pos">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE7BF;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Lý Hội Viên (F3)" Tag="Members">
+                <NavigationViewItem Content="Quản Lý Hội Viên &amp; Gói Tập (F3)" Tag="Members">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE716;" />
                     </NavigationViewItem.Icon>
@@ -60,13 +60,13 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Báo Cáo Doanh Thu BI" Tag="Dashboard">
+                <NavigationViewItem Content="Báo Cáo &amp; Thống Kê Doanh Thu" Tag="Dashboard">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9D2;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Trị Tài Khoản" Tag="Settings">
+                <NavigationViewItem Content="Cấu Hình &amp; Sổ Kiểm Toán Hệ Thống" Tag="Settings">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE77B;" />
                     </NavigationViewItem.Icon>
@@ -98,13 +98,13 @@
                                 Click="BtnLogout_Click"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="8">
-                            <FontIcon Glyph="&#xF3B1;" FontSize="14" Foreground="{StaticResource StatusDangerBrush}" />
+                            <FontIcon Glyph="&#xE7E8;" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
                         </Button>
                     </Grid>
                 </Border>
             </NavigationView.PaneFooter>
 
-            <!-- Content Area -->
+            <!-- Main Content Area -->
             <Frame x:Name="ContentFrame" />
         </NavigationView>
     </Grid>

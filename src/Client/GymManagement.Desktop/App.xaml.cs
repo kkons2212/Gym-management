@@ -1,7 +1,7 @@
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using GymManagement.Desktop.Services.Api;
-using GymManagement.Desktop.Services.Hardware;
 using GymManagement.Desktop.Services.Session;
 using GymManagement.Desktop.ViewModels;
 
@@ -13,8 +13,13 @@ public partial class App : Application
     public static Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue { get; private set; } = null!;
     public static IServiceProvider Services { get; private set; } = null!;
 
-    public static nint WindowHandle =>
-        WinRT.Interop.WindowNative.GetWindowHandle(Window);
+    public static nint WindowHandle
+    {
+        get
+        {
+            return WinRT.Interop.WindowNative.GetWindowHandle(Window);
+        }
+    }
 
     public static T GetService<T>() where T : class
     {
@@ -31,12 +36,37 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Core Infrastructure Services
+        // 1. Core Infrastructure & Session Services
         services.AddSingleton<IAdminSessionService, AdminSessionService>();
-        services.AddSingleton<IAudioFeedbackService, AudioFeedbackService>();
-        services.AddSingleton<IApiClient, MockApiClient>();
+        services.AddTransient<JwtAuthenticationHeaderHandler>();
 
-        // ViewModels
+        // 2. HTTP Client & API Client Registration
+        string apiBaseUrl = Environment.GetEnvironmentVariable("GYM_API_BASE_URL") ?? "http://localhost:5000";
+        bool useMockApi = string.Equals(Environment.GetEnvironmentVariable("USE_MOCK_API"), "true", StringComparison.OrdinalIgnoreCase);
+
+        if (useMockApi)
+        {
+            services.AddSingleton<IApiClient, MockApiClient>();
+        }
+        else
+        {
+            services.AddSingleton<HttpClient>(sp =>
+            {
+                var handler = new JwtAuthenticationHeaderHandler(sp.GetRequiredService<IAdminSessionService>())
+                {
+                    InnerHandler = new HttpClientHandler()
+                };
+                var client = new HttpClient(handler)
+                {
+                    BaseAddress = new Uri(apiBaseUrl),
+                    Timeout = TimeSpan.FromSeconds(15)
+                };
+                return client;
+            });
+            services.AddSingleton<IApiClient, HttpApiClient>();
+        }
+
+        // 3. ViewModels
         services.AddSingleton<LoginViewModel>();
         services.AddTransient<CheckInCounterViewModel>();
         services.AddTransient<PosBillingViewModel>();
