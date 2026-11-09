@@ -183,10 +183,9 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
       * Ngày ghi nhận thanh toán: `Invoice.paid_at` (gán ngày hiện tại khi giao dịch thành công).
       * Trường hợp hoàn tiền (nếu có): Hiển thị trường `Invoice.RefundAmount` và lý do `Invoice.RefundReason`.
 * **Bộ Nút Chọn Phương Thức Thanh Toán Lớn:**
-  * 3 Nút bấm kích thước lớn dễ chạm trên màn hình cảm ứng:
+  * 2 Nút bấm kích thước lớn dễ chạm trên màn hình cảm ứng:
     * `[Tiền Mặt]`
     * `[Chuyển Khoản VietQR]` (Khuyên dùng)
-    * `[Thanh Toán Thẻ Ngân Hàng (POS Terminal)]`
 * **Cửa Sổ Bật Lên Thanh Toán VietQR (Dialog):**
   * Mở hộp thoại `ContentDialog` chứa mã VietQR động lớn ở trung tâm.
   * Khi chạy môi trường phát triển/kiểm thử, hiển thị nút `"Giả lập thanh toán thành công"` dưới mã QR khi biến môi trường `VIETQR_ENABLE_SIMULATION=true` hoặc `ASPNETCORE_ENVIRONMENT=Development`.
