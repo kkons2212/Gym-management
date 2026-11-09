@@ -145,7 +145,9 @@ public sealed class PtService : IPtService
             cancellationToken);
 
         if (phoneConflict)
+        {
             throw new ValidationException("Số điện thoại đã được sử dụng bởi PT khác.");
+        }
 
         // Kiểm tra trùng Email với PT khác
         bool emailConflict = await userRepo.ExistsAsync(
@@ -155,7 +157,9 @@ public sealed class PtService : IPtService
             cancellationToken);
 
         if (emailConflict)
+        {
             throw new ValidationException("Email đã được sử dụng bởi PT khác.");
+        }
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
@@ -166,6 +170,16 @@ public sealed class PtService : IPtService
                 int count = await userRepo.CountAsync(u => u.RoleId == RoleIdTrainer, cancellationToken);
                 string newId = $"PT-{count + 1:D2}";
 
+                string status;
+                if (request.IsActive)
+                {
+                    status = StatusActive;
+                }
+                else
+                {
+                    status = StatusInactive;
+                }
+
                 entity = new User
                 {
                     UserName = newId,
@@ -173,7 +187,7 @@ public sealed class PtService : IPtService
                     FullName = request.FullName,
                     Phone = request.Phone,
                     Email = request.Email,
-                    Status = request.IsActive ? StatusActive : StatusInactive,
+                    Status = status,
                     CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
                 };
                 await userRepo.AddAsync(entity, cancellationToken);
@@ -191,7 +205,14 @@ public sealed class PtService : IPtService
                 entity.FullName = request.FullName;
                 entity.Phone = request.Phone;
                 entity.Email = request.Email;
-                entity.Status = request.IsActive ? StatusActive : StatusInactive;
+                if (request.IsActive)
+                {
+                    entity.Status = StatusActive;
+                }
+                else
+                {
+                    entity.Status = StatusInactive;
+                }
                 userRepo.Update(entity);
 
                 _logger.LogInformation(
@@ -243,14 +264,23 @@ public sealed class PtService : IPtService
                 await CheckDeactivationEligibilityAsync(ptId, cancellationToken);
 
             if (!canDeactivate)
+            {
                 throw new BusinessRuleException(reason!);
+            }
         }
 
         var entity = await _unitOfWork.Repository<User>()
             .FindSingleOrDefaultAsync(u => u.UserName == ptId, cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy PT với mã: {ptId}");
 
-        entity.Status = isActive ? StatusActive : StatusInactive;
+        if (isActive)
+        {
+            entity.Status = StatusActive;
+        }
+        else
+        {
+            entity.Status = StatusInactive;
+        }
         _unitOfWork.Repository<User>().Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -278,7 +308,9 @@ public sealed class PtService : IPtService
             cancellationToken);
 
         if (!ptExists)
+        {
             throw new NotFoundException($"Không tìm thấy PT đang hoạt động với mã: {request.PtId}");
+        }
 
         var subscription = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
@@ -292,8 +324,10 @@ public sealed class PtService : IPtService
             cancellationToken);
 
         if (currentStudents >= MaxStudentsPerPt)
+        {
             throw new BusinessRuleException(
                 $"PT đã đạt giới hạn {MaxStudentsPerPt} học viên phụ trách tối đa.");
+        }
 
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
@@ -391,13 +425,18 @@ public sealed class PtService : IPtService
                     var existing = await availRepo.FindSingleOrDefaultAsync(
                         s => s.AvailabilityId == item.AvailabilityId, cancellationToken);
 
-                    if (existing == null) continue;
+                    if (existing == null)
+                    {
+                        continue;
+                    }
 
                     // Không cho phép hủy slot đã có hội viên đặt (UC 8.1.1 — phụ 5.1)
                     if (!item.Register && existing.IsBooked == 1)
+                    {
                         throw new BusinessRuleException(
                             $"Khung giờ {existing.AvailableDate:dd/MM} {existing.StartTime:hh\\:mm} " +
                             "đã có hội viên đặt lịch, không thể hủy.");
+                    }
 
                     if (item.Register)
                     {
@@ -490,8 +529,10 @@ public sealed class PtService : IPtService
 
             // 3. Kiểm tra còn buổi PT (UC 10.1 — phụ 4.1)
             if (subscription.RemainingPtSessions <= 0)
+            {
                 throw new BusinessRuleException(
                     "Bạn không còn số buổi tập PT khả dụng để đặt thêm lịch.");
+            }
 
             // 4. Kiểm tra hội viên không trùng lịch trong cùng khung giờ (UC 10.1 — phụ 4.3)
             var sessionStart = slot.AvailableDate.ToDateTime(slot.StartTime);
@@ -505,7 +546,9 @@ public sealed class PtService : IPtService
                 cancellationToken);
 
             if (hasConflict)
+            {
                 throw new BusinessRuleException("Bạn đã có lịch tập trong khung giờ này.");
+            }
 
             // 5. Tạo ca tập mới
             int sessionCount = await _unitOfWork.Repository<PTTrainingSession>()
@@ -557,16 +600,20 @@ public sealed class PtService : IPtService
                 ?? throw new NotFoundException($"Không tìm thấy ca tập với mã: {request.SessionId}");
 
             if (session.Status != nameof(PtSessionStatus.Booked))
+            {
                 throw new BusinessRuleException("Chỉ có thể hủy ca tập đang ở trạng thái Đã đặt.");
+            }
 
             // Xác định có trong ngưỡng phạt không
             bool isLate = await IsLateCancellationAsync(session, cancellationToken);
 
             // Hủy trễ chưa được xác nhận — trả BusinessRuleException để UI hiển thị cảnh báo xác nhận 2 bước
             if (isLate && !request.ForceLateCancellation)
+            {
                 throw new BusinessRuleException(
                     $"Lịch tập hủy trễ (dưới {CancellationGracePeriodHours} giờ). " +
                     "Buổi tập sẽ không được hoàn lại. Xác nhận để tiếp tục.");
+            }
 
             // Cập nhật trạng thái ca tập
             session.Status = nameof(PtSessionStatus.Cancelled);
@@ -574,7 +621,9 @@ public sealed class PtService : IPtService
 
             // Hoàn lại buổi tập nếu hủy đúng hạn (UC 10.2 — dòng sự kiện chính bước 6)
             if (!isLate)
+            {
                 await RestorePtSessionAsync(session.MemberId, cancellationToken);
+            }
 
             // Giải phóng slot PT
             await ReleaseSlotAsync(session.AvailabilityId, cancellationToken);
@@ -586,9 +635,11 @@ public sealed class PtService : IPtService
                 request.SessionId, request.RequestedByUserName, isLate);
 
             if (isLate)
+            {
                 _logger.LogWarning(
                     "PtService.CancelSession: Hủy trễ — hội viên {Member} mất 1 buổi tập",
                     session.MemberId);
+            }
         }, cancellationToken);
     }
 
@@ -606,7 +657,9 @@ public sealed class PtService : IPtService
                 ?? throw new NotFoundException($"Không tìm thấy ca tập với mã: {request.SessionId}");
 
             if (session.Status != nameof(PtSessionStatus.Booked))
+            {
                 throw new BusinessRuleException("Chỉ có thể đổi lịch ca tập đang ở trạng thái Đã đặt.");
+            }
 
             // Kiểm tra slot mới còn trống và thuộc cùng PT
             var newSlot = await _unitOfWork.Repository<PTAvailability>()
@@ -631,7 +684,9 @@ public sealed class PtService : IPtService
                 cancellationToken);
 
             if (conflict)
+            {
                 throw new BusinessRuleException("Bạn đã có lịch tập trong khung giờ mới.");
+            }
 
             // Giải phóng slot cũ
             await ReleaseSlotAsync(session.AvailabilityId, cancellationToken);
@@ -673,7 +728,9 @@ public sealed class PtService : IPtService
 
             // Chỉ xác nhận ca đang Booked và đã đến giờ diễn ra (UC 8.2.3 — phụ 4.1)
             if (session.Status != nameof(PtSessionStatus.Booked))
+            {
                 throw new BusinessRuleException("Ca tập chưa diễn ra hoặc đã hoàn thành.");
+            }
 
             await EnsureSessionStartedAsync(session, cancellationToken);
 
@@ -711,8 +768,10 @@ public sealed class PtService : IPtService
         };
 
         if (!allowedStatuses.Contains(request.NewStatus))
+        {
             throw new ValidationException(
                 "Trạng thái không hợp lệ. Chỉ chấp nhận: Completed, AbsentMember, AbsentPt, Postponed.");
+        }
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
@@ -729,14 +788,20 @@ public sealed class PtService : IPtService
                                                    or PtSessionStatus.Postponed;
 
             if (!wasCompleted && nowCompleted)
+            {
                 await DeductPtSessionAsync(session.MemberId, cancellationToken);       // Hoàn thành lần đầu → trừ 1 buổi
+            }
             else if (wasCompleted && nowReturnable)
+            {
                 await RestorePtSessionAsync(session.MemberId, cancellationToken);      // Admin đổi từ Completed → hoàn lại 1 buổi (UC 4.5 — phụ 5.2)
+            }
 
             session.Status = request.NewStatus.ToString();
             session.WorkoutNotes = request.Notes ?? session.WorkoutNotes;
             if (request.NewStatus == PtSessionStatus.Completed)
+            {
                 session.CompletedAt = DateOnly.FromDateTime(DateTime.UtcNow);
+            }
 
             _unitOfWork.Repository<PTTrainingSession>().Update(session);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -821,7 +886,9 @@ public sealed class PtService : IPtService
         ArgumentNullException.ThrowIfNull(request);
 
         if (request.RatingStars is < 1 or > 5)
+        {
             throw new ValidationException("Điểm đánh giá phải từ 1 đến 5 sao.");
+        }
 
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
@@ -833,11 +900,15 @@ public sealed class PtService : IPtService
 
             // Chỉ đánh giá được ca đã hoàn thành (UC 10.3 — điều kiện tiên quyết)
             if (session.Status != nameof(PtSessionStatus.Completed))
+            {
                 throw new BusinessRuleException("Chỉ có thể đánh giá ca tập đã hoàn thành.");
+            }
 
             // Mỗi ca chỉ được đánh giá 1 lần
             if (session.RatingStars.HasValue)
+            {
                 throw new BusinessRuleException("Ca tập này đã được đánh giá, không thể đánh giá lại.");
+            }
 
             session.RatingStars = (byte)request.RatingStars;
             session.ReviewComment = request.ReviewComment;
@@ -860,33 +931,64 @@ public sealed class PtService : IPtService
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(req.FullName))
+        {
             errors.Add("Họ tên không được để trống.");
+        }
 
         if (string.IsNullOrWhiteSpace(req.Phone) || req.Phone.Length < 9)
+        {
             errors.Add("Số điện thoại không hợp lệ.");
+        }
 
         if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
+        {
             errors.Add("Email không hợp lệ.");
+        }
 
         if (req.ExperienceYears < 0)
+        {
             errors.Add("Số năm kinh nghiệm không được âm.");
+        }
 
         if (errors.Count > 0)
+        {
             throw new ValidationException(string.Join(" ", errors));
+        }
     }
 
     private static void ValidateRecordInBodyRequest(RecordInBodyRequest req)
     {
         var errors = new List<string>();
 
-        if (req.WeightKg <= 0) errors.Add("Cân nặng phải lớn hơn 0.");
-        if (req.HeightCm <= 0) errors.Add("Chiều cao phải lớn hơn 0.");
-        if (req.BodyFatPercentage < 0) errors.Add("% mỡ không được âm.");
-        if (req.SkeletalMuscleMass <= 0) errors.Add("Khối lượng cơ phải lớn hơn 0.");
-        if (req.Bmi <= 0) errors.Add("Chỉ số BMI phải lớn hơn 0.");
+        if (req.WeightKg <= 0)
+        {
+            errors.Add("Cân nặng phải lớn hơn 0.");
+        }
+
+        if (req.HeightCm <= 0)
+        {
+            errors.Add("Chiều cao phải lớn hơn 0.");
+        }
+
+        if (req.BodyFatPercentage < 0)
+        {
+            errors.Add("% mỡ không được âm.");
+        }
+
+        if (req.SkeletalMuscleMass <= 0)
+        {
+            errors.Add("Khối lượng cơ phải lớn hơn 0.");
+        }
+
+        if (req.Bmi <= 0)
+        {
+            errors.Add("Chỉ số BMI phải lớn hơn 0.");
+        }
 
         if (errors.Count > 0)
+        {
             throw new ValidationException(string.Join(" ", errors));
+        }
     }
 
     // =========================================================================
@@ -898,17 +1000,25 @@ public sealed class PtService : IPtService
         PTTrainingSession session,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(session.AvailabilityId)) return;
+        if (string.IsNullOrWhiteSpace(session.AvailabilityId))
+        {
+            return;
+        }
 
         var slot = await _unitOfWork.Repository<PTAvailability>()
             .FindSingleOrDefaultAsync(
                 s => s.AvailabilityId == session.AvailabilityId, cancellationToken);
 
-        if (slot == null) return;
+        if (slot == null)
+        {
+            return;
+        }
 
         var sessionStart = slot.AvailableDate.ToDateTime(slot.StartTime);
         if (DateTime.UtcNow < sessionStart)
+        {
             throw new BusinessRuleException("Ca tập chưa đến giờ diễn ra, không thể xác nhận hoàn thành.");
+        }
     }
 
     /// <summary>Xác định hủy ca có tính phạt không (dưới ngưỡng CancellationGracePeriodHours).</summary>
@@ -916,13 +1026,19 @@ public sealed class PtService : IPtService
         PTTrainingSession session,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(session.AvailabilityId)) return false;
+        if (string.IsNullOrWhiteSpace(session.AvailabilityId))
+        {
+            return false;
+        }
 
         var slot = await _unitOfWork.Repository<PTAvailability>()
             .FindSingleOrDefaultAsync(
                 s => s.AvailabilityId == session.AvailabilityId, cancellationToken);
 
-        if (slot == null) return false;
+        if (slot == null)
+        {
+            return false;
+        }
 
         var sessionStart = slot.AvailableDate.ToDateTime(slot.StartTime);
         double hoursUntilStart = (sessionStart - DateTime.UtcNow).TotalHours;
@@ -937,7 +1053,10 @@ public sealed class PtService : IPtService
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
 
-        if (sub == null || sub.RemainingPtSessions <= 0) return;
+        if (sub == null || sub.RemainingPtSessions <= 0)
+        {
+            return;
+        }
 
         sub.RemainingPtSessions--;
         _unitOfWork.Repository<MemberSubscription>().Update(sub);
@@ -951,7 +1070,10 @@ public sealed class PtService : IPtService
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
 
-        if (sub == null) return;
+        if (sub == null)
+        {
+            return;
+        }
 
         sub.RemainingPtSessions++;
         _unitOfWork.Repository<MemberSubscription>().Update(sub);
@@ -960,12 +1082,18 @@ public sealed class PtService : IPtService
     /// <summary>Giải phóng slot PTAvailability (is_Booked → 0).</summary>
     private async Task ReleaseSlotAsync(string? availabilityId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(availabilityId)) return;
+        if (string.IsNullOrWhiteSpace(availabilityId))
+        {
+            return;
+        }
 
         var slot = await _unitOfWork.Repository<PTAvailability>()
             .FindSingleOrDefaultAsync(s => s.AvailabilityId == availabilityId, cancellationToken);
 
-        if (slot == null) return;
+        if (slot == null)
+        {
+            return;
+        }
 
         slot.IsBooked = 0;
         _unitOfWork.Repository<PTAvailability>().Update(slot);
@@ -1016,7 +1144,8 @@ public sealed class PtService : IPtService
         int pending,
         int reviewCount,
         decimal avgRating)
-        => new(
+    {
+        return new PtProfileDto(
             PtId: u.UserName,
             FullName: u.FullName ?? string.Empty,
             Phone: u.Phone ?? string.Empty,
@@ -1028,14 +1157,17 @@ public sealed class PtService : IPtService
             IsActive: u.Status == StatusActive,
             ActiveStudentsCount: students,
             PendingSessionsCount: pending);
+    }
 
     private static PtSlotDto MapToSlotDto(PTAvailability s)
-        => new(
+    {
+        return new PtSlotDto(
             AvailabilityId: s.AvailabilityId,
             AvailableDate: s.AvailableDate,
             StartTime: s.StartTime,
             EndTime: s.EndTime,
             IsBooked: s.IsBooked == 1);
+    }
 
     private static PtSessionDto MapToSessionDto(PTTrainingSession s)
     {
@@ -1056,7 +1188,8 @@ public sealed class PtService : IPtService
     }
 
     private static InBodyRecordDto MapToInBodyDto(MemberBodyMetric m)
-        => new(
+    {
+        return new InBodyRecordDto(
             BodyMetricId: m.BodyMetricId,
             MemberUserName: m.UserName,
             WeightKg: m.WeightKg,
@@ -1069,4 +1202,5 @@ public sealed class PtService : IPtService
             RecordedByPtId: m.RecordedByPtId ?? string.Empty,
             RecordedByPtName: m.RecordedByPtId ?? string.Empty,
             LinkedSessionId: m.PTSessionId);
+    }
 }
