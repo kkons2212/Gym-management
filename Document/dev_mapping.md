@@ -37,9 +37,9 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 | **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
-| **Task 4.2.1** | Quản lý phiên làm việc Member & PT | UC01 (Xác thực & Phân quyền Web) | `Client.Web` | `src/Client/GymManagement.Web/Services/*`, `Components/Layout/*`, `Components/Pages/Login.razor` | Blazor Build & Auth State Verification | `[User]`, `Role` | *(current)* |
-| **Task 4.2.2** | Cổng Hội viên: QR số, Lịch PT, InBody | UC03, UC05, UC09, UC10 | `Client.Web` | `Components/Member/*`, `Components/Pages/Member/*` | Blazor Build 0 Warnings 0 Errors | `MemberSubscription`, `PackagePlan`, `PTTrainingSession`, `MemberBodyMetric` | *(current)* |
-| **Task 4.2.3** | Cổng Huấn luyện viên PT: Lịch dạy, InBody | UC08 (8.1.1, 8.1.2, 8.2.1, 8.2.2, 8.2.3) | `Client.Web` | `Components/PT/*`, `Components/Pages/PT/*` | Blazor Build 0 Warnings 0 Errors | `PTAvailability`, `PTTrainingSession`, `MemberBodyMetric` | *(current)* |
+| **Task 4.2.1** | Quản lý phiên làm việc Member & PT | UC01 (Xác thực & Phân quyền Web) | `Client.Web` | `src/Client/GymManagement.Web/Services/*`, `Components/Layout/*`, `Components/Pages/Login.razor` | Blazor Build & Auth State Verification | `[User]`, `Role` | `dd35e13` |
+| **Task 4.2.2** | Cổng Hội viên: QR số, Lịch PT, InBody | UC03, UC05, UC09, UC10 | `Client.Web` | `Components/Member/*`, `Components/Pages/Member/*` | Blazor Build 0 Warnings 0 Errors | `MemberSubscription`, `PackagePlan`, `PTTrainingSession`, `MemberBodyMetric` | `dd35e13` |
+| **Task 4.2.3** | Cổng Huấn luyện viên PT: Lịch dạy, InBody | UC08 (8.1.1, 8.1.2, 8.2.1, 8.2.2, 8.2.3) | `Client.Web` | `Components/PT/*`, `Components/Pages/PT/*` | Blazor Build 0 Warnings 0 Errors | `PTAvailability`, `PTTrainingSession`, `MemberBodyMetric` | `dd35e13` |
 
 ---
 
@@ -227,7 +227,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 ---
 
 ### 📌 [Task 4.2.1, 4.2.2, 4.2.3] Cổng Thông Tin Web Hội Viên & Huấn Luyện Viên PT (Blazor Server)
-* **Ngày hoàn tất:** 09/11/2026 | **Commit:** *(current)* (nhánh `feat/task-4.2-member-pt-web-portal`)
+* **Ngày hoàn tất:** 09/11/2026 | **Commit:** `dd35e13` (nhánh `feat/task-4.2-member-pt-web-portal`)
 * **Phân hệ nghiệp vụ liên quan:** UC01 (Auth & Session), UC03 (Check-in QR 60s), UC05 (VietQR NAPAS 247), UC08 (PT Weekly Schedule, Slots, InBody & Complete), UC09 (Member Profile & Workout History), UC10 (PT Booking, Cancel & Rating).
 * **Ranh giới thành phần:** `src/Client/GymManagement.Web/`
 * **Mã nguồn tạo / sửa:**
