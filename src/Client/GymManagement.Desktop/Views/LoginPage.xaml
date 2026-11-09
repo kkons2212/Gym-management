@@ -71,6 +71,17 @@
                         CornerRadius="8"
                         Margin="0,10,0,0" />
 
+                <!-- Demo / Mock Mode Button -->
+                <Button Content="Đăng Nhập Nhanh (Chế Độ Demo)"
+                        Command="{x:Bind ViewModel.LoginMockCommand}"
+                        HorizontalAlignment="Stretch"
+                        Height="38"
+                        Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        Foreground="{StaticResource TextSecondaryBrush}"
+                        FontSize="12"
+                        CornerRadius="8" />
+
                 <!-- Footer info -->
                 <TextBlock Text="Hệ thống nội bộ WinUI 3 Desktop • Quyền Quản trị viên"
                            FontSize="11"

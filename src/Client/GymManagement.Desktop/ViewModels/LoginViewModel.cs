@@ -68,5 +68,23 @@ public partial class LoginViewModel : ObservableObject
             IsLoading = false;
         }
     }
+
+    [RelayCommand]
+    private void LoginMock()
+    {
+        ResilientApiClient? resilient;
+        resilient = _apiClient as ResilientApiClient;
+        if (resilient != null)
+        {
+            resilient.IsMockActive = true;
+        }
+
+        _sessionService.SetSession(
+            "mock-jwt-admin-token",
+            new UserSessionDto("USR_ADMIN", "Quản Trị Viên Trưởng", "admin@gymsystem.vn", "Admin")
+        );
+
+        OnLoginSuccess?.Invoke();
+    }
 }
 

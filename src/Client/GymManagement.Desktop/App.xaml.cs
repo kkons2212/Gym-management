@@ -42,29 +42,23 @@ public partial class App : Application
 
         // 2. HTTP Client & API Client Registration
         string apiBaseUrl = Environment.GetEnvironmentVariable("GYM_API_BASE_URL") ?? "http://localhost:5000";
-        bool useMockApi = string.Equals(Environment.GetEnvironmentVariable("USE_MOCK_API"), "true", StringComparison.OrdinalIgnoreCase);
 
-        if (useMockApi)
+        services.AddSingleton<MockApiClient>();
+        services.AddSingleton<HttpClient>(sp =>
         {
-            services.AddSingleton<IApiClient, MockApiClient>();
-        }
-        else
-        {
-            services.AddSingleton<HttpClient>(sp =>
+            var handler = new JwtAuthenticationHeaderHandler(sp.GetRequiredService<IAdminSessionService>())
             {
-                var handler = new JwtAuthenticationHeaderHandler(sp.GetRequiredService<IAdminSessionService>())
-                {
-                    InnerHandler = new HttpClientHandler()
-                };
-                var client = new HttpClient(handler)
-                {
-                    BaseAddress = new Uri(apiBaseUrl),
-                    Timeout = TimeSpan.FromSeconds(15)
-                };
-                return client;
-            });
-            services.AddSingleton<IApiClient, HttpApiClient>();
-        }
+                InnerHandler = new HttpClientHandler()
+            };
+            var client = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(apiBaseUrl),
+                Timeout = TimeSpan.FromSeconds(5)
+            };
+            return client;
+        });
+        services.AddSingleton<HttpApiClient>();
+        services.AddSingleton<IApiClient, ResilientApiClient>();
 
         // 3. ViewModels
         services.AddSingleton<LoginViewModel>();
