@@ -17,12 +17,5 @@ public sealed partial class PackagePlansPage : Page
     {
         DataContext = App.GetService<PackagePlansViewModel>();
         InitializeComponent();
-        Loaded += async (s, e) =>
-        {
-            if (ViewModel != null)
-            {
-                await ViewModel.LoadPackagesCommand.ExecuteAsync(null);
-            }
-        };
     }
 }

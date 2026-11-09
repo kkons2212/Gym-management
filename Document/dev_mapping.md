@@ -7,12 +7,12 @@
 ## 1. BẢNG TIẾN ĐỘ TỔNG THỂ (IMPLEMENTATION DASHBOARD)
 
 * **Tổng số Nhiệm vụ trong Roadmap:** 33 Tasks
-* **Tiến độ Hoàn thành:** **25 / 33 Tasks (75.8%)**
+* **Tiến độ Hoàn thành:** **23 / 33 Tasks (69.7%)**
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
   * 🟢 **Khối Máy Chủ (Server Component):** Đã hoàn tất 100% Giai đoạn 1, 2 & 3 (Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1 – Task 2.7, Task 3.1, Task 3.2, Task 3.3)
-  * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
+  * 🟡 **Khối Giao Diện Admin Desktop (Task 4.1):** **Đang tái cấu trúc toàn diện (Redo Phase theo Universal UI/UX Rules & New Colors Panel)** — Đã hoàn tất Task 4.1.1 (Admin session & DI), nâng cấp Design Tokens trong `ColorTokens.xaml`, dọn sạch toàn bộ ruột mã nguồn các Views về blank canvas chuẩn (Cách 1), xác thực biên dịch `dotnet build` 0 warnings, 0 errors. Task 4.1.2 & 4.1.3 đang được tái hiện thực từ đầu.
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
 ---
@@ -39,6 +39,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
 | **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 | **Task 3.3** | API Controllers Component | Toàn bộ 10 Epics (Cổng RESTful API công khai cho Client) | `Server.Api` | `Controllers/ApiControllerBase.cs`, `AuthController.cs`, `MembersController.cs`, `CheckInController.cs`, `PtController.cs`, `InvoicesController.cs`, `ReportsController.cs`, `SettingsController.cs`, `Program.cs` | `tests/GymManagement.Server.ApiTests/Controllers/*Tests.cs` (18 tests mới) | 9 bảng CSDL | `9016fe4` |
+| **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | Toàn bộ 10 Epics (Admin & Thu ngân) | `Client.Desktop` | `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml`, `Views/*` (In-place Wipe về canvas chuẩn), `ViewModels/*`, `App.xaml(.cs)`, `MainWindow.xaml(.cs)` | Biên dịch WinUI 3 Desktop `0 Warning(s), 0 Error(s)` | 9 bảng CSDL | `6832b09` (WIP) |
 
 ---
 
@@ -284,30 +285,32 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Bảo mật & Phân quyền:** Yêu cầu đăng nhập mặc định (`FallbackPolicy`), phân quyền role policies (`AdminOnly`, `PtOnly`, `MemberOnly`), cho phép ẩn danh `[AllowAnonymous]` tại `/health`, `/login`, và tra cứu danh mục gói tập.
   - **Quy chuẩn lập trình:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu file.
 
-### 📌 [Task 4.1] Chuẩn Hóa & Hiện Thực Admin Desktop App (WinUI 3 MVVM)
-* **Ngày hoàn tất:** 09/11/2026 | **Commit:** `99f79b9` (nhánh `feat/task-4.1-admin-desktop`)
-* **Phân hệ nghiệp vụ liên quan:** Toàn bộ 10 Epics (UC01 – UC10) dành riêng cho Quản trị viên (Admin) và Thu ngân.
-* **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels, Services, Converters, Dialogs).
-* **Mã nguồn tạo / sửa:**
+### 📌 [Task 4.1] Chuẩn Hóa & Hiện Thực Admin Desktop App (WinUI 3 MVVM) — Redo Phase
+* **Ngày cập nhật trạng thái:** 09/11/2026 | **Commit:** `6832b09` (nhánh `refactor/ui-ux-system-rules`)
+* **Phân hệ nghiệp vụ liên quan:** Toàn bộ 10 Epics (UC01 – UC10) dành riêng cho Quản trị viên (Admin) và Thu ngân theo [`PRD.md`](PRD.md).
+* **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels, Services, Converters, Dialogs, Styles).
+* **Mã nguồn đã hoàn tất & bảo toàn:**
   - `src/Client/GymManagement.Desktop/Services/Api/JwtAuthenticationHeaderHandler.cs` (DelegatingHandler tự động đính kèm JWT Bearer Token và xử lý 401 Unauthorized)
   - `src/Client/GymManagement.Desktop/Services/Api/HttpApiClient.cs` (Hiện thực hóa IApiClient qua HttpClient gọi trực tiếp 7 RESTful API Controllers)
   - `src/Client/GymManagement.Desktop/App.xaml.cs` (Cấu hình DI HttpClient, HttpApiClient và chuyển đổi Mock/Http linh hoạt qua biến môi trường)
-  - `src/Client/GymManagement.Desktop/ViewModels/CheckInCounterViewModel.cs` & `Views/CheckInCounterPage.xaml` (Màn hình 2 cột, kết quả tinh gọn Mã hội viên + Họ tên, loại bỏ hoàn toàn khung ảnh chân dung và âm thanh)
-  - `src/Client/GymManagement.Desktop/ViewModels/PosBillingViewModel.cs` & `Views/PosBillingPage.xaml` & `Dialogs/VietQrPaymentDialog.xaml(.cs)` (POS 3 bước, khớp 100% 9 cột DDL Invoice không chiết khấu, nút giả lập sandbox có điều kiện biến môi trường, xác nhận thu tiền thủ công)
-  - `src/Client/GymManagement.Desktop/ViewModels/PtScheduleViewModel.cs` & `Views/PtSchedulePage.xaml` (Lưới thời gian tuần, hàng rào viền đỏ chặn đứng xung đột trùng lịch của PT)
-  - `src/Client/GymManagement.Desktop/ViewModels/InBodyEntryViewModel.cs` & `Dialogs/InBodyEntryDialog.xaml(.cs)` (Kiểm tra biên an toàn y tế, tự động tính BMI tức thời)
-  - `src/Client/GymManagement.Desktop/ViewModels/FreezeSubscriptionViewModel.cs` & `Dialogs/FreezeSubscriptionDialog.xaml(.cs)` (Tự động kéo dài ngày hết hạn mới theo số ngày bảo lưu)
-  - `src/Client/GymManagement.Desktop/ViewModels/SettingsViewModel.cs` & `Views/SettingsPage.xaml` (Chặn admin tự khóa chính mình)
-  - `src/Client/GymManagement.Desktop/ViewModels/ShellViewModel.cs` & `MainPage.xaml(.cs)` (Loại bỏ F1, chuẩn hóa 7 mục chức năng quản trị)
+  - `src/Client/GymManagement.Desktop/MainWindow.xaml(.cs)` & `MainPage.xaml(.cs)` (App Shell & Navigation 7 phân hệ, cấu hình unpackaged và xử lý đăng nhập 1-chạm)
+  - `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml` (Nâng cấp toàn diện New Colors Panel 6 phân tầng chuẩn WCAG 2.2 AA)
   - `src/Client/GymManagement.Desktop/Converters/ValueConverters.cs` (Chuẩn hóa màu ngữ nghĩa và loại bỏ toán tử 3 ngôi)
+* **Trạng thái Tái Cấu Trúc Views (Redo Phase - In-Place Wipe):**
+  - Đã thực hiện dọn sạch ruột mã nguồn (In-place wipe theo Cách 1 an toàn) cho toàn bộ 8 Views:
+    1. `Views/LoginPage.xaml(.cs)`: Khung đăng nhập tối giản và nút 1-chạm vào hệ thống.
+    2. `Views/CheckInCounterPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực quầy tiếp đón 2 cột (UC03).
+    3. `Views/MembersPage.xaml(.cs)`: Canvas trắng tích hợp sẵn Nút CTA `"+ Đăng Ký Hội Viên Mới"` trên Header (UC02).
+    4. `Views/PosBillingPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực quầy POS bán gói và VietQR (UC05).
+    5. `Views/PtSchedulePage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Lịch PT và Hàng rào chống trùng giờ (UC04).
+    6. `Views/DashboardPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực BI Dashboard 4 thẻ KPI (UC06).
+    7. `Views/PackagePlansPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Danh mục gói tập `PackagePlan` (UC07.2).
+    8. `Views/SettingsPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Quản lý nhân sự RBAC (UC07.1).
 * **Kiểm thử tương ứng (Verification):**
-  - Biên dịch Desktop: `dotnet build` 0 warning(s), 0 error(s).
-  - Linter: `dotnet format --verify-no-changes` đạt chuẩn 100%.
-  - Toàn bộ 183 / 183 test cases trong solution đều PASS (UnitTests 110, DataTests 42, ApiTests 31).
+  - Biên dịch Desktop sau khi dọn sạch ruột: `dotnet build src/Client/GymManagement.Desktop -p:Platform=x64` thành công tuyệt đối: **0 Warning(s), 0 Error(s)**.
+  - Toàn bộ 183 / 183 test cases trong solution đều PASS 100% (UnitTests 110, DataTests 42, ApiTests 31).
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
-* **Ràng buộc nghiệp vụ & Kiến trúc:**
-  - **Zero Tolerance Code Rules:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu class.
-  - **Quy chuẩn UI/UX:** Độc tôn 100% Dark Mode (#0F172A / #1E293B), loại bỏ 100% âm thanh (xóa bỏ AudioFeedbackService), không hiệu ứng nhấp nháy, không mã UC trên UI.
+* **Kế hoạch tiếp theo:** Lần lượt tái hiện thực từng View theo đúng chuẩn thị giác [`Document/ui_rules.md`](ui_rules.md) và luồng tương tác [`Document/ux_rules.md`](ux_rules.md).
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
