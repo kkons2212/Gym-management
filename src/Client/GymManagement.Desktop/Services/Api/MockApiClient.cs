@@ -201,7 +201,7 @@ public class MockApiClient : IApiClient
         var member = _members.FirstOrDefault(m => m.UserId == request.SubscriptionId || m.UserId == "USR001");
         if (member == null) return Task.FromResult(false);
 
-        var days = (request.FreezeEndDate - request.FreezeStartDate).Days;
+        var days = request.FreezeEndDate.DayNumber - request.FreezeStartDate.DayNumber;
         var index = _members.FindIndex(m => m.UserId == member.UserId);
         _members[index] = member with
         {

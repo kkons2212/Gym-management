@@ -21,7 +21,10 @@ public record MemberDto(
     DateTime? EndDate = null,
     int RemainingCheckInSessions = 0,
     int RemainingPtSessions = 0
-);
+)
+{
+    public string UserId => UserName;
+}
 
 /// <summary>
 /// Kết quả tìm kiếm hội viên trong danh sách.
@@ -162,8 +165,14 @@ public record FreezeSubscriptionRequest(
     DateOnly FreezeStartDate,
     DateOnly FreezeEndDate,
     string Reason,
-    string AdminUserName
-);
+    string AdminUserName = "admin"
+)
+{
+    public FreezeSubscriptionRequest(string subscriptionId, DateTime freezeStartDate, DateTime freezeEndDate, string reason, string adminUserName = "admin")
+        : this(subscriptionId, DateOnly.FromDateTime(freezeStartDate), DateOnly.FromDateTime(freezeEndDate), reason, adminUserName)
+    {
+    }
+}
 
 /// <summary>
 /// Payload hủy gói tập hội viên (UC02.5).
