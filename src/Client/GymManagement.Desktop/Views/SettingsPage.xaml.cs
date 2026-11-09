@@ -7,7 +7,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    public SettingsViewModel ViewModel => (SettingsViewModel)DataContext;
+    public SettingsViewModel ViewModel
+    {
+        get
+        {
+            return (SettingsViewModel)DataContext;
+        }
+    }
 
     public SettingsPage()
     {

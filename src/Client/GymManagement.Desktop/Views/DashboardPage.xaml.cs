@@ -5,7 +5,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class DashboardPage : Page
 {
-    public DashboardViewModel ViewModel => (DashboardViewModel)DataContext;
+    public DashboardViewModel ViewModel
+    {
+        get
+        {
+            return (DashboardViewModel)DataContext;
+        }
+    }
 
     public DashboardPage()
     {
@@ -20,4 +26,3 @@ public sealed partial class DashboardPage : Page
         };
     }
 }
-

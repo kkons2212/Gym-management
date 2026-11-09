@@ -3,16 +3,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Thanh Toán VietQR Napas 247"
-    PrimaryButtonText="In Hóa Đơn (Enter)"
+    PrimaryButtonText="In Phiếu Thu K80 (Enter)"
     CloseButtonText="Đóng"
     DefaultButton="Primary"
     Style="{StaticResource DefaultContentDialogStyle}">
 
     <StackPanel Spacing="16" Width="440">
         <!-- Sandbox Banner -->
-        <Border Background="#D97706" CornerRadius="8" Padding="12,8">
-            <TextBlock Text="SANDBOX - GIAO DỊCH MÔ PHỎNG, KHÔNG CHUYỂN TIỀN THẬT"
-                       Foreground="#FFFFFF" FontWeight="Bold" FontSize="12"
+        <Border x:Name="SandboxBanner" Background="#78350F" BorderBrush="#B45309" BorderThickness="1" CornerRadius="8" Padding="12,8">
+            <TextBlock Text="MÔ PHỎNG THANH TOÁN (SANDBOX VIETQR)"
+                       Foreground="#FDE68A" FontWeight="Bold" FontSize="12"
                        TextAlignment="Center" TextWrapping="Wrap" />
         </Border>
 
@@ -66,16 +66,23 @@
             </StackPanel>
         </Border>
 
-        <!-- Sandbox Simulation Action -->
+        <!-- Simulation & Manual Confirmation Action -->
         <StackPanel Spacing="8">
             <Button x:Name="BtnSimulatePayment"
-                    Content="⚡ Giả lập thanh toán thành công (Sandbox)"
+                    Content="⚡ Giả lập thanh toán thành công"
                     HorizontalAlignment="Stretch"
                     Height="40"
                     Background="{StaticResource AccentPrimaryBrush}"
                     Foreground="#FFFFFF"
                     FontWeight="SemiBold"
                     Click="BtnSimulatePayment_Click" />
+
+            <Button x:Name="BtnManualConfirm"
+                    Content="Xác nhận đã nhận tiền (Thủ công)"
+                    HorizontalAlignment="Stretch"
+                    Height="36"
+                    Foreground="{StaticResource StatusSuccessBrush}"
+                    Click="BtnManualConfirm_Click" />
 
             <TextBlock x:Name="TxtPaymentStatus"
                        Text="Đang chờ hội viên quét mã..."
@@ -85,4 +92,3 @@
         </StackPanel>
     </StackPanel>
 </ContentDialog>
-

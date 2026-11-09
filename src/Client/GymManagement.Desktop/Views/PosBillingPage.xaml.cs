@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using GymManagement.Desktop.Dialogs;
-using GymManagement.Desktop.Services.Hardware;
 using GymManagement.Desktop.ViewModels;
 using GymManagement.Server.Core.DTOs.Packages;
 
@@ -9,7 +9,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class PosBillingPage : Page
 {
-    public PosBillingViewModel ViewModel => (PosBillingViewModel)DataContext;
+    public PosBillingViewModel ViewModel
+    {
+        get
+        {
+            return (PosBillingViewModel)DataContext;
+        }
+    }
 
     public PosBillingPage()
     {
@@ -38,7 +44,7 @@ public sealed partial class PosBillingPage : Page
         {
             ViewModel.SelectedPaymentMethod = method;
 
-            var accentBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentPrimaryBrush"];
+            var accentBrush = Application.Current.Resources["AccentPrimaryBrush"] as Brush;
             BtnCash.Background = null;
             BtnVietQr.Background = null;
             BtnCard.Background = null;
@@ -78,14 +84,12 @@ public sealed partial class PosBillingPage : Page
     {
         if (ViewModel.SelectedPaymentMethod == "VIETQR" && ViewModel.VietQrPayload != null)
         {
-            var audioService = App.GetService<IAudioFeedbackService>();
             var dialog = new VietQrPaymentDialog(
                 ViewModel.VietQrPayload.Amount,
                 ViewModel.VietQrPayload.BankName,
                 ViewModel.VietQrPayload.BankAccount,
                 ViewModel.VietQrPayload.TransferContent,
-                ViewModel.VietQrPayload.QrDataUrl,
-                audioService)
+                ViewModel.VietQrPayload.QrDataUrl)
             {
                 XamlRoot = this.XamlRoot
             };

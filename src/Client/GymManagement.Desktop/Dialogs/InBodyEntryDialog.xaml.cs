@@ -6,8 +6,21 @@ namespace GymManagement.Desktop.Dialogs;
 
 public sealed partial class InBodyEntryDialog : ContentDialog
 {
-    public decimal HeightCm => (decimal)NbHeight.Value;
-    public decimal WeightKg => (decimal)NbWeight.Value;
+    public decimal HeightCm
+    {
+        get
+        {
+            return (decimal)NbHeight.Value;
+        }
+    }
+
+    public decimal WeightKg
+    {
+        get
+        {
+            return (decimal)NbWeight.Value;
+        }
+    }
 
     public decimal? BodyFatPercentage
     {
@@ -107,4 +120,3 @@ public sealed partial class InBodyEntryDialog : ContentDialog
         }
     }
 }
-

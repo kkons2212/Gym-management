@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymManagement.Desktop.Services.Api;
-using GymManagement.Desktop.Services.Hardware;
 using GymManagement.Server.Core.DTOs.CheckIn;
 
 namespace GymManagement.Desktop.ViewModels;
@@ -9,7 +8,6 @@ namespace GymManagement.Desktop.ViewModels;
 public partial class CheckInCounterViewModel : ObservableObject
 {
     private readonly IApiClient _apiClient;
-    private readonly IAudioFeedbackService? _audioService;
 
     [ObservableProperty]
     private bool _isCameraActive = true;
@@ -19,8 +17,14 @@ public partial class CheckInCounterViewModel : ObservableObject
 
     public string SearchPhone
     {
-        get => SearchQuery;
-        set => SearchQuery = value;
+        get
+        {
+            return SearchQuery;
+        }
+        set
+        {
+            SearchQuery = value;
+        }
     }
 
     [ObservableProperty]
@@ -31,6 +35,9 @@ public partial class CheckInCounterViewModel : ObservableObject
 
     [ObservableProperty]
     private string _statusBanner = string.Empty;
+
+    [ObservableProperty]
+    private string _memberCode = string.Empty;
 
     [ObservableProperty]
     private string _memberName = string.Empty;
@@ -50,10 +57,10 @@ public partial class CheckInCounterViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
-    public CheckInCounterViewModel(IApiClient apiClient, IAudioFeedbackService? audioService = null)
+    public CheckInCounterViewModel(IApiClient apiClient)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
-        _audioService = audioService;
     }
 
     [RelayCommand]
@@ -70,6 +77,7 @@ public partial class CheckInCounterViewModel : ObservableObject
             return;
         }
 
+        MemberCode = qrCode.Trim();
         await ProcessCheckInAsync(new CheckInRequest(QrCode: qrCode.Trim()));
     }
 
@@ -82,6 +90,7 @@ public partial class CheckInCounterViewModel : ObservableObject
         }
 
         string input = SearchQuery.Trim();
+        MemberCode = input;
         await ProcessCheckInAsync(new CheckInRequest(
             MemberCode: input,
             Phone: input));
@@ -102,6 +111,7 @@ public partial class CheckInCounterViewModel : ObservableObject
         }
 
         string input = SearchQuery.Trim();
+        MemberCode = input;
         await ProcessCheckInAsync(new CheckInRequest(
             MemberCode: input,
             Phone: input,
@@ -119,7 +129,7 @@ public partial class CheckInCounterViewModel : ObservableObject
             var response = await _apiClient.CheckInAsync(request);
 
             IsSuccess = true;
-            StatusBanner = response.Message;
+            StatusBanner = "CHECK-IN THÀNH CÔNG • CỔNG MỞ";
             MemberName = response.MemberName;
             PlanName = response.PlanName;
             RemainingGymSessions = response.RemainingCheckInSessions;

@@ -27,13 +27,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header: Title & Action -->
+        <!-- Header: Title & Action (Standard Terminology: Gói Tập) -->
         <Grid Grid.Row="0">
             <StackPanel Spacing="4">
-                <TextBlock Text="QUẢN LÝ HỘI VIÊN &amp; THẺ TẬP"
+                <TextBlock Text="QUẢN LÝ HỘI VIÊN &amp; GÓI TẬP"
                            FontSize="20" FontWeight="Bold"
                            Foreground="{StaticResource TextPrimaryBrush}" />
-                <TextBlock Text="Tra cứu thông tin, bảo lưu thẻ tập và ghi nhận số đo InBody (F3)"
+                <TextBlock Text="Tra cứu thông tin, bảo lưu gói tập và ghi nhận số đo InBody (F3)"
                            FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
         </Grid>
@@ -52,12 +52,12 @@
                             QuerySubmitted="OnSearchQuerySubmitted"
                             Height="40" />
 
-            <!-- Status Filter Buttons -->
+            <!-- Status Filter Buttons (Plain Text Status, No Icons per ui_rules.md) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                 <Button Content="Tất cả" Tag="ALL" Click="OnFilterClicked" Height="40" />
-                <Button Content="Active" Tag="ACTIVE" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusSuccessBrush}" />
-                <Button Content="Bảo lưu" Tag="FROZEN" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusWarningBrush}" />
-                <Button Content="Hết hạn" Tag="EXPIRED" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusDangerBrush}" />
+                <Button Content="Đang hoạt động" Tag="ACTIVE" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusSuccessBrush}" />
+                <Button Content="Đang bảo lưu" Tag="FROZEN" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusWarningBrush}" />
+                <Button Content="Đã hết hạn" Tag="EXPIRED" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusDangerBrush}" />
             </StackPanel>
         </Grid>
 
@@ -126,7 +126,7 @@
                                     <TextBlock Text="{x:Bind RemainingPtSessions, Mode=OneWay, Converter={StaticResource StringFormatConverter}}" FontSize="11" Foreground="{StaticResource StatusPtBrush}" />
                                 </StackPanel>
 
-                                <!-- Status Chip -->
+                                <!-- Status Chip (Pure text, no icon) -->
                                 <Border Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Left"
                                         Background="{x:Bind Status, Converter={StaticResource StatusToBrushConverter}}"
                                         CornerRadius="12" Padding="8,4">

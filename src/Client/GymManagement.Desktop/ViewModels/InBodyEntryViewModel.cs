@@ -46,39 +46,86 @@ public partial class InBodyEntryViewModel : ObservableObject
 
     public InBodyEntryViewModel(IApiClient apiClient)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
         CalculateBmi();
     }
 
     public void Setup(MemberDto member)
     {
+        ArgumentNullException.ThrowIfNull(member);
+
         MemberId = member.UserId;
         MemberName = member.FullName;
         CalculateBmi();
     }
 
-    partial void OnHeightCmChanged(decimal value) => CalculateBmi();
-    partial void OnWeightKgChanged(decimal value) => CalculateBmi();
+    partial void OnHeightCmChanged(decimal value)
+    {
+        CalculateBmi();
+    }
+
+    partial void OnWeightKgChanged(decimal value)
+    {
+        CalculateBmi();
+    }
 
     private void CalculateBmi()
     {
-        if (HeightCm <= 0 || WeightKg <= 0) return;
-
-        var hM = HeightCm / 100m;
-        Bmi = Math.Round(WeightKg / (hM * hM), 1);
-
-        BmiClassification = Bmi switch
+        if (HeightCm <= 0m || WeightKg <= 0m)
         {
-            < 18.5m => "Thiếu cân (Gầy)",
-            < 25.0m => "Bình thường (Chuẩn)",
-            < 30.0m => "Thừa cân",
-            _ => "Béo phì"
-        };
+            return;
+        }
+
+        decimal heightMeters = HeightCm / 100m;
+        Bmi = Math.Round(WeightKg / (heightMeters * heightMeters), 1);
+
+        if (Bmi < 18.5m)
+        {
+            BmiClassification = "Thiếu cân (Gầy)";
+        }
+        else if (Bmi < 25.0m)
+        {
+            BmiClassification = "Bình thường (Chuẩn)";
+        }
+        else if (Bmi < 30.0m)
+        {
+            BmiClassification = "Thừa cân";
+        }
+        else
+        {
+            BmiClassification = "Béo phì";
+        }
     }
 
     [RelayCommand]
     private async Task SaveInBodyAsync()
     {
+        // 1. Kiểm tra ngưỡng an toàn y tế (ux_rules.md 3.4)
+        if (HeightCm < 100m || HeightCm > 250m)
+        {
+            StatusMessage = "Chiều cao phải nằm trong khoảng từ 100 cm đến 250 cm.";
+            return;
+        }
+
+        if (WeightKg < 30m || WeightKg > 250m)
+        {
+            StatusMessage = "Cân nặng phải nằm trong khoảng từ 30 kg đến 250 kg.";
+            return;
+        }
+
+        if (BodyFatPercentage.HasValue && (BodyFatPercentage.Value < 3m || BodyFatPercentage.Value > 60m))
+        {
+            StatusMessage = "Tỷ lệ mỡ phải nằm trong khoảng từ 3% đến 60%.";
+            return;
+        }
+
+        if (SkeletalMuscleMass.HasValue && (SkeletalMuscleMass.Value < 10m || SkeletalMuscleMass.Value > 100m))
+        {
+            StatusMessage = "Khối lượng cơ xương phải nằm trong khoảng từ 10 kg đến 100 kg.";
+            return;
+        }
+
         IsLoading = true;
         StatusMessage = null;
 
@@ -107,4 +154,3 @@ public partial class InBodyEntryViewModel : ObservableObject
         }
     }
 }
-

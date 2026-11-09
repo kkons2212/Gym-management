@@ -284,6 +284,31 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Bảo mật & Phân quyền:** Yêu cầu đăng nhập mặc định (`FallbackPolicy`), phân quyền role policies (`AdminOnly`, `PtOnly`, `MemberOnly`), cho phép ẩn danh `[AllowAnonymous]` tại `/health`, `/login`, và tra cứu danh mục gói tập.
   - **Quy chuẩn lập trình:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu file.
 
+### 📌 [Task 4.1] Chuẩn Hóa & Hiện Thực Admin Desktop App (WinUI 3 MVVM)
+* **Ngày hoàn tất:** 09/11/2026 | **Commit:** *(pending)* (nhánh `feat/task-4.1-admin-desktop`)
+* **Phân hệ nghiệp vụ liên quan:** Toàn bộ 10 Epics (UC01 – UC10) dành riêng cho Quản trị viên (Admin) và Thu ngân.
+* **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels, Services, Converters, Dialogs).
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Services/Api/JwtAuthenticationHeaderHandler.cs` (DelegatingHandler tự động đính kèm JWT Bearer Token và xử lý 401 Unauthorized)
+  - `src/Client/GymManagement.Desktop/Services/Api/HttpApiClient.cs` (Hiện thực hóa IApiClient qua HttpClient gọi trực tiếp 7 RESTful API Controllers)
+  - `src/Client/GymManagement.Desktop/App.xaml.cs` (Cấu hình DI HttpClient, HttpApiClient và chuyển đổi Mock/Http linh hoạt qua biến môi trường)
+  - `src/Client/GymManagement.Desktop/ViewModels/CheckInCounterViewModel.cs` & `Views/CheckInCounterPage.xaml` (Màn hình 2 cột, kết quả tinh gọn Mã hội viên + Họ tên, loại bỏ hoàn toàn khung ảnh chân dung và âm thanh)
+  - `src/Client/GymManagement.Desktop/ViewModels/PosBillingViewModel.cs` & `Views/PosBillingPage.xaml` & `Dialogs/VietQrPaymentDialog.xaml(.cs)` (POS 3 bước, khớp 100% 9 cột DDL Invoice không chiết khấu, nút giả lập sandbox có điều kiện biến môi trường, xác nhận thu tiền thủ công)
+  - `src/Client/GymManagement.Desktop/ViewModels/PtScheduleViewModel.cs` & `Views/PtSchedulePage.xaml` (Lưới thời gian tuần, hàng rào viền đỏ chặn đứng xung đột trùng lịch của PT)
+  - `src/Client/GymManagement.Desktop/ViewModels/InBodyEntryViewModel.cs` & `Dialogs/InBodyEntryDialog.xaml(.cs)` (Kiểm tra biên an toàn y tế, tự động tính BMI tức thời)
+  - `src/Client/GymManagement.Desktop/ViewModels/FreezeSubscriptionViewModel.cs` & `Dialogs/FreezeSubscriptionDialog.xaml(.cs)` (Tự động kéo dài ngày hết hạn mới theo số ngày bảo lưu)
+  - `src/Client/GymManagement.Desktop/ViewModels/SettingsViewModel.cs` & `Views/SettingsPage.xaml` (Chặn admin tự khóa chính mình)
+  - `src/Client/GymManagement.Desktop/ViewModels/ShellViewModel.cs` & `MainPage.xaml(.cs)` (Loại bỏ F1, chuẩn hóa 7 mục chức năng quản trị)
+  - `src/Client/GymManagement.Desktop/Converters/ValueConverters.cs` (Chuẩn hóa màu ngữ nghĩa và loại bỏ toán tử 3 ngôi)
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch Desktop: `dotnet build` 0 warning(s), 0 error(s).
+  - Linter: `dotnet format --verify-no-changes` đạt chuẩn 100%.
+  - Toàn bộ 183 / 183 test cases trong solution đều PASS (UnitTests 110, DataTests 42, ApiTests 31).
+* **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+* **Ràng buộc nghiệp vụ & Kiến trúc:**
+  - **Zero Tolerance Code Rules:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu class.
+  - **Quy chuẩn UI/UX:** Độc tôn 100% Dark Mode (#0F172A / #1E293B), loại bỏ 100% âm thanh (xóa bỏ AudioFeedbackService), không hiệu ứng nhấp nháy, không mã UC trên UI.
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>

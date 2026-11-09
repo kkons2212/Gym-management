@@ -7,13 +7,22 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class CheckInCounterPage : Page
 {
-    public CheckInCounterViewModel ViewModel => (CheckInCounterViewModel)DataContext;
+    public CheckInCounterViewModel ViewModel
+    {
+        get
+        {
+            return (CheckInCounterViewModel)DataContext;
+        }
+    }
 
     public CheckInCounterPage()
     {
         DataContext = App.GetService<CheckInCounterViewModel>();
         InitializeComponent();
-        Loaded += (s, e) => TxtSearchInput.Focus(FocusState.Programmatic);
+        Loaded += (s, e) =>
+        {
+            TxtSearchInput.Focus(FocusState.Programmatic);
+        };
     }
 
     private void TxtSearchInput_KeyDown(object sender, KeyRoutedEventArgs e)

@@ -9,7 +9,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class MembersPage : Page
 {
-    public MembersViewModel ViewModel => (MembersViewModel)DataContext;
+    public MembersViewModel ViewModel
+    {
+        get
+        {
+            return (MembersViewModel)DataContext;
+        }
+    }
 
     public MembersPage()
     {
