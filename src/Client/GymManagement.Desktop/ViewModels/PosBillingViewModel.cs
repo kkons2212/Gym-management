@@ -164,6 +164,17 @@ public partial class PosBillingViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    public async Task ReloadMembersAsync()
+    {
+        var mems = await _apiClient.GetMembersAsync();
+        Members.Clear();
+        foreach (var m in mems)
+        {
+            Members.Add(m);
+        }
+    }
+
     public void SelectPackage(PackagePlanDto package)
     {
         ArgumentNullException.ThrowIfNull(package);

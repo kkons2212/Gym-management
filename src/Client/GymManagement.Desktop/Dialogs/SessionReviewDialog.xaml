@@ -1,0 +1,38 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.SessionReviewDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Đối Soát Ca Tập PT (Session Review)"
+    PrimaryButtonText="Lưu Kết Quả Đối Soát"
+    CloseButtonText="Hủy Bỏ"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="440">
+        <!-- Session Info Card -->
+        <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="TxtSessionDetails" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="TxtScheduledTime" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Outcome Selector -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Kết quả đối soát ca dạy (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <ComboBox x:Name="CboOutcome" SelectedIndex="0" HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="Hoàn thành bình thường (COMPLETED)" Tag="COMPLETED" />
+                <ComboBoxItem Content="Hội viên vắng mặt không phép (STUDENT_ABSENT - Trừ buổi)" Tag="STUDENT_ABSENT" />
+                <ComboBoxItem Content="Huấn luyện viên vắng mặt (PT_ABSENT - Không trừ buổi)" Tag="PT_ABSENT" />
+                <ComboBoxItem Content="Dời lịch sang buổi khác (POSTPONED)" Tag="POSTPONED" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Notes -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Ghi chú xác nhận:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBox x:Name="TxtReviewNotes" PlaceholderText="Nhập biên bản xác nhận nếu có khiếu nại..." HorizontalAlignment="Stretch" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>
+

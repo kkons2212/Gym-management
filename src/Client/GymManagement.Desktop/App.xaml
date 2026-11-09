@@ -19,6 +19,7 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <converters:TimeOnlyFormatterConverter x:Key="TimeOnlyFormatterConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

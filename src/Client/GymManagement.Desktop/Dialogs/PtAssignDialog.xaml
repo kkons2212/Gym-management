@@ -1,0 +1,45 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.PtAssignDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:user="using:GymManagement.Server.Core.DTOs.Identity"
+    Title="Phân Công Huấn Luyện Viên PT"
+    PrimaryButtonText="Xác Nhận Phân Công"
+    CloseButtonText="Hủy Bỏ"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="440">
+        <!-- Member Info Card -->
+        <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="TxtMemberName" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="TxtSubscriptionInfo" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+        </Border>
+
+        <!-- PT Selector -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Chọn Huấn Luyện Viên PT phụ trách (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <ComboBox x:Name="CboPtList" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="user:UserSessionDto">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{x:Bind FullName}" FontWeight="SemiBold" />
+                            <TextBlock Text="•" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{x:Bind Role}" Foreground="{StaticResource StatusPtBrush}" FontSize="11" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Notes -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Ghi chú phân công:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBox x:Name="TxtNotes" PlaceholderText="Ghi chú mục tiêu tập luyện hoặc lưu ý sức khỏe..." HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <TextBlock x:Name="TxtValidationError" Foreground="{StaticResource StatusDangerBrush}" FontSize="12" Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>

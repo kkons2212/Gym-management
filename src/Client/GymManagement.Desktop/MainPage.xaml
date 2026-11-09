@@ -10,7 +10,7 @@
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"
                         PaneDisplayMode="Left"
-                        OpenPaneLength="260"
+                        OpenPaneLength="280"
                         CompactPaneLength="48"
                         SelectionChanged="NavView_SelectionChanged">
             <!-- Header -->
@@ -28,7 +28,7 @@
                 </Border>
             </NavigationView.PaneHeader>
 
-            <!-- Menu Items: 7 Functional Modules (ui_rules.md 3.1) -->
+            <!-- Menu Items: 7 Functional Modules per PRD & ui_rules.md 3.1 -->
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Quầy Điểm Danh &amp; Cổng Tự Động" Tag="CheckIn">
                     <NavigationViewItem.Icon>
@@ -54,21 +54,21 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Danh Mục Gói Tập" Tag="Packages">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8F1;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
                 <NavigationViewItem Content="Báo Cáo &amp; Thống Kê Doanh Thu" Tag="Dashboard">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9D2;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Cấu Hình &amp; Sổ Kiểm Toán Hệ Thống" Tag="Settings">
+                <NavigationViewItem Content="Quản Lý Nhân Sự (RBAC)" Tag="Staff">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE77B;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Danh Mục Gói Dịch Vụ" Tag="Packages">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8F1;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

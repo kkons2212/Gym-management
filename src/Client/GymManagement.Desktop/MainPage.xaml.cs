@@ -55,17 +55,17 @@ public sealed partial class MainPage : Page
         {
             targetPage = typeof(PtSchedulePage);
         }
-        else if (tag == "Packages")
-        {
-            targetPage = typeof(PackagePlansPage);
-        }
         else if (tag == "Dashboard")
         {
             targetPage = typeof(DashboardPage);
         }
-        else if (tag == "Settings")
+        else if (tag == "Staff")
         {
             targetPage = typeof(SettingsPage);
+        }
+        else if (tag == "Packages")
+        {
+            targetPage = typeof(PackagePlansPage);
         }
         else
         {
