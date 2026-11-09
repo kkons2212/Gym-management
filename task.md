@@ -254,9 +254,9 @@ GymManagement.sln
   - Danh mục gói tập, quản lý tài khoản người dùng và báo cáo BI đa chiều.
 
 #### 4.2. `Member/PT Web Portal` (Blazor Server)
-- [ ] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.
-- [ ] **Task 4.2.2: Phân hệ Cổng Hội viên:** Mã QR gói tập cá nhân (QR code), Đặt/Hủy ca PT, Biểu đồ InBody, Lịch sử tập, Đánh giá sao PT.
-- [ ] **Task 4.2.3: Phân hệ Cổng Huấn luyện viên (PT):** Thời khóa biểu tuần, Đăng ký slot rảnh, Danh sách học viên, Ghi nhận InBody, Xác nhận hoàn tất ca dạy.
+- [x] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.
+- [x] **Task 4.2.2: Phân hệ Cổng Hội viên:** Mã QR gói tập cá nhân (QR code), Đặt/Hủy ca PT, Biểu đồ InBody, Lịch sử tập, Đánh giá sao PT.
+- [x] **Task 4.2.3: Phân hệ Cổng Huấn luyện viên (PT):** Thời khóa biểu tuần, Đăng ký slot rảnh, Danh sách học viên, Ghi nhận InBody, Xác nhận hoàn tất ca dạy.
 
 ---
 

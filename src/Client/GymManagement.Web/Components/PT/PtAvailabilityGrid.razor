@@ -1,0 +1,286 @@
+@inject IWebApiClient ApiClient
+
+<div class="gym-card" style="padding: 16px;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+            <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Đăng Ký Khung Giờ Rảnh Dạy Kèm</h2>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Mở các khung giờ trong tuần để học viên có thể chủ động đặt lịch
+            </div>
+        </div>
+        <button type="button"
+                @onclick="LoadWeekSlotsAsync"
+                class="btn-secondary"
+                style="padding: 4px 8px; font-size: 11px; min-height: 28px;">
+            Làm mới
+        </button>
+    </div>
+
+    <!-- Day Carousel (7 days from Monday or Today) -->
+    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+        Chọn ngày thiết lập
+    </label>
+    <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px;">
+        @for (int i = 0; i < 7; i++)
+        {
+            var date = _weekStart.AddDays(i);
+            var isSelected = _selectedDate == date;
+            <button type="button"
+                    @onclick="() => _selectedDate = date"
+                    class="tabular-nums"
+                    style="flex: 0 0 66px; padding: 8px 4px; border-radius: 8px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer;">
+                <div style="font-size: 10px; color: @(isSelected ? "#38BDF8" : "var(--text-secondary)");">
+                    @(date == _today ? "Hôm nay" : $"Thứ {((int)date.DayOfWeek == 0 ? "CN" : ((int)date.DayOfWeek + 1).ToString())}")
+                </div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 2px;">
+                    @date.Day.ToString("00")
+                </div>
+                <div style="font-size: 10px; color: var(--text-secondary);">
+                    Th.@date.Month
+                </div>
+            </button>
+        }
+    </div>
+
+    @if (_isLoading)
+    {
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
+            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
+            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
+            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
+            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Khung giờ ngày&nbsp;<span class="tabular-nums" style="color: #38BDF8;">@_selectedDate.ToString("dd/MM/yyyy")</span>:
+            </span>
+            <span style="font-size: 11px; color: var(--text-secondary);">
+                (Bấm để Bật/Tắt mở lịch)
+            </span>
+        </div>
+
+        <!-- Slots Grid for Selected Day -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
+            @foreach (var template in StandardSlots)
+            {
+                var existing = _currentSlots.FirstOrDefault(s =>
+                    s.AvailableDate == _selectedDate &&
+                    s.StartTime == template.Start &&
+                    s.EndTime == template.End);
+
+                var isRegistered = existing != null;
+                var isBooked = existing?.IsBooked == true;
+
+                <button type="button"
+                        @onclick="() => ToggleSlot(template)"
+                        class="tabular-nums"
+                        style="padding: 10px 8px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; transition: all 0.15s; border: 1px solid @GetSlotBorder(isRegistered, isBooked); background: @GetSlotBg(isRegistered, isBooked); color: @GetSlotColor(isRegistered, isBooked); cursor: @(isBooked ? "not-allowed" : "pointer");">
+                    <div>@template.Start.ToString("HH:mm") – @template.End.ToString("HH:mm")</div>
+                    <div style="font-size: 10px; font-weight: 400; margin-top: 2px;">
+                        @if (isBooked)
+                        {
+                            <span>🔒 Đã có học viên đặt</span>
+                        }
+                        else if (isRegistered)
+                        {
+                            <span>✓ Đang mở nhận lịch</span>
+                        }
+                        else
+                        {
+                            <span>+ Chưa mở</span>
+                        }
+                    </div>
+                </button>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div style="background: @(_isError ? "rgba(239, 68, 68, 0.15)" : "rgba(52, 211, 153, 0.15)"); border: 1px solid @(_isError ? "#EF4444" : "#34D399"); color: @(_isError ? "#FCA5A5" : "#6EE7B7"); font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px;">
+            @_statusMessage
+        </div>
+    }
+
+    <!-- Save Button -->
+    <button type="button"
+            class="btn-primary"
+            disabled="@(_isSaving || _pendingChanges.Count == 0)"
+            @onclick="SaveChangesToApiAsync"
+            style="width: 100%; padding: 12px; font-size: 14px;">
+        @if (_isSaving)
+        {
+            <span>Đang lưu thay đổi…</span>
+        }
+        else
+        {
+            <span>Lưu Thay Đổi Lịch Rảnh (@_pendingChanges.Count&nbsp;thay đổi chưa lưu)</span>
+        }
+    </button>
+</div>
+
+@code {
+    private record SlotTemplate(TimeOnly Start, TimeOnly End);
+
+    private static readonly SlotTemplate[] StandardSlots =
+    [
+        new(new TimeOnly(6, 0), new TimeOnly(7, 0)),
+        new(new TimeOnly(7, 0), new TimeOnly(8, 0)),
+        new(new TimeOnly(8, 0), new TimeOnly(9, 0)),
+        new(new TimeOnly(9, 30), new TimeOnly(10, 30)),
+        new(new TimeOnly(14, 0), new TimeOnly(15, 0)),
+        new(new TimeOnly(15, 30), new TimeOnly(16, 30)),
+        new(new TimeOnly(17, 30), new TimeOnly(18, 30)),
+        new(new TimeOnly(19, 0), new TimeOnly(20, 0))
+    ];
+
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _weekStart;
+    private DateOnly _selectedDate;
+
+    private List<PtSlotDto> _currentSlots = [];
+    private readonly Dictionary<string, bool> _pendingChanges = []; // Key: "yyyy-MM-dd_HH:mm_HH:mm", Value: register (true/false)
+
+    private bool _isLoading = true;
+    private bool _isSaving;
+    private string? _statusMessage;
+    private bool _isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _weekStart = _today;
+        _selectedDate = _today;
+        await LoadWeekSlotsAsync();
+    }
+
+    private async Task LoadWeekSlotsAsync()
+    {
+        _isLoading = true;
+        _statusMessage = null;
+        try
+        {
+            var endDate = _weekStart.AddDays(7);
+            var slots = await ApiClient.GetMyAvailabilitySlotsAsync(_weekStart, endDate);
+            _currentSlots = slots.ToList();
+            _pendingChanges.Clear();
+        }
+        catch (Exception ex)
+        {
+            _isError = true;
+            _statusMessage = "Không thể tải lịch rảnh: " + ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ToggleSlot(SlotTemplate template)
+    {
+        var existing = _currentSlots.FirstOrDefault(s =>
+            s.AvailableDate == _selectedDate &&
+            s.StartTime == template.Start &&
+            s.EndTime == template.End);
+
+        if (existing?.IsBooked == true)
+        {
+            _isError = true;
+            _statusMessage = $"Khung giờ {template.Start:HH:mm} ngày {_selectedDate:dd/MM} đã có học viên đặt lịch, không thể hủy.";
+            return;
+        }
+
+        string key = $"{_selectedDate:yyyyMMdd}_{template.Start:HHmm}_{template.End:HHmm}";
+
+        if (existing != null)
+        {
+            // Đang mở -> Huỷ mở
+            _currentSlots.Remove(existing);
+            _pendingChanges[key] = false;
+        }
+        else
+        {
+            // Chưa mở -> Mở mới
+            _currentSlots.Add(new PtSlotDto(
+                AvailabilityId: "TEMP_" + Guid.NewGuid().ToString("N")[..8],
+                AvailableDate: _selectedDate,
+                StartTime: template.Start,
+                EndTime: template.End,
+                IsBooked: false
+            ));
+            _pendingChanges[key] = true;
+        }
+
+        _isError = false;
+        _statusMessage = null;
+    }
+
+    private async Task SaveChangesToApiAsync()
+    {
+        if (_pendingChanges.Count == 0 || _isSaving) return;
+
+        _isSaving = true;
+        _statusMessage = null;
+
+        try
+        {
+            var upserts = new List<PtSlotUpsertDto>();
+            foreach (var kvp in _pendingChanges)
+            {
+                var parts = kvp.Key.Split('_');
+                var dStr = parts[0];
+                var sStr = parts[1];
+                var eStr = parts[2];
+
+                var d = new DateOnly(int.Parse(dStr[..4]), int.Parse(dStr.Substring(4, 2)), int.Parse(dStr.Substring(6, 2)));
+                var s = new TimeOnly(int.Parse(sStr[..2]), int.Parse(sStr.Substring(2, 2)));
+                var e = new TimeOnly(int.Parse(eStr[..2]), int.Parse(eStr.Substring(2, 2)));
+
+                upserts.Add(new PtSlotUpsertDto(null, d, s, e, kvp.Value));
+            }
+
+            var session = await ApiClient.GetCurrentUserSessionAsync();
+            var ptId = session?.UserId ?? "pt01";
+
+            var req = new SavePtSlotsRequest(ptId, upserts);
+            await ApiClient.SavePtAvailabilitySlotsAsync(req);
+
+            _pendingChanges.Clear();
+            _isError = false;
+            _statusMessage = "Đã lưu thành công các khung giờ rảnh!";
+        }
+        catch (Exception ex)
+        {
+            _isError = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private string GetSlotBorder(bool isRegistered, bool isBooked)
+    {
+        if (isBooked) return "#475569";
+        if (isRegistered) return "#0284C7";
+        return "#334155";
+    }
+
+    private string GetSlotBg(bool isRegistered, bool isBooked)
+    {
+        if (isBooked) return "rgba(30, 41, 59, 0.7)";
+        if (isRegistered) return "rgba(2, 132, 199, 0.2)";
+        return "#1E293B";
+    }
+
+    private string GetSlotColor(bool isRegistered, bool isBooked)
+    {
+        if (isBooked) return "#94A3B8";
+        if (isRegistered) return "#38BDF8";
+        return "#CBD5E1";
+    }
+}

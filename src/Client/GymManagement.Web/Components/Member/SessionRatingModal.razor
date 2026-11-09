@@ -1,0 +1,152 @@
+@inject IWebApiClient ApiClient
+
+@if (IsOpen && Session != null)
+{
+    <div class="modal-backdrop" @onclick="HandleClose">
+        <div class="modal-content" style="max-width: 380px; text-align: center;" @onclick:stopPropagation>
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 class="gym-card-title" style="font-size: 16px; margin: 0;">Đánh Giá Buổi Tập PT</h2>
+                <button type="button" @onclick="HandleClose" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Session Info -->
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: left; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="color: var(--text-secondary);">Huấn luyện viên:</span>
+                    <strong>@Session.PtName</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary);">Thời gian:</span>
+                    <span class="tabular-nums">@Session.SessionStartTime.ToString("HH:mm dd/MM/yyyy")</span>
+                </div>
+            </div>
+
+            <!-- Star Picker (1 - 5 stars) -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                    Chất lượng buổi tập và sự hướng dẫn của HLV:
+                </div>
+                <div style="display: flex; justify-content: center; gap: 8px;">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        var starIndex = i;
+                        <button type="button"
+                                @onclick="() => _selectedStars = starIndex"
+                                style="background: none; border: none; cursor: pointer; font-size: 32px; line-height: 1; padding: 4px; color: @(starIndex <= _selectedStars ? "#FBBF24" : "#475569"); transition: color 0.15s;">
+                            ★
+                        </button>
+                    }
+                </div>
+                <div style="font-size: 12px; color: #FBBF24; font-weight: 600; margin-top: 4px;">
+                    @GetStarLabel(_selectedStars)
+                </div>
+            </div>
+
+            <!-- Review Comment -->
+            <div style="margin-bottom: 16px; text-align: left;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                    Nhận xét chi tiết (không bắt buộc)
+                </label>
+                <textarea @bind="_reviewComment"
+                          rows="3"
+                          maxlength="300"
+                          placeholder="Chia sẻ cảm nhận của bạn về buổi tập…"
+                          style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; resize: none; outline: none;"></textarea>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; text-align: left;">
+                    @_errorMessage
+                </div>
+            }
+
+            <!-- Submit Button -->
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@(_selectedStars == 0 || _isSubmitting)"
+                    @onclick="SubmitRatingAsync"
+                    style="width: 100%; padding: 12px; font-size: 14px;">
+                @if (_isSubmitting)
+                {
+                    <span>Đang gửi đánh giá…</span>
+                }
+                else
+                {
+                    <span>Gửi Đánh Giá</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public PtSessionDto? Session { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnRatingSubmitted { get; set; }
+
+    private int _selectedStars = 5;
+    private string _reviewComment = string.Empty;
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen && Session != null)
+        {
+            _selectedStars = Session.RatingStars ?? 5;
+            _reviewComment = Session.ReviewComment ?? string.Empty;
+            _errorMessage = null;
+        }
+    }
+
+    private string GetStarLabel(int stars) => stars switch
+    {
+        5 => "Rất hài lòng",
+        4 => "Hài lòng",
+        3 => "Bình thường",
+        2 => "Chưa hài lòng",
+        1 => "Rất không hài lòng",
+        _ => "Vui lòng chọn số sao"
+    };
+
+    private async Task HandleClose()
+    {
+        _errorMessage = null;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SubmitRatingAsync()
+    {
+        if (Session == null || _selectedStars == 0 || _isSubmitting) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new SubmitRatingRequest(
+                SessionId: Session.SessionId,
+                MemberUserName: Session.MemberUserName,
+                RatingStars: _selectedStars,
+                ReviewComment: string.IsNullOrWhiteSpace(_reviewComment) ? null : _reviewComment.Trim()
+            );
+
+            await ApiClient.SubmitRatingAsync(request);
+            await OnRatingSubmitted.InvokeAsync();
+            await HandleClose();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

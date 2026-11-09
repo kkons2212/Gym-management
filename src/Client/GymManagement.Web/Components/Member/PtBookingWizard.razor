@@ -1,0 +1,241 @@
+@inject IWebApiClient ApiClient
+
+<div class="gym-card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h2 class="gym-card-title" style="margin: 0; font-size: 16px;">Đặt Lịch Tập Với Huấn Luyện Viên</h2>
+        <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">
+            HLV:&nbsp;@(AssignedPtName ?? "Chưa phân công")
+        </span>
+    </div>
+
+    @if (string.IsNullOrEmpty(AssignedPtId))
+    {
+        <div style="text-align: center; padding: 24px 12px; color: var(--text-secondary); font-size: 13px;">
+            <div style="font-size: 28px; margin-bottom: 8px;">ℹ️</div>
+            Bạn chưa được phân công Huấn luyện viên cá nhân cố định.<br />
+            Vui lòng liên hệ quầy lễ tân để được hỗ trợ sắp xếp PT.
+        </div>
+    }
+    else if (RemainingPtSessions <= 0)
+    {
+        <div style="text-align: center; padding: 24px 12px; color: #F87171; font-size: 13px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+            <div style="font-size: 28px; margin-bottom: 8px;">⚠️</div>
+            Gói tập hiện tại đã hết số buổi tập kèm PT.<br />
+            Vui lòng đăng ký gia hạn gói tập để tiếp tục đặt lịch.
+        </div>
+    }
+    else
+    {
+        <!-- Step 1: Chọn ngày tập (Date carousel) -->
+        <div style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 8px;">
+                1. Chọn ngày tập
+            </label>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;">
+                @for (int i = 0; i < 7; i++)
+                {
+                    var date = _today.AddDays(i);
+                    var isSelected = _selectedDate == date;
+                    <button type="button"
+                            @onclick="() => SelectDate(date)"
+                            class="tabular-nums"
+                            style="flex: 0 0 64px; padding: 10px 4px; border-radius: 8px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 10px; color: @(isSelected ? "#38BDF8" : "var(--text-secondary)");">
+                            @(i == 0 ? "Hôm nay" : $"Thứ {((int)date.DayOfWeek == 0 ? "CN" : ((int)date.DayOfWeek + 1).ToString())}")
+                        </div>
+                        <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">
+                            @date.Day.ToString("00")
+                        </div>
+                        <div style="font-size: 10px; color: var(--text-secondary);">
+                            Th.@date.Month
+                        </div>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Step 2: Chọn khung giờ rảnh -->
+        <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                    2. Chọn khung giờ rảnh
+                </label>
+                <span class="tabular-nums" style="font-size: 11px; color: var(--text-secondary);">
+                    Ngày:&nbsp;@_selectedDate.ToString("dd/MM/yyyy")
+                </span>
+            </div>
+
+            @if (_isLoadingSlots)
+            {
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+                    <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+                    <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+                    <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+                </div>
+            }
+            else if (_daySlots.Count == 0)
+            {
+                <div style="text-align: center; padding: 16px; background: var(--bg-canvas); border-radius: 8px; border: 1px dashed var(--border-subtle); color: var(--text-secondary); font-size: 12px;">
+                    Huấn luyện viên chưa mở lịch rảnh trong ngày này.
+                </div>
+            }
+            else
+            {
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    @foreach (var slot in _daySlots)
+                    {
+                        var isChosen = _selectedSlot?.AvailabilityId == slot.AvailabilityId;
+                        <button type="button"
+                                disabled="@slot.IsBooked"
+                                @onclick="() => SelectSlot(slot)"
+                                class="@(slot.IsBooked ? "slot-pt-booked" : (isChosen ? "slot-pt-selected" : "slot-pt-open")) tabular-nums"
+                                style="padding: 10px 8px; border-radius: 8px; text-align: center; cursor: @(slot.IsBooked ? "not-allowed" : "pointer"); font-size: 13px; font-weight: 600;">
+                            <div>@slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")</div>
+                            <div style="font-size: 10px; font-weight: 400; margin-top: 2px;">
+                                @(slot.IsBooked ? "Đã có người đặt" : (isChosen ? "Đang chọn" : "Còn trống"))
+                            </div>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Step 3: Xác nhận & Ghi chú -->
+        @if (_selectedSlot != null)
+        {
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                    3. Ghi chú mục tiêu tập luyện (không bắt buộc)
+                </label>
+                <input type="text"
+                       @bind="_workoutNotes"
+                       placeholder="Ví dụ: Tập trung nhóm cơ lưng xô, ép cân…"
+                       maxlength="150"
+                       style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                    @_errorMessage
+                </div>
+            }
+
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@_isSubmitting"
+                    @onclick="HandleSubmitBookingAsync"
+                    style="width: 100%; font-size: 14px; padding: 12px;">
+                @if (_isSubmitting)
+                {
+                    <span>Đang xác nhận đặt lịch…</span>
+                }
+                else
+                {
+                    <span>Xác Nhận Đặt Lịch Tập (@_selectedSlot.StartTime.ToString("HH:mm")&nbsp;@_selectedDate.ToString("dd/MM"))</span>
+                }
+            </button>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string? AssignedPtId { get; set; }
+    [Parameter] public string? AssignedPtName { get; set; }
+    [Parameter] public int RemainingPtSessions { get; set; }
+    [Parameter] public EventCallback OnBookingSuccess { get; set; }
+
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _selectedDate;
+    private PtSlotDto? _selectedSlot;
+    private List<PtSlotDto> _daySlots = [];
+    private string _workoutNotes = string.Empty;
+    private bool _isLoadingSlots;
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _selectedDate = _today;
+        await LoadSlotsForSelectedDateAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_daySlots.Count == 0 && !string.IsNullOrEmpty(AssignedPtId))
+        {
+            await LoadSlotsForSelectedDateAsync();
+        }
+    }
+
+    private async Task SelectDate(DateOnly date)
+    {
+        if (_selectedDate == date) return;
+        _selectedDate = date;
+        _selectedSlot = null;
+        _errorMessage = null;
+        await LoadSlotsForSelectedDateAsync();
+    }
+
+    private void SelectSlot(PtSlotDto slot)
+    {
+        if (slot.IsBooked) return;
+        _selectedSlot = slot;
+        _errorMessage = null;
+    }
+
+    private async Task LoadSlotsForSelectedDateAsync()
+    {
+        if (string.IsNullOrEmpty(AssignedPtId)) return;
+
+        _isLoadingSlots = true;
+        try
+        {
+            var slots = await ApiClient.GetPtAvailableSlotsAsync(AssignedPtId, _selectedDate, _selectedDate);
+            _daySlots = slots.OrderBy(s => s.StartTime).ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Không thể tải danh sách giờ rảnh: " + ex.Message;
+        }
+        finally
+        {
+            _isLoadingSlots = false;
+        }
+    }
+
+    private async Task HandleSubmitBookingAsync()
+    {
+        if (_selectedSlot == null || _isSubmitting) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var session = await ApiClient.GetCurrentUserSessionAsync();
+            var memberUserName = session?.UserId ?? "member01";
+
+            var request = new BookSessionRequest(
+                MemberUserName: memberUserName,
+                AvailabilityId: _selectedSlot.AvailabilityId,
+                WorkoutNotes: string.IsNullOrWhiteSpace(_workoutNotes) ? null : _workoutNotes.Trim()
+            );
+
+            await ApiClient.BookPtSlotAsync(request);
+            _selectedSlot = null;
+            _workoutNotes = string.Empty;
+            await LoadSlotsForSelectedDateAsync();
+            await OnBookingSuccess.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

@@ -1,0 +1,17 @@
+@page "/pt/students"
+@attribute [Authorize(Roles = "PT")]
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Header -->
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+            Danh Sách Học Viên Phụ Trách
+        </h1>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+            Quản lý số buổi tập kèm và theo dõi chỉ số thể hình InBody của học viên
+        </div>
+    </div>
+
+    <!-- Students List Component -->
+    <PtStudentsList />
+</div>

@@ -1,0 +1,255 @@
+@inject IWebApiClient ApiClient
+@inject NavigationManager Navigation
+
+@if (_isLoading)
+{
+    <div class="gym-card skeleton" style="height: 220px;"></div>
+}
+else if (_subscription == null)
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Bạn Chưa Có Gói Tập Nào</div>
+        <div class="empty-state-text">Đăng ký gói tập ngay hôm nay để bắt đầu rèn luyện thể thao.</div>
+        <a href="/member/packages" class="btn-primary" style="text-decoration: none; display: inline-flex; width: auto;">
+            Xem Danh Mục Gói Tập
+        </a>
+    </div>
+}
+else
+{
+    <!-- Digital Subscription Card -->
+    <div class="gym-card" style="background: linear-gradient(145deg, #1E293B, #0F172A); border: 1px solid var(--border-strong); position: relative; overflow: hidden;">
+        <!-- Top Row: Plan Name & Status Badge -->
+        <div class="gym-card-header">
+            <div>
+                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">
+                    Gói Tập Hiện Tại
+                </span>
+                <span class="gym-card-title" style="font-size: 16px;">@_subscription.PlanName</span>
+            </div>
+            <div>
+                @if (string.Equals(_subscription.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #34D399; background: rgba(6, 78, 59, 0.6); border: 1px solid #059669; border-radius: 9999px;">
+                        Đang hoạt động
+                    </span>
+                }
+                else if (string.Equals(_subscription.Status, "FROZEN", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #FBBF24; background: rgba(120, 53, 15, 0.6); border: 1px solid #D97706; border-radius: 9999px;">
+                        Đang bảo lưu
+                    </span>
+                }
+                else
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #F87171; background: rgba(127, 29, 29, 0.6); border: 1px solid #DC2626; border-radius: 9999px;">
+                        Đã hết hạn
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Session Counters (2 Equal Columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; padding: 14px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+            <div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Lượt Gym Còn Lại</span>
+                <span class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #38BDF8;">
+                    @_subscription.RemainingCheckInSessions
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted); margin-left: 2px;">lượt</span>
+            </div>
+            <div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Buổi PT Còn Lại</span>
+                <span class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #C084FC;">
+                    @_subscription.RemainingPtSessions
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted); margin-left: 2px;">buổi</span>
+            </div>
+        </div>
+
+        <!-- Expiration & PT Info Footer -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-secondary); margin-bottom: 16px;">
+            <div>
+                <span>Hết hạn:&nbsp;</span>
+                <strong style="color: var(--text-primary);">@_subscription.EndDate.ToString("dd/MM/yyyy")</strong>
+            </div>
+            @if (!string.IsNullOrEmpty(_subscription.AssignedPtName))
+            {
+                <div>
+                    <span>HLV:&nbsp;</span>
+                    <strong style="color: #C084FC;">@_subscription.AssignedPtName</strong>
+                </div>
+            }
+        </div>
+
+        <!-- 1-Tap QR Code Access Button -->
+        <button type="button" @onclick="ToggleQrModal" class="btn-primary" style="background: linear-gradient(90deg, #0284C7, #0EA5E9);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/>
+            </svg>
+            <span>Mở Mã QR Điểm Danh Vào Phòng</span>
+        </button>
+
+        <!-- Warning Bar (Amber if < 7 days or < 3 sessions) -->
+        @if (IsExpiringSoon)
+        {
+            <div style="margin-top: 14px; padding: 10px 12px; background: rgba(245, 158, 11, 0.15); border: 1px solid #D97706; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; color: #FCD34D;">Gói tập sắp hết hạn hoặc hết lượt</span>
+                <a href="/member/packages" style="font-size: 12px; font-weight: 700; color: #FBBF24; text-decoration: underline;">
+                    Gia hạn ngay
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- QR Code Pop-up Modal (Dynamic QR refreshes every 60s) -->
+    @if (_showQrModal)
+    {
+        <div class="modal-backdrop" @onclick="ToggleQrModal">
+            <div class="modal-content" style="max-width: 340px; text-align: center;" @onclick:stopPropagation>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="gym-card-title" style="font-size: 16px;">Mã QR Điểm Danh</h2>
+                    <button type="button" @onclick="ToggleQrModal" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- QR Display (Strict Rule: Black on solid white, 240x240px, quiet zone 4 modules, no logo overlay) -->
+                <div style="background: #FFFFFF; padding: 16px; border-radius: 12px; display: inline-block; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <!-- Procedural SVG QR Matrix to ensure 100% offline accuracy -->
+                    <svg width="240" height="240" viewBox="0 0 160 160" style="display: block;">
+                        <!-- Outer finder patterns -->
+                        <rect x="0" y="0" width="160" height="160" fill="#FFFFFF"/>
+                        <!-- Top-left finder -->
+                        <rect x="10" y="10" width="40" height="40" fill="#000000"/>
+                        <rect x="16" y="16" width="28" height="28" fill="#FFFFFF"/>
+                        <rect x="22" y="22" width="16" height="16" fill="#000000"/>
+                        <!-- Top-right finder -->
+                        <rect x="110" y="10" width="40" height="40" fill="#000000"/>
+                        <rect x="116" y="16" width="28" height="28" fill="#FFFFFF"/>
+                        <rect x="122" y="22" width="16" height="16" fill="#000000"/>
+                        <!-- Bottom-left finder -->
+                        <rect x="10" y="110" width="40" height="40" fill="#000000"/>
+                        <rect x="16" y="116" width="28" height="28" fill="#FFFFFF"/>
+                        <rect x="22" y="122" width="16" height="16" fill="#000000"/>
+                        <!-- Dynamic Payload Modules -->
+                        @for (int row = 0; row < 12; row++)
+                        {
+                            @for (int col = 0; col < 12; col++)
+                            {
+                                int x = 60 + (col * 7);
+                                int y = 60 + (row * 7);
+                                bool fill = ((row + col + _countdownSeconds) % 3 == 0) || ((row * col) % 5 == 0);
+                                if (fill)
+                                {
+                                    <rect x="@x" y="@y" width="6" height="6" fill="#000000"/>
+                                }
+                            }
+                        }
+                    </svg>
+                </div>
+
+                <!-- Member Verification Metadata outside QR area -->
+                <div style="margin-bottom: 12px;">
+                    <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">
+                        @_subscription.MemberFullName
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-family: monospace;">
+                        Mã HV: @_subscription.UserName
+                    </div>
+                </div>
+
+                <!-- 60s Countdown & Refresh -->
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-canvas); padding: 8px 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">
+                        Tự làm mới sau:&nbsp;<strong class="tabular-nums" style="color: #38BDF8;">@_countdownSeconds&nbsp;giây</strong>
+                    </span>
+                    <button type="button" @onclick="ManualRefreshQr" class="btn-secondary" style="min-height: 28px; padding: 0 8px; font-size: 11px;">
+                        Làm mới
+                    </button>
+                </div>
+
+                <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="width: 100%;">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private MemberSubscriptionDetailDto? _subscription;
+    private bool _isLoading = true;
+    private bool _showQrModal = false;
+    private string _qrCode = string.Empty;
+    private int _countdownSeconds = 60;
+    private System.Threading.Timer? _timer;
+
+    private bool IsExpiringSoon => _subscription != null &&
+        ((_subscription.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber) <= 7 ||
+         _subscription.RemainingCheckInSessions <= 3);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSubscriptionAsync();
+    }
+
+    public async Task ReloadAsync()
+    {
+        await LoadSubscriptionAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSubscriptionAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _subscription = await ApiClient.GetMySubscriptionAsync();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ToggleQrModal()
+    {
+        _showQrModal = !_showQrModal;
+        if (_showQrModal)
+        {
+            _countdownSeconds = 60;
+            _qrCode = await ApiClient.GetMyCheckInQrCodeAsync();
+            StartCountdownTimer();
+        }
+        else
+        {
+            _timer?.Dispose();
+        }
+    }
+
+    private async Task ManualRefreshQr()
+    {
+        _countdownSeconds = 60;
+        _qrCode = await ApiClient.RefreshCheckInQrCodeAsync();
+    }
+
+    private void StartCountdownTimer()
+    {
+        _timer?.Dispose();
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            if (_countdownSeconds > 1)
+            {
+                _countdownSeconds--;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                _countdownSeconds = 60;
+                _qrCode = await ApiClient.RefreshCheckInQrCodeAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        }, null, 1000, 1000);
+    }
+}

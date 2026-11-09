@@ -1,0 +1,128 @@
+@inject IWebApiClient ApiClient
+
+<div>
+    <div style="margin-bottom: 16px;">
+        <h1 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+            Danh Mục Gói Tập
+        </h1>
+        <p style="font-size: 12px; color: var(--text-secondary);">
+            Lựa chọn gói tập phù hợp với mục tiêu thể hình của bạn
+        </p>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="gym-card skeleton" style="height: 140px;"></div>
+        <div class="gym-card skeleton" style="height: 140px;"></div>
+    }
+    else if (_packages == null || _packages.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-state-title">Chưa Có Gói Tập Nào Đang Mở Bán</div>
+            <div class="empty-state-text">Vui lòng quay lại sau hoặc liên hệ ban quản lý.</div>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: center;">
+                <span style="color: #34D399; font-size: 13px; font-weight: 700;">@_successMessage</span>
+            </div>
+        }
+
+        @foreach (var plan in _packages)
+        {
+            <div class="gym-card" style="border-left: 4px solid var(--accent-primary);">
+                <div class="gym-card-header">
+                    <div>
+                        <h2 class="gym-card-title" style="font-size: 16px;">@plan.Name</h2>
+                        <span style="font-size: 12px; color: var(--text-secondary);">@plan.Description</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0;">
+                    <div>
+                        <span class="tabular-nums" style="font-size: 24px; font-weight: 800; color: #38BDF8;">
+                            @plan.Price.ToString("N0")
+                        </span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">&nbsp;VNĐ</span>
+                    </div>
+                    <span style="font-size: 12px; color: var(--text-muted); background: #334155; padding: 2px 8px; border-radius: 6px;">
+                        Thời hạn:&nbsp;@plan.DurationDays&nbsp;ngày
+                    </span>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 14px; font-size: 12px; color: var(--text-secondary);">
+                    <span>Lượt tập:&nbsp;<strong style="color: var(--text-primary);">@plan.MaxCheckInSessions&nbsp;buổi</strong></span>
+                    @if (plan.IsPtIncluded && plan.TotalPtSessions > 0)
+                    {
+                        <span>HLV PT:&nbsp;<strong style="color: #C084FC;">@plan.TotalPtSessions&nbsp;buổi 1-1</strong></span>
+                    }
+                </div>
+
+                <button type="button"
+                        @onclick="() => HandleSelectPackage(plan.PlanId)"
+                        disabled="@_isGeneratingQr"
+                        class="btn-primary">
+                    <span>Đăng Ký Gói Này</span>
+                </button>
+            </div>
+        }
+    }
+
+    <!-- VietQR Payment Modal -->
+    <VietQrModal IsOpen="@_isQrModalOpen"
+                 Payload="@_qrPayload"
+                 OnPaymentSuccess="HandlePaymentSuccess"
+                 OnClose="() => _isQrModalOpen = false" />
+</div>
+
+@code {
+    private IReadOnlyList<PackagePlanDto>? _packages;
+    private bool _isLoading = true;
+    private bool _isGeneratingQr = false;
+    private bool _isQrModalOpen = false;
+    private VietQrPayloadDto? _qrPayload;
+    private string? _successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPackagesAsync();
+    }
+
+    private async Task LoadPackagesAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _packages = await ApiClient.GetPackagePlansAsync();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleSelectPackage(string planId)
+    {
+        _isGeneratingQr = true;
+        _successMessage = null;
+
+        try
+        {
+            _qrPayload = await ApiClient.CreateVietQrInvoiceAsync(planId);
+            _isQrModalOpen = true;
+        }
+        finally
+        {
+            _isGeneratingQr = false;
+        }
+    }
+
+    private void HandlePaymentSuccess()
+    {
+        _isQrModalOpen = false;
+        _successMessage = "Kích hoạt gói tập thành công! Chúc bạn có những giờ tập luyện hiệu quả.";
+    }
+}

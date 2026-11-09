@@ -1,0 +1,133 @@
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 14px;">
+    <!-- Search Bar -->
+    <div style="position: relative;">
+        <input type="text"
+               @bind="_searchKeyword"
+               @bind:event="oninput"
+               placeholder="Tìm kiếm theo tên học viên, số điện thoại…"
+               style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: var(--text-primary); font-size: 13px; outline: none;" />
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="skeleton" style="height: 100px; border-radius: 8px;"></div>
+        <div class="skeleton" style="height: 100px; border-radius: 8px;"></div>
+    }
+    else if (FilteredStudents.Count == 0)
+    {
+        <div class="gym-card" style="text-align: center; padding: 32px 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">👥</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Không Tìm Thấy Học Viên</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                Không có học viên nào khớp với từ khóa tìm kiếm hoặc chưa được phân công.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            @foreach (var stu in FilteredStudents)
+            {
+                <div class="gym-card" style="padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC;">
+                                @stu.FullName
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-secondary);" class="tabular-nums">
+                                Mã:&nbsp;@stu.UserName
+                            </div>
+                        </div>
+                        <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 11px;">
+                            Còn&nbsp;<strong class="tabular-nums">@stu.RemainingPtSessions</strong>&nbsp;buổi PT
+                        </span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                        <div>
+                            Số điện thoại:&nbsp;<span class="tabular-nums" style="color: #F8FAFC;">@stu.Phone</span>
+                        </div>
+                        <div>
+                            Email:&nbsp;<span style="color: #CBD5E1;">@stu.Email</span>
+                        </div>
+                        <div>
+                            Trạng thái gói:&nbsp;<span style="color: #34D399; font-weight: 600;">@stu.SubscriptionStatus</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Button: Open InBody Entry Modal -->
+                    <button type="button"
+                            class="btn-secondary"
+                            @onclick="() => OpenInBodyModal(stu)"
+                            style="width: 100%; min-height: 36px; font-size: 13px; padding: 6px; color: #38BDF8; border-color: rgba(56, 189, 248, 0.4);">
+                        📊 Ghi Nhận Chỉ Số InBody
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- InBody Entry Modal -->
+    <InBodyEntryModal IsOpen="_showInBodyModal"
+                      Student="_selectedStudent"
+                      OnClose="() => _showInBodyModal = false"
+                      OnRecordSaved="HandleRecordSavedAsync" />
+</div>
+
+@code {
+    private List<MemberSummaryDto> _students = [];
+    private string _searchKeyword = string.Empty;
+    private bool _isLoading = true;
+
+    private MemberSummaryDto? _selectedStudent;
+    private bool _showInBodyModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudentsAsync();
+    }
+
+    private List<MemberSummaryDto> FilteredStudents
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchKeyword)) return _students;
+            var kw = _searchKeyword.Trim().ToLowerInvariant();
+            return _students.Where(s =>
+                s.FullName.ToLowerInvariant().Contains(kw) ||
+                s.Phone.Contains(kw) ||
+                s.UserName.ToLowerInvariant().Contains(kw)).ToList();
+        }
+    }
+
+    private async Task LoadStudentsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var data = await ApiClient.GetPtAssignedStudentsAsync();
+            _students = data.ToList();
+        }
+        catch
+        {
+            _students = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenInBodyModal(MemberSummaryDto student)
+    {
+        _selectedStudent = student;
+        _showInBodyModal = true;
+    }
+
+    private async Task HandleRecordSavedAsync()
+    {
+        await LoadStudentsAsync();
+    }
+}

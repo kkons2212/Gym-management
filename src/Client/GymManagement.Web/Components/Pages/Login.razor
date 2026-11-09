@@ -1,0 +1,180 @@
+@page "/login"
+@inject IWebApiClient ApiClient
+@inject CustomAuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
+
+<div style="min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 16px;">
+    <div class="gym-card" style="width: 100%; max-width: 380px; padding: 28px 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.3); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
+                </svg>
+            </div>
+            <h1 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                Đăng Nhập Cổng Dịch Vụ
+            </h1>
+            <p style="font-size: 12px; color: var(--text-secondary);">
+                Dành cho Hội viên & Huấn luyện viên thể thao
+            </p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="error-state" role="alert">
+                <div class="error-state-text">@_errorMessage</div>
+            </div>
+        }
+
+        <EditForm Model="@_loginModel" OnValidSubmit="HandleLoginAsync">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label class="form-label" for="username">Tên đăng nhập hoặc Email</label>
+                <InputText id="username"
+                           class="@($"form-control {(!string.IsNullOrEmpty(_usernameError) ? "is-invalid" : "")}")"
+                           @bind-Value="_loginModel.Username"
+                           placeholder="member01 hoặc pt01"
+                           autocomplete="username" />
+                @if (!string.IsNullOrEmpty(_usernameError))
+                {
+                    <span class="invalid-feedback">@_usernameError</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Mật khẩu</label>
+                <div style="position: relative;">
+                    <input id="password"
+                           type="@(_showPassword ? "text" : "password")"
+                           class="form-control"
+                           @bind="_loginModel.Password"
+                           placeholder="Nhập mật khẩu (123456)"
+                           autocomplete="current-password" />
+                    <button type="button"
+                            @onclick="TogglePasswordVisibility"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;">
+                        @if (_showPassword)
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        }
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <button type="submit" class="btn-primary" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span style="display: inline-block; width: 16px; height: 16px; border: 2px solid #FFF; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
+                        <span>Đang xác thực…</span>
+                    }
+                    else
+                    {
+                        <span>Đăng Nhập</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-muted); text-align: center;">
+            <p style="margin-bottom: 4px;">Tài khoản thử nghiệm hệ thống:</p>
+            <p>Hội viên: <strong style="color: var(--text-secondary);">member01</strong> / MK: <strong style="color: var(--text-secondary);">123456</strong></p>
+            <p>HLV PT: <strong style="color: var(--text-secondary);">pt01</strong> / MK: <strong style="color: var(--text-secondary);">123456</strong></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+@code {
+    private LoginModel _loginModel = new();
+    private bool _showPassword = false;
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private string? _usernameError;
+
+    protected override void OnInitialized()
+    {
+        if (AuthState.IsAuthenticated)
+        {
+            RedirectByRole();
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+    }
+
+    private async Task HandleLoginAsync()
+    {
+        _errorMessage = null;
+        _usernameError = null;
+
+        if (string.IsNullOrWhiteSpace(_loginModel.Username))
+        {
+            _usernameError = "Vui lòng nhập tên đăng nhập hoặc email.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_loginModel.Password))
+        {
+            _errorMessage = "Vui lòng nhập mật khẩu.";
+            return;
+        }
+
+        _isLoading = true;
+
+        try
+        {
+            var req = new LoginRequest(_loginModel.Username.Trim(), _loginModel.Password);
+            var response = await ApiClient.LoginAsync(req);
+
+            RedirectByRole();
+        }
+        catch (BusinessRuleException ex)
+        {
+            _errorMessage = ex.Message;
+            _loginModel.Password = string.Empty;
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void RedirectByRole()
+    {
+        if (AuthState.IsPt)
+        {
+            Navigation.NavigateTo("/pt/schedule", true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/member/dashboard", true);
+        }
+    }
+
+    public sealed class LoginModel
+    {
+        public string Username { get; set; } = "member01";
+        public string Password { get; set; } = "123456";
+    }
+}

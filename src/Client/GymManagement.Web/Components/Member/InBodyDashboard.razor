@@ -1,0 +1,254 @@
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    @if (_isLoading)
+    {
+        <div class="skeleton" style="height: 140px; border-radius: 12px;"></div>
+        <div class="skeleton" style="height: 180px; border-radius: 12px;"></div>
+        <div class="skeleton" style="height: 200px; border-radius: 12px;"></div>
+    }
+    else if (_records.Count == 0)
+    {
+        <div class="gym-card" style="text-align: center; padding: 32px 16px;">
+            <div style="font-size: 36px; margin-bottom: 8px;">📊</div>
+            <h3 style="font-size: 15px; margin-bottom: 6px; color: var(--text-primary);">Chưa Có Dữ Liệu InBody</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+                Hãy liên hệ Huấn luyện viên cá nhân (PT) tại phòng tập để được tiến hành đo các chỉ số cơ thể đầu tiên.
+            </p>
+        </div>
+    }
+    else
+    {
+        var latest = _records[0];
+
+        <!-- Section 1: 4 Chỉ Số Cốt Lõi -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <div class="gym-card" style="padding: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Cân Nặng</div>
+                <div class="tabular-nums" style="font-size: 20px; font-weight: 700; color: #F8FAFC;">
+                    @latest.WeightKg.ToString("N1")<span style="font-size: 13px; font-weight: 400; color: var(--text-secondary);">&nbsp;kg</span>
+                </div>
+            </div>
+
+            <div class="gym-card" style="padding: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Chiều Cao</div>
+                <div class="tabular-nums" style="font-size: 20px; font-weight: 700; color: #F8FAFC;">
+                    @latest.HeightCm.ToString("N0")<span style="font-size: 13px; font-weight: 400; color: var(--text-secondary);">&nbsp;cm</span>
+                </div>
+            </div>
+
+            <div class="gym-card" style="padding: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Khối Lượng Cơ (SMM)</div>
+                <div class="tabular-nums" style="font-size: 20px; font-weight: 700; color: #38BDF8;">
+                    @latest.SkeletalMuscleMass.ToString("N1")<span style="font-size: 13px; font-weight: 400; color: var(--text-secondary);">&nbsp;kg</span>
+                </div>
+            </div>
+
+            <div class="gym-card" style="padding: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Tỷ Lệ Mỡ (PBF)</div>
+                <div class="tabular-nums" style="font-size: 20px; font-weight: 700; color: #FBBF24;">
+                    @latest.BodyFatPercentage.ToString("N1")<span style="font-size: 13px; font-weight: 400; color: var(--text-secondary);">&nbsp;%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Thước Đo Chỉ Số BMI 4 Dải Màu & Kim Chỉ -->
+        <div class="gym-card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span class="gym-card-title" style="font-size: 14px; margin: 0;">Chỉ Số Khối Cơ Thể (BMI)</span>
+                <span class="tabular-nums" style="font-size: 18px; font-weight: 700; color: @GetBmiColor(latest.Bmi);">
+                    @latest.Bmi.ToString("N1")
+                </span>
+            </div>
+
+            <!-- Thang màu 4 dải: Xanh dương (<18.5), Xanh lá (18.5-24.9), Vàng (25-29.9), Đỏ (>=30) -->
+            <div style="position: relative; margin-top: 18px; margin-bottom: 8px;">
+                <!-- Needle indicator -->
+                <div style="position: absolute; top: -14px; left: @(GetNeedlePercentage(latest.Bmi))%; transform: translateX(-50%); transition: left 0.3s; z-index: 2;">
+                    <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #F8FAFC; margin: 0 auto;"></div>
+                </div>
+
+                <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden;">
+                    <div style="flex: 18.5; background: #38BDF8;" title="Gầy (< 18.5)"></div>
+                    <div style="flex: 6.4; background: #34D399;" title="Bình thường (18.5 - 24.9)"></div>
+                    <div style="flex: 5.0; background: #FBBF24;" title="Tiền béo phì (25.0 - 29.9)"></div>
+                    <div style="flex: 10.1; background: #F87171;" title="Béo phì (≥ 30.0)"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary); margin-top: 6px;">
+                <span>Gầy (&lt;&nbsp;18.5)</span>
+                <span>Chuẩn (18.5&nbsp;–&nbsp;24.9)</span>
+                <span>Thừa cân (25&nbsp;–&nbsp;29.9)</span>
+                <span>Béo phì (≥&nbsp;30)</span>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); text-align: center;">
+                Đánh giá:&nbsp;<strong style="color: @GetBmiColor(latest.Bmi);">@GetBmiClassification(latest.Bmi)</strong>
+                &bull; Lần đo gần nhất:&nbsp;<span class="tabular-nums">@latest.MeasuredAt.ToString("dd/MM/yyyy")</span>
+            </div>
+        </div>
+
+        <!-- Section 3: Biểu Đồ Diễn Tiến Cân Nặng (SVG Chart) -->
+        @if (_records.Count > 1)
+        {
+            <div class="gym-card" style="padding: 16px;">
+                <h3 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Diễn Tiến Cân Nặng</h3>
+                <div style="width: 100%; height: 140px;">
+                    <svg viewBox="0 0 340 120" style="width: 100%; height: 100%; overflow: visible;">
+                        <defs>
+                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3" />
+                                <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.0" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Baseline grid -->
+                        <line x1="10" y1="20" x2="330" y2="20" stroke="#334155" stroke-dasharray="3,3" />
+                        <line x1="10" y1="60" x2="330" y2="60" stroke="#334155" stroke-dasharray="3,3" />
+                        <line x1="10" y1="100" x2="330" y2="100" stroke="#334155" stroke-dasharray="3,3" />
+
+                        <!-- Area & Line -->
+                        <polygon points="@GetChartAreaPoints()" fill="url(#chartGrad)" />
+                        <polyline points="@GetChartPolylinePoints()" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+                        <!-- Data Points -->
+                        @foreach (var pt in GetChartPointCoords())
+                        {
+                            <circle cx="@pt.X" cy="@pt.Y" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="2" />
+                            <svg:text x="@pt.X" y="@(pt.Y - 8)" fill="#F8FAFC" font-size="9" text-anchor="middle" font-family="monospace">
+                                @pt.Weight.ToString("N1")
+                            </svg:text>
+                        }
+                    </svg>
+                </div>
+            </div>
+        }
+
+        <!-- Section 4: Lịch Sử Các Lần Đo -->
+        <div class="gym-card" style="padding: 16px;">
+            <h3 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Lịch Sử Đo Chỉ Số</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                @foreach (var rec in _records)
+                {
+                    <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; font-size: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <strong class="tabular-nums">@rec.MeasuredAt.ToString("dd/MM/yyyy")</strong>
+                            <span style="color: var(--text-secondary);">Người đo:&nbsp;@(rec.RecordedByPtName ?? "HLV Gym")</span>
+                        </div>
+                        <div style="display: flex; gap: 14px; color: var(--text-secondary); margin-bottom: 4px;" class="tabular-nums">
+                            <span>Nặng:&nbsp;<strong style="color: #F8FAFC;">@rec.WeightKg.ToString("N1")&nbsp;kg</strong></span>
+                            <span>Cơ:&nbsp;<strong style="color: #38BDF8;">@rec.SkeletalMuscleMass.ToString("N1")&nbsp;kg</strong></span>
+                            <span>Mỡ:&nbsp;<strong style="color: #FBBF24;">@rec.BodyFatPercentage.ToString("N1")&nbsp;%</strong></span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(rec.Notes))
+                        {
+                            <div style="font-size: 11px; color: var(--text-secondary); font-style: italic;">
+                                &ldquo;@rec.Notes&rdquo;
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<InBodyRecordDto> _records = [];
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistoryAsync();
+    }
+
+    public async Task ReloadAsync()
+    {
+        await LoadHistoryAsync();
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var data = await ApiClient.GetMyInBodyHistoryAsync();
+            _records = data.OrderByDescending(r => r.MeasuredAt).ToList();
+        }
+        catch
+        {
+            _records = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string GetBmiColor(decimal bmi) => bmi switch
+    {
+        < 18.5m => "#38BDF8",
+        < 25.0m => "#34D399",
+        < 30.0m => "#FBBF24",
+        _ => "#F87171"
+    };
+
+    private string GetBmiClassification(decimal bmi) => bmi switch
+    {
+        < 18.5m => "Thiếu cân (Gầy)",
+        < 25.0m => "Thân hình cân đối (Bình thường)",
+        < 30.0m => "Thừa cân (Tiền béo phì)",
+        _ => "Béo phì (Cần giảm mỡ)"
+    };
+
+    private double GetNeedlePercentage(decimal bmi)
+    {
+        // BMI scale 15 -> 35 (range 20)
+        double val = (double)bmi;
+        if (val < 15) return 2;
+        if (val > 35) return 98;
+        return ((val - 15) / 20.0) * 100.0;
+    }
+
+    private record ChartPoint(double X, double Y, decimal Weight);
+
+    private List<ChartPoint> GetChartPointCoords()
+    {
+        // Chronological order for chart
+        var ordered = _records.OrderBy(r => r.MeasuredAt).TakeLast(5).ToList();
+        if (ordered.Count < 2) return [];
+
+        var minW = (double)ordered.Min(r => r.WeightKg) - 2;
+        var maxW = (double)ordered.Max(r => r.WeightKg) + 2;
+        if (maxW == minW) maxW += 4;
+
+        var result = new List<ChartPoint>();
+        var stepX = 300.0 / Math.Max(1, ordered.Count - 1);
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            double x = 20 + i * stepX;
+            double w = (double)ordered[i].WeightKg;
+            double y = 100 - ((w - minW) / (maxW - minW)) * 80;
+            result.Add(new ChartPoint(x, y, ordered[i].WeightKg));
+        }
+
+        return result;
+    }
+
+    private string GetChartPolylinePoints()
+    {
+        var pts = GetChartPointCoords();
+        return string.Join(" ", pts.Select(p => $"{p.X:0.0},{p.Y:0.0}"));
+    }
+
+    private string GetChartAreaPoints()
+    {
+        var pts = GetChartPointCoords();
+        if (pts.Count == 0) return "";
+        var first = pts.First();
+        var last = pts.Last();
+        return $"{first.X:0.0},110 " + string.Join(" ", pts.Select(p => $"{p.X:0.0},{p.Y:0.0}")) + $" {last.X:0.0},110";
+    }
+}

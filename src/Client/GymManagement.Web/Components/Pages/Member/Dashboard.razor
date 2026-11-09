@@ -1,0 +1,128 @@
+@page "/member"
+@page "/member/dashboard"
+@attribute [Authorize(Roles = "Member")]
+@inject IWebApiClient ApiClient
+@inject NavigationManager Nav
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Welcome Greeting Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+                Xin chào, @_memberName
+            </h1>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Cổng thông tin & Thẻ hội viên điện tử
+            </div>
+        </div>
+        <button type="button"
+                @onclick="ReloadDataAsync"
+                class="btn-secondary"
+                style="padding: 6px 10px; font-size: 12px; min-height: 32px;"
+                title="Làm mới thông tin">
+            ↻
+        </button>
+    </div>
+
+    <!-- Digital Subscription & Check-in QR Widget -->
+    <DigitalSubscriptionWidget @ref="_subWidget" />
+
+    <!-- Quick Actions (Tác Vụ Nhanh) -->
+    <div class="gym-card" style="padding: 14px;">
+        <h2 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Tác Vụ Thường Dùng</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <button type="button"
+                    @onclick='() => Nav.NavigateTo("/member/booking")'
+                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
+                <div style="font-size: 20px; margin-bottom: 4px;">📅</div>
+                <div style="font-size: 11px; font-weight: 600;">Đặt Lịch PT</div>
+            </button>
+
+            <button type="button"
+                    @onclick='() => Nav.NavigateTo("/member/packages")'
+                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
+                <div style="font-size: 20px; margin-bottom: 4px;">💳</div>
+                <div style="font-size: 11px; font-weight: 600;">Gói Tập Mới</div>
+            </button>
+
+            <button type="button"
+                    @onclick='() => Nav.NavigateTo("/member/inbody")'
+                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
+                <div style="font-size: 20px; margin-bottom: 4px;">📈</div>
+                <div style="font-size: 11px; font-weight: 600;">Chỉ Số InBody</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Upcoming PT Session Alert/Card -->
+    @if (_upcomingSession != null)
+    {
+        <div class="gym-card" style="padding: 14px; border-left: 4px solid #38BDF8;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 11px;">
+                    Lịch Tập PT Sắp Tới
+                </span>
+                <span class="tabular-nums" style="font-size: 12px; color: var(--text-secondary);">
+                    @_upcomingSession.SessionStartTime.ToString("HH:mm dd/MM")
+                </span>
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 4px;">
+                Tập cùng HLV&nbsp;@_upcomingSession.PtName
+            </div>
+            @if (!string.IsNullOrEmpty(_upcomingSession.WorkoutNotes))
+            {
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">
+                    Mục tiêu: @_upcomingSession.WorkoutNotes
+                </div>
+            }
+            <button type="button"
+                    @onclick='() => Nav.NavigateTo("/member/booking")'
+                    class="btn-secondary"
+                    style="width: 100%; min-height: 32px; font-size: 12px; padding: 6px;">
+                Xem Chi Tiết & Đổi/Hủy Ca
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private DigitalSubscriptionWidget? _subWidget;
+    private string _memberName = "Hội Viên";
+    private PtSessionDto? _upcomingSession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var session = await ApiClient.GetCurrentUserSessionAsync();
+        if (session != null)
+        {
+            _memberName = session.FullName;
+        }
+
+        await LoadUpcomingSessionAsync();
+    }
+
+    private async Task LoadUpcomingSessionAsync()
+    {
+        try
+        {
+            var sessions = await ApiClient.GetMyPtSessionsAsync();
+            _upcomingSession = sessions
+                .Where(s => s.SessionStartTime >= DateTime.Now && s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Booked)
+                .OrderBy(s => s.SessionStartTime)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            _upcomingSession = null;
+        }
+    }
+
+    private async Task ReloadDataAsync()
+    {
+        if (_subWidget != null)
+        {
+            await _subWidget.ReloadAsync();
+        }
+        await LoadUpcomingSessionAsync();
+    }
+}
