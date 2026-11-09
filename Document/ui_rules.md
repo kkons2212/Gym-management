@@ -362,7 +362,9 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
     * Mã hóa đơn: `Invoice.InvoiceCode` sinh tự động duy nhất (ví dụ: `INV-20261108-001`).
     * Loại giao dịch: `Invoice.TransactionType` (`SUBSCRIPTION_PURCHASE` hoặc `SUBSCRIPTION_RENEWAL`).
 * **Bộ Nút Chọn Phương Thức Thanh Toán Lớn:**
-  * 3 Nút bấm kích thước lớn: `[Tiền Mặt]`, `[Chuyển Khoản VietQR]` (Khuyên dùng), `[Thanh Toán Thẻ Ngân Hàng (POS Terminal)]`.
+  * 2 Nút bấm kích thước lớn dễ chạm trên màn hình cảm ứng:
+    * `[Tiền Mặt]`
+    * `[Chuyển Khoản VietQR]` (Khuyên dùng)
 * **Cửa Sổ Bật Lên Thanh Toán VietQR (Dialog):**
   * Mở hộp thoại `ContentDialog` chứa mã VietQR động lớn ở trung tâm.
   * Khi chạy môi trường phát triển/kiểm thử, hiển thị nút `"Giả lập thanh toán thành công"` dưới mã QR khi biến môi trường `VIETQR_ENABLE_SIMULATION=true` hoặc `ASPNETCORE_ENVIRONMENT=Development`. Khóa nút ngay sau khi bấm.
