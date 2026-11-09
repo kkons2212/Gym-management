@@ -216,7 +216,7 @@ GymManagement.sln
 - [x] **Task 2.6: `SystemSettingService Component` (Kết nối Authenticated + Database API):**
   - Quản trị tài khoản người dùng và phân quyền (chặn Admin tự khóa tài khoản).
   - Quản lý danh mục gói tập (kiểm tra ràng buộc trước khi chuyển sang `DISCONTINUED`).
-- [ ] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
+- [x] **Task 2.7: `ReportService Component` (Kết nối Authenticated + Database API):**
   - Tổng hợp số liệu đa chiều: Doanh thu thực thu, biến động hội viên, lưu lượng check-in, hiệu suất PT.
   - Xuất dữ liệu báo cáo ra file Excel (.xlsx) và PDF.
 

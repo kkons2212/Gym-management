@@ -11,7 +11,7 @@
 * **Trạng thái Triển khai theo 3 Khối Thành phần Kiến trúc:**
   * 🟢 **Khối Hạ Tầng & Tiêu Chuẩn (Infrastructure & Standards):** Đã hoàn tất 100% (Task 0.0, Task 0.0b, Task 5.0, Task 0.1)
   * 🟢 **Khối Khởi tạo Nền tảng (Phase 0 Scaffolding):** Đã hoàn tất 100% (Task 0.1, 0.2, 0.3, 0.4)
-  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.5, Task 2.6, Task 3.1, Task 3.2)
+  * 🟡 **Khối Máy Chủ (Server Component):** Đang triển khai Giai đoạn 1, 2 & 3 (Đã hoàn tất Task 1.1.1 – 1.1.5, Task 1.2.1, 1.2.2, Task 1.3.1, 1.3.2, 1.3.3, Task 2.1, Task 2.3, Task 2.5, Task 2.6, Task 2.7, Task 3.1, Task 3.2)
   * 🟢 **Khối Giao Diện Admin Desktop (Task 4.1):** Đã hoàn tất 100% (Task 4.1.1, 4.1.2, 4.1.3 - WinUI 3 MVVM)
   * ⚪ **Khối Giao Diện Web Portal (Task 4.2):** Sẵn sàng triển khai Blazor Server Portal (Task 4.2.1 – 4.2.3)
 
@@ -37,6 +37,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 1.3.2** | Cổng SMS Gateway (Notification Adapter) | UC02, UC04, UC05 (Hóa đơn Email, Nhắc lịch PT SMS) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/NotificationAdapter.cs`, `Contracts/Adapters/INotificationAdapter.cs`, `DTOs/Adapters/NotificationDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/NotificationAdapterTests.cs` (4 tests) | `[User]`, `Invoice` | `b2f0cab` |
 | **Task 1.3.3** | Cổng Camera Scanner (QR Decoder & Token Validator) | UC03 (Check-in QR quay vòng 60s) | `Server.Data` & `Server.Core` | `src/Server/GymManagement.Server.Data/Adapters/CameraScannerAdapter.cs`, `Contracts/Adapters/ICameraScannerAdapter.cs`, `DTOs/Adapters/QrScanDtos.cs` | `tests/GymManagement.Server.DataTests/Adapters/CameraScannerAdapterTests.cs` (5 tests) | `CheckInLog`, `[User]` | `b2f0cab` |
 | **Task 2.3** | MemberService Component (UC02, UC09) | UC02, UC09 (Đăng ký, gia hạn, bảo lưu, hủy gói tập, lịch sử tập luyện) | `Server.Core` | `Enums/SubscriptionStatus.cs`, `DTOs/Members/MemberDtos.cs`, `Contracts/IMemberService.cs`, `Services/MemberService.cs` | `tests/.../Services/MemberServiceTests.cs` (13 tests) | `[User]`, `MemberSubscription`, `PackagePlan`, `CheckInLog` | *(pending)* |
+| **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 
 ---
 
@@ -220,6 +221,33 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Khóa ngoại & Toàn vẹn tham chiếu:** Toàn bộ khóa ngoại cấu hình `DeleteBehavior.Restrict` chống xóa tầng làm mất dữ liệu lịch sử hoặc xung đột DDL.
   - **Xóa bỏ triệt để Entity Stubs:** Loại bỏ hoàn toàn các class placeholder rải rác trong `PtService` và `SystemSettingService`, chuẩn hóa dùng một nguồn sự thật duy nhất (Single Source of Truth) trong `GymManagement.Server.Core.Entities`.
   - **DoD 6 & Cú pháp:** Tuân thủ 100% không toán tử 3 ngôi (`? :`), đặt tên chuẩn, properties hỗ trợ cả PascalCase lẫn alias tương thích ngược.
+
+### 📌 [Task 2.7] Hiện thực ReportService Component (UC06)
+* **Ngày hoàn tất:** 09/11/2026 | **Commit:** `ce9e620` (nhánh `feat/task-2.7-report-service`)
+* **Phân hệ nghiệp vụ liên quan:** Epic 06 / UC06 (US 06.1 — Báo cáo thống kê thời gian thực; US 06.2 — Xuất dữ liệu báo cáo sang Excel / PDF).
+* **Ranh giới thành phần:** `Server.Core` (Contracts, DTOs, Services, Helpers) & `Server.Api` (DI Registration).
+* **Mã nguồn tạo / sửa:**
+  - `src/Server/GymManagement.Server.Core/Contracts/IReportService.cs` (6 phương thức nghiệp vụ async)
+  - `src/Server/GymManagement.Server.Core/DTOs/Reports/ReportDtos.cs` (17 request/response record types)
+  - `src/Server/GymManagement.Server.Core/Services/Reporting/ReportExportHelper.cs` (Bộ đóng gói file OpenXML .xlsx và PDF 1.4 thuần .NET BCL)
+  - `src/Server/GymManagement.Server.Core/Services/ReportService.cs` (Hiện thực tổng hợp đa chiều doanh thu, biến động hội viên, lưu lượng check-in, hiệu suất PT, dashboard)
+  - `src/Server/GymManagement.Server.Api/Program.cs` (Đăng ký `AddScoped<IReportService, ReportService>()`)
+  - `task.md` & `Document/task.md` (Đánh dấu hoàn thành `[x]` Task 2.7)
+* **Kiểm thử tương ứng (Verification):**
+  - `tests/GymManagement.Server.UnitTests/Services/ReportServiceTests.cs` (16 test cases mới theo chuẩn AAA kiểm tra đầy đủ các chiều báo cáo và xử lý ngoại lệ).
+  - Kết quả kiểm thử toàn solution:
+    - `UnitTests`: 108/108 test cases pass 100%.
+    - `DataTests`: 42/42 test cases pass 100%.
+    - `ApiTests`: 13/13 test cases pass 100%.
+    - **Tổng cộng: 163/163 test cases pass 100%.**
+* **Bảng CSDL liên quan:** 6 bảng chuẩn (`Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan`).
+* **Ràng buộc nghiệp vụ & Kiến trúc:**
+  - **Doanh thu thực thu:** Tổng hợp từ `Invoice` với trạng thái `PAID` và `REFUNDED`, phân loại theo hình thức thanh toán (`CASH`, `VIETQR`, `POS`), gói tập và xu hướng theo mốc thời gian.
+  - **Biến động hội viên:** Tính toán số hội viên mới, gia hạn (`SUBSCRIPTION_RENEWAL`), bảo lưu (`FROZEN`), hủy (`CANCELLED`), hết hạn (`EXPIRED`) và tỷ lệ duy trì (`RetentionRatePercentage`).
+  - **Lưu lượng điểm danh:** Phân tích 24 khung giờ cao điểm (Peak Hours Heatmap) và thống kê tỷ lệ từ chối kèm nguyên nhân chi tiết.
+  - **Hiệu suất PT:** Tính toán tỷ lệ hoàn tất ca dạy, số lượng học viên phụ trách và điểm đánh giá trung bình 1–5 sao.
+  - **Xuất dữ liệu streaming an toàn:** Sử dụng `MemoryStream` và `ZipArchive` tạo tệp tin `.xlsx` OpenXML và `.pdf` chuẩn không phụ thuộc bên ngoài, phản hồi nhanh dưới 3 giây.
+  - **Quy chuẩn lập trình:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu file.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
