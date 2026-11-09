@@ -1,0 +1,18 @@
+@page "/member/history"
+@attribute [Authorize(Roles = "Member")]
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Page Header -->
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+            Nhật Ký Tập Luyện & Vào Cửa
+        </h1>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+            Toàn bộ lịch sử quét mã qua cổng kiểm soát và các ca tập với huấn luyện viên
+        </div>
+    </div>
+
+    <!-- Timeline Component -->
+    <WorkoutHistoryTimeline />
+</div>
+

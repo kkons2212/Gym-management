@@ -1,0 +1,165 @@
+@inject IWebApiClient ApiClient
+
+<div style="display: flex; flex-direction: column; gap: 14px;">
+    <!-- Filters Bar -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+        <button type="button"
+                @onclick='() => _filterType = "ALL"'
+                class="btn-secondary"
+                style="padding: 6px 12px; font-size: 12px; min-height: 32px; background: @(_filterType == "ALL" ? "#38BDF8" : "var(--bg-card)"); color: @(_filterType == "ALL" ? "#0F172A" : "var(--text-primary)"); font-weight: @(_filterType == "ALL" ? "700" : "500");">
+            Tất Cả Hoạt Động
+        </button>
+        <button type="button"
+                @onclick='() => _filterType = "CHECKIN"'
+                class="btn-secondary"
+                style="padding: 6px 12px; font-size: 12px; min-height: 32px; background: @(_filterType == "CHECKIN" ? "#38BDF8" : "var(--bg-card)"); color: @(_filterType == "CHECKIN" ? "#0F172A" : "var(--text-primary)"); font-weight: @(_filterType == "CHECKIN" ? "700" : "500");">
+            Vào Cửa Phòng Tập
+        </button>
+        <button type="button"
+                @onclick='() => _filterType = "PT"'
+                class="btn-secondary"
+                style="padding: 6px 12px; font-size: 12px; min-height: 32px; background: @(_filterType == "PT" ? "#38BDF8" : "var(--bg-card)"); color: @(_filterType == "PT" ? "#0F172A" : "var(--text-primary)"); font-weight: @(_filterType == "PT" ? "700" : "500");">
+            Tập Với HLV (PT)
+        </button>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="skeleton" style="height: 60px; border-radius: 8px;"></div>
+        <div class="skeleton" style="height: 60px; border-radius: 8px;"></div>
+        <div class="skeleton" style="height: 60px; border-radius: 8px;"></div>
+    }
+    else if (FilteredEvents.Count == 0)
+    {
+        <div class="gym-card" style="text-align: center; padding: 32px 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Chưa Có Dữ Liệu Tập Luyện</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                Các lần quét mã vào phòng tập và buổi tập với HLV sẽ được lưu lại tại đây.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--border-subtle); margin-left: 10px; display: flex; flex-direction: column; gap: 14px;">
+            @foreach (var ev in FilteredEvents)
+            {
+                <div style="position: relative;">
+                    <!-- Timeline Dot -->
+                    <div style="position: absolute; left: -27px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: @(ev.IsPt ? "#38BDF8" : "#34D399"); border: 2px solid #0F172A;"></div>
+
+                    <!-- Event Card -->
+                    <div class="gym-card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span class="badge" style="background: @(ev.IsPt ? "rgba(56, 189, 248, 0.15)" : "rgba(52, 211, 153, 0.15)"); color: @(ev.IsPt ? "#38BDF8" : "#34D399"); font-size: 11px;">
+                                @(ev.IsPt ? "Tập Luyện PT 1-1" : "Vào Cửa Phòng Tập")
+                            </span>
+                            <span class="tabular-nums" style="font-size: 11px; color: var(--text-secondary);">
+                                @ev.Timestamp.ToString("HH:mm")&nbsp;&bull;&nbsp;@ev.Timestamp.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+
+                        <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                            @ev.Title
+                        </div>
+
+                        <div style="font-size: 12px; color: var(--text-secondary);">
+                            @ev.Description
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ev.ExtraInfo))
+                        {
+                            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-subtle); font-size: 11px; color: #94A3B8;">
+                                @ev.ExtraInfo
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private record HistoryEvent(
+        DateTime Timestamp,
+        bool IsPt,
+        string Title,
+        string Description,
+        string? ExtraInfo
+    );
+
+    private List<HistoryEvent> _allEvents = [];
+    private string _filterType = "ALL";
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTimelineAsync();
+    }
+
+    private List<HistoryEvent> FilteredEvents => _filterType switch
+    {
+        "CHECKIN" => _allEvents.Where(e => !e.IsPt).ToList(),
+        "PT" => _allEvents.Where(e => e.IsPt).ToList(),
+        _ => _allEvents
+    };
+
+    private async Task LoadTimelineAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var checkInTask = ApiClient.GetMyCheckInHistoryAsync();
+            var ptTask = ApiClient.GetMyPtSessionsAsync();
+
+            await Task.WhenAll(checkInTask, ptTask);
+
+            var checkIns = checkInTask.Result;
+            var ptSessions = ptTask.Result;
+
+            var list = new List<HistoryEvent>();
+
+            foreach (var ci in checkIns)
+            {
+                list.Add(new HistoryEvent(
+                    Timestamp: ci.CheckInTime,
+                    IsPt: false,
+                    Title: "Điểm danh vào cổng phòng gym",
+                    Description: $"Phương thức: {ci.CheckInMethod}",
+                    ExtraInfo: ci.Notes
+                ));
+            }
+
+            foreach (var pt in ptSessions)
+            {
+                string statusText = pt.Status switch
+                {
+                    GymManagement.Server.Core.Enums.PtSessionStatus.Completed => "Hoàn thành buổi tập",
+                    GymManagement.Server.Core.Enums.PtSessionStatus.Booked => "Đã đặt lịch trước",
+                    GymManagement.Server.Core.Enums.PtSessionStatus.Cancelled => "Đã hủy ca",
+                    _ => pt.Status.ToString()
+                };
+
+                list.Add(new HistoryEvent(
+                    Timestamp: pt.SessionStartTime,
+                    IsPt: true,
+                    Title: $"Buổi tập cùng HLV {pt.PtName}",
+                    Description: $"Trạng thái: {statusText} (Thời lượng: 60 phút)",
+                    ExtraInfo: !string.IsNullOrEmpty(pt.WorkoutNotes) ? $"Ghi chú: {pt.WorkoutNotes}" : null
+                ));
+            }
+
+            _allEvents = list.OrderByDescending(e => e.Timestamp).ToList();
+        }
+        catch
+        {
+            _allEvents = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}
+

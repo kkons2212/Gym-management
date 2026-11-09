@@ -1,23 +1,44 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject CustomAuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<div class="mobile-shell">
+    <AuthorizeView>
+        <Authorized>
+            <header class="top-bar">
+                <div class="top-bar-title">
+                    <span>PHÒNG TẬP THỂ THAO</span>
+                    <span class="role-badge @(context.User.IsInRole("PT") ? "role-pt" : "role-member")">
+                        @(context.User.IsInRole("PT") ? "HLV PT" : "HỘI VIÊN")
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        @context.User.Identity?.Name
+                    </span>
+                    <button type="button" @onclick="HandleLogout" class="btn-secondary" style="min-height: 32px; padding: 0 10px; font-size: 11px;">
+                        Đăng xuất
+                    </button>
+                </div>
+            </header>
+        </Authorized>
+    </AuthorizeView>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+    <main style="padding: 16px; flex: 1;">
+        @Body
     </main>
+
+    <AuthorizeView>
+        <Authorized>
+            <NavMenu />
+        </Authorized>
+    </AuthorizeView>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+@code {
+    private void HandleLogout()
+    {
+        AuthState.SetAnonymous();
+        Navigation.NavigateTo("/login");
+    }
+}

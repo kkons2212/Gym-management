@@ -1,0 +1,135 @@
+@page "/member"
+@page "/member/dashboard"
+@attribute [Authorize(Roles = "Member")]
+@inject IWebApiClient ApiClient
+@inject NavigationManager Nav
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Welcome Greeting Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+                Xin chào, @_memberName
+            </h1>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Cổng thông tin & Thẻ hội viên điện tử
+            </div>
+        </div>
+        <button type="button"
+                @onclick="ReloadDataAsync"
+                class="btn-secondary"
+                style="padding: 6px 10px; font-size: 12px; min-height: 32px;"
+                title="Làm mới thông tin">
+            ↻
+        </button>
+    </div>
+
+    <!-- Digital Subscription & Check-in QR Widget -->
+    <DigitalSubscriptionWidget @ref="_subWidget" />
+
+    <!-- Quick Actions (Tác Vụ Nhanh) -->
+    <div class="gym-card" style="padding: 14px;">
+        <h2 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Tác Vụ Thường Dùng</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <NavLink href="/member/booking"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">📅</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Đặt Lịch PT</span>
+            </NavLink>
+
+            <NavLink href="/member/packages"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">💳</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Mua Gói Tập</span>
+            </NavLink>
+
+            <NavLink href="/member/inbody"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">📈</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Chỉ Số InBody</span>
+            </NavLink>
+
+            <NavLink href="/member/history"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">🕒</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Lịch Sử Tập</span>
+            </NavLink>
+        </div>
+    </div>
+
+    <!-- Upcoming PT Session Alert/Card -->
+    @if (_upcomingSession != null)
+    {
+        <div class="gym-card" style="padding: 14px; border-left: 4px solid #38BDF8;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 11px;">
+                    Lịch Tập PT Sắp Tới
+                </span>
+                <span class="tabular-nums" style="font-size: 12px; color: var(--text-secondary);">
+                    @_upcomingSession.SessionStartTime.ToString("HH:mm dd/MM")
+                </span>
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 4px;">
+                Tập cùng HLV&nbsp;@_upcomingSession.PtName
+            </div>
+            @if (!string.IsNullOrEmpty(_upcomingSession.WorkoutNotes))
+            {
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">
+                    Mục tiêu: @_upcomingSession.WorkoutNotes
+                </div>
+            }
+            <NavLink href="/member/booking"
+                     class="btn-secondary"
+                     style="width: 100%; min-height: 32px; font-size: 12px; padding: 6px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                Xem Chi Tiết & Đổi/Hủy Ca
+            </NavLink>
+        </div>
+    }
+</div>
+
+@code {
+    private DigitalSubscriptionWidget? _subWidget;
+    private string _memberName = "Hội Viên";
+    private PtSessionDto? _upcomingSession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var session = await ApiClient.GetCurrentUserSessionAsync();
+        if (session != null)
+        {
+            _memberName = session.FullName;
+        }
+
+        await LoadUpcomingSessionAsync();
+    }
+
+    private async Task LoadUpcomingSessionAsync()
+    {
+        try
+        {
+            var sessions = await ApiClient.GetMyPtSessionsAsync();
+            _upcomingSession = sessions
+                .Where(s => s.SessionStartTime >= DateTime.Now && s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Booked)
+                .OrderBy(s => s.SessionStartTime)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            _upcomingSession = null;
+        }
+    }
+
+    private async Task ReloadDataAsync()
+    {
+        if (_subWidget != null)
+        {
+            await _subWidget.ReloadAsync();
+        }
+        await LoadUpcomingSessionAsync();
+    }
+}
+

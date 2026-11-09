@@ -1,7 +1,10 @@
 {
   "profiles": {
     "GymManagement.Desktop": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "USE_MOCK_API": "true"
+      }
     }
   }
 }

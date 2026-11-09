@@ -1,0 +1,134 @@
+@inject IWebApiClient ApiClient
+
+@if (IsOpen && Session != null)
+{
+    var hoursUntil = (Session.SessionStartTime - DateTime.Now).TotalHours;
+    var isLateCancel = hoursUntil < 2;
+
+    <div class="modal-backdrop" @onclick="HandleClose">
+        <div class="modal-content" style="max-width: 380px; text-align: center;" @onclick:stopPropagation>
+            <!-- Header -->
+            <div style="font-size: 36px; margin-bottom: 8px;">
+                @(isLateCancel ? "⚠️" : "🗓️")
+            </div>
+            <h2 class="gym-card-title" style="font-size: 16px; margin-bottom: 8px; color: @(isLateCancel ? "#F87171" : "var(--text-primary)");">
+                @(isLateCancel ? "Xác Nhận Hủy Trễ Ca Tập" : "Xác Nhận Hủy Lịch Tập")
+            </h2>
+
+            <!-- Session Info -->
+            <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: left; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: var(--text-secondary);">Huấn luyện viên:</span>
+                    <strong>@Session.PtName</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: var(--text-secondary);">Thời gian:</span>
+                    <strong class="tabular-nums">
+                        @Session.SessionStartTime.ToString("HH:mm") – @Session.SessionEndTime.ToString("HH:mm") (@Session.SessionStartTime.ToString("dd/MM/yyyy"))
+                    </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary);">Thời gian còn lại:</span>
+                    <span class="tabular-nums" style="color: @(isLateCancel ? "#F87171" : "#38BDF8"); font-weight: 600;">
+                        @(hoursUntil > 0 ? $"Còn khoảng {Math.Max(0, (int)hoursUntil)}&nbsp;giờ" : "Đã qua giờ bắt đầu")
+                    </span>
+                </div>
+            </div>
+
+            <!-- Policy Alert -->
+            @if (isLateCancel)
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; text-align: left; font-size: 12px; color: #FCA5A5; line-height: 1.4;">
+                    <strong>Quy định hủy ca:</strong> Hủy ca tập khi còn dưới 2&nbsp;giờ sẽ <strong>không được hoàn lại</strong> buổi tập vào gói. Bạn sẽ bị trừ 01 buổi tập kèm PT.
+                </div>
+            }
+            else
+            {
+                <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; text-align: left; font-size: 12px; color: #7DD3FC; line-height: 1.4;">
+                    Buổi tập sẽ được <strong>hoàn lại 100%</strong> vào gói tập của bạn do hủy trước giờ tập trên 2&nbsp;giờ.
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; text-align: left;">
+                    @_errorMessage
+                </div>
+            }
+
+            <!-- Action Buttons: Giữ lịch tập là nút chính khi hủy trễ -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button type="button"
+                        class="btn-primary"
+                        @onclick="HandleClose"
+                        style="width: 100%; padding: 12px; font-size: 14px;">
+                    Giữ Lịch Tập (Không Hủy)
+                </button>
+
+                <button type="button"
+                        class="btn-danger"
+                        disabled="@_isSubmitting"
+                        @onclick="ConfirmCancelAsync"
+                        style="width: 100%; padding: 10px; font-size: 13px;">
+                    @if (_isSubmitting)
+                    {
+                        <span>Đang xử lý hủy…</span>
+                    }
+                    else
+                    {
+                        <span>@(isLateCancel ? "Tôi Chấp Nhận Mất Buổi & Hủy Ca" : "Xác Nhận Hủy Lịch Tập")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public PtSessionDto? Session { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnCancelled { get; set; }
+
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    private async Task HandleClose()
+    {
+        _errorMessage = null;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ConfirmCancelAsync()
+    {
+        if (Session == null || _isSubmitting) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var hoursUntil = (Session.SessionStartTime - DateTime.Now).TotalHours;
+            var isLateCancel = hoursUntil < 2;
+
+            var request = new CancelSessionRequest(
+                SessionId: Session.SessionId,
+                RequestedByUserName: Session.MemberUserName,
+                ForceLateCancellation: isLateCancel
+            );
+
+            await ApiClient.CancelPtBookingAsync(request);
+            await OnCancelled.InvokeAsync();
+            await HandleClose();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}
+
