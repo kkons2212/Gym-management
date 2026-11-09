@@ -1,0 +1,105 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.RegisterMemberWizard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pkg="using:GymManagement.Server.Core.DTOs.Packages"
+    Title="Đăng Ký Hội Viên Mới &amp; Kích Hoạt Gói (2-Step)"
+    PrimaryButtonText="Hoàn Tất Đăng Ký"
+    CloseButtonText="Hủy Bỏ"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="480">
+        <!-- Step 1: Member Personal Information -->
+        <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="10">
+                <TextBlock Text="BƯỚC 1: THÔNG TIN CÁ NHÂN HỘI VIÊN" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="6*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Họ và tên (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtFullName" PlaceholderText="Nguyễn Văn A" Height="36" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Số điện thoại (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtPhone" PlaceholderText="0901234567" Height="36" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="6*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Email liên hệ:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtEmail" PlaceholderText="member@example.com" Height="36" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Giới tính:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="CboGender" SelectedIndex="0" HorizontalAlignment="Stretch" Height="36">
+                            <ComboBoxItem Content="Nam" />
+                            <ComboBoxItem Content="Nữ" />
+                            <ComboBoxItem Content="Khác" />
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Step 2: Package Selection & Payment Method -->
+        <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="10">
+                <TextBlock Text="BƯỚC 2: CHỌN GÓI DỊCH VỤ &amp; THANH TOÁN" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Gói tập kích hoạt ngay:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                    <ComboBox x:Name="CboPackages" HorizontalAlignment="Stretch" Height="36"
+                              SelectionChanged="CboPackages_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="pkg:PackagePlanDto">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
+                                    <TextBlock Text="-" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind Price, Converter={StaticResource CurrencyFormatterConverter}}" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Hình thức thanh toán:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="CboPaymentMethod" SelectedIndex="0" HorizontalAlignment="Stretch" Height="36">
+                            <ComboBoxItem Content="Tiền mặt (CASH)" Tag="CASH" />
+                            <ComboBoxItem Content="Chuyển khoản VietQR" Tag="VIETQR" />
+                            <ComboBoxItem Content="Thẻ ngân hàng (POS)" Tag="CREDIT_CARD" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Tổng tiền thu (VNĐ):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtTotalAmount" IsReadOnly="True" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" Height="36" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Validation error text -->
+        <TextBlock x:Name="TxtValidationError" Foreground="{StaticResource StatusDangerBrush}" FontSize="12" Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>

@@ -29,13 +29,25 @@
 
         <!-- Header: Title & Action (Standard Terminology: Gói Tập) -->
         <Grid Grid.Row="0">
-            <StackPanel Spacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="4">
                 <TextBlock Text="QUẢN LÝ HỘI VIÊN &amp; GÓI TẬP"
                            FontSize="20" FontWeight="Bold"
                            Foreground="{StaticResource TextPrimaryBrush}" />
                 <TextBlock Text="Tra cứu thông tin, bảo lưu gói tập và ghi nhận số đo InBody (F3)"
                            FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
+            <Button Grid.Column="1"
+                    Content="+ Đăng Ký Hội Viên Mới"
+                    Click="BtnRegisterNewMember_Click"
+                    Background="{StaticResource AccentPrimaryBrush}"
+                    Foreground="#FFFFFF"
+                    FontWeight="SemiBold"
+                    Height="40"
+                    Padding="16,0" />
         </Grid>
 
         <!-- Search Bar & Status Filter -->

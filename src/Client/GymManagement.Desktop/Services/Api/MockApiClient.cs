@@ -5,6 +5,8 @@ using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
+using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 
 namespace GymManagement.Desktop.Services.Api;
@@ -13,11 +15,11 @@ public class MockApiClient : IApiClient
 {
     private readonly List<MemberDto> _members =
     [
-        new("USR001", "Nguyễn Văn An", "an.nguyen@example.com", "0901234567", "ACTIVE", DateTime.Now.AddMonths(-3), "Gói 3 Tháng Thể Thao", DateTime.Now.AddDays(45), 28, 5),
-        new("USR002", "Trần Thị Bích", "bich.tran@example.com", "0912345678", "ACTIVE", DateTime.Now.AddMonths(-6), "Gói 1 Năm VIP", DateTime.Now.AddDays(180), 95, 12),
-        new("USR003", "Lê Hoàng Cường", "cuong.le@example.com", "0987654321", "FROZEN", DateTime.Now.AddMonths(-2), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(10), 4, 0),
-        new("USR004", "Phạm Thị Dung", "dung.pham@example.com", "0933334444", "EXPIRED", DateTime.Now.AddMonths(-5), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(-5), 0, 0),
-        new("USR005", "Vũ Minh Đức", "duc.vu@example.com", "0944445555", "ACTIVE", DateTime.Now.AddMonths(-1), "Gói 6 Tháng Platinum", DateTime.Now.AddDays(140), 62, 8)
+        new("USR001", "Nguyễn Văn An", "0901234567", "an.nguyen@example.com", "ACTIVE", DateTime.Now.AddMonths(-3), "Gói 3 Tháng Thể Thao", DateTime.Now.AddDays(45), 28, 5),
+        new("USR002", "Trần Thị Bích", "0912345678", "bich.tran@example.com", "ACTIVE", DateTime.Now.AddMonths(-6), "Gói 1 Năm VIP", DateTime.Now.AddDays(180), 95, 12),
+        new("USR003", "Lê Hoàng Cường", "0987654321", "cuong.le@example.com", "FROZEN", DateTime.Now.AddMonths(-2), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(10), 4, 0),
+        new("USR004", "Phạm Thị Dung", "0933334444", "dung.pham@example.com", "EXPIRED", DateTime.Now.AddMonths(-5), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(-5), 0, 0),
+        new("USR005", "Vũ Minh Đức", "0944445555", "duc.vu@example.com", "ACTIVE", DateTime.Now.AddMonths(-1), "Gói 6 Tháng Platinum", DateTime.Now.AddDays(140), 62, 8)
     ];
 
     private readonly List<PackagePlanDto> _packages =
@@ -46,10 +48,14 @@ public class MockApiClient : IApiClient
     public Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        {
             throw new ValidationException("Tên đăng nhập và mật khẩu không được để trống.");
+        }
 
         if (request.Password != "123456" && request.Password != "admin")
+        {
             throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
+        }
 
         var user = _users.FirstOrDefault(u => u.Email.StartsWith(request.Username, StringComparison.OrdinalIgnoreCase))
                    ?? _users[0];
@@ -81,51 +87,167 @@ public class MockApiClient : IApiClient
 
         if (member == null && !string.IsNullOrWhiteSpace(request.QrCode))
         {
-            // Mã QR quét từ webcam
             var qr = request.QrCode.Replace("GYM_MEMBER_", "").Trim();
             member = _members.FirstOrDefault(m => m.UserName == qr || request.QrCode.Contains(m.UserName));
         }
 
         if (member == null)
+        {
             throw new NotFoundException("Không tìm thấy thông tin hội viên tương ứng.");
+        }
 
         if (member.Status == "EXPIRED" || (member.EndDate.HasValue && member.EndDate.Value < DateTime.Today))
+        {
             throw new BusinessRuleException($"Gói tập trong tài khoản của hội viên {member.FullName} đã hết hạn vào ngày {member.EndDate:dd/MM/yyyy}.");
+        }
 
         if (member.Status == "FROZEN")
+        {
             throw new BusinessRuleException($"Gói tập của hội viên {member.FullName} đang tạm ngưng bảo lưu (FROZEN).");
+        }
 
         if (member.RemainingCheckInSessions <= 0)
+        {
             throw new BusinessRuleException($"Gói tập của hội viên {member.FullName} đã hết số lượt vào phòng khả dụng.");
+        }
 
-        // Trừ 1 lượt
-        var updatedRemaining = member.RemainingCheckInSessions - 1;
-        var index = _members.FindIndex(m => m.UserId == member.UserId);
-        _members[index] = member with { RemainingCheckInSessions = updatedRemaining };
+        var index = _members.FindIndex(m => m.UserName == member.UserName);
+        _members[index] = member with { RemainingCheckInSessions = member.RemainingCheckInSessions - 1 };
 
         return Task.FromResult(new CheckInResponse(
             true,
             member.FullName,
             member.ActivePlanName ?? "Gói Tiêu Chuẩn",
-            updatedRemaining,
+            member.RemainingCheckInSessions - 1,
             member.RemainingPtSessions,
             DateTime.Now,
-            "CHECK-IN THÀNH CÔNG • CỔNG TURNSTILE ĐÃ MỞ"
+            $"CHECK-IN THÀNH CÔNG • HỘI VIÊN {member.FullName.ToUpper()}"
         ));
+    }
+
+    public Task<IReadOnlyList<CheckInLogDto>> GetTodayLogsAsync(string? searchQuery = null, string? statusFilter = null)
+    {
+        var logs = new List<CheckInLogDto>
+        {
+            new("LOG001", DateTime.Now.AddMinutes(-15), "QR_CODE", null, "Nguyễn Văn An", "admin", "SUCCESS"),
+            new("LOG002", DateTime.Now.AddMinutes(-45), "QR_CODE", null, "Trần Thị Bích", "admin", "SUCCESS"),
+            new("LOG003", DateTime.Now.AddHours(-1), "MANUAL", "Override: Quên điện thoại", "Vũ Minh Đức", "admin", "SUCCESS"),
+            new("LOG004", DateTime.Now.AddHours(-2), "QR_CODE", null, "Phạm Thị Dung", "admin", "FAILED", "Gói tập trong tài khoản đã hết hạn")
+        };
+
+        return Task.FromResult<IReadOnlyList<CheckInLogDto>>(logs);
+    }
+
+    public Task<int> GetTodayAttendanceCountAsync()
+    {
+        return Task.FromResult(3);
     }
 
     public Task<IReadOnlyList<MemberDto>> GetMembersAsync(string? query = null)
     {
         if (string.IsNullOrWhiteSpace(query))
+        {
             return Task.FromResult<IReadOnlyList<MemberDto>>(_members);
+        }
 
-        var q = query.Trim().ToLowerInvariant();
+        var q = query.Trim();
         var filtered = _members.Where(m =>
-            m.FullName.ToLowerInvariant().Contains(q) ||
-            m.Phone.Contains(q) ||
-            m.UserId.ToLowerInvariant().Contains(q)).ToList();
+            m.FullName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            m.Phone.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            m.UserName.Contains(q, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
 
         return Task.FromResult<IReadOnlyList<MemberDto>>(filtered);
+    }
+
+    public Task<MemberProfileResponse> RegisterMemberAsync(RegisterMemberRequest request)
+    {
+        var member = new MemberDto(
+            $"USR{DateTime.Now:mmss}",
+            request.FullName,
+            request.Phone,
+            request.Email,
+            "ACTIVE",
+            DateTime.Now,
+            "Gói Tập Mới",
+            DateTime.Today.AddDays(30),
+            30,
+            0
+        );
+        _members.Add(member);
+
+        return Task.FromResult(new MemberProfileResponse(
+            member.UserName,
+            member.FullName,
+            member.Phone,
+            member.Email,
+            member.Status,
+            null
+        ));
+    }
+
+    public Task<MemberProfileResponse> UpdateMemberProfileAsync(string userName, UpdateMemberRequest request)
+    {
+        var idx = _members.FindIndex(m => m.UserName == userName);
+        if (idx >= 0)
+        {
+            _members[idx] = _members[idx] with
+            {
+                FullName = request.FullName,
+                Phone = request.Phone,
+                Email = request.Email
+            };
+        }
+
+        return Task.FromResult(new MemberProfileResponse(
+            userName,
+            request.FullName,
+            request.Phone,
+            request.Email,
+            "ACTIVE",
+            null
+        ));
+    }
+
+    public Task<SubscriptionDetailResponse> RenewSubscriptionAsync(string userName, RenewSubscriptionRequest request)
+    {
+        return Task.FromResult(new SubscriptionDetailResponse(
+            request.SubscriptionId,
+            request.NewPlanId,
+            "Gói 1 Tháng Tiêu Chuẩn",
+            "QR_MOCK",
+            request.NewStartDate,
+            request.NewStartDate.AddDays(30),
+            30,
+            0,
+            SubscriptionStatus.Active,
+            null,
+            null,
+            null
+        ));
+    }
+
+    public Task<SubscriptionDetailResponse> UpgradeSubscriptionAsync(string userName, UpgradeSubscriptionRequest request)
+    {
+        return Task.FromResult(new SubscriptionDetailResponse(
+            request.SubscriptionId,
+            request.UpgradeToPlanId,
+            "Gói Nâng Cấp VIP",
+            "QR_MOCK",
+            DateOnly.FromDateTime(DateTime.Today),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(90)),
+            90,
+            5,
+            SubscriptionStatus.Active,
+            null,
+            null,
+            null
+        ));
+    }
+
+    public Task<bool> CancelSubscriptionAsync(CancelSubscriptionRequest request)
+    {
+        return Task.FromResult(true);
     }
 
     public Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync()
@@ -135,74 +257,83 @@ public class MockApiClient : IApiClient
 
     public Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
-        var member = _members.FirstOrDefault(m => m.UserId == request.UserId)
-                     ?? throw new NotFoundException("Hội viên không tồn tại.");
-        var plan = _packages.FirstOrDefault(p => p.PlanId == request.PlanId)
-                   ?? throw new NotFoundException("Gói tập không tồn tại.");
+        var pkg = _packages.FirstOrDefault(p => p.PlanId == request.PlanId) ?? _packages[0];
+        var member = _members.FirstOrDefault(m => m.UserName == request.UserId) ?? _members[0];
 
         var invoice = new InvoiceDto(
-            $"INV{DateTime.Now:yyyyMMddHHmmss}",
-            $"HD-{DateTime.Now:yyyyMMdd}-{new Random().Next(100, 999)}",
-            plan.Price,
-            plan.Price, // TotalAmount == SubtotalAmount == Price (0 discount)
+            $"INV{DateTime.Now:mmss}",
+            $"INV-20261108-{DateTime.Now:fff}",
+            pkg.Price,
+            pkg.Price,
             request.PaymentMethod,
             request.TransactionType,
             DateTime.Now,
             member.FullName,
-            plan.Name,
-            "Quản Trị Viên"
+            pkg.Name,
+            "Admin Quầy",
+            "PAID"
         );
-
-        // Kích hoạt hoặc gia hạn gói cho hội viên
-        var index = _members.FindIndex(m => m.UserId == member.UserId);
-        var newEndDate = DateTime.Today.AddDays(plan.DurationDays);
-
-        int additionalGymSessions = 0;
-        int additionalPtSessions = 0;
-        if (request.TransactionType == "SUBSCRIPTION_RENEWAL")
-        {
-            additionalGymSessions = member.RemainingCheckInSessions;
-            additionalPtSessions = member.RemainingPtSessions;
-        }
-
-        var newGymSessions = (plan.MaxCheckInSessions ?? 30) + additionalGymSessions;
-        var newPtSessions = (plan.TotalPtSessions ?? 0) + additionalPtSessions;
-
-        _members[index] = member with
-        {
-            Status = "ACTIVE",
-            ActivePlanName = plan.Name,
-            EndDate = newEndDate,
-            RemainingCheckInSessions = newGymSessions,
-            RemainingPtSessions = newPtSessions
-        };
 
         return Task.FromResult(invoice);
     }
 
-    public Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceId, decimal amount, string transferContent)
+    public Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent)
     {
-        // Sinh link VietQR chuẩn Napas 247 QuickLink
-        var encodedContent = Uri.EscapeDataString(transferContent);
-        var qrUrl = $"https://img.vietqr.io/image/MB-0901234567-compact2.png?amount={amount}&addInfo={encodedContent}&accountName=GYM%20MANAGEMENT";
-
         return Task.FromResult(new VietQrPayloadDto(
-            qrUrl,
+            $"https://api.vietqr.io/image/970422-0901234567-print.jpg?amount={amount}&addInfo={Uri.EscapeDataString(transferContent)}",
             "0901234567",
-            "MB Bank (Ngân hàng Quân Đội)",
+            "MB Bank (Napas 247)",
             amount,
             transferContent,
             600
         ));
     }
 
+    public Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode)
+    {
+        return Task.FromResult(new InvoiceDto(
+            "INV001",
+            invoiceCode,
+            500000m,
+            500000m,
+            "VIETQR",
+            "SUBSCRIPTION_PURCHASE",
+            DateTime.Now,
+            "Nguyễn Văn An",
+            "Gói Tập Tiêu Chuẩn",
+            "Admin Quầy",
+            "PAID"
+        ));
+    }
+
+    public Task<InvoiceDto> RefundInvoiceAsync(string invoiceCode, decimal refundAmount, string reason)
+    {
+        return Task.FromResult(new InvoiceDto(
+            "INV001",
+            invoiceCode,
+            500000m,
+            500000m,
+            "VIETQR",
+            "SUBSCRIPTION_PURCHASE",
+            DateTime.Now,
+            "Nguyễn Văn An",
+            "Gói Tập Tiêu Chuẩn",
+            "Admin Quầy",
+            "REFUNDED",
+            refundAmount
+        ));
+    }
+
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
     {
-        var member = _members.FirstOrDefault(m => m.UserId == request.SubscriptionId || m.UserId == "USR001");
-        if (member == null) return Task.FromResult(false);
+        var member = _members.FirstOrDefault(m => m.UserName == request.SubscriptionId || m.UserName == "USR001");
+        if (member == null)
+        {
+            return Task.FromResult(false);
+        }
 
         var days = request.FreezeEndDate.DayNumber - request.FreezeStartDate.DayNumber;
-        var index = _members.FindIndex(m => m.UserId == member.UserId);
+        var index = _members.FindIndex(m => m.UserName == member.UserName);
         _members[index] = member with
         {
             Status = "FROZEN",
@@ -239,7 +370,6 @@ public class MockApiClient : IApiClient
 
     public Task<PtSessionSlotDto> BookPtSlotAsync(BookPtSlotRequest request)
     {
-        // Chống trùng lịch (Collision check)
         var collision = _ptSlots.Any(s =>
             s.PtId == request.PtId &&
             s.ScheduledDate.Date == request.ScheduledDate.Date &&
@@ -248,9 +378,11 @@ public class MockApiClient : IApiClient
             s.SessionStatus != "CANCELLED");
 
         if (collision)
+        {
             throw new BusinessRuleException("Xung đột thời gian: Huấn luyện viên đã có lịch dạy ca khác trong khung giờ này!");
+        }
 
-        var member = _members.FirstOrDefault(m => m.UserId == request.MemberId);
+        var member = _members.FirstOrDefault(m => m.UserName == request.MemberId);
         var pt = _users.FirstOrDefault(u => u.UserId == request.PtId);
 
         var newSlot = new PtSessionSlotDto(
@@ -292,6 +424,16 @@ public class MockApiClient : IApiClient
         ));
     }
 
+    public Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        return Task.FromResult(new byte[] { 0x50, 0x4B, 0x03, 0x04 });
+    }
+
+    public Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        return Task.FromResult(new byte[] { 0x25, 0x50, 0x44, 0x46 });
+    }
+
     public Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()
     {
         return Task.FromResult<IReadOnlyList<UserSessionDto>>(_users);
@@ -315,4 +457,3 @@ public class MockApiClient : IApiClient
         return Task.FromResult(newUser);
     }
 }
-

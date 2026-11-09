@@ -28,11 +28,58 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private string? _errorMessage;
 
+    [ObservableProperty]
+    private string _exportStatus = string.Empty;
+
     public ObservableCollection<PeakHourTrafficDto> PeakHours { get; } = [];
 
     public DashboardViewModel(IApiClient apiClient)
     {
         _apiClient = apiClient;
+    }
+
+    [RelayCommand]
+    public async Task ExportExcelAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            ExportStatus = "Đang kết xuất báo cáo Excel...";
+            var bytes = await _apiClient.ExportExcelReportAsync();
+            ExportStatus = $"Đã xuất thành công file báo cáo Excel ({bytes.Length} bytes)!";
+            await Task.Delay(3000);
+            ExportStatus = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            ExportStatus = $"Lỗi xuất Excel: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportPdfAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            ExportStatus = "Đang kết xuất báo cáo PDF...";
+            var bytes = await _apiClient.ExportPdfReportAsync();
+            ExportStatus = $"Đã xuất thành công file báo cáo PDF ({bytes.Length} bytes)!";
+            await Task.Delay(3000);
+            ExportStatus = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            ExportStatus = $"Lỗi xuất PDF: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]

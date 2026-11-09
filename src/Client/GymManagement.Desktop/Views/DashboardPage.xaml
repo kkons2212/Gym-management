@@ -37,9 +37,24 @@
                            FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
 
-            <Button Content="Làm Mới (Refresh)"
-                    Command="{x:Bind ViewModel.LoadDashboardCommand}"
-                    HorizontalAlignment="Right" Height="38" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Xuất Excel"
+                        Command="{x:Bind ViewModel.ExportExcelCommand}"
+                        Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        Height="38" />
+                <Button Content="Xuất PDF"
+                        Command="{x:Bind ViewModel.ExportPdfCommand}"
+                        Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        Height="38" />
+                <Button Content="Làm Mới (Refresh)"
+                        Command="{x:Bind ViewModel.LoadDashboardCommand}"
+                        Background="{StaticResource AccentPrimaryBrush}"
+                        Foreground="#FFFFFF"
+                        FontWeight="SemiBold"
+                        Height="38" />
+            </StackPanel>
         </Grid>
 
         <!-- 4 Flat KPI Cards Grid -->

@@ -2,8 +2,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using GymManagement.Desktop.Dialogs;
+using GymManagement.Desktop.Services.Api;
 using GymManagement.Desktop.ViewModels;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.Members;
 
 namespace GymManagement.Desktop.Views;
 
@@ -98,6 +100,47 @@ public sealed partial class PosBillingPage : Page
             if (dialog.IsPaymentConfirmed || result == ContentDialogResult.Primary)
             {
                 await ViewModel.FinalizeInvoiceAsync();
+            }
+        }
+        else
+        {
+            await ViewModel.FinalizeInvoiceAsync();
+        }
+    }
+
+    private async void BtnQuickAddMember_Click(object sender, RoutedEventArgs e)
+    {
+        IApiClient api;
+        RegisterMemberWizard dialog;
+        ContentDialogResult result;
+        string registeredPhone;
+
+        api = App.GetService<IApiClient>();
+        var packages = await api.GetPackagePlansAsync();
+
+        dialog = new RegisterMemberWizard(packages);
+        dialog.XamlRoot = this.XamlRoot;
+
+        result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary && dialog.SelectedPackage != null)
+        {
+            registeredPhone = dialog.Phone;
+            var req = new RegisterMemberRequest(
+                dialog.FullName,
+                dialog.Phone,
+                dialog.Email,
+                dialog.SelectedPackage.PlanId,
+                DateOnly.FromDateTime(DateTime.Today),
+                "Admin"
+            );
+
+            await api.RegisterMemberAsync(req);
+            await ViewModel.ReloadMembersAsync();
+
+            var newMem = ViewModel.Members.FirstOrDefault(m => m.Phone == registeredPhone);
+            if (newMem != null)
+            {
+                ViewModel.SelectedMember = newMem;
             }
         }
     }

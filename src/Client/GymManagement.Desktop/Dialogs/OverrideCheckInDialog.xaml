@@ -1,0 +1,47 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.OverrideCheckInDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Cho Vào Thủ Công (Manual Override Check-in)"
+    PrimaryButtonText="Xác Nhận Cho Vào"
+    CloseButtonText="Hủy Bỏ"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="440">
+        <!-- Warning Info Banner -->
+        <Border Background="#2A1B0E" BorderBrush="{StaticResource StatusWarningBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="CẢNH BÁO KIỂM TOÁN AN NINH" FontSize="12" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" />
+                <TextBlock Text="Thao tác ghi đè này sẽ được lưu trữ vĩnh viễn vào nhật ký kiểm toán hệ thống (Audit Trail) gắn liền với danh tính Admin hiện tại."
+                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!-- Member Code or Phone -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Mã hội viên hoặc Số điện thoại (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBox x:Name="TxtMemberIdentifier" PlaceholderText="Nhập USR001 hoặc 0901234567..." HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <!-- Override Reason -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Lý do cho vào thủ công (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <ComboBox x:Name="CboReason" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="CboReason_SelectionChanged">
+                <ComboBoxItem Content="Quên mang điện thoại / Hết pin" />
+                <ComboBoxItem Content="Cổng turnstile kẹt cơ khí" />
+                <ComboBoxItem Content="Lỗi nhận diện webcam QR" />
+                <ComboBoxItem Content="Khác (Ghi chú chi tiết bắt buộc)" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Detailed Notes -->
+        <StackPanel Spacing="6">
+            <TextBlock Text="Ghi chú chi tiết bổ sung:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBox x:Name="TxtNotes" PlaceholderText="Nhập giải trình ngoại lệ nếu cần..." HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <TextBlock x:Name="TxtValidationMessage" Foreground="{StaticResource StatusDangerBrush}" FontSize="12" Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>
+

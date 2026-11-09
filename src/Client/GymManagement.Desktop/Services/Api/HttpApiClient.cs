@@ -13,7 +13,7 @@ using GymManagement.Server.Core.Exceptions;
 namespace GymManagement.Desktop.Services.Api;
 
 /// <summary>
-/// Triển khai HTTP Client chính thức giao tiếp với GymManagement API qua giao thức RESTful (Task 4.1.1).
+/// Triển khai HTTP Client chính thức giao tiếp với GymManagement API qua giao thức RESTful (Task 4.1).
 /// </summary>
 public sealed class HttpApiClient : IApiClient
 {
@@ -25,6 +25,10 @@ public sealed class HttpApiClient : IApiClient
         _httpClient = httpClient;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1. AUTH & SESSION
+    // ─────────────────────────────────────────────────────────────────────────
+
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -32,6 +36,10 @@ public sealed class HttpApiClient : IApiClient
         var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/login", request);
         return await HandleResponseAsync<LoginResponse>(response);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 2. CHECK-IN & REAL-TIME MONITORING (UC03)
+    // ─────────────────────────────────────────────────────────────────────────
 
     public async Task<CheckInResponse> CheckInAsync(CheckInRequest request)
     {
@@ -61,6 +69,40 @@ public sealed class HttpApiClient : IApiClient
 
         return await HandleResponseAsync<CheckInResponse>(response);
     }
+
+    public async Task<IReadOnlyList<CheckInLogDto>> GetTodayLogsAsync(string? searchQuery = null, string? statusFilter = null)
+    {
+        string url = "/api/v1/checkin/today";
+        var queryParams = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            queryParams.Add($"searchQuery={Uri.EscapeDataString(searchQuery.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "ALL")
+        {
+            queryParams.Add($"statusFilter={Uri.EscapeDataString(statusFilter.Trim())}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<IReadOnlyList<CheckInLogDto>>(response);
+    }
+
+    public async Task<int> GetTodayAttendanceCountAsync()
+    {
+        var response = await _httpClient.GetAsync("/api/v1/checkin/attendance-count");
+        return await HandleResponseAsync<int>(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3. MEMBER LIFECYCLE (UC02, UC09)
+    // ─────────────────────────────────────────────────────────────────────────
 
     public async Task<IReadOnlyList<MemberDto>> GetMembersAsync(string? query = null)
     {
@@ -102,6 +144,68 @@ public sealed class HttpApiClient : IApiClient
         return mappedList;
     }
 
+    public async Task<MemberProfileResponse> RegisterMemberAsync(RegisterMemberRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/members/register", request);
+        return await HandleResponseAsync<MemberProfileResponse>(response);
+    }
+
+    public async Task<MemberProfileResponse> UpdateMemberProfileAsync(string userName, UpdateMemberRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/members/{Uri.EscapeDataString(userName)}", request);
+        return await HandleResponseAsync<MemberProfileResponse>(response);
+    }
+
+    public async Task<SubscriptionDetailResponse> RenewSubscriptionAsync(string userName, RenewSubscriptionRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync($"/api/v1/members/{Uri.EscapeDataString(userName)}/renew", request);
+        return await HandleResponseAsync<SubscriptionDetailResponse>(response);
+    }
+
+    public async Task<SubscriptionDetailResponse> UpgradeSubscriptionAsync(string userName, UpgradeSubscriptionRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync($"/api/v1/members/{Uri.EscapeDataString(userName)}/upgrade", request);
+        return await HandleResponseAsync<SubscriptionDetailResponse>(response);
+    }
+
+    public async Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/members/freeze", request);
+        var result = await HandleResponseAsync<SubscriptionDetailResponse>(response);
+        return result != null;
+    }
+
+    public async Task<bool> CancelSubscriptionAsync(CancelSubscriptionRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/members/cancel", request);
+        var result = await HandleResponseAsync<SubscriptionDetailResponse>(response);
+        return result != null;
+    }
+
+    public async Task<InBodyMetricDto> RecordInBodyMetricAsync(InBodyEntryRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/inbody", request);
+        return await HandleResponseAsync<InBodyMetricDto>(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 4. PACKAGES & POS BILLING (UC05, UC07)
+    // ─────────────────────────────────────────────────────────────────────────
+
     public async Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync()
     {
         var response = await _httpClient.GetAsync("/api/v1/admin/packages?includeInactive=false");
@@ -116,33 +220,43 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<InvoiceDto>(response);
     }
 
-    public async Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceId, decimal amount, string transferContent)
+    public async Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent)
     {
-        if (string.IsNullOrWhiteSpace(invoiceId))
+        if (string.IsNullOrWhiteSpace(invoiceCode))
         {
             throw new ValidationException("Mã hóa đơn không được để trống.");
         }
 
-        var response = await _httpClient.PostAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceId)}/vietqr", null);
+        var response = await _httpClient.GetAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceCode)}/qr");
         return await HandleResponseAsync<VietQrPayloadDto>(response);
     }
 
-    public async Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
+    public async Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(invoiceCode))
+        {
+            throw new ValidationException("Mã hóa đơn không được để trống.");
+        }
 
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/members/freeze", request);
-        var result = await HandleResponseAsync<SubscriptionDetailResponse>(response);
-        return result != null;
+        var response = await _httpClient.PostAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceCode)}/confirm", null);
+        return await HandleResponseAsync<InvoiceDto>(response);
     }
 
-    public async Task<InBodyMetricDto> RecordInBodyMetricAsync(InBodyEntryRequest request)
+    public async Task<InvoiceDto> RefundInvoiceAsync(string invoiceCode, decimal refundAmount, string reason)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(invoiceCode))
+        {
+            throw new ValidationException("Mã hóa đơn không được để trống.");
+        }
 
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/inbody", request);
-        return await HandleResponseAsync<InBodyMetricDto>(response);
+        var payload = new { Reason = reason };
+        var response = await _httpClient.PostAsJsonAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceCode)}/refund", payload);
+        return await HandleResponseAsync<InvoiceDto>(response);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5. PT SERVICES (UC04)
+    // ─────────────────────────────────────────────────────────────────────────
 
     public async Task<IReadOnlyList<PtSessionSlotDto>> GetPtScheduleSlotsAsync(DateTime startDate, DateTime endDate)
     {
@@ -159,11 +273,77 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<PtSessionSlotDto>(response);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // 6. REPORTS & BI (UC06)
+    // ─────────────────────────────────────────────────────────────────────────
+
     public async Task<DashboardSummaryDto> GetDashboardSummaryAsync()
     {
         var response = await _httpClient.GetAsync("/api/v1/reports/dashboard");
         return await HandleResponseAsync<DashboardSummaryDto>(response);
     }
+
+    public async Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        string url = "/api/v1/reports/export/excel";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        throw new BusinessRuleException("Không thể tải file báo cáo Excel từ máy chủ.");
+    }
+
+    public async Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        string url = "/api/v1/reports/export/pdf";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        throw new BusinessRuleException("Không thể tải file báo cáo PDF từ máy chủ.");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 7. STAFF RBAC & PACKAGES (UC07)
+    // ─────────────────────────────────────────────────────────────────────────
 
     public async Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()
     {
