@@ -17,12 +17,5 @@ public sealed partial class PtSchedulePage : Page
     {
         DataContext = App.GetService<PtScheduleViewModel>();
         InitializeComponent();
-        Loaded += async (s, e) =>
-        {
-            if (ViewModel != null)
-            {
-                await ViewModel.InitializeAsync();
-            }
-        };
     }
 }

@@ -242,21 +242,22 @@ GymManagement.sln
 ### GIAI ĐOẠN 4: HIỆN THỰC `CLIENT COMPONENT`
 *Mục tiêu: Xây dựng hai ứng dụng khách độc lập kết nối vào cổng "GymManagement API".*
 
-#### 4.1. `Admin Desktop App` (WinUI 3)
-- [x] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
-- [x] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
-  - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực).
-  - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
-  - Quản lý hội viên, gia hạn, bảo lưu gói tập.
-- [x] **Task 4.1.3: Màn hình quản trị cơ sở:**
-  - Dashboard tổng quan kinh doanh.
-  - Điều phối lịch huấn luyện viên PT (Calendar View).
-  - Danh mục gói tập, quản lý tài khoản người dùng và báo cáo BI đa chiều.
+#### 4.1. `Admin Desktop App` (WinUI 3) — Đang Tái Cấu Trúc Toàn Diện (Redo Phase)
+- [x] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request qua `JwtAuthenticationHeaderHandler`.
+- [ ] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón (Đang làm mới theo Universal UI/UX Rules):**
+  - Quầy điểm danh Check-in (`CheckInCounterPage.xaml`): Tốc độ < 1s, kết nối webcam quét QR thời gian thực, tra cứu thủ công qua SĐT/Mã kèm phím Enter, nút Cho vào thủ công (Override) bắt buộc chọn lý do (`VerifiedByAdminId`), bảng log ra/vào hôm nay theo ca, banner tĩnh xanh/đỏ (không âm thanh, không ảnh chân dung, không nhấp nháy viền).
+  - Bán gói & Thanh toán POS (`PosBillingPage.xaml`): Bảng giá niêm yết cố định (không ô discount), nút shortcut `[+] Khách mới`, mã VietQR động NAPAS 247 có nút giả lập Sandbox (bật qua biến môi trường), in phiếu thu K80 và xuất PDF, hộp thoại xử lý hoàn tiền hóa đơn (`RefundDialog.xaml`).
+  - Quản lý hội viên & Vòng đời gói tập (`MembersPage.xaml`): Tích hợp nút CTA `"+ Đăng Ký Hội Viên Mới"` trên Header kích hoạt hộp thoại Wizard 2 bước (`RegisterMemberWizard.xaml`), xem/sửa hồ sơ, gia hạn gói, bảo lưu (`FROZEN`) dời ngày hết hạn, hủy gói (`CANCELLED`).
+- [ ] **Task 4.1.3: Màn hình quản trị cơ sở (Đang làm mới theo Universal UI/UX Rules):**
+  - Dashboard tổng quan kinh doanh & BI Analytics (`DashboardPage.xaml`): 4 thẻ KPI lớn, biểu đồ cột phân bố lưu lượng giờ cao điểm (17h–20h), xuất báo cáo Excel (.xlsx) / PDF streaming.
+  - Điều phối lịch huấn luyện viên PT (`PtSchedulePage.xaml`): Lưới thời gian tuần (Weekly Timeline View) tích hợp Hàng rào chống trùng lịch (Collision Guardrail viền đỏ rực `#F87171`), phân công PT 1-1, rà soát ca tập ngoại lệ.
+  - Danh mục gói tập (`PackagePlansPage.xaml`): Thêm, sửa và chuyển cờ ngừng kinh doanh (`DISCONTINUED`) gói tập đã có hội viên mua.
+  - Quản lý tài khoản người dùng và phân quyền RBAC (`SettingsPage.xaml`): Tạo tài khoản, phân quyền, khóa/mở khóa tài khoản có hàng rào an toàn chống Admin tự tước quyền hoặc tự khóa tài khoản của chính mình.
 
-#### 4.2. `Member/PT Web Portal` (Blazor Server)
-- [ ] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.
-- [ ] **Task 4.2.2: Phân hệ Cổng Hội viên:** Mã QR gói tập cá nhân (QR code), Đặt/Hủy ca PT, Biểu đồ InBody, Lịch sử tập, Đánh giá sao PT.
-- [ ] **Task 4.2.3: Phân hệ Cổng Huấn luyện viên (PT):** Thời khóa biểu tuần, Đăng ký slot rảnh, Danh sách học viên, Ghi nhận InBody, Xác nhận hoàn tất ca dạy.
+#### 4.2. `Member/PT Web Portal` (Blazor Server) — Chuẩn Bị Triển Khai (Pending)
+- [ ] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt, tự động giải mã Claims và điều hướng theo 3 Role.
+- [ ] **Task 4.2.2: Phân hệ Cổng Hội viên:** Khối gói tập số và mã QR động tự làm mới mỗi 60 giây (`DigitalSubscriptionWidget.razor`), Đặt lịch PT 3 bước (`PtBookingWizard.razor`), Hàng rào cảnh báo phạt hủy ca trước 2 giờ (`CancelBookingModal.razor`), Biểu đồ InBody đo lường sức khỏe (`InBodyDashboard.razor`), Dòng thời gian lịch sử tập (`WorkoutHistoryTimeline.razor`), Đánh giá 1–5 sao chất lượng ca dạy (`SessionRatingModal.razor`).
+- [ ] **Task 4.2.3: Phân hệ Cổng Huấn luyện viên (PT):** Thời khóa biểu tuần (`PtWeeklySchedule.razor`), Đăng ký slot rảnh màu trung tính (`PtAvailabilityGrid.razor`), Danh sách học viên phụ trách (`PtStudentsList.razor`), Ghi nhận chỉ số InBody (`InBodyEntryModal.razor`), Xác nhận hoàn tất ca dạy 1-chạm trực tiếp trên điện thoại.
 
 ---
 

@@ -2,210 +2,34 @@
     x:Class="GymManagement.Desktop.Views.CheckInCounterPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModels="using:GymManagement.Desktop.ViewModels"
-    Background="{StaticResource BgCanvasBrush}">
+    Background="{StaticResource AppBackgroundBrush}">
 
-    <Grid Padding="24" ColumnSpacing="24">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*" />
-            <ColumnDefinition Width="6*" />
-        </Grid.ColumnDefinitions>
+    <Grid Padding="24" RowSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- Left Column: Webcam Scanner & Manual Lookup -->
-        <Grid Grid.Column="0" RowSpacing="16">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Text="QUẦY ĐIỂM DANH &amp; CỔNG TỰ ĐỘNG"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="{StaticResource TextFillColorPrimaryBrush}" />
+            <TextBlock Text="Canvas sạch sẵn sàng tái cấu trúc giao diện theo ui_rules.md &amp; ux_rules.md (UC03)"
+                       FontSize="12" Foreground="{StaticResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
 
-            <!-- Camera Viewport Card -->
-            <Border Grid.Row="0"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="16">
-                <Grid>
-                    <!-- Simulated Camera Viewfinder -->
-                    <Border Background="#090D16" CornerRadius="8">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
-                            <FontIcon Glyph="&#xE722;" FontSize="48" Foreground="{StaticResource AccentPrimaryBrush}" />
-                            <TextBlock Text="WEBCAM QUÉT MÃ QR HỘI VIÊN"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontWeight="SemiBold"
-                                       FontSize="13"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="Đưa màn hình điện thoại có mã QR vào trước camera"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="11"
-                                       HorizontalAlignment="Center" />
-                            <Border BorderBrush="{StaticResource AccentPrimaryBrush}" BorderThickness="2"
-                                    Width="160" Height="160" CornerRadius="8" Margin="0,8" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Border>
-
-            <!-- Fallback Manual Lookup (Member Code or Phone) & Manual Override -->
-            <Border Grid.Row="1"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="16">
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Tra Cứu &amp; Điểm Danh Thủ Công (Quên / Hết Pin Điện Thoại):"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               FontSize="12"
-                               FontWeight="SemiBold" />
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="TxtSearchInput"
-                                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"
-                                 PlaceholderText="Nhập mã hội viên hoặc SĐT (USR001 / 0901234567)"
-                                 KeyDown="TxtSearchInput_KeyDown"
-                                 Height="38" />
-                        <Button Grid.Column="1"
-                                Content="Điểm Danh"
-                                Command="{x:Bind ViewModel.CheckInManualCommand}"
-                                Background="{StaticResource AccentPrimaryBrush}"
-                                Foreground="#FFFFFF"
-                                FontWeight="SemiBold"
-                                Height="38" />
-                    </Grid>
-
-                    <!-- Manual Override Action -->
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0"
-                                Content="Override: Quên SĐT"
-                                Click="BtnOverridePhone_Click"
-                                HorizontalAlignment="Stretch"
-                                Foreground="{StaticResource StatusWarningBrush}" />
-                        <Button Grid.Column="1"
-                                Content="Override: Kẹt Cổng"
-                                Click="BtnOverrideTurnstile_Click"
-                                HorizontalAlignment="Stretch"
-                                Foreground="{StaticResource StatusWarningBrush}" />
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- Right Column: Verification Result Display -->
-        <Grid Grid.Column="1">
-            <!-- Idle / Standby Card -->
-            <Border Visibility="{x:Bind ViewModel.HasResult, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
-                    BorderThickness="1"
-                    CornerRadius="16"
-                    Padding="32">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
-                    <FontIcon Glyph="&#xE8B9;" FontSize="64" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <TextBlock Text="SẴN SÀNG TIẾP NHẬN HỘI VIÊN"
-                               FontSize="18" FontWeight="Bold"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               HorizontalAlignment="Center" />
-                    <TextBlock Text="Hội viên quét mã QR trên cổng hoặc đọc SĐT để xác minh"
-                               FontSize="13"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               HorizontalAlignment="Center" />
-                </StackPanel>
-            </Border>
-
-            <!-- Result Card -->
-            <Border Visibility="{x:Bind ViewModel.HasResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource StatusToBrushConverter}}"
-                    BorderThickness="2"
-                    CornerRadius="16">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Top Banner (Green or Red Static Banner) -->
-                    <Border Grid.Row="0"
-                            Background="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource StatusToBrushConverter}}"
-                            CornerRadius="14,14,0,0"
-                            Padding="20,16">
-                        <TextBlock Text="{x:Bind ViewModel.StatusBanner, Mode=OneWay}"
-                                   FontSize="18" FontWeight="Bold"
-                                   Foreground="#FFFFFF"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <!-- Member Core Details: Mã hội viên (UserName) & Họ tên (FullName) -->
-                    <ScrollViewer Grid.Row="1" Padding="28">
-                        <StackPanel Spacing="24" VerticalAlignment="Center">
-                            <!-- Two Core Fields: UserName and FullName (No photo) -->
-                            <StackPanel HorizontalAlignment="Center" Spacing="8">
-                                <TextBlock Text="{x:Bind ViewModel.MemberCode, Mode=OneWay}"
-                                           FontSize="16" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="{x:Bind ViewModel.MemberName, Mode=OneWay}"
-                                           FontSize="28" FontWeight="Bold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="{x:Bind ViewModel.PlanName, Mode=OneWay}"
-                                           FontSize="16" FontWeight="SemiBold"
-                                           Foreground="{StaticResource AccentPrimaryBrush}"
-                                           HorizontalAlignment="Center" />
-                            </StackPanel>
-
-                            <!-- Error Message if Failed -->
-                            <Border Visibility="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
-                                    Background="#3A1515" BorderBrush="{StaticResource StatusDangerBrush}" BorderThickness="1"
-                                    CornerRadius="8" Padding="16">
-                                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                                           Foreground="#FCA5A5" FontSize="14" FontWeight="SemiBold"
-                                           TextWrapping="Wrap" TextAlignment="Center" />
-                            </Border>
-
-                            <!-- Session Chips Grid (Success) -->
-                            <Grid ColumnSpacing="16" Visibility="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Gym Session Card -->
-                                <Border Grid.Column="0"
-                                        Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
-                                        CornerRadius="12" Padding="20">
-                                    <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                        <TextBlock Text="LƯỢT TẬP GYM CÒN LẠI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind ViewModel.RemainingGymSessions, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
-                                                   FontSize="32" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}"
-                                                   HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- PT Session Card -->
-                                <Border Grid.Column="1"
-                                        Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
-                                        CornerRadius="12" Padding="20">
-                                    <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                        <TextBlock Text="BUỔI TẬP PT CÒN LẠI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind ViewModel.RemainingPtSessions, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
-                                                   FontSize="32" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}"
-                                                   HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
-        </Grid>
+        <!-- Blank Workspace -->
+        <Border Grid.Row="1"
+                Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource SubtleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="[Vùng thiết kế 2 cột: Webcam QR &amp; Kết quả điểm danh Backend]"
+                           Foreground="{StaticResource TextFillColorTertiaryBrush}"
+                           FontSize="14" />
+            </Grid>
+        </Border>
     </Grid>
 </Page>
