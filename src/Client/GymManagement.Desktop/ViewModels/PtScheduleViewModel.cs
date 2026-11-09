@@ -40,7 +40,13 @@ public partial class PtScheduleViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CanBookSlot))]
     private bool _hasCollision;
 
-    public bool CanBookSlot => !HasCollision;
+    public bool CanBookSlot
+    {
+        get
+        {
+            return !HasCollision;
+        }
+    }
 
     [ObservableProperty]
     private string? _collisionWarning;
@@ -51,6 +57,7 @@ public partial class PtScheduleViewModel : ObservableObject
 
     public PtScheduleViewModel(IApiClient apiClient)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
     }
 
@@ -135,10 +142,12 @@ public partial class PtScheduleViewModel : ObservableObject
     {
         CheckForCollisions();
     }
+
     partial void OnSelectedPtChanged(UserSessionDto? value)
     {
         _ = LoadScheduleAsync();
     }
+
     partial void OnSelectedDateChanged(DateTimeOffset value)
     {
         _ = LoadScheduleAsync();

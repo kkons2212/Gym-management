@@ -36,13 +36,37 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSuccess;
 
-    public string CurrentAdminName => _sessionService.CurrentUser?.FullName ?? "Quản trị viên";
-    public string CurrentAdminRole => _sessionService.CurrentUser?.Role ?? "Admin";
+    public string CurrentAdminName
+    {
+        get
+        {
+            if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.FullName))
+            {
+                return _sessionService.CurrentUser.FullName;
+            }
+            return "Quản trị viên";
+        }
+    }
+
+    public string CurrentAdminRole
+    {
+        get
+        {
+            if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.Role))
+            {
+                return _sessionService.CurrentUser.Role;
+            }
+            return "Admin";
+        }
+    }
 
     public ObservableCollection<UserSessionDto> Users { get; } = [];
 
     public SettingsViewModel(IApiClient apiClient, IAdminSessionService sessionService)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(sessionService);
+
         _apiClient = apiClient;
         _sessionService = sessionService;
     }
@@ -82,7 +106,7 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         // Guardrail: Không được khóa chính tài khoản admin đang đăng nhập
-        if (user.UserId == _sessionService.CurrentUser?.UserId)
+        if (_sessionService.CurrentUser != null && user.UserId == _sessionService.CurrentUser.UserId)
         {
             StatusMessage = "Cảnh báo bảo mật: Bạn không thể khóa chính tài khoản Quản trị viên đang đăng nhập!";
             IsSuccess = false;
@@ -148,4 +172,3 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 }
-

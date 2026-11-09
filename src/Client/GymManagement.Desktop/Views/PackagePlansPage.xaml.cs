@@ -5,19 +5,17 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class PackagePlansPage : Page
 {
-    public PackagePlansViewModel ViewModel => (PackagePlansViewModel)DataContext;
+    public PackagePlansViewModel ViewModel
+    {
+        get
+        {
+            return (PackagePlansViewModel)DataContext;
+        }
+    }
 
     public PackagePlansPage()
     {
         DataContext = App.GetService<PackagePlansViewModel>();
         InitializeComponent();
-        Loaded += async (s, e) =>
-        {
-            if (ViewModel != null)
-            {
-                await ViewModel.LoadPackagesCommand.ExecuteAsync(null);
-            }
-        };
     }
 }
-

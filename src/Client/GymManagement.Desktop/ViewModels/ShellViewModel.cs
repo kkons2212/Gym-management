@@ -21,6 +21,7 @@ public partial class ShellViewModel : ObservableObject
 
     public ShellViewModel(IAdminSessionService sessionService)
     {
+        ArgumentNullException.ThrowIfNull(sessionService);
         _sessionService = sessionService;
         UpdateUserInfo();
     }
@@ -28,8 +29,24 @@ public partial class ShellViewModel : ObservableObject
     public void UpdateUserInfo()
     {
         IsAuthenticated = _sessionService.IsAuthenticated;
-        AdminDisplayName = _sessionService.CurrentUser?.FullName ?? "Quản trị viên";
-        AdminRoleName = _sessionService.CurrentUser?.Role ?? "Admin";
+
+        if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.FullName))
+        {
+            AdminDisplayName = _sessionService.CurrentUser.FullName;
+        }
+        else
+        {
+            AdminDisplayName = "Quản trị viên";
+        }
+
+        if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.Role))
+        {
+            AdminRoleName = _sessionService.CurrentUser.Role;
+        }
+        else
+        {
+            AdminRoleName = "Admin";
+        }
     }
 
     [RelayCommand]
@@ -40,4 +57,3 @@ public partial class ShellViewModel : ObservableObject
         LogoutRequested?.Invoke();
     }
 }
-
