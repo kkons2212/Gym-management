@@ -1,36 +1,38 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject CustomAuthenticationStateProvider AuthState
 @inject NavigationManager Navigation
 
 <div class="mobile-shell">
-    @if (AuthState.IsAuthenticated)
-    {
-        <header class="top-bar">
-            <div class="top-bar-title">
-                <span>PHÒNG TẬP THỂ THAO</span>
-                <span class="role-badge @(AuthState.IsPt ? "role-pt" : "role-member")">
-                    @(AuthState.IsPt ? "HLV PT" : "HỘI VIÊN")
-                </span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    @AuthState.CurrentUser?.FullName
-                </span>
-                <button type="button" @onclick="HandleLogout" class="btn-secondary" style="min-height: 32px; padding: 0 10px; font-size: 11px;">
-                    Đăng xuất
-                </button>
-            </div>
-        </header>
-    }
+    <AuthorizeView>
+        <Authorized>
+            <header class="top-bar">
+                <div class="top-bar-title">
+                    <span>PHÒNG TẬP THỂ THAO</span>
+                    <span class="role-badge @(context.User.IsInRole("PT") ? "role-pt" : "role-member")">
+                        @(context.User.IsInRole("PT") ? "HLV PT" : "HỘI VIÊN")
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        @context.User.Identity?.Name
+                    </span>
+                    <button type="button" @onclick="HandleLogout" class="btn-secondary" style="min-height: 32px; padding: 0 10px; font-size: 11px;">
+                        Đăng xuất
+                    </button>
+                </div>
+            </header>
+        </Authorized>
+    </AuthorizeView>
 
     <main style="padding: 16px; flex: 1;">
         @Body
     </main>
 
-    @if (AuthState.IsAuthenticated)
-    {
-        <NavMenu />
-    }
+    <AuthorizeView>
+        <Authorized>
+            <NavMenu />
+        </Authorized>
+    </AuthorizeView>
 </div>
 
 @code {

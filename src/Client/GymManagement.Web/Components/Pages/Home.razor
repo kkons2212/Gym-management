@@ -1,21 +1,24 @@
-﻿@page "/"
-@inject CustomAuthenticationStateProvider AuthState
+@page "/"
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (!AuthState.IsAuthenticated)
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated != true)
         {
-            Navigation.NavigateTo("/login", true);
+            Navigation.NavigateTo("/login", replace: true);
         }
-        else if (AuthState.IsPt)
+        else if (user.IsInRole("PT"))
         {
-            Navigation.NavigateTo("/pt/schedule", true);
+            Navigation.NavigateTo("/pt/schedule", replace: true);
         }
         else
         {
-            Navigation.NavigateTo("/member/dashboard", true);
+            Navigation.NavigateTo("/member/dashboard", replace: true);
         }
     }
 }

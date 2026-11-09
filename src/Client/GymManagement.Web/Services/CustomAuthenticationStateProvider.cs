@@ -57,3 +57,4 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 }
+

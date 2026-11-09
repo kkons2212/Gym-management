@@ -67,3 +67,4 @@ public interface IWebApiClient
     Task<IReadOnlyList<MemberSummaryDto>> GetPtAssignedStudentsAsync();
     Task<bool> RecordInBodyAsync(RecordInBodyRequest request);
 }
+
