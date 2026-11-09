@@ -1,0 +1,3 @@
+@echo off
+echo Dang khoi dong Gym Management Server API tren http://localhost:5000...
+dotnet run --project "%~dp0src\Server\GymManagement.Server.Api\GymManagement.Server.Api.csproj"

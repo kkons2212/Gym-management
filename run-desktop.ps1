@@ -1,0 +1,1 @@
+Start-Process "$PSScriptRoot\src\Client\GymManagement.Desktop\bin\Debug\net8.0-windows10.0.19041.0\win-x64\GymManagement.Desktop.exe"
