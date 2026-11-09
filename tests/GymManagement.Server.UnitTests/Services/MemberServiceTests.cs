@@ -2,6 +2,7 @@ using FluentAssertions;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Members;
+using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using GymManagement.Server.Core.Services;
 using Microsoft.Extensions.Logging;
@@ -75,12 +76,12 @@ public class MemberServiceTests
 
         SetupUserRepoPhoneExists(exists: false);
 
-        var planRepoMock = new Mock<IGenericRepository<PackagePlanStub>>();
+        var planRepoMock = new Mock<IGenericRepository<PackagePlan>>();
         planRepoMock
             .Setup(r => r.FindSingleOrDefaultAsync(
-                It.IsAny<Expression<Func<PackagePlanStub, bool>>>(), default))
-            .ReturnsAsync((PackagePlanStub?)null);
-        _uowMock.Setup(u => u.Repository<PackagePlanStub>()).Returns(planRepoMock.Object);
+                It.IsAny<Expression<Func<PackagePlan, bool>>>(), default))
+            .ReturnsAsync((PackagePlan?)null);
+        _uowMock.Setup(u => u.Repository<PackagePlan>()).Returns(planRepoMock.Object);
 
         SetupExecuteTransaction();
 
@@ -284,38 +285,38 @@ public class MemberServiceTests
 
     private void SetupUserRepoPhoneExists(bool exists)
     {
-        var userRepoMock = new Mock<IGenericRepository<MemberUser>>();
+        var userRepoMock = new Mock<IGenericRepository<User>>();
         userRepoMock
             .Setup(r => r.ExistsAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
+                It.IsAny<Expression<Func<User, bool>>>(), default))
             .ReturnsAsync(exists);
         userRepoMock
             .Setup(r => r.CountAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
+                It.IsAny<Expression<Func<User, bool>>>(), default))
             .ReturnsAsync(5);
         userRepoMock
-            .Setup(r => r.AddAsync(It.IsAny<MemberUser>(), default))
+            .Setup(r => r.AddAsync(It.IsAny<User>(), default))
             .Returns(Task.CompletedTask);
-        _uowMock.Setup(u => u.Repository<MemberUser>()).Returns(userRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
     }
 
     private void SetupUserRepoFindNull()
     {
-        var userRepoMock = new Mock<IGenericRepository<MemberUser>>();
+        var userRepoMock = new Mock<IGenericRepository<User>>();
         userRepoMock
             .Setup(r => r.FindSingleOrDefaultAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
-            .ReturnsAsync((MemberUser?)null);
-        _uowMock.Setup(u => u.Repository<MemberUser>()).Returns(userRepoMock.Object);
+                It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync((User?)null);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
     }
 
     private void SetupUserRepoFindExisting(string userName)
     {
-        var userRepoMock = new Mock<IGenericRepository<MemberUser>>();
+        var userRepoMock = new Mock<IGenericRepository<User>>();
         userRepoMock
             .Setup(r => r.FindSingleOrDefaultAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
-            .ReturnsAsync(new MemberUser
+                It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(new User
             {
                 UserName = userName,
                 RoleId = "MEMBER",
@@ -324,16 +325,16 @@ public class MemberServiceTests
                 Email = "old@gym.vn",
                 Status = "ACTIVE"
             });
-        _uowMock.Setup(u => u.Repository<MemberUser>()).Returns(userRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
     }
 
     private void SetupUserRepoPhoneConflict(bool exists)
     {
-        var userRepoMock = new Mock<IGenericRepository<MemberUser>>();
+        var userRepoMock = new Mock<IGenericRepository<User>>();
         userRepoMock
             .Setup(r => r.FindSingleOrDefaultAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
-            .ReturnsAsync(new MemberUser
+                It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(new User
             {
                 UserName = "MBR-0001",
                 RoleId = "MEMBER",
@@ -343,22 +344,22 @@ public class MemberServiceTests
             });
         userRepoMock
             .Setup(r => r.ExistsAsync(
-                It.IsAny<Expression<Func<MemberUser, bool>>>(), default))
+                It.IsAny<Expression<Func<User, bool>>>(), default))
             .ReturnsAsync(exists);
-        userRepoMock.Setup(r => r.Update(It.IsAny<MemberUser>()));
-        _uowMock.Setup(u => u.Repository<MemberUser>()).Returns(userRepoMock.Object);
+        userRepoMock.Setup(r => r.Update(It.IsAny<User>()));
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
         _uowMock.Setup(u => u.SaveChangesAsync(default)).ReturnsAsync(1);
     }
 
-    private void SetupSubscriptionRepo(MemberSubscriptionStub? sub)
+    private void SetupSubscriptionRepo(MemberSubscription? sub)
     {
-        var subRepoMock = new Mock<IGenericRepository<MemberSubscriptionStub>>();
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
         subRepoMock
             .Setup(r => r.FindSingleOrDefaultAsync(
-                It.IsAny<Expression<Func<MemberSubscriptionStub, bool>>>(), default))
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
             .ReturnsAsync(sub);
-        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscriptionStub>()));
-        _uowMock.Setup(u => u.Repository<MemberSubscriptionStub>()).Returns(subRepoMock.Object);
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
     }
 
     private void SetupExecuteTransaction()
@@ -390,7 +391,7 @@ public class MemberServiceTests
 
     // ─── Object builders ────────────────────────────────────────────────────
 
-    private static MemberSubscriptionStub BuildSubscription(
+    private static MemberSubscription BuildSubscription(
         string subscriptionId,
         string userName,
         string status = "ACTIVE",
