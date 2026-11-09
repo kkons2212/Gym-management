@@ -19,6 +19,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthenticationStateProvider>());
 builder.Services.AddScoped<IWebApiClient, MockWebApiClient>();
+builder.Services.AddSingleton<IQrCodeService, QrCodeService>();
 
 var app = builder.Build();
 

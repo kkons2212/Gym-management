@@ -3,16 +3,25 @@ using QRCoder;
 namespace GymManagement.Web.Services;
 
 /// <summary>
+/// Giao diện dịch vụ sinh mã QR chuẩn quốc tế.
+/// </summary>
+public interface IQrCodeService
+{
+    string GeneratePngBase64(string payload, int pixelsPerModule = 10);
+    string GenerateSvg(string payload, int pixelsPerModule = 10);
+}
+
+/// <summary>
 /// Dịch vụ sinh mã QR chuẩn quốc tế cho hội viên bằng thư viện QRCoder.
 /// Tạo mã tĩnh dạng Base64 PNG hoặc SVG hỗ trợ tải về máy 1 lần.
 /// </summary>
-public static class QrCodeService
+public sealed class QrCodeService : IQrCodeService
 {
     /// <summary>
     /// Sinh chuỗi Data URL ảnh PNG (base64) từ mã định danh hội viên.
     /// Cho phép hiển thị trực tiếp trong thẻ &lt;img&gt; và tải về máy.
     /// </summary>
-    public static string GeneratePngBase64(string payload, int pixelsPerModule = 10)
+    public string GeneratePngBase64(string payload, int pixelsPerModule = 10)
     {
         if (string.IsNullOrWhiteSpace(payload))
         {
@@ -29,7 +38,7 @@ public static class QrCodeService
     /// <summary>
     /// Sinh mã vector SVG từ mã định danh hội viên.
     /// </summary>
-    public static string GenerateSvg(string payload, int pixelsPerModule = 10)
+    public string GenerateSvg(string payload, int pixelsPerModule = 10)
     {
         if (string.IsNullOrWhiteSpace(payload))
         {
@@ -42,3 +51,4 @@ public static class QrCodeService
         return qrCode.GetGraphic(pixelsPerModule);
     }
 }
+

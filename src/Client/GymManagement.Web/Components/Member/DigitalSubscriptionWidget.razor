@@ -1,4 +1,6 @@
+@using GymManagement.Web.Services
 @inject IWebApiClient ApiClient
+@inject IQrCodeService QrService
 @inject NavigationManager Navigation
 
 @if (_isLoading)
@@ -201,7 +203,7 @@ else
         if (_showQrModal && string.IsNullOrEmpty(_qrImageBase64) && _subscription != null)
         {
             _qrCode = await ApiClient.GetMyCheckInQrCodeAsync();
-            _qrImageBase64 = QrCodeService.GeneratePngBase64(_qrCode, 10);
+            _qrImageBase64 = QrService.GeneratePngBase64(_qrCode, 10);
         }
     }
 }
