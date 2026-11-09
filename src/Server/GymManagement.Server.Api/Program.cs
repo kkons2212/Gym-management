@@ -102,6 +102,7 @@ builder.Services.AddAuthorization(options =>
 // Đăng ký 3 Cổng Adapters ngoại vi (VietQR, Notification, CameraScanner)
 builder.Services.AddServerDataAdapters(builder.Configuration);
 builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // Đăng ký Database API (GymDbContext, GenericRepository, UnitOfWork)
 builder.Services.AddServerDataRepositories(builder.Configuration);
