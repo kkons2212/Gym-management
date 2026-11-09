@@ -214,21 +214,21 @@
         }
     }
 
-    private string GetBmiColor(decimal bmi) => bmi switch
+    private string GetBmiColor(decimal bmi)
     {
-        < 18.5m => "#38BDF8",
-        < 25.0m => "#34D399",
-        < 30.0m => "#FBBF24",
-        _ => "#F87171"
-    };
+        if (bmi < 18.5m) return "#38BDF8";
+        if (bmi < 25.0m) return "#34D399";
+        if (bmi < 30.0m) return "#FBBF24";
+        return "#F87171";
+    }
 
-    private string GetBmiClassification(decimal bmi) => bmi switch
+    private string GetBmiClassification(decimal bmi)
     {
-        < 18.5m => "Thiếu cân (Gầy)",
-        < 25.0m => "Thân hình cân đối (Bình thường)",
-        < 30.0m => "Thừa cân (Tiền béo phì)",
-        _ => "Béo phì (Cần giảm mỡ)"
-    };
+        if (bmi < 18.5m) return "Thiếu cân (Gầy)";
+        if (bmi < 25.0m) return "Thân hình cân đối (Bình thường)";
+        if (bmi < 30.0m) return "Thừa cân (Tiền béo phì)";
+        return "Béo phì (Cần giảm mỡ)";
+    }
 
     private string GetNeedlePercentageString(decimal bmi)
     {

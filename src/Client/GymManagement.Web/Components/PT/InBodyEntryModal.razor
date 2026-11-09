@@ -175,13 +175,13 @@
         }
     }
 
-    private string GetBmiLabel(decimal bmi) => bmi switch
+    private string GetBmiLabel(decimal bmi)
     {
-        < 18.5m => "Gầy",
-        < 25.0m => "Bình thường",
-        < 30.0m => "Thừa cân",
-        _ => "Béo phì"
-    };
+        if (bmi < 18.5m) return "Gầy";
+        if (bmi < 25.0m) return "Bình thường";
+        if (bmi < 30.0m) return "Thừa cân";
+        return "Béo phì";
+    }
 
     private async Task HandleClose()
     {
