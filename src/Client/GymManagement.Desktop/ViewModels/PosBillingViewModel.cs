@@ -18,11 +18,65 @@ public partial class PosBillingViewModel : ObservableObject
     [ObservableProperty]
     private PackagePlanDto? _selectedPackage;
 
-    public string SelectedPackageName => SelectedPackage?.Name ?? "Chưa chọn gói";
-    public string SelectedPackageDescription => SelectedPackage?.Description ?? string.Empty;
-    public int SelectedPackageDurationDays => SelectedPackage?.DurationDays ?? 0;
-    public int SelectedPackageMaxCheckInSessions => SelectedPackage?.MaxCheckInSessions ?? 0;
-    public int SelectedPackageTotalPtSessions => SelectedPackage?.TotalPtSessions ?? 0;
+    public string SelectedPackageName
+    {
+        get
+        {
+            if (SelectedPackage != null)
+            {
+                return SelectedPackage.Name;
+            }
+            return "Chưa chọn gói";
+        }
+    }
+
+    public string SelectedPackageDescription
+    {
+        get
+        {
+            if (SelectedPackage != null && SelectedPackage.Description != null)
+            {
+                return SelectedPackage.Description;
+            }
+            return string.Empty;
+        }
+    }
+
+    public int SelectedPackageDurationDays
+    {
+        get
+        {
+            if (SelectedPackage != null)
+            {
+                return SelectedPackage.DurationDays;
+            }
+            return 0;
+        }
+    }
+
+    public int SelectedPackageMaxCheckInSessions
+    {
+        get
+        {
+            if (SelectedPackage != null && SelectedPackage.MaxCheckInSessions.HasValue)
+            {
+                return SelectedPackage.MaxCheckInSessions.Value;
+            }
+            return 0;
+        }
+    }
+
+    public int SelectedPackageTotalPtSessions
+    {
+        get
+        {
+            if (SelectedPackage != null && SelectedPackage.TotalPtSessions.HasValue)
+            {
+                return SelectedPackage.TotalPtSessions.Value;
+            }
+            return 0;
+        }
+    }
 
     partial void OnSelectedPackageChanged(PackagePlanDto? value)
     {
@@ -71,6 +125,7 @@ public partial class PosBillingViewModel : ObservableObject
 
     public PosBillingViewModel(IApiClient apiClient)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
     }
 
@@ -111,9 +166,11 @@ public partial class PosBillingViewModel : ObservableObject
 
     public void SelectPackage(PackagePlanDto package)
     {
+        ArgumentNullException.ThrowIfNull(package);
+
         SelectedPackage = package;
         SubtotalAmount = package.Price;
-        TotalAmount = package.Price; // Exactly equal, 0 discount
+        TotalAmount = package.Price; // Exactly equal, 0 discount (CSDL invoice has no discount)
     }
 
     [RelayCommand]
@@ -132,7 +189,7 @@ public partial class PosBillingViewModel : ObservableObject
         {
             if (SelectedPaymentMethod == "VIETQR")
             {
-                var content = $"GYM {SelectedMember.UserId} {SelectedPackage.PlanId}";
+                string content = $"GYM {SelectedMember.UserId} {SelectedPackage.PlanId}";
                 VietQrPayload = await _apiClient.GenerateVietQrAsync("TEMP", TotalAmount, content);
                 IsVietQrModalOpen = true;
             }

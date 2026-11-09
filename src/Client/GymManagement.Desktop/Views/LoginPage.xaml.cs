@@ -5,7 +5,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class LoginPage : Page
 {
-    public LoginViewModel ViewModel => (LoginViewModel)DataContext;
+    public LoginViewModel ViewModel
+    {
+        get
+        {
+            return (LoginViewModel)DataContext;
+        }
+    }
 
     public LoginPage()
     {
@@ -31,7 +37,10 @@ public sealed partial class LoginPage : Page
     {
         var shellVm = App.GetService<ShellViewModel>();
         shellVm.UpdateUserInfo();
-        Frame?.Navigate(typeof(MainPage));
+        if (Frame != null)
+        {
+            Frame.Navigate(typeof(MainPage));
+        }
     }
 
     private void TxtPassword_PasswordChanged(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

@@ -9,14 +9,28 @@ public class StatusToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        var status = value?.ToString()?.ToUpperInvariant();
-        return status switch
+        string status = string.Empty;
+        if (value != null)
         {
-            "ACTIVE" or "PAID" => new SolidColorBrush(ColorHelper.FromArgb(255, 22, 163, 74)),   // Green 600
-            "FROZEN" or "WARNING" => new SolidColorBrush(ColorHelper.FromArgb(255, 217, 119, 6)), // Amber 600
-            "EXPIRED" or "CANCELLED" or "DANGER" => new SolidColorBrush(ColorHelper.FromArgb(255, 220, 38, 38)), // Red 600
-            _ => new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184)) // Slate 400
-        };
+            status = value.ToString()?.ToUpperInvariant() ?? string.Empty;
+        }
+
+        if (status == "ACTIVE" || status == "PAID" || status == "SUCCESS")
+        {
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 22, 163, 74));   // Green 600
+        }
+
+        if (status == "FROZEN" || status == "WARNING")
+        {
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 217, 119, 6)); // Amber 600
+        }
+
+        if (status == "EXPIRED" || status == "CANCELLED" || status == "DANGER" || status == "FAILED")
+        {
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 220, 38, 38)); // Red 600
+        }
+
+        return new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184)); // Slate 400
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -151,7 +165,13 @@ public class StringFormatConverter : IValueConverter
             return t.ToString(@"hh\:mm");
         }
 
-        return value.ToString() ?? string.Empty;
+        string? str = value.ToString();
+        if (str != null)
+        {
+            return str;
+        }
+
+        return string.Empty;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

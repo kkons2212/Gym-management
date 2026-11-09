@@ -38,17 +38,39 @@ public sealed partial class MainPage : Page
 
     public void NavigateTo(string tag)
     {
-        Type targetPage = tag switch
+        Type targetPage;
+        if (tag == "CheckIn")
         {
-            "CheckIn" => typeof(CheckInCounterPage),
-            "Pos" => typeof(PosBillingPage),
-            "Members" => typeof(MembersPage),
-            "Schedule" => typeof(PtSchedulePage),
-            "Packages" => typeof(PackagePlansPage),
-            "Dashboard" => typeof(DashboardPage),
-            "Settings" => typeof(SettingsPage),
-            _ => typeof(CheckInCounterPage)
-        };
+            targetPage = typeof(CheckInCounterPage);
+        }
+        else if (tag == "Pos")
+        {
+            targetPage = typeof(PosBillingPage);
+        }
+        else if (tag == "Members")
+        {
+            targetPage = typeof(MembersPage);
+        }
+        else if (tag == "Schedule")
+        {
+            targetPage = typeof(PtSchedulePage);
+        }
+        else if (tag == "Packages")
+        {
+            targetPage = typeof(PackagePlansPage);
+        }
+        else if (tag == "Dashboard")
+        {
+            targetPage = typeof(DashboardPage);
+        }
+        else if (tag == "Settings")
+        {
+            targetPage = typeof(SettingsPage);
+        }
+        else
+        {
+            targetPage = typeof(CheckInCounterPage);
+        }
 
         if (ContentFrame.CurrentSourcePageType != targetPage)
         {
@@ -67,20 +89,18 @@ public sealed partial class MainPage : Page
 
     public void HandleShortcut(Windows.System.VirtualKey key)
     {
-        switch (key)
+        // Tuyệt đối không dùng F1 cho điểm danh (ux_rules.md 1.2)
+        if (key == Windows.System.VirtualKey.F2)
         {
-            case Windows.System.VirtualKey.F1:
-                SelectMenuItemByTag("CheckIn");
-                break;
-            case Windows.System.VirtualKey.F2:
-                SelectMenuItemByTag("Pos");
-                break;
-            case Windows.System.VirtualKey.F3:
-                SelectMenuItemByTag("Members");
-                break;
-            case Windows.System.VirtualKey.F5:
-                SelectMenuItemByTag("Schedule");
-                break;
+            SelectMenuItemByTag("Pos");
+        }
+        else if (key == Windows.System.VirtualKey.F3)
+        {
+            SelectMenuItemByTag("Members");
+        }
+        else if (key == Windows.System.VirtualKey.F5)
+        {
+            SelectMenuItemByTag("Schedule");
         }
     }
 

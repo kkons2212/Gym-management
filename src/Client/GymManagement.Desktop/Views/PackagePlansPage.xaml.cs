@@ -5,7 +5,13 @@ namespace GymManagement.Desktop.Views;
 
 public sealed partial class PackagePlansPage : Page
 {
-    public PackagePlansViewModel ViewModel => (PackagePlansViewModel)DataContext;
+    public PackagePlansViewModel ViewModel
+    {
+        get
+        {
+            return (PackagePlansViewModel)DataContext;
+        }
+    }
 
     public PackagePlansPage()
     {
@@ -20,4 +26,3 @@ public sealed partial class PackagePlansPage : Page
         };
     }
 }
-

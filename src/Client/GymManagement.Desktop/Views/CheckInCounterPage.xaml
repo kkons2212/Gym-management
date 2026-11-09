@@ -132,30 +132,28 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- Top Banner (Green or Red) -->
+                    <!-- Top Banner (Green or Red Static Banner) -->
                     <Border Grid.Row="0"
                             Background="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource StatusToBrushConverter}}"
                             CornerRadius="14,14,0,0"
                             Padding="20,16">
-                        <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE73E;" FontSize="24" Foreground="#FFFFFF" />
-                            <TextBlock Text="{x:Bind ViewModel.StatusBanner, Mode=OneWay}"
-                                       FontSize="18" FontWeight="Bold"
-                                       Foreground="#FFFFFF" />
-                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.StatusBanner, Mode=OneWay}"
+                                   FontSize="18" FontWeight="Bold"
+                                   Foreground="#FFFFFF"
+                                   HorizontalAlignment="Center" />
                     </Border>
 
-                    <!-- Member & Subscription Details Body -->
+                    <!-- Member Core Details: Mã hội viên (UserName) & Họ tên (FullName) -->
                     <ScrollViewer Grid.Row="1" Padding="28">
                         <StackPanel Spacing="24" VerticalAlignment="Center">
-                            <!-- Avatar & Name -->
-                            <StackPanel HorizontalAlignment="Center" Spacing="12">
-                                <Border Width="120" Height="120" CornerRadius="60"
-                                        Background="#334155" HorizontalAlignment="Center">
-                                    <FontIcon Glyph="&#xE77B;" FontSize="56" Foreground="{StaticResource TextSecondaryBrush}" />
-                                </Border>
+                            <!-- Two Core Fields: UserName and FullName (No photo) -->
+                            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                                <TextBlock Text="{x:Bind ViewModel.MemberCode, Mode=OneWay}"
+                                           FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" />
                                 <TextBlock Text="{x:Bind ViewModel.MemberName, Mode=OneWay}"
-                                           FontSize="26" FontWeight="Bold"
+                                           FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center" />
                                 <TextBlock Text="{x:Bind ViewModel.PlanName, Mode=OneWay}"
