@@ -115,39 +115,15 @@ else
                 </div>
 
                 <!-- QR Display (Strict Rule: Black on solid white, 240x240px, quiet zone 4 modules, no logo overlay) -->
-                <div style="background: #FFFFFF; padding: 16px; border-radius: 12px; display: inline-block; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                    <!-- Procedural SVG QR Matrix to ensure 100% offline accuracy -->
-                    <svg width="240" height="240" viewBox="0 0 160 160" style="display: block;">
-                        <!-- Outer finder patterns -->
-                        <rect x="0" y="0" width="160" height="160" fill="#FFFFFF"/>
-                        <!-- Top-left finder -->
-                        <rect x="10" y="10" width="40" height="40" fill="#000000"/>
-                        <rect x="16" y="16" width="28" height="28" fill="#FFFFFF"/>
-                        <rect x="22" y="22" width="16" height="16" fill="#000000"/>
-                        <!-- Top-right finder -->
-                        <rect x="110" y="10" width="40" height="40" fill="#000000"/>
-                        <rect x="116" y="16" width="28" height="28" fill="#FFFFFF"/>
-                        <rect x="122" y="22" width="16" height="16" fill="#000000"/>
-                        <!-- Bottom-left finder -->
-                        <rect x="10" y="110" width="40" height="40" fill="#000000"/>
-                        <rect x="16" y="116" width="28" height="28" fill="#FFFFFF"/>
-                        <rect x="22" y="122" width="16" height="16" fill="#000000"/>
-                        <!-- Static Payload Modules generated deterministically from member UserName -->
-                        @for (int row = 0; row < 12; row++)
-                        {
-                            @for (int col = 0; col < 12; col++)
-                            {
-                                int x = 60 + (col * 7);
-                                int y = 60 + (row * 7);
-                                int seed = Math.Abs((_subscription.UserName.GetHashCode() + (row * 13) + (col * 17)));
-                                bool fill = (seed % 2 == 0) || ((row + col) % 3 == 0);
-                                if (fill)
-                                {
-                                    <rect x="@x" y="@y" width="6" height="6" fill="#000000"/>
-                                }
-                            }
-                        }
-                    </svg>
+                <div style="background: #FFFFFF; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    @if (!string.IsNullOrEmpty(_qrImageBase64))
+                    {
+                        <img src="@_qrImageBase64" width="240" height="240" alt="Mã QR Hội Viên" style="display: block; border-radius: 4px;" />
+                    }
+                    else
+                    {
+                        <div class="skeleton" style="width: 240px; height: 240px; border-radius: 4px;"></div>
+                    }
                 </div>
 
                 <!-- Member Verification Metadata outside QR area -->
@@ -162,12 +138,23 @@ else
 
                 <!-- Guidance Note -->
                 <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
-                    Mã QR điểm danh cố định chứa mã hội viên. Sử dụng trực tiếp trước camera tại quầy để điểm danh vào phòng tập.
+                    Mã QR chuẩn quốc tế tạo tự động từ mã hội viên. Sử dụng trực tiếp hoặc lưu về máy để điểm danh tại quầy.
                 </div>
 
-                <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="width: 100%; min-height: 40px;">
-                    Đóng
-                </button>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    @if (!string.IsNullOrEmpty(_qrImageBase64))
+                    {
+                        <a href="@_qrImageBase64"
+                           download="QR_@(_subscription.UserName).png"
+                           class="btn-primary"
+                           style="flex: 1; min-height: 38px; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
+                            📥 Tải Về Máy
+                        </a>
+                    }
+                    <button type="button" @onclick="ToggleQrModal" class="btn-secondary" style="flex: 1; min-height: 38px; font-size: 13px;">
+                        Đóng
+                    </button>
+                </div>
             </div>
         </div>
     }
@@ -178,6 +165,7 @@ else
     private bool _isLoading = true;
     private bool _showQrModal = false;
     private string _qrCode = string.Empty;
+    private string _qrImageBase64 = string.Empty;
 
     private bool IsExpiringSoon => _subscription != null &&
         ((_subscription.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber) <= 7 ||
@@ -210,9 +198,10 @@ else
     private async Task ToggleQrModal()
     {
         _showQrModal = !_showQrModal;
-        if (_showQrModal && string.IsNullOrEmpty(_qrCode))
+        if (_showQrModal && string.IsNullOrEmpty(_qrImageBase64) && _subscription != null)
         {
             _qrCode = await ApiClient.GetMyCheckInQrCodeAsync();
+            _qrImageBase64 = QrCodeService.GeneratePngBase64(_qrCode, 10);
         }
     }
 }
