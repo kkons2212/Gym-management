@@ -67,15 +67,23 @@ public class MockApiClient : IApiClient
     {
         MemberDto? member = null;
 
-        if (!string.IsNullOrWhiteSpace(request.Phone))
+        if (!string.IsNullOrWhiteSpace(request.MemberCode))
         {
-            member = _members.FirstOrDefault(m => m.Phone == request.Phone.Trim());
+            var code = request.MemberCode.Trim();
+            member = _members.FirstOrDefault(m => m.UserName == code || m.Phone == code);
         }
-        else if (!string.IsNullOrWhiteSpace(request.QrCode))
+
+        if (member == null && !string.IsNullOrWhiteSpace(request.Phone))
         {
-            // Mã QR có format GYM_MEMBER_<UserId>
-            var userId = request.QrCode.Replace("GYM_MEMBER_", "").Trim();
-            member = _members.FirstOrDefault(m => m.UserId == userId || request.QrCode.Contains(m.UserId));
+            var phone = request.Phone.Trim();
+            member = _members.FirstOrDefault(m => m.Phone == phone || m.UserName == phone);
+        }
+
+        if (member == null && !string.IsNullOrWhiteSpace(request.QrCode))
+        {
+            // Mã QR quét từ webcam
+            var qr = request.QrCode.Replace("GYM_MEMBER_", "").Trim();
+            member = _members.FirstOrDefault(m => m.UserName == qr || request.QrCode.Contains(m.UserName));
         }
 
         if (member == null)

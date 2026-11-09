@@ -55,9 +55,9 @@ public sealed class CheckInService : ICheckInService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (string.IsNullOrWhiteSpace(request.QrCode) && string.IsNullOrWhiteSpace(request.Phone))
+        if (string.IsNullOrWhiteSpace(request.QrCode) && string.IsNullOrWhiteSpace(request.MemberCode) && string.IsNullOrWhiteSpace(request.Phone))
         {
-            throw new ValidationException("Vui lòng cung cấp mã QR hoặc số điện thoại để điểm danh.");
+            throw new ValidationException("Vui lòng cung cấp mã QR (từ webcam) hoặc mã hội viên / số điện thoại để điểm danh.");
         }
 
         string? adminId = verifiedByAdminId;
@@ -208,17 +208,21 @@ public sealed class CheckInService : ICheckInService
 
     /// <inheritdoc />
     public async Task<CheckInResponse> ManualCheckInAsync(
-        string phone,
+        string memberCodeOrPhone,
         string? notes = null,
         string? verifiedByAdminId = null,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(phone))
+        if (string.IsNullOrWhiteSpace(memberCodeOrPhone))
         {
-            throw new ValidationException("Số điện thoại hội viên không được để trống.");
+            throw new ValidationException("Số điện thoại hoặc mã hội viên không được để trống.");
         }
 
-        var request = new CheckInRequest(Phone: phone.Trim(), Notes: notes, VerifiedByAdminId: verifiedByAdminId);
+        var request = new CheckInRequest(
+            MemberCode: memberCodeOrPhone.Trim(),
+            Phone: memberCodeOrPhone.Trim(),
+            Notes: notes,
+            VerifiedByAdminId: verifiedByAdminId);
         return await CheckInAsync(request, verifiedByAdminId, cancellationToken);
     }
 
@@ -379,15 +383,35 @@ public sealed class CheckInService : ICheckInService
             }
         }
 
-        // Trường hợp B: Nhập số điện thoại thủ công
+        // Trường hợp B: Tra cứu thủ công bằng Mã hội viên hoặc Số điện thoại
+        if (user == null && !string.IsNullOrWhiteSpace(request.MemberCode))
+        {
+            string memberCode = request.MemberCode.Trim();
+            user = await _unitOfWork.Repository<User>().GetByIdAsync(memberCode, cancellationToken);
+            if (user == null)
+            {
+                var users = await _unitOfWork.Repository<User>()
+                    .FindAsync(u => u.Phone == memberCode, cancellationToken);
+                if (users != null && users.Count > 0)
+                {
+                    user = users.FirstOrDefault();
+                }
+            }
+        }
+
         if (user == null && !string.IsNullOrWhiteSpace(request.Phone))
         {
             string phone = request.Phone.Trim();
             var users = await _unitOfWork.Repository<User>()
                 .FindAsync(u => u.Phone == phone, cancellationToken);
-            if (users != null)
+            if (users != null && users.Count > 0)
             {
                 user = users.FirstOrDefault();
+            }
+
+            if (user == null)
+            {
+                user = await _unitOfWork.Repository<User>().GetByIdAsync(phone, cancellationToken);
             }
         }
 

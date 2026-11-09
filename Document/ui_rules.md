@@ -140,11 +140,10 @@ Giao diện ứng dụng WinUI 3 Desktop (`GymManagement.Desktop`) được thi�
 
 ### 3.2. Màn Hình Quầy Điểm Danh Cửa Ra Vào (`CheckInCounterPage.xaml`)
 * **Bố Cục 2 Cột Đối Xứng:**
-  * **Cột Trái ($40\%$ Chiều rộng) - Khu vực Quét Mã QR:**
-    * Hệ thống không dùng thẻ vật lý hay đầu đọc thẻ USB. Hội viên xuất trình mã QR trên thiết bị di động.
-    * Nút bấm hành động lớn: `[Bật Camera Quét Mã QR]` kích hoạt webcam quầy để quét mã QR từ điện thoại hội viên theo thời gian thực.
-    * Kèm theo ô tìm kiếm nhanh Số điện thoại (`User.Phone`).
-    * Nút thao tác nhanh: `"Cho vào thủ công (Override)"` (kèm chọn lý do) và `"Mở cổng kiểm tra"`.
+  * **Cột Trái ($40\%$ Chiều rộng) - Khu vực Webcam Quét Mã QR & Tra Cứu Thủ Công:**
+    * **Webcam Quét Mã QR:** Hội viên đưa mã QR từ mobile app trước webcam tại quầy để nhận diện tự động theo thời gian thực. Hệ thống không sử dụng đầu đọc thẻ USB hay máy quét barcode cầm tay, và tuyệt đối không có ô text để nhập chuỗi mã QR. Không sử dụng phím tắt `F1`.
+    * **Tra Cứu & Điểm Danh Thủ Công (Dự phòng khi quên/hết pin):** Ô nhập liệu duy nhất hỗ trợ tìm kiếm bằng **Mã hội viên (`UserName`)** hoặc **Số điện thoại (`User.Phone`)** kèm phím `Enter` để thực hiện điểm danh.
+    * **Nút thao tác nhanh:** `"Cho vào thủ công (Override)"` (bắt buộc chọn lý do: quên điện thoại, kẹt cổng...) và `"Mở cổng kiểm tra"`.
   * **Cột Phải ($60\%$ Chiều rộng) - Bảng Hiển Thị Kết Quả Điểm Danh Từ Backend:**
     * Khi chưa quét: Hiển thị biểu tượng camera chờ quét với thông báo *"Sẵn sàng tiếp nhận hội viên..."*.
     * Toàn bộ việc kiểm tra trạng thái gói tập (`ACTIVE`, còn hạn, còn lượt) được thực hiện bên **Backend**; Desktop hiển thị kết quả từ API phản hồi.

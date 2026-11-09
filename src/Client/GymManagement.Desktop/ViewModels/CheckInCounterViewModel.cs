@@ -9,16 +9,19 @@ namespace GymManagement.Desktop.ViewModels;
 public partial class CheckInCounterViewModel : ObservableObject
 {
     private readonly IApiClient _apiClient;
-    private readonly IAudioFeedbackService _audioService;
+    private readonly IAudioFeedbackService? _audioService;
 
     [ObservableProperty]
     private bool _isCameraActive = true;
 
     [ObservableProperty]
-    private string _searchPhone = string.Empty;
+    private string _searchQuery = string.Empty;
 
-    [ObservableProperty]
-    private string _qrCodeInput = string.Empty;
+    public string SearchPhone
+    {
+        get => SearchQuery;
+        set => SearchQuery = value;
+    }
 
     [ObservableProperty]
     private bool _hasResult;
@@ -47,7 +50,7 @@ public partial class CheckInCounterViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
-    public CheckInCounterViewModel(IApiClient apiClient, IAudioFeedbackService audioService)
+    public CheckInCounterViewModel(IApiClient apiClient, IAudioFeedbackService? audioService = null)
     {
         _apiClient = apiClient;
         _audioService = audioService;
@@ -60,37 +63,49 @@ public partial class CheckInCounterViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CheckInByQrAsync()
+    public async Task CheckInWebcamQrAsync(string qrCode)
     {
-        if (string.IsNullOrWhiteSpace(QrCodeInput))
+        if (string.IsNullOrWhiteSpace(qrCode))
         {
             return;
         }
 
-        await ProcessCheckInAsync(new CheckInRequest(QrCode: QrCodeInput.Trim()));
-        QrCodeInput = string.Empty;
+        await ProcessCheckInAsync(new CheckInRequest(QrCode: qrCode.Trim()));
+    }
+
+    [RelayCommand]
+    private async Task CheckInManualAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            return;
+        }
+
+        string input = SearchQuery.Trim();
+        await ProcessCheckInAsync(new CheckInRequest(
+            MemberCode: input,
+            Phone: input));
     }
 
     [RelayCommand]
     private async Task CheckInByPhoneAsync()
     {
-        if (string.IsNullOrWhiteSpace(SearchPhone))
-        {
-            return;
-        }
-
-        await ProcessCheckInAsync(new CheckInRequest(Phone: SearchPhone.Trim()));
+        await CheckInManualAsync();
     }
 
     [RelayCommand]
     private async Task ManualOverrideAsync(string reason)
     {
-        if (string.IsNullOrWhiteSpace(SearchPhone))
+        if (string.IsNullOrWhiteSpace(SearchQuery))
         {
             return;
         }
 
-        await ProcessCheckInAsync(new CheckInRequest(Phone: SearchPhone.Trim(), Notes: $"Override thủ công: {reason}"));
+        string input = SearchQuery.Trim();
+        await ProcessCheckInAsync(new CheckInRequest(
+            MemberCode: input,
+            Phone: input,
+            Notes: $"Override thủ công: {reason}"));
     }
 
     private async Task ProcessCheckInAsync(CheckInRequest request)
@@ -110,8 +125,6 @@ public partial class CheckInCounterViewModel : ObservableObject
             RemainingGymSessions = response.RemainingCheckInSessions;
             RemainingPtSessions = response.RemainingPtSessions;
             HasResult = true;
-
-            _audioService.PlaySuccessBeep();
         }
         catch (Exception ex)
         {
@@ -119,8 +132,6 @@ public partial class CheckInCounterViewModel : ObservableObject
             StatusBanner = "TỪ CHỐI CHECK-IN • CỔNG KHÓA";
             ErrorMessage = ex.Message;
             HasResult = true;
-
-            _audioService.PlayErrorBuzz();
         }
         finally
         {
@@ -128,4 +139,3 @@ public partial class CheckInCounterViewModel : ObservableObject
         }
     }
 }
-

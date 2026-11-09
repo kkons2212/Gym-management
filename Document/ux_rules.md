@@ -41,7 +41,7 @@ Hệ thống độc tôn giao diện tối (Dark Mode 100%) trên cả Desktop v
   * Trên Web Mobile (Hội viên): Mọi nút bấm, tab và mã QR phải có kích thước tối thiểu **$44\text{px} \times 44\text{px}$** với khoảng đệm tối thiểu $8\text{px}$.
   * Trên Desktop (Admin): Nút quét QR và thanh toán lớn, dễ click chuột nhanh hoặc hỗ trợ màn hình cảm ứng POS tại quầy.
 * **Hỗ trợ phím tắt quầy (POS & Check-in Shortcuts):**
-  * Màn hình Admin hỗ trợ phím tắt thao tác nhanh: `F1` (Bật camera quét mã QR Check-in), `F2` (Tạo hóa đơn mới), `F3` (Tìm hội viên nhanh), `F5` (Làm mới bảng lịch PT), `Enter` (Xác nhận thanh toán / In hóa đơn), `Esc` (Đóng hộp thoại).
+  * Màn hình Admin hỗ trợ phím tắt thao tác nhanh: `F2` (Tạo hóa đơn mới), `F3` (Tìm hội viên nhanh), `F5` (Làm mới bảng lịch PT), `Enter` (Xác nhận thanh toán / In hóa đơn / Điểm danh thủ công), `Esc` (Đóng hộp thoại). Tuyệt đối không dùng phím tắt `F1` cho điểm danh.
 * **Hiệu ứng chuyển động (Motion & Feedback):**
   * Tinh giản, nhanh gọn (`duration-150` đến `duration-200`). Cấm các hiệu ứng viền/chấm nhấp nháy (Flashing/Blinking) hoặc chuyển động rườm rà làm chậm tốc độ điểm danh và thanh toán tại quầy.
 
@@ -118,13 +118,13 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
 * **Tốc Độ Xử Lý Điểm Danh < 1 Giây:**
   * Luồng check-in là luồng quan trọng bậc nhất của phòng gym, không được phép trễ nải gây ùn tắc tại cửa ra vào.
 * **Giao Diện Màn Hình Điểm Danh Quầy Tiếp Đón (Chia 2 Cột Rõ Ràng):**
-  * **Cột Trái (Camera Quét Mã QR Hội Viên):**
-    * Hệ thống không dùng thẻ vật lý và không sử dụng đầu đọc thẻ USB. Hội viên mở mã QR điện tử trên ứng dụng Web/Mobile.
-    * Màn hình Admin trang bị nút lớn `"Bật Camera Quét Mã QR"` (phím tắt `F1`). Khi kích hoạt, webcam quầy sẽ mở lên để nhận diện và giải mã chuỗi `QrCode` từ màn hình điện thoại hội viên theo thời gian thực.
-    * Kèm theo ô nhập nhanh Số điện thoại (`User.Phone`) để tra cứu tài khoản nếu hội viên hết pin hoặc quên điện thoại.
+  * **Cột Trái (Webcam Quét Mã QR & Tra Cứu Thủ Công):**
+    * Hệ thống không dùng thẻ vật lý, không có đầu đọc thẻ USB, và không dùng máy quét barcode cầm tay. Tuyệt đối không cung cấp ô text để gõ chuỗi mã QR. Không dùng phím tắt `F1`.
+    * Hội viên xuất trình mã QR từ ứng dụng Web/Mobile trước webcam tại quầy; webcam nhận diện và giải mã tự động theo thời gian thực.
+    * Kèm theo ô nhập nhanh để tra cứu thủ công bằng **Mã hội viên (`UserName`)** hoặc **Số điện thoại (`User.Phone`)** khi hội viên quên điện thoại hoặc hết pin.
     * Nút thao tác nhanh: `"Cho vào thủ công (Override)"` (kèm chọn lý do) và `"Mở cổng kiểm tra"`.
   * **Cột Phải (Kết Quả Xác Minh Từ Backend Tinh Gọn):**
-    * Desktop App đóng vai trò Presentation: Không tự kiểm tra điều kiện nghiệp vụ cục bộ mà gửi chuỗi QR/SĐT lên `GymManagement API` (`POST /api/v1/checkin`).
+    * Desktop App đóng vai trò Presentation: Không tự kiểm tra điều kiện nghiệp vụ cục bộ mà gửi `QrCode` (từ webcam) hoặc `MemberCode`/`Phone` lên `GymManagement API` (`POST /api/v1/checkin`).
     * Toàn bộ việc kiểm tra tính hợp lệ của gói tập (`MemberSubscription.Status == ACTIVE`, còn hạn sử dụng `EndDate >= Today`, còn lượt vào phòng `RemainingCheckInSessions > 0`, kiểm tra gói có đang bảo lưu `FROZEN` hay không) đều được Backend xử lý tập trung trong transaction.
     * **Hoàn toàn không sử dụng âm thanh phản hồi** (không phát tiếng "Beep" hay "Buzz").
     * **Hoàn toàn không yêu cầu ảnh chân dung** (không hiển thị khung ảnh bo tròn).
@@ -134,7 +134,7 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
     * **Khi Check-in Hợp Lệ (Backend trả về Success):** Màn hình hiển thị banner xanh tĩnh: `"CHECK-IN THÀNH CÔNG • CỔNG MỞ"`, to rõ Mã hội viên (`UserName`), Họ tên (`FullName`), Tên gói tập và số buổi gym còn lại (`RemainingCheckInSessions`). **Không nhấp nháy viền**.
     * **Khi Gói Tập Không Hợp Lệ (Backend trả về BusinessRuleException):** Màn hình hiển thị banner đỏ tĩnh: `"TỪ CHỐI CHECK-IN • CỔNG KHÓA"`, to rõ Mã hội viên (`UserName`), Họ tên (`FullName`), và dòng lý do chi tiết do Backend phản hồi (ví dụ: *"Gói tập trong tài khoản đã hết hạn vào ngày 15/10/2026"*, *"Gói tập đã hết số lượt vào phòng"*, *"Gói tập đang tạm ngưng bảo lưu"*). **Không nhấp nháy viền**.
 * **Nút Ghi Đè Thủ Công (Manual Override):**
-  * Trường hợp hội viên hết pin điện thoại hoặc cổng turnstile kẹt cơ khí, Admin tra cứu tài khoản hội viên qua SĐT và dùng nút `"Cho phép vào thủ công (Manual Check-in)"` kèm bắt buộc chọn lý do để lưu vào vết kiểm toán (`CheckInLog`, ghi nhận `VerifiedByAdminId`).
+  * Trường hợp hội viên hết pin điện thoại hoặc cổng turnstile kẹt cơ khí, Admin tra cứu tài khoản hội viên qua Mã hội viên hoặc SĐT và dùng nút `"Cho phép vào thủ công (Manual Check-in)"` kèm bắt buộc chọn lý do để lưu vào vết kiểm toán (`CheckInLog`, ghi nhận `VerifiedByAdminId`).
 
 ### 3.2. Phân Hệ Bán Gói & Xuất Hóa Đơn (Khớp UC03)
 * **Tối Ưu Hóa Quy Trình Tạo Hóa Đơn (3-Step Fast Checkout Khớp Bảng Invoice):**

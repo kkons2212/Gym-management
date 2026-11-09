@@ -13,14 +13,14 @@ public sealed partial class CheckInCounterPage : Page
     {
         DataContext = App.GetService<CheckInCounterViewModel>();
         InitializeComponent();
-        Loaded += (s, e) => TxtQrInput.Focus(FocusState.Programmatic);
+        Loaded += (s, e) => TxtSearchInput.Focus(FocusState.Programmatic);
     }
 
-    private void TxtQrInput_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void TxtSearchInput_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
         {
-            ViewModel.CheckInByQrCommand.Execute(null);
+            ViewModel.CheckInManualCommand.Execute(null);
             e.Handled = true;
         }
     }
@@ -35,4 +35,3 @@ public sealed partial class CheckInCounterPage : Page
         ViewModel.ManualOverrideCommand.Execute("Cổng turnstile kẹt cơ khí");
     }
 }
-

@@ -71,7 +71,7 @@ public class CheckInServiceTests
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Vui lòng cung cấp mã QR hoặc số điện thoại để điểm danh.*");
+            .WithMessage("*Vui lòng cung cấp mã QR (từ webcam) hoặc mã hội viên / số điện thoại để điểm danh.*");
     }
 
     [Fact]
@@ -442,6 +442,24 @@ public class CheckInServiceTests
     }
 
     [Fact]
+    public async Task ManualCheckInAsync_WhenMemberCode_ReturnsSuccessResponse()
+    {
+        // Arrange
+        var user = CreateTestUser("user12", "Lê Thị B", "0910999888");
+        var sub = CreateTestSubscription("sub12", "user12", status: "ACTIVE", remainingSessions: 5);
+
+        SetupUserAndSubscription(user, sub);
+
+        // Act
+        var response = await _sut.ManualCheckInAsync("user12", notes: "Điểm danh qua mã hội viên", verifiedByAdminId: "admin01");
+
+        // Assert
+        response.Success.Should().BeTrue();
+        response.MemberName.Should().Be("Lê Thị B");
+        response.RemainingCheckInSessions.Should().Be(4);
+    }
+
+    [Fact]
     public async Task ManualCheckInAsync_WhenPhoneEmpty_ThrowsValidationException()
     {
         // Act
@@ -452,7 +470,7 @@ public class CheckInServiceTests
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Số điện thoại hội viên không được để trống.*");
+            .WithMessage("*Số điện thoại hoặc mã hội viên không được để trống.*");
     }
 
     // =========================================================================

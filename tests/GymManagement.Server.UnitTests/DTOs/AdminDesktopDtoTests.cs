@@ -58,6 +58,23 @@ public class AdminDesktopDtoTests
 
         // Assert
         request.QrCode.Should().Be(sampleQr);
+        request.MemberCode.Should().BeNull();
+        request.Phone.Should().BeNull();
+        request.Notes.Should().BeNull();
+    }
+
+    [Fact]
+    public void CheckInRequest_WhenConstructedWithMemberCode_ShouldHaveMemberCode()
+    {
+        // Arrange
+        const string sampleMember = "USR100";
+
+        // Act
+        var request = new CheckInRequest(MemberCode: sampleMember);
+
+        // Assert
+        request.MemberCode.Should().Be(sampleMember);
+        request.QrCode.Should().BeNull();
         request.Phone.Should().BeNull();
         request.Notes.Should().BeNull();
     }
