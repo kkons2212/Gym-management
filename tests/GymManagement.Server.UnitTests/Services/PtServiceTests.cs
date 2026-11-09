@@ -378,7 +378,12 @@ public class PtServiceTests
             .ReturnsAsync(() =>
             {
                 callCount++;
-                return callCount == 1 ? phoneMatch : emailMatch;
+                if (callCount == 1)
+                {
+                    return phoneMatch;
+                }
+
+                return emailMatch;
             });
 
         userRepoMock
@@ -491,15 +496,23 @@ public class PtServiceTests
         bool isBooked,
         DateOnly? date = null,
         TimeOnly? startTime = null)
-        => new()
+    {
+        byte bookedValue = 0;
+        if (isBooked)
+        {
+            bookedValue = 1;
+        }
+
+        return new()
         {
             AvailabilityId = availabilityId,
             PtId = ptId,
-            IsBooked = isBooked ? (byte)1 : (byte)0,
+            IsBooked = bookedValue,
             AvailableDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
             StartTime = startTime ?? new TimeOnly(9, 0),
             EndTime = new TimeOnly(10, 0)
         };
+    }
 
     private static MemberSubscription BuildSubscription(
         string subscriptionId,
