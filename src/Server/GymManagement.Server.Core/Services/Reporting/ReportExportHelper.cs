@@ -305,3 +305,4 @@ internal static class ReportExportHelper
             .Replace(")", "\\)");
     }
 }
+

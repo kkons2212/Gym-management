@@ -576,3 +576,4 @@ public sealed class ReportServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 }
+
