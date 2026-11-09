@@ -17,11 +17,15 @@ public interface IQrCodeService
 /// </summary>
 public sealed class QrCodeService : IQrCodeService
 {
+    string IQrCodeService.GeneratePngBase64(string payload, int pixelsPerModule) => GeneratePngBase64(payload, pixelsPerModule);
+    string IQrCodeService.GenerateSvg(string payload, int pixelsPerModule) => GenerateSvg(payload, pixelsPerModule);
+
     /// <summary>
     /// Sinh chuỗi Data URL ảnh PNG (base64) từ mã định danh hội viên.
     /// Cho phép hiển thị trực tiếp trong thẻ &lt;img&gt; và tải về máy.
+    /// Hỗ trợ gọi tĩnh trực tiếp hoặc thông qua DI IQrCodeService.
     /// </summary>
-    public string GeneratePngBase64(string payload, int pixelsPerModule = 10)
+    public static string GeneratePngBase64(string payload, int pixelsPerModule = 10)
     {
         if (string.IsNullOrWhiteSpace(payload))
         {
@@ -38,7 +42,7 @@ public sealed class QrCodeService : IQrCodeService
     /// <summary>
     /// Sinh mã vector SVG từ mã định danh hội viên.
     /// </summary>
-    public string GenerateSvg(string payload, int pixelsPerModule = 10)
+    public static string GenerateSvg(string payload, int pixelsPerModule = 10)
     {
         if (string.IsNullOrWhiteSpace(payload))
         {
