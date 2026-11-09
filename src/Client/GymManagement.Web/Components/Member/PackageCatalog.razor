@@ -79,6 +79,8 @@
 </div>
 
 @code {
+    [Parameter] public EventCallback<PackagePlanDto> OnPurchaseRequested { get; set; }
+
     private IReadOnlyList<PackagePlanDto>? _packages;
     private bool _isLoading = true;
     private bool _isGeneratingQr = false;
@@ -106,6 +108,15 @@
 
     private async Task HandleSelectPackage(string planId)
     {
+        var plan = _packages?.FirstOrDefault(p => p.PlanId == planId);
+        if (plan == null) return;
+
+        if (OnPurchaseRequested.HasDelegate)
+        {
+            await OnPurchaseRequested.InvokeAsync(plan);
+            return;
+        }
+
         _isGeneratingQr = true;
         _successMessage = null;
 

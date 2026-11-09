@@ -30,27 +30,34 @@
     <!-- Quick Actions (Tác Vụ Nhanh) -->
     <div class="gym-card" style="padding: 14px;">
         <h2 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Tác Vụ Thường Dùng</h2>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-            <button type="button"
-                    @onclick='() => Nav.NavigateTo("/member/booking")'
-                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
-                <div style="font-size: 20px; margin-bottom: 4px;">📅</div>
-                <div style="font-size: 11px; font-weight: 600;">Đặt Lịch PT</div>
-            </button>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <NavLink href="/member/booking"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">📅</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Đặt Lịch PT</span>
+            </NavLink>
 
-            <button type="button"
-                    @onclick='() => Nav.NavigateTo("/member/packages")'
-                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
-                <div style="font-size: 20px; margin-bottom: 4px;">💳</div>
-                <div style="font-size: 11px; font-weight: 600;">Gói Tập Mới</div>
-            </button>
+            <NavLink href="/member/packages"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">💳</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Mua Gói Tập</span>
+            </NavLink>
 
-            <button type="button"
-                    @onclick='() => Nav.NavigateTo("/member/inbody")'
-                    style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 6px; text-align: center; color: var(--text-primary); cursor: pointer; transition: all 0.2s;">
-                <div style="font-size: 20px; margin-bottom: 4px;">📈</div>
-                <div style="font-size: 11px; font-weight: 600;">Chỉ Số InBody</div>
-            </button>
+            <NavLink href="/member/inbody"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">📈</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Chỉ Số InBody</span>
+            </NavLink>
+
+            <NavLink href="/member/history"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">🕒</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Lịch Sử Tập</span>
+            </NavLink>
         </div>
     </div>
 
@@ -75,12 +82,11 @@
                     Mục tiêu: @_upcomingSession.WorkoutNotes
                 </div>
             }
-            <button type="button"
-                    @onclick='() => Nav.NavigateTo("/member/booking")'
-                    class="btn-secondary"
-                    style="width: 100%; min-height: 32px; font-size: 12px; padding: 6px;">
+            <NavLink href="/member/booking"
+                     class="btn-secondary"
+                     style="width: 100%; min-height: 32px; font-size: 12px; padding: 6px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
                 Xem Chi Tiết & Đổi/Hủy Ca
-            </button>
+            </NavLink>
         </div>
     }
 </div>
