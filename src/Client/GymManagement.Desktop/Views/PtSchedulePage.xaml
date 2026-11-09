@@ -2,27 +2,138 @@
     x:Class="GymManagement.Desktop.Views.PtSchedulePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Background="{StaticResource AppBackgroundBrush}">
+    xmlns:viewModels="using:GymManagement.Desktop.ViewModels"
+    xmlns:converters="using:GymManagement.Desktop.Converters"
+    xmlns:dto="using:GymManagement.Server.Core.DTOs.PTSchedules"
+    xmlns:userdto="using:GymManagement.Server.Core.DTOs.Identity"
+    xmlns:memdto="using:GymManagement.Server.Core.DTOs.Members"
+    Background="{StaticResource BgCanvasBrush}">
 
-    <Grid Padding="24" RowSpacing="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Styles/ColorTokens.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:StatusToBrushConverter x:Key="StatusToBrushConverter" />
+            <converters:CurrencyFormatterConverter x:Key="CurrencyFormatterConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Spacing="4">
-            <TextBlock Text="LỊCH BIỂU HUẤN LUYỆN VIÊN PT"
-                       FontSize="20" FontWeight="Bold"
-                       Foreground="{StaticResource TextFillColorPrimaryBrush}" />
-            <TextBlock Text="Canvas sạch sẵn sàng tái cấu trúc giao diện theo ui_rules.md &amp; ux_rules.md (UC04)"
-                       FontSize="12" Foreground="{StaticResource TextFillColorSecondaryBrush}" />
-        </StackPanel>
+    <Grid Padding="24" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="380" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Blank Workspace -->
-        <Border Grid.Row="1"
-                Background="{StaticResource CardBackgroundBrush}"
-                BorderBrush="{StaticResource SubtleBorderBrush}"
+        <!-- Left Column: PT Selector & Booking Guardrail -->
+        <Border Grid.Column="0"
+                Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="20">
+            <ScrollViewer>
+                <StackPanel Spacing="16">
+                    <TextBlock Text="ĐIỀU PHỐI LỊCH HUẤN LUYỆN VIÊN"
+                               FontSize="16" FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+
+                    <!-- Select PT -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Huấn luyện viên phụ trách:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                        <ComboBox ItemsSource="{x:Bind ViewModel.AvailablePts}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedPt, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="userdto:UserSessionDto">
+                                    <TextBlock Text="{x:Bind FullName}" FontWeight="SemiBold" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Select Date -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Ngày dạy:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                        <DatePicker Date="{x:Bind ViewModel.SelectedDate, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+
+                    <!-- Select Member -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Hội viên đặt ca:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                        <ComboBox ItemsSource="{x:Bind ViewModel.AvailableMembers}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedMember, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="memdto:MemberDto">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{x:Bind FullName}" FontWeight="SemiBold" />
+                                        <TextBlock Text="• Còn" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind RemainingPtSessions, Converter={StaticResource StringFormatConverter}}" Foreground="{StaticResource StatusPtBrush}" FontWeight="Bold" />
+                                        <TextBlock Text="buổi" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Time Range -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="Giờ bắt đầu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                            <TimePicker Time="{x:Bind ViewModel.StartTime, Mode=TwoWay}" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Text="Giờ kết thúc:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                            <TimePicker Time="{x:Bind ViewModel.EndTime, Mode=TwoWay}" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Collision Guardrail Alert -->
+                    <Border Visibility="{x:Bind ViewModel.HasCollision, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="#3D1212" BorderBrush="{StaticResource StatusDangerBrush}" BorderThickness="1.5"
+                            CornerRadius="8" Padding="12">
+                        <StackPanel Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE783;" FontSize="16" Foreground="{StaticResource StatusDangerBrush}" />
+                                <TextBlock Text="CẢNH BÁO TRÙNG LỊCH PT" FontWeight="Bold" FontSize="12" Foreground="{StaticResource StatusDangerBrush}" />
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind ViewModel.CollisionWarning, Mode=OneWay}"
+                                       Foreground="#FCA5A5" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Status / Feedback -->
+                    <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                               Foreground="{x:Bind ViewModel.IsSuccess, Mode=OneWay, Converter={StaticResource StatusToBrushConverter}}"
+                               FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" />
+
+                    <!-- Book Slot Action -->
+                    <Button Content="Xếp Lịch Tập PT (F5)"
+                            Command="{x:Bind ViewModel.BookSlotCommand}"
+                            IsEnabled="{x:Bind ViewModel.CanBookSlot, Mode=OneWay}"
+                            HorizontalAlignment="Stretch"
+                            Height="44"
+                            Background="{StaticResource StatusPtBrush}"
+                            Foreground="#FFFFFF"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            CornerRadius="8" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Right Column: Scheduled Slots List -->
+        <Border Grid.Column="1"
+                Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Padding="20">

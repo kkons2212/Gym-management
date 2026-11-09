@@ -2,10 +2,27 @@
     x:Class="GymManagement.Desktop.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Background="{StaticResource AppBackgroundBrush}">
+    xmlns:viewModels="using:GymManagement.Desktop.ViewModels"
+    xmlns:converters="using:GymManagement.Desktop.Converters"
+    xmlns:dto="using:GymManagement.Server.Core.DTOs.Reports"
+    Background="{StaticResource BgCanvasBrush}">
 
-    <Grid Padding="24" RowSpacing="20">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Styles/ColorTokens.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:StatusToBrushConverter x:Key="StatusToBrushConverter" />
+            <converters:CurrencyFormatterConverter x:Key="CurrencyFormatterConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid Padding="24" RowSpacing="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
