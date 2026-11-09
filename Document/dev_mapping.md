@@ -285,7 +285,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Quy chuẩn lập trình:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu file.
 
 ### 📌 [Task 4.1] Chuẩn Hóa & Hiện Thực Admin Desktop App (WinUI 3 MVVM)
-* **Ngày hoàn tất:** 09/11/2026 | **Commit:** *(pending)* (nhánh `feat/task-4.1-admin-desktop`)
+* **Ngày hoàn tất:** 09/11/2026 | **Commit:** `99f79b9` (nhánh `feat/task-4.1-admin-desktop`)
 * **Phân hệ nghiệp vụ liên quan:** Toàn bộ 10 Epics (UC01 – UC10) dành riêng cho Quản trị viên (Admin) và Thu ngân.
 * **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels, Services, Converters, Dialogs).
 * **Mã nguồn tạo / sửa:**
