@@ -1,10 +1,11 @@
 namespace GymManagement.Server.Core.DTOs.CheckIn;
 
 /// <summary>
-/// DTO yêu cầu điểm danh vào phòng tập bằng mã QR hoặc số điện thoại hội viên.
+/// DTO yêu cầu điểm danh vào phòng tập bằng mã QR từ webcam, hoặc mã hội viên / số điện thoại tra cứu thủ công.
 /// </summary>
 public record CheckInRequest(
     string? QrCode = null,
+    string? MemberCode = null,
     string? Phone = null,
     string? Notes = null,
     string? VerifiedByAdminId = null

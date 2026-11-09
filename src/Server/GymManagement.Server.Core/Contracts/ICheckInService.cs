@@ -27,14 +27,14 @@ public interface ICheckInService
     Task<CheckInResponse> CheckInWithQrAsync(string qrCode, string? verifiedByAdminId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Điểm danh thủ công bằng số điện thoại hội viên (UC 3.2).
+    /// Điểm danh thủ công bằng mã hội viên hoặc số điện thoại (UC 3.2).
     /// </summary>
-    /// <param name="phone">Số điện thoại hội viên đăng ký.</param>
+    /// <param name="memberCodeOrPhone">Mã hội viên (UserName) hoặc số điện thoại đăng ký.</param>
     /// <param name="notes">Ghi chú xác nhận của Admin (tùy chọn).</param>
     /// <param name="verifiedByAdminId">Mã định danh Admin xác nhận (tùy chọn).</param>
     /// <param name="cancellationToken">Token hủy thao tác bất đồng bộ.</param>
     /// <returns>Kết quả điểm danh.</returns>
-    Task<CheckInResponse> ManualCheckInAsync(string phone, string? notes = null, string? verifiedByAdminId = null, CancellationToken cancellationToken = default);
+    Task<CheckInResponse> ManualCheckInAsync(string memberCodeOrPhone, string? notes = null, string? verifiedByAdminId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Lấy danh sách nhật ký điểm danh trong ngày hôm nay kèm bộ lọc (UC 3.3).

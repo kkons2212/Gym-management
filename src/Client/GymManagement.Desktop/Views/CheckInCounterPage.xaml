@@ -11,11 +11,10 @@
             <ColumnDefinition Width="6*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left Column: Camera Scanner & Inputs -->
+        <!-- Left Column: Webcam Scanner & Manual Lookup -->
         <Grid Grid.Column="0" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -47,59 +46,34 @@
                 </Grid>
             </Border>
 
-            <!-- QR Code Input Box (Auto-focus / Scanner Target) -->
+            <!-- Fallback Manual Lookup (Member Code or Phone) & Manual Override -->
             <Border Grid.Row="1"
                     Background="{StaticResource BgSurfaceBrush}"
                     BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="16">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="Quét Mã QR Điện Tử (Từ App Di Động):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Tra Cứu &amp; Điểm Danh Thủ Công (Quên / Hết Pin Điện Thoại):"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12"
+                               FontWeight="SemiBold" />
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="TxtQrInput"
-                                 Text="{x:Bind ViewModel.QrCodeInput, Mode=TwoWay}"
-                                 PlaceholderText="Nhập hoặc quét mã: GYM_MEMBER_USR001"
-                                 KeyDown="TxtQrInput_KeyDown"
+                        <TextBox x:Name="TxtSearchInput"
+                                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"
+                                 PlaceholderText="Nhập mã hội viên hoặc SĐT (USR001 / 0901234567)"
+                                 KeyDown="TxtSearchInput_KeyDown"
                                  Height="38" />
                         <Button Grid.Column="1"
-                                Content="Quét QR (F1)"
-                                Command="{x:Bind ViewModel.CheckInByQrCommand}"
+                                Content="Điểm Danh"
+                                Command="{x:Bind ViewModel.CheckInManualCommand}"
                                 Background="{StaticResource AccentPrimaryBrush}"
                                 Foreground="#FFFFFF"
                                 FontWeight="SemiBold"
-                                Height="38" />
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Fallback Phone Search & Manual Override -->
-            <Border Grid.Row="2"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="16">
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Trường Hợp Quên / Hết Pin Điện Thoại:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{x:Bind ViewModel.SearchPhone, Mode=TwoWay}"
-                                 PlaceholderText="Nhập SĐT hội viên (0901234567)"
-                                 Height="38" />
-                        <Button Grid.Column="1"
-                                Content="Điểm Danh SĐT"
-                                Command="{x:Bind ViewModel.CheckInByPhoneCommand}"
-                                Background="{StaticResource BgSurfaceBrush}"
-                                BorderBrush="{StaticResource BorderSubtleBrush}"
-                                BorderThickness="1"
                                 Height="38" />
                     </Grid>
 
