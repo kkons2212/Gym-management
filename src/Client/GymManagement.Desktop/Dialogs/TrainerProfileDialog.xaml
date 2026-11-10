@@ -1,0 +1,93 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.TrainerProfileDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="THÊM HUẤN LUYỆN VIÊN MỚI"
+    PrimaryButtonText="Lưu Thông Tin"
+    CloseButtonText="Đóng"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="14" Width="440">
+        <!-- Subtitle -->
+        <TextBlock x:Name="TxtSubtitle"
+                   Text="Nhập thông tin chuyên môn của huấn luyện viên để phân công ca dạy và quản lý học viên."
+                   FontSize="12"
+                   Foreground="{StaticResource TextSecondaryBrush}"
+                   TextWrapping="Wrap" />
+
+        <!-- Read-only PtId when editing -->
+        <StackPanel x:Name="PnlPtId" Spacing="4" Visibility="Collapsed">
+            <TextBlock Text="Mã định danh HLV" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBox x:Name="TxtPtId" IsReadOnly="True" Height="36" />
+        </StackPanel>
+
+        <!-- Full Name -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Họ và tên HLV *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBox x:Name="TxtFullName" PlaceholderText="Ví dụ: Nguyễn Quốc Huy" Height="36" />
+        </StackPanel>
+
+        <!-- Contact Phone & Email -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Số điện thoại *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBox x:Name="TxtPhone" PlaceholderText="0901234567" Height="36" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Text="Địa chỉ Email *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBox x:Name="TxtEmail" PlaceholderText="huy.pt@gymsystem.vn" Height="36" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Specialty & Experience -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Chuyên môn chính *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <ComboBox x:Name="CboSpecialty" HorizontalAlignment="Stretch" Height="36">
+                    <ComboBoxItem Content="Thể hình &amp; Tăng cơ" IsSelected="True" />
+                    <ComboBoxItem Content="Giảm cân &amp; Cardio" />
+                    <ComboBoxItem Content="Yoga &amp; Stretching" />
+                    <ComboBoxItem Content="Boxing &amp; Kickfit" />
+                    <ComboBoxItem Content="Phục hồi chức năng thể thao" />
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Text="Năm kinh nghiệm" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <NumberBox x:Name="NbExperienceYears" Minimum="0" Maximum="40" Value="2" SpinButtonPlacementMode="Inline" Height="36" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Active Status Toggle -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Trạng thái hoạt động" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <ToggleSwitch x:Name="TsIsActive" IsOn="True" OnContent="Đang hoạt động" OffContent="Tạm ngừng" />
+        </StackPanel>
+
+        <!-- Loading indicator -->
+        <ProgressRing x:Name="PrSaving" IsActive="False" Visibility="Collapsed" HorizontalAlignment="Center" Width="28" Height="28" />
+
+        <!-- Validation Error Info -->
+        <Border x:Name="PnlValidationError"
+                Background="#3D1212"
+                BorderBrush="{StaticResource StatusDangerBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="10,6"
+                Visibility="Collapsed">
+            <TextBlock x:Name="TxtValidationError"
+                       Foreground="#FCA5A5"
+                       FontSize="12"
+                       TextWrapping="Wrap" />
+        </Border>
+    </StackPanel>
+</ContentDialog>
+

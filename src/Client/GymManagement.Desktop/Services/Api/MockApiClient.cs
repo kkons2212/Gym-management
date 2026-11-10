@@ -46,6 +46,14 @@ public class MockApiClient : IApiClient
         new("SESS03", "PT002", "HLV Hoàng Tuấn Anh", "USR005", "Vũ Minh Đức", DateTime.Today.AddDays(1), new TimeSpan(16, 0, 0), new TimeSpan(17, 0, 0), "SCHEDULED")
     ];
 
+    private readonly List<PtProfileDto> _trainers =
+    [
+        new("PT001", "Nguyễn Quốc Huy", "0901234567", "huy.pt@gymsystem.vn", "Thể hình & Tăng cơ", 5, 4.9m, 48, true, 8, 3),
+        new("PT002", "Hoàng Tuấn Anh", "0909876543", "anh.pt@gymsystem.vn", "Giảm cân & Cardio", 3, 4.8m, 32, true, 5, 2),
+        new("PT003", "Lê Thanh Mai", "0912345678", "mai.pt@gymsystem.vn", "Yoga & Stretching", 6, 5.0m, 60, true, 10, 4),
+        new("PT004", "Trần Đình Trọng", "0987654321", "trong.pt@gymsystem.vn", "Boxing & Kickfit", 4, 4.7m, 25, false, 0, 0)
+    ];
+
     private readonly List<InvoiceDto> _invoices =
     [
         new("INV001", "INV-20261108-001", 500000m, 500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-2), "Nguyễn Văn An", "Gói 1 Tháng Tiêu Chuẩn", "Admin Quầy", "PAID"),
@@ -457,6 +465,134 @@ public class MockApiClient : IApiClient
     public Task<bool> AssignPtAsync(AssignPtRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
+        return Task.FromResult(true);
+    }
+
+    public Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null)
+    {
+        IEnumerable<PtProfileDto> filtered = _trainers;
+        if (activeOnly.HasValue)
+        {
+            if (activeOnly.Value)
+            {
+                filtered = filtered.Where(t => t.IsActive);
+            }
+            else
+            {
+                filtered = filtered.Where(t => !t.IsActive);
+            }
+        }
+
+        var result = filtered.OrderBy(t => t.FullName).ToList();
+        return Task.FromResult<IReadOnlyList<PtProfileDto>>(result);
+    }
+
+    public Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Họ và tên HLV không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Phone))
+        {
+            throw new ValidationException("Số điện thoại không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            throw new ValidationException("Email không được để trống.");
+        }
+
+        PtProfileDto result;
+        if (!string.IsNullOrWhiteSpace(request.PtId))
+        {
+            var existing = _trainers.FirstOrDefault(t => t.PtId == request.PtId);
+            if (existing != null)
+            {
+                int index = _trainers.IndexOf(existing);
+                result = new PtProfileDto(
+                    existing.PtId,
+                    request.FullName.Trim(),
+                    request.Phone.Trim(),
+                    request.Email.Trim(),
+                    request.Specialty.Trim(),
+                    request.ExperienceYears,
+                    existing.RatingAverage,
+                    existing.ReviewCount,
+                    request.IsActive,
+                    existing.ActiveStudentsCount,
+                    existing.PendingSessionsCount
+                );
+                _trainers[index] = result;
+            }
+            else
+            {
+                result = new PtProfileDto(
+                    request.PtId,
+                    request.FullName.Trim(),
+                    request.Phone.Trim(),
+                    request.Email.Trim(),
+                    request.Specialty.Trim(),
+                    request.ExperienceYears,
+                    5.0m,
+                    0,
+                    request.IsActive,
+                    0,
+                    0
+                );
+                _trainers.Add(result);
+            }
+        }
+        else
+        {
+            string newId = $"PT{_trainers.Count + 1:D3}";
+            result = new PtProfileDto(
+                newId,
+                request.FullName.Trim(),
+                request.Phone.Trim(),
+                request.Email.Trim(),
+                request.Specialty.Trim(),
+                request.ExperienceYears,
+                5.0m,
+                0,
+                request.IsActive,
+                0,
+                0
+            );
+            _trainers.Add(result);
+
+            _users.Add(new UserSessionDto(newId, result.FullName, result.Email, "PT"));
+        }
+
+        return Task.FromResult(result);
+    }
+
+    public Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var slot = _ptSlots.FirstOrDefault(s => s.SessionId == request.SessionId);
+        if (slot != null)
+        {
+            int index = _ptSlots.IndexOf(slot);
+            string statusString = request.NewStatus.ToString().ToUpperInvariant();
+            var updatedSlot = new PtSessionSlotDto(
+                slot.SessionId,
+                slot.PtId,
+                slot.PtName,
+                slot.MemberId,
+                slot.MemberName,
+                slot.ScheduledDate,
+                slot.StartTime,
+                slot.EndTime,
+                statusString
+            );
+            _ptSlots[index] = updatedSlot;
+        }
+
         return Task.FromResult(true);
     }
 

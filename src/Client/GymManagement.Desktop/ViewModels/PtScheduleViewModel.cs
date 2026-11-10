@@ -2,15 +2,19 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymManagement.Desktop.Services.Api;
+using GymManagement.Desktop.Services.Session;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
+using GymManagement.Server.Core.Enums;
 
 namespace GymManagement.Desktop.ViewModels;
 
 public partial class PtScheduleViewModel : ObservableObject
 {
     private readonly IApiClient _apiClient;
+    private readonly IAdminSessionService _sessionService;
 
     [ObservableProperty]
     private DateTimeOffset _selectedDate = DateTimeOffset.Now;
@@ -55,10 +59,12 @@ public partial class PtScheduleViewModel : ObservableObject
     public ObservableCollection<MemberDto> AvailableMembers { get; } = [];
     public ObservableCollection<PtSessionSlotDto> ScheduledSlots { get; } = [];
 
-    public PtScheduleViewModel(IApiClient apiClient)
+    public PtScheduleViewModel(IApiClient apiClient, IAdminSessionService sessionService)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(sessionService);
         _apiClient = apiClient;
+        _sessionService = sessionService;
     }
 
     [RelayCommand]
@@ -69,12 +75,22 @@ public partial class PtScheduleViewModel : ObservableObject
             IsLoading = true;
             StatusMessage = null;
 
-            var users = await _apiClient.GetUsersAsync();
+            var trainers = await _apiClient.GetTrainersAsync(activeOnly: true);
             AvailablePts.Clear();
-            foreach (var pt in users.Where(u => u.Role == "PT"))
+            foreach (var trainer in trainers)
             {
-                AvailablePts.Add(pt);
+                AvailablePts.Add(new UserSessionDto(trainer.PtId, trainer.FullName, trainer.Email, "PT"));
             }
+
+            if (AvailablePts.Count == 0)
+            {
+                var users = await _apiClient.GetUsersAsync();
+                foreach (var pt in users.Where(u => u.Role == "PT"))
+                {
+                    AvailablePts.Add(pt);
+                }
+            }
+
             if (AvailablePts.Count > 0 && SelectedPt == null)
             {
                 SelectedPt = AvailablePts[0];
@@ -97,6 +113,36 @@ public partial class PtScheduleViewModel : ObservableObject
         {
             StatusMessage = $"Lỗi khởi tạo: {ex.Message}";
             IsSuccess = false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public async Task<bool> ConfirmSessionResultAsync(string sessionId, PtSessionStatus outcome, string? notes)
+    {
+        try
+        {
+            IsLoading = true;
+            string adminUser = "admin";
+            if (_sessionService.CurrentUser != null && !string.IsNullOrWhiteSpace(_sessionService.CurrentUser.Email))
+            {
+                adminUser = _sessionService.CurrentUser.Email;
+            }
+
+            var request = new ConfirmSessionResultRequest(sessionId, adminUser, outcome, notes);
+            await _apiClient.ConfirmSessionResultAsync(request);
+            StatusMessage = "Đã cập nhật kết quả ca tập thành công!";
+            IsSuccess = true;
+            await LoadScheduleAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể cập nhật kết quả: {ex.Message}";
+            IsSuccess = false;
+            return false;
         }
         finally
         {

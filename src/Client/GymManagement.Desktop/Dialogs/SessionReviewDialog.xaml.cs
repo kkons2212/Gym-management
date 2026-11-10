@@ -1,20 +1,22 @@
 using Microsoft.UI.Xaml.Controls;
+using GymManagement.Server.Core.Enums;
 
 namespace GymManagement.Desktop.Dialogs;
 
 public sealed partial class SessionReviewDialog : ContentDialog
 {
-    public string SelectedOutcome
+    public PtSessionStatus SelectedOutcome
     {
         get
         {
-            ComboBoxItem? item;
-            item = CboOutcome.SelectedItem as ComboBoxItem;
-            if (item != null && item.Tag != null)
+            if (CboOutcome.SelectedItem is ComboBoxItem item && item.Tag != null)
             {
-                return item.Tag.ToString()!;
+                if (Enum.TryParse<PtSessionStatus>(item.Tag.ToString(), out var status))
+                {
+                    return status;
+                }
             }
-            return "COMPLETED";
+            return PtSessionStatus.Completed;
         }
     }
 

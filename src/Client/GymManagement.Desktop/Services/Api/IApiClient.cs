@@ -42,6 +42,9 @@ public interface IApiClient
     Task<IReadOnlyList<PtSessionSlotDto>> GetPtScheduleSlotsAsync(DateTime startDate, DateTime endDate);
     Task<PtSessionSlotDto> BookPtSlotAsync(BookPtSlotRequest request);
     Task<bool> AssignPtAsync(AssignPtRequest request);
+    Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null);
+    Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request);
+    Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request);
 
     // Reports & BI (UC06)
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();

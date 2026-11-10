@@ -312,6 +312,41 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<bool>(response);
     }
 
+    public async Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null)
+    {
+        string url = "/api/v1/pt/trainers";
+        if (activeOnly.HasValue)
+        {
+            if (activeOnly.Value)
+            {
+                url = "/api/v1/pt/trainers?activeOnly=true";
+            }
+            else
+            {
+                url = "/api/v1/pt/trainers?activeOnly=false";
+            }
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<IReadOnlyList<PtProfileDto>>(response);
+    }
+
+    public async Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/trainers", request);
+        return await HandleResponseAsync<PtProfileDto>(response);
+    }
+
+    public async Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/confirm-result", request);
+        return await HandleResponseAsync<bool>(response);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 6. REPORTS & BI (UC06)
     // ─────────────────────────────────────────────────────────────────────────
