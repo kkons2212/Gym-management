@@ -3,6 +3,7 @@ using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -31,6 +32,7 @@ public interface IApiClient
 
     // Packages & POS Billing (UC05, UC07)
     Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync();
+    Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null);
     Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request);
     Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent);
     Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode);
@@ -39,15 +41,24 @@ public interface IApiClient
     // PT Services (UC04)
     Task<IReadOnlyList<PtSessionSlotDto>> GetPtScheduleSlotsAsync(DateTime startDate, DateTime endDate);
     Task<PtSessionSlotDto> BookPtSlotAsync(BookPtSlotRequest request);
+    Task<bool> AssignPtAsync(AssignPtRequest request);
+    Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null);
+    Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request);
+    Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request);
 
     // Reports & BI (UC06)
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();
+    Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null);
     Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null);
     Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null);
 
     // Staff RBAC (UC07)
     Task<IReadOnlyList<UserSessionDto>> GetUsersAsync();
     Task<bool> ToggleUserLockAsync(string userId);
+    Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request);
+    Task<bool> SetUserStatusAsync(string userName, string status);
     Task<PackagePlanDto> CreatePackagePlanAsync(PackagePlanDto plan);
+    Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request);
+    Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId);
     Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role);
 }

@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using GymManagement.Desktop.Dialogs;
+using GymManagement.Desktop.Services.Api;
 using GymManagement.Desktop.ViewModels;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 
@@ -29,27 +30,49 @@ public sealed partial class PtSchedulePage : Page
         };
     }
 
+    private async void BtnAddNewTrainer_Click(object sender, RoutedEventArgs e)
+    {
+        var apiClient = App.GetService<IApiClient>();
+        var dialog = new TrainerProfileDialog(apiClient)
+        {
+            XamlRoot = this.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+        if (dialog.SavedTrainer != null && ViewModel != null)
+        {
+            await ViewModel.InitializeAsync();
+        }
+    }
+
+    private async void BtnManageTrainers_Click(object sender, RoutedEventArgs e)
+    {
+        var apiClient = App.GetService<IApiClient>();
+        var dialog = new TrainerListDialog(apiClient)
+        {
+            XamlRoot = this.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+        if (ViewModel != null)
+        {
+            await ViewModel.InitializeAsync();
+        }
+    }
+
     private async void BtnReviewSession_Click(object sender, RoutedEventArgs e)
     {
-        Button? btn;
-        PtSessionSlotDto? slot;
-        SessionReviewDialog dialog;
-        ContentDialogResult result;
-
-        btn = sender as Button;
-        if (btn != null)
+        if (sender is Button btn && btn.DataContext is PtSessionSlotDto slot)
         {
-            slot = btn.DataContext as PtSessionSlotDto;
-            if (slot != null)
+            var dialog = new SessionReviewDialog(slot.PtName, slot.MemberName, slot.ScheduledDate, slot.StartTime, slot.EndTime)
             {
-                dialog = new SessionReviewDialog(slot.PtName, slot.MemberName, slot.ScheduledDate, slot.StartTime, slot.EndTime);
-                dialog.XamlRoot = this.XamlRoot;
+                XamlRoot = this.XamlRoot
+            };
 
-                result = await dialog.ShowAsync();
-                if (result == ContentDialogResult.Primary)
-                {
-                    await ViewModel.LoadScheduleAsync();
-                }
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary && ViewModel != null)
+            {
+                await ViewModel.ConfirmSessionResultAsync(slot.SessionId, dialog.SelectedOutcome, dialog.ReviewNotes);
             }
         }
     }

@@ -2,8 +2,8 @@
     x:Class="GymManagement.Desktop.Dialogs.SessionReviewDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Đối Soát Ca Tập PT (Session Review)"
-    PrimaryButtonText="Lưu Kết Quả Đối Soát"
+    Title="ĐỐI SOÁT &amp; XÁC NHẬN KẾT QUẢ BUỔI TẬP"
+    PrimaryButtonText="Lưu Kết Quả"
     CloseButtonText="Hủy Bỏ"
     DefaultButton="Primary"
     Style="{StaticResource DefaultContentDialogStyle}">
@@ -19,19 +19,19 @@
 
         <!-- Outcome Selector -->
         <StackPanel Spacing="6">
-            <TextBlock Text="Kết quả đối soát ca dạy (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+            <TextBlock Text="Kết quả buổi tập (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
             <ComboBox x:Name="CboOutcome" SelectedIndex="0" HorizontalAlignment="Stretch">
-                <ComboBoxItem Content="Hoàn thành bình thường (COMPLETED)" Tag="COMPLETED" />
-                <ComboBoxItem Content="Hội viên vắng mặt không phép (STUDENT_ABSENT - Trừ buổi)" Tag="STUDENT_ABSENT" />
-                <ComboBoxItem Content="Huấn luyện viên vắng mặt (PT_ABSENT - Không trừ buổi)" Tag="PT_ABSENT" />
-                <ComboBoxItem Content="Dời lịch sang buổi khác (POSTPONED)" Tag="POSTPONED" />
+                <ComboBoxItem Content="Hoàn thành buổi tập (Trừ 1 buổi của hội viên)" Tag="Completed" />
+                <ComboBoxItem Content="Hội viên vắng mặt không phép (Trừ 1 buổi)" Tag="AbsentMember" />
+                <ComboBoxItem Content="Huấn luyện viên vắng mặt (Không trừ buổi tập)" Tag="AbsentPt" />
+                <ComboBoxItem Content="Hoãn / Dời ca tập (Không trừ buổi tập)" Tag="Postponed" />
             </ComboBox>
         </StackPanel>
 
         <!-- Notes -->
         <StackPanel Spacing="6">
             <TextBlock Text="Ghi chú xác nhận:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
-            <TextBox x:Name="TxtReviewNotes" PlaceholderText="Nhập biên bản xác nhận nếu có khiếu nại..." HorizontalAlignment="Stretch" />
+            <TextBox x:Name="TxtReviewNotes" PlaceholderText="Nhập lý do hoặc biên bản ghi nhận nếu có phát sinh..." HorizontalAlignment="Stretch" />
         </StackPanel>
     </StackPanel>
 </ContentDialog>

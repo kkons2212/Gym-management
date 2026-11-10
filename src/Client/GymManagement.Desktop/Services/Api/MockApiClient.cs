@@ -3,6 +3,7 @@ using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -43,6 +44,23 @@ public class MockApiClient : IApiClient
         new("SESS01", "PT001", "HLV Nguyễn Quốc Huy", "USR001", "Nguyễn Văn An", DateTime.Today, new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "SCHEDULED"),
         new("SESS02", "PT001", "HLV Nguyễn Quốc Huy", "USR002", "Trần Thị Bích", DateTime.Today, new TimeSpan(14, 0, 0), new TimeSpan(15, 0, 0), "SCHEDULED"),
         new("SESS03", "PT002", "HLV Hoàng Tuấn Anh", "USR005", "Vũ Minh Đức", DateTime.Today.AddDays(1), new TimeSpan(16, 0, 0), new TimeSpan(17, 0, 0), "SCHEDULED")
+    ];
+
+    private readonly List<PtProfileDto> _trainers =
+    [
+        new("PT001", "Nguyễn Quốc Huy", "0901234567", "huy.pt@gymsystem.vn", "Thể hình & Tăng cơ", 5, 4.9m, 48, true, 8, 3),
+        new("PT002", "Hoàng Tuấn Anh", "0909876543", "anh.pt@gymsystem.vn", "Giảm cân & Cardio", 3, 4.8m, 32, true, 5, 2),
+        new("PT003", "Lê Thanh Mai", "0912345678", "mai.pt@gymsystem.vn", "Yoga & Stretching", 6, 5.0m, 60, true, 10, 4),
+        new("PT004", "Trần Đình Trọng", "0987654321", "trong.pt@gymsystem.vn", "Boxing & Kickfit", 4, 4.7m, 25, false, 0, 0)
+    ];
+
+    private readonly List<InvoiceDto> _invoices =
+    [
+        new("INV001", "INV-20261108-001", 500000m, 500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-2), "Nguyễn Văn An", "Gói 1 Tháng Tiêu Chuẩn", "Admin Quầy", "PAID"),
+        new("INV002", "INV-20261108-002", 4500000m, 4500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-5), "Trần Thị Bích", "Gói 1 Năm VIP", "Admin Quầy", "PAID"),
+        new("INV003", "INV-20261108-003", 1350000m, 1350000m, "CASH", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-10), "Lê Hoàng Cường", "Gói 3 Tháng Thể Thao", "Admin Quầy", "PAID"),
+        new("INV004", "INV-20261108-004", 500000m, 500000m, "CASH", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-15), "Phạm Thị Dung", "Gói 1 Tháng Tiêu Chuẩn", "Admin Quầy", "REFUNDED", 500000m),
+        new("INV005", "INV-20261108-005", 2500000m, 2500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-1), "Vũ Minh Đức", "Gói 6 Tháng Platinum", "Admin Quầy", "PAID")
     ];
 
     public Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -255,6 +273,33 @@ public class MockApiClient : IApiClient
         return Task.FromResult<IReadOnlyList<PackagePlanDto>>(_packages);
     }
 
+    public Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        IEnumerable<InvoiceDto> filtered;
+        filtered = _invoices;
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            string q = searchQuery.Trim().ToLowerInvariant();
+            filtered = filtered.Where(i =>
+                i.InvoiceCode.ToLowerInvariant().Contains(q) ||
+                (i.MemberName != null && i.MemberName.ToLowerInvariant().Contains(q)));
+        }
+
+        if (fromDate.HasValue)
+        {
+            filtered = filtered.Where(i => (i.PaidAt ?? DateTime.Now).Date >= fromDate.Value.Date);
+        }
+
+        if (toDate.HasValue)
+        {
+            filtered = filtered.Where(i => (i.PaidAt ?? DateTime.Now).Date <= toDate.Value.Date);
+        }
+
+        var result = filtered.OrderByDescending(i => i.PaidAt ?? DateTime.MinValue).ToList();
+        return Task.FromResult<IReadOnlyList<InvoiceDto>>(result);
+    }
+
     public Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         var pkg = _packages.FirstOrDefault(p => p.PlanId == request.PlanId) ?? _packages[0];
@@ -274,6 +319,7 @@ public class MockApiClient : IApiClient
             "PAID"
         );
 
+        _invoices.Insert(0, invoice);
         return Task.FromResult(invoice);
     }
 
@@ -308,20 +354,35 @@ public class MockApiClient : IApiClient
 
     public Task<InvoiceDto> RefundInvoiceAsync(string invoiceCode, decimal refundAmount, string reason)
     {
-        return Task.FromResult(new InvoiceDto(
+        var invoice = _invoices.FirstOrDefault(i => i.InvoiceCode == invoiceCode);
+        if (invoice != null)
+        {
+            var updated = invoice with
+            {
+                Status = "REFUNDED",
+                RefundAmount = refundAmount
+            };
+            int index = _invoices.IndexOf(invoice);
+            _invoices[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        var fallback = new InvoiceDto(
             "INV001",
             invoiceCode,
-            500000m,
-            500000m,
-            "VIETQR",
-            "SUBSCRIPTION_PURCHASE",
+            refundAmount,
+            refundAmount,
+            "CASH",
+            "REFUND",
             DateTime.Now,
-            "Nguyễn Văn An",
+            "Hội Viên",
             "Gói Tập Tiêu Chuẩn",
             "Admin Quầy",
             "REFUNDED",
             refundAmount
-        ));
+        );
+        _invoices.Insert(0, fallback);
+        return Task.FromResult(fallback);
     }
 
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
@@ -401,6 +462,140 @@ public class MockApiClient : IApiClient
         return Task.FromResult(newSlot);
     }
 
+    public Task<bool> AssignPtAsync(AssignPtRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return Task.FromResult(true);
+    }
+
+    public Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null)
+    {
+        IEnumerable<PtProfileDto> filtered = _trainers;
+        if (activeOnly.HasValue)
+        {
+            if (activeOnly.Value)
+            {
+                filtered = filtered.Where(t => t.IsActive);
+            }
+            else
+            {
+                filtered = filtered.Where(t => !t.IsActive);
+            }
+        }
+
+        var result = filtered.OrderBy(t => t.FullName).ToList();
+        return Task.FromResult<IReadOnlyList<PtProfileDto>>(result);
+    }
+
+    public Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Họ và tên HLV không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Phone))
+        {
+            throw new ValidationException("Số điện thoại không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            throw new ValidationException("Email không được để trống.");
+        }
+
+        PtProfileDto result;
+        if (!string.IsNullOrWhiteSpace(request.PtId))
+        {
+            var existing = _trainers.FirstOrDefault(t => t.PtId == request.PtId);
+            if (existing != null)
+            {
+                int index = _trainers.IndexOf(existing);
+                result = new PtProfileDto(
+                    existing.PtId,
+                    request.FullName.Trim(),
+                    request.Phone.Trim(),
+                    request.Email.Trim(),
+                    request.Specialty.Trim(),
+                    request.ExperienceYears,
+                    existing.RatingAverage,
+                    existing.ReviewCount,
+                    request.IsActive,
+                    existing.ActiveStudentsCount,
+                    existing.PendingSessionsCount
+                );
+                _trainers[index] = result;
+            }
+            else
+            {
+                result = new PtProfileDto(
+                    request.PtId,
+                    request.FullName.Trim(),
+                    request.Phone.Trim(),
+                    request.Email.Trim(),
+                    request.Specialty.Trim(),
+                    request.ExperienceYears,
+                    5.0m,
+                    0,
+                    request.IsActive,
+                    0,
+                    0
+                );
+                _trainers.Add(result);
+            }
+        }
+        else
+        {
+            string newId = $"PT{_trainers.Count + 1:D3}";
+            result = new PtProfileDto(
+                newId,
+                request.FullName.Trim(),
+                request.Phone.Trim(),
+                request.Email.Trim(),
+                request.Specialty.Trim(),
+                request.ExperienceYears,
+                5.0m,
+                0,
+                request.IsActive,
+                0,
+                0
+            );
+            _trainers.Add(result);
+
+            _users.Add(new UserSessionDto(newId, result.FullName, result.Email, "PT"));
+        }
+
+        return Task.FromResult(result);
+    }
+
+    public Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var slot = _ptSlots.FirstOrDefault(s => s.SessionId == request.SessionId);
+        if (slot != null)
+        {
+            int index = _ptSlots.IndexOf(slot);
+            string statusString = request.NewStatus.ToString().ToUpperInvariant();
+            var updatedSlot = new PtSessionSlotDto(
+                slot.SessionId,
+                slot.PtId,
+                slot.PtName,
+                slot.MemberId,
+                slot.MemberName,
+                slot.ScheduledDate,
+                slot.StartTime,
+                slot.EndTime,
+                statusString
+            );
+            _ptSlots[index] = updatedSlot;
+        }
+
+        return Task.FromResult(true);
+    }
+
     public Task<DashboardSummaryDto> GetDashboardSummaryAsync()
     {
         var todayRevenue = 15850000m;
@@ -422,6 +617,47 @@ public class MockApiClient : IApiClient
             completedPt,
             peakHours
         ));
+    }
+
+    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var byPackage = new List<PackageRevenueDto>
+        {
+            new("PLAN01", "Gói 1 Năm VIP", 45000000m, 10),
+            new("PLAN02", "Gói 6 Tháng Platinum", 22500000m, 9),
+            new("PLAN03", "Gói 3 Tháng Thể Thao", 13500000m, 10),
+            new("PLAN04", "Gói 1 Tháng Tiêu Chuẩn", 6500000m, 13)
+        };
+
+        var byPaymentMethod = new List<PaymentMethodRevenueDto>
+        {
+            new("VIETQR", 58000000m, 66.3m, 28),
+            new("CASH", 20500000m, 23.4m, 10),
+            new("CREDIT_CARD", 9000000m, 10.3m, 4)
+        };
+
+        var trend = new List<TimePeriodRevenueDto>
+        {
+            new("T2", 11200000m, 0m, 11200000m),
+            new("T3", 14500000m, 500000m, 14000000m),
+            new("T4", 9800000m, 0m, 9800000m),
+            new("T5", 16200000m, 0m, 16200000m),
+            new("T6", 18500000m, 0m, 18500000m),
+            new("T7", 12000000m, 0m, 12000000m),
+            new("CN", 5300000m, 0m, 5300000m)
+        };
+
+        var dto = new RevenueReportDto(
+            TotalGrossRevenue: 87500000m,
+            TotalRefundAmount: 500000m,
+            TotalNetRevenue: 87000000m,
+            InvoiceCount: 42,
+            ByPaymentMethod: byPaymentMethod,
+            ByPackage: byPackage,
+            Trend: trend
+        );
+
+        return Task.FromResult(dto);
     }
 
     public Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
@@ -455,5 +691,108 @@ public class MockApiClient : IApiClient
         var newUser = new UserSessionDto($"USR{DateTime.Now:mmss}", fullName, email, role);
         _users.Add(newUser);
         return Task.FromResult(newUser);
+    }
+
+    public Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var existing = _users.FirstOrDefault(u => u.UserId == userName || u.Email == userName);
+        if (existing != null)
+        {
+            int index = _users.IndexOf(existing);
+            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+            _users[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        var fallback = new UserSessionDto(userName, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+        _users.Add(fallback);
+        return Task.FromResult(fallback);
+    }
+
+    public Task<bool> SetUserStatusAsync(string userName, string status)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var existing = _packages.FirstOrDefault(p => p.PlanId == planId);
+        if (existing != null)
+        {
+            int index = _packages.IndexOf(existing);
+            int? maxCheckIn = existing.MaxCheckInSessions;
+            if (request.MaxCheckInSessions.HasValue)
+            {
+                maxCheckIn = request.MaxCheckInSessions.Value;
+            }
+
+            int? totalPt = existing.TotalPtSessions;
+            if (request.TotalPtSessions.HasValue)
+            {
+                totalPt = request.TotalPtSessions.Value;
+            }
+
+            var updated = new PackagePlanDto(
+                existing.PlanId,
+                request.Name.Trim(),
+                request.Description ?? string.Empty,
+                request.Price,
+                request.DurationDays,
+                maxCheckIn,
+                totalPt,
+                request.IsPtIncluded,
+                existing.Status
+            );
+            _packages[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        throw new NotFoundException($"Không tìm thấy gói tập với mã {planId}.");
+    }
+
+    public Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId)
+    {
+        var existing = _packages.FirstOrDefault(p => p.PlanId == planId);
+        if (existing == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập với mã {planId}.");
+        }
+
+        bool hasInvoices = _invoices.Any(i => i.PlanName != null && i.PlanName.Contains(existing.Name, StringComparison.OrdinalIgnoreCase));
+        if (hasInvoices)
+        {
+            int index = _packages.IndexOf(existing);
+            var discontinued = new PackagePlanDto(
+                existing.PlanId,
+                existing.Name,
+                existing.Description,
+                existing.Price,
+                existing.DurationDays,
+                existing.MaxCheckInSessions,
+                existing.TotalPtSessions,
+                existing.IsPtIncluded,
+                "DISCONTINUED"
+            );
+            _packages[index] = discontinued;
+
+            return Task.FromResult(new DeletePackageResultDto(
+                planId,
+                false,
+                true,
+                "Gói tập đang có giao dịch phát sinh. Đã tự động chuyển sang trạng thái Ngừng kinh doanh để bảo toàn dữ liệu lịch sử."
+            ));
+        }
+
+        _packages.Remove(existing);
+        return Task.FromResult(new DeletePackageResultDto(
+            planId,
+            true,
+            false,
+            "Đã xóa gói tập thành công."
+        ));
     }
 }

@@ -5,6 +5,7 @@ using GymManagement.Server.Core.DTOs.Common;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -212,6 +213,36 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<IReadOnlyList<PackagePlanDto>>(response);
     }
 
+    public async Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        string url;
+        url = "/api/v1/invoices";
+
+        var queryParams = new List<string>();
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            queryParams.Add($"search={Uri.EscapeDataString(searchQuery.Trim())}");
+        }
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<IReadOnlyList<InvoiceDto>>(response);
+    }
+
     public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -273,6 +304,49 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<PtSessionSlotDto>(response);
     }
 
+    public async Task<bool> AssignPtAsync(AssignPtRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/assign", request);
+        return await HandleResponseAsync<bool>(response);
+    }
+
+    public async Task<IReadOnlyList<PtProfileDto>> GetTrainersAsync(bool? activeOnly = null)
+    {
+        string url = "/api/v1/pt/trainers";
+        if (activeOnly.HasValue)
+        {
+            if (activeOnly.Value)
+            {
+                url = "/api/v1/pt/trainers?activeOnly=true";
+            }
+            else
+            {
+                url = "/api/v1/pt/trainers?activeOnly=false";
+            }
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<IReadOnlyList<PtProfileDto>>(response);
+    }
+
+    public async Task<PtProfileDto> SaveTrainerAsync(SavePtProfileRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/trainers", request);
+        return await HandleResponseAsync<PtProfileDto>(response);
+    }
+
+    public async Task<bool> ConfirmSessionResultAsync(ConfirmSessionResultRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/confirm-result", request);
+        return await HandleResponseAsync<bool>(response);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 6. REPORTS & BI (UC06)
     // ─────────────────────────────────────────────────────────────────────────
@@ -281,6 +355,30 @@ public sealed class HttpApiClient : IApiClient
     {
         var response = await _httpClient.GetAsync("/api/v1/reports/dashboard");
         return await HandleResponseAsync<DashboardSummaryDto>(response);
+    }
+
+    public async Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        string url = "/api/v1/reports/revenue";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<RevenueReportDto>(response);
     }
 
     public async Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
@@ -398,6 +496,53 @@ public sealed class HttpApiClient : IApiClient
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/admin/users", request);
         return await HandleResponseAsync<UserSessionDto>(response);
+    }
+
+    public async Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            throw new ValidationException("Tên đăng nhập không được để trống.");
+        }
+
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userName)}", request);
+        return await HandleResponseAsync<UserSessionDto>(response);
+    }
+
+    public async Task<bool> SetUserStatusAsync(string userName, string status)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            throw new ValidationException("Tên đăng nhập không được để trống.");
+        }
+
+        var payload = new { Status = status };
+        var response = await _httpClient.PostAsJsonAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userName)}/status", payload);
+        return await HandleResponseAsync<bool>(response);
+    }
+
+    public async Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(planId))
+        {
+            throw new ValidationException("Mã gói tập không được để trống.");
+        }
+
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/admin/packages/{Uri.EscapeDataString(planId)}", request);
+        return await HandleResponseAsync<PackagePlanDto>(response);
+    }
+
+    public async Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId)
+    {
+        if (string.IsNullOrWhiteSpace(planId))
+        {
+            throw new ValidationException("Mã gói tập không được để trống.");
+        }
+
+        var response = await _httpClient.DeleteAsync($"/api/v1/admin/packages/{Uri.EscapeDataString(planId)}");
+        return await HandleResponseAsync<DeletePackageResultDto>(response);
     }
 
     private static async Task<T> HandleResponseAsync<T>(HttpResponseMessage response)

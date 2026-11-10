@@ -243,15 +243,18 @@ GymManagement.sln
 *Mục tiêu: Xây dựng hai ứng dụng khách độc lập kết nối vào cổng "GymManagement API".*
 
 #### 4.1. `Admin Desktop App` (WinUI 3)
-- [x] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request.
+- [x] **Task 4.1.1: Quản lý phiên làm việc (`Admin session`):** Quản lý trạng thái đăng nhập của Admin, lưu trữ Token an toàn, tự động đính kèm Bearer Token vào header request, ghi nhớ đăng nhập (RememberMe), tự động xóa mật khẩu khi lỗi, thông báo lỗi tiếng Việt 100% khi mất kết nối mạng.
 - [x] **Task 4.1.2: Màn hình vận hành & quầy tiếp đón:**
-  - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực).
-  - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, in phiếu thu K80).
-  - Quản lý hội viên, gia hạn, bảo lưu gói tập.
+  - Quầy điểm danh Check-in (kết nối webcam quét QR thời gian thực, đối soát vượt quyền `OverrideCheckInDialog`).
+  - Bán gói & Thanh toán POS (hiển thị mã VietQR động từ Payment API, dialog thanh toán VietQR).
+  - Lịch sử hóa đơn & In phiếu thu nhiệt K80 (`InvoiceHistoryPage`, `ReceiptPreviewDialog`) và hoàn tiền hóa đơn (`RefundInvoiceDialog`) (UC05).
+  - Quản lý hồ sơ hội viên (`MembersPage`, `MemberDetailDialog`), gia hạn/nâng cấp gói (`RenewUpgradeModal`), bảo lưu gói tập (`FreezeSubscriptionDialog`), hủy gói tập (`CancelSubscriptionDialog`), ghi nhận chỉ số InBody (`InBodyEntryDialog`), và phân công HLV (`PtAssignDialog`) (UC02, UC04).
 - [x] **Task 4.1.3: Màn hình quản trị cơ sở:**
-  - Dashboard tổng quan kinh doanh.
-  - Điều phối lịch huấn luyện viên PT (Calendar View).
-  - Danh mục gói tập, quản lý tài khoản người dùng và báo cáo BI đa chiều.
+  - Dashboard tổng quan kinh doanh BI thời gian thực, lưu lượng check-in 24h, cơ cấu doanh thu theo gói tập và hình thức thanh toán (UC06).
+  - Xuất báo cáo tài chính sang file thực tế Excel (.xlsx) và PDF (.pdf) qua `Windows.Storage.Pickers.FileSavePicker` (UC06).
+  - Quản lý hồ sơ Huấn luyện viên cá nhân (`TrainerProfileDialog`, `TrainerListDialog`), xếp lịch dạy PT có chốt chặn chống trùng lịch (Collision Guardrail), và đối soát kết quả ca tập (`SessionReviewDialog`) (UC04).
+  - Quản lý tài khoản vận hành & phân quyền RBAC (`SettingsPage`, `UserEditDialog`) kèm chốt chặn bảo mật chống tự khóa và chống tự hạ quyền Admin đang đăng nhập (UC07).
+  - Quản lý danh mục gói tập kinh doanh (`PackagePlansPage`, `PackagePlanEditDialog`), xóa gói tập có kiểm tra ràng buộc giao dịch và tự động chuyển sang trạng thái "Ngừng kinh doanh" (DISCONTINUED) (UC07).
 
 #### 4.2. `Member/PT Web Portal` (Blazor Server)
 - [x] **Task 4.2.1: Quản lý phiên làm việc (`Member/PT session`):** Quản lý phiên qua `AuthenticationStateProvider` trên trình duyệt.

@@ -42,6 +42,12 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
+                <NavigationViewItem Content="Lịch Sử &amp; In Hóa Đơn (F6)" Tag="Invoices">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A1;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
                 <NavigationViewItem Content="Quản Lý Hội Viên &amp; Gói Tập (F3)" Tag="Members">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE716;" />

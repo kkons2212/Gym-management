@@ -329,32 +329,22 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - **Bảo mật & Phân quyền:** Yêu cầu đăng nhập mặc định (`FallbackPolicy`), phân quyền role policies (`AdminOnly`, `PtOnly`, `MemberOnly`), cho phép ẩn danh `[AllowAnonymous]` tại `/health`, `/login`, và tra cứu danh mục gói tập.
   - **Quy chuẩn lập trình:** 100% không sử dụng toán tử 3 ngôi (`? :`), không dùng expression-bodied methods `=>` trên hàm nghiệp vụ, toàn bộ constants/fields ở đầu file.
 
-### 📌 [Task 4.1] Chuẩn Hóa & Hiện Thực Admin Desktop App (WinUI 3 MVVM) — Redo Phase
-* **Ngày cập nhật trạng thái:** 09/11/2026 | **Commit:** `6832b09` (nhánh `refactor/ui-ux-system-rules`)
+### 📌 [Task 4.1] Hoàn Thiện Toàn Diện 6 Giai Đoạn Admin Desktop App (WinUI 3 MVVM) — Fulfillment Phase
+* **Ngày hoàn tất:** 10/11/2026 | **Nhánh:** `feat/task-4.1-desktop-fulfillment`
 * **Phân hệ nghiệp vụ liên quan:** Toàn bộ 10 Epics (UC01 – UC10) dành riêng cho Quản trị viên (Admin) và Thu ngân theo [`PRD.md`](PRD.md).
 * **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels, Services, Converters, Dialogs, Styles).
-* **Mã nguồn đã hoàn tất & bảo toàn:**
-  - `src/Client/GymManagement.Desktop/Services/Api/JwtAuthenticationHeaderHandler.cs` (DelegatingHandler tự động đính kèm JWT Bearer Token và xử lý 401 Unauthorized)
-  - `src/Client/GymManagement.Desktop/Services/Api/HttpApiClient.cs` (Hiện thực hóa IApiClient qua HttpClient gọi trực tiếp 7 RESTful API Controllers)
-  - `src/Client/GymManagement.Desktop/App.xaml.cs` (Cấu hình DI HttpClient, HttpApiClient và chuyển đổi Mock/Http linh hoạt qua biến môi trường)
-  - `src/Client/GymManagement.Desktop/MainWindow.xaml(.cs)` & `MainPage.xaml(.cs)` (App Shell & Navigation 7 phân hệ, cấu hình unpackaged và xử lý đăng nhập 1-chạm)
-  - `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml` (Nâng cấp toàn diện New Colors Panel 6 phân tầng chuẩn WCAG 2.2 AA)
-  - `src/Client/GymManagement.Desktop/Converters/ValueConverters.cs` (Chuẩn hóa màu ngữ nghĩa và loại bỏ toán tử 3 ngôi)
-* **Trạng thái Tái Cấu Trúc Views (Redo Phase - In-Place Wipe):**
-  - Đã thực hiện dọn sạch ruột mã nguồn (In-place wipe theo Cách 1 an toàn) cho toàn bộ 8 Views:
-    1. `Views/LoginPage.xaml(.cs)`: Khung đăng nhập tối giản và nút 1-chạm vào hệ thống.
-    2. `Views/CheckInCounterPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực quầy tiếp đón 2 cột (UC03).
-    3. `Views/MembersPage.xaml(.cs)`: Canvas trắng tích hợp sẵn Nút CTA `"+ Đăng Ký Hội Viên Mới"` trên Header (UC02).
-    4. `Views/PosBillingPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực quầy POS bán gói và VietQR (UC05).
-    5. `Views/PtSchedulePage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Lịch PT và Hàng rào chống trùng giờ (UC04).
-    6. `Views/DashboardPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực BI Dashboard 4 thẻ KPI (UC06).
-    7. `Views/PackagePlansPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Danh mục gói tập `PackagePlan` (UC07.2).
-    8. `Views/SettingsPage.xaml(.cs)`: Canvas trắng sẵn sàng hiện thực Quản lý nhân sự RBAC (UC07.1).
+* **Kết quả thực hiện 6 Giai đoạn (Fulfillment Plan):**
+  1. **Phase 1 (Foundation, Token & Login UX):** Bảng màu 6 phân tầng Dark Mode L0-L5 đạt chuẩn WCAG 2.2 AA (`ColorTokens.xaml`), Checkbox Ghi nhớ đăng nhập (RememberMe), Idempotency lock, tự động xóa mật khẩu khi lỗi và bản địa hóa 100% tiếng Việt cho lỗi mạng (`LoginPage`, `LoginViewModel`).
+  2. **Phase 2 (Member Lifecycle & PT Assignment):** Dialog Sửa hồ sơ hội viên (`MemberDetailDialog` - UC 02.2), Gia hạn/nâng cấp gói (`RenewUpgradeModal` - UC 02.3), Hủy gói (`CancelSubscriptionDialog` - UC 02.5), Bảo lưu gói (`FreezeSubscriptionDialog` - UC 02.4), Đo InBody (`InBodyEntryDialog` - UC 02.6), và Phân công HLV cá nhân (`PtAssignDialog` - UC 04.4).
+  3. **Phase 3 (POS Invoicing, History & K80 Receipts):** Trang Lịch sử hóa đơn (`InvoiceHistoryPage`, `InvoiceHistoryViewModel` - UC 05.2), Xem trước và in phiếu thu nhiệt K80 (`ReceiptPreviewDialog`), và Xử lý hoàn tiền hóa đơn (`RefundInvoiceDialog` - UC 05.3).
+  4. **Phase 4 (PT Management & Scheduling):** Dialog Thêm HLV mới (`TrainerProfileDialog` - UC 04.1), Cập nhật hồ sơ HLV (UC 04.3), Quản lý danh sách HLV (`TrainerListDialog` - UC 04.2), Hàng rào chống trùng lịch ca tập (Collision Guardrail), và Xác nhận kết quả buổi tập (`SessionReviewDialog` - UC 04.5).
+  5. **Phase 5 (Staff RBAC & Package Catalog Management):** Dialog Cập nhật nhân sự & phân quyền (`UserEditDialog` - UC 7.1.2) kèm chốt chặn bảo mật chống tự hạ quyền Admin đang đăng nhập, Hộp thoại xác nhận Khóa/Mở tài khoản kèm chốt chặn chống tự khóa (UC 7.1.3), Dialog Chỉnh sửa gói tập (`PackagePlanEditDialog` - UC 7.2.2), và Xóa gói tập có kiểm tra ràng buộc giao dịch tự động chuyển sang "Ngừng kinh doanh" `DISCONTINUED` (UC 7.2.3).
+  6. **Phase 6 (BI Analytics & Real File Saving):** Nâng cấp Dashboard BI thời gian thực với phân bổ lưu lượng check-in 24h và cơ cấu doanh thu theo gói tập / hình thức thanh toán (UC 06.1). Tích hợp Windows App SDK `FileSavePicker` xuất file thực tế Excel (.xlsx) và PDF (.pdf) lưu trực tiếp vào máy tính người dùng (UC 06.2).
 * **Kiểm thử tương ứng (Verification):**
-  - Biên dịch Desktop sau khi dọn sạch ruột: `dotnet build src/Client/GymManagement.Desktop -p:Platform=x64` thành công tuyệt đối: **0 Warning(s), 0 Error(s)**.
-  - Toàn bộ 183 / 183 test cases trong solution đều PASS 100% (UnitTests 110, DataTests 42, ApiTests 31).
+  - Biên dịch toàn bộ dự án Desktop: `dotnet build src/Client/GymManagement.Desktop -p:Platform=x64` đạt **0 Warning(s), 0 Error(s)**.
+  - Toàn bộ 183 / 183 unit/integration tests trên solution đều đạt 100% Pass.
+  - Tuân thủ nghiêm ngặt [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, 0 expression body `=>` trên hàm nghiệp vụ, 100% tiếng Việt trên giao diện UI).
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
-* **Kế hoạch tiếp theo:** Lần lượt tái hiện thực từng View theo đúng chuẩn thị giác [`Document/ui_rules.md`](ui_rules.md) và luồng tương tác [`Document/ux_rules.md`](ux_rules.md).
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

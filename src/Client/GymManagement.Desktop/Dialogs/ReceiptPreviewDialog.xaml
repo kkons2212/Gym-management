@@ -1,0 +1,145 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.ReceiptPreviewDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="XEM TRƯỚC PHIẾU THU TIỀN K80"
+    PrimaryButtonText="In Phiếu Thu"
+    CloseButtonText="Đóng"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <Border Background="#F8FAFC"
+            CornerRadius="8"
+            Padding="24"
+            Width="340"
+            HorizontalAlignment="Center">
+        <StackPanel Spacing="10">
+            <!-- Brand & Gym Info -->
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+                <TextBlock Text="GYM MANAGEMENT SYSTEM"
+                           FontWeight="Bold"
+                           FontSize="14"
+                           Foreground="#0F172A"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="123 Nguyễn Thị Minh Khai, Q.1, TP.HCM"
+                           FontSize="10"
+                           Foreground="#475569"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Hotline: 1900 6868 • Website: gymsystem.vn"
+                           FontSize="10"
+                           Foreground="#475569"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Dashed Line -->
+            <TextBlock Text="--------------------------------------------------"
+                       FontSize="11"
+                       Foreground="#94A3B8"
+                       HorizontalAlignment="Center" />
+
+            <!-- Receipt Title -->
+            <TextBlock Text="PHIẾU THU DỊCH VỤ"
+                       FontWeight="Bold"
+                       FontSize="15"
+                       Foreground="#0F172A"
+                       HorizontalAlignment="Center" />
+
+            <!-- Metadata Info -->
+            <Grid RowSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mã hóa đơn:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TxtInvoiceCode" FontWeight="SemiBold" FontSize="11" Foreground="#0F172A" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Thời gian:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TxtCreatedAt" FontSize="11" Foreground="#0F172A" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Khách hàng:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TxtMemberName" FontWeight="SemiBold" FontSize="11" Foreground="#0F172A" HorizontalAlignment="Right" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Thu ngân:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TxtStaffName" FontSize="11" Foreground="#0F172A" HorizontalAlignment="Right" />
+            </Grid>
+
+            <!-- Dashed Line -->
+            <TextBlock Text="--------------------------------------------------"
+                       FontSize="11"
+                       Foreground="#94A3B8"
+                       HorizontalAlignment="Center" />
+
+            <!-- Items -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="TxtItemName" FontSize="12" FontWeight="SemiBold" Foreground="#0F172A" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" x:Name="TxtItemPrice" FontSize="12" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Right" />
+            </Grid>
+
+            <!-- Dashed Line -->
+            <TextBlock Text="--------------------------------------------------"
+                       FontSize="11"
+                       Foreground="#94A3B8"
+                       HorizontalAlignment="Center" />
+
+            <!-- Total Amount -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="TỔNG THANH TOÁN:" FontWeight="Bold" FontSize="13" Foreground="#0F172A" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" x:Name="TxtTotalAmount" FontWeight="Bold" FontSize="16" Foreground="#047857" HorizontalAlignment="Right" />
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Phương thức:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Column="1" x:Name="TxtPaymentMethod" FontSize="11" FontWeight="SemiBold" Foreground="#0F172A" HorizontalAlignment="Right" />
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Trạng thái:" FontSize="11" Foreground="#475569" />
+                <TextBlock Grid.Column="1" x:Name="TxtStatus" FontSize="11" FontWeight="Bold" Foreground="#047857" HorizontalAlignment="Right" />
+            </Grid>
+
+            <!-- Dashed Line -->
+            <TextBlock Text="--------------------------------------------------"
+                       FontSize="11"
+                       Foreground="#94A3B8"
+                       HorizontalAlignment="Center" />
+
+            <!-- Footer Message -->
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+                <TextBlock Text="Cảm ơn quý khách đã đồng hành!"
+                           FontSize="10"
+                           FontStyle="Italic"
+                           Foreground="#475569"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Chúc quý khách tập luyện hiệu quả và tràn đầy năng lượng!"
+                           FontSize="9"
+                           Foreground="#64748B"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</ContentDialog>
+

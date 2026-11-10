@@ -148,10 +148,13 @@
                                         <TextBlock Text="{x:Bind Role}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
                                     </Border>
 
-                                    <!-- Lock / Unlock Action Button -->
-                                    <Button Grid.Column="2" Content="Khóa / Mở"
-                                            Click="OnToggleLockClicked"
-                                            VerticalAlignment="Center" Height="34" FontSize="12" />
+                                    <!-- Actions: Sửa & Khóa/Mở -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button Content="Sửa" Click="OnEditUserClicked" Height="34" FontSize="12" Padding="12,0" />
+                                        <Button Content="Khóa / Mở" Click="OnToggleLockClicked" Height="34" FontSize="12"
+                                                Background="#3D1212" BorderBrush="{StaticResource StatusDangerBrush}" BorderThickness="1"
+                                                Foreground="{StaticResource StatusDangerBrush}" />
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
