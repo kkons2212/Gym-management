@@ -29,7 +29,15 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        UnhandledException += OnAppUnhandledException;
         Services = ConfigureServices();
+    }
+
+    private void OnAppUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        System.Diagnostics.Debug.WriteLine($"[CRITICAL UNHANDLED ERROR] {e.Message}");
+        System.Diagnostics.Debug.WriteLine(e.Exception?.ToString());
+        Console.Error.WriteLine($"[CRITICAL UNHANDLED ERROR] {e.Message}: {e.Exception}");
     }
 
     private static IServiceProvider ConfigureServices()

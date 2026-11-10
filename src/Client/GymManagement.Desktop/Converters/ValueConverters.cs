@@ -117,6 +117,15 @@ public class InvertedBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
+        if (targetType == typeof(bool))
+        {
+            if (value is true)
+            {
+                return false;
+            }
+            return true;
+        }
+
         if (value is true)
         {
             return Visibility.Collapsed;
@@ -128,6 +137,37 @@ public class InvertedBoolToVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
         throw new NotSupportedException();
+    }
+}
+
+public class InvertedBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool b)
+        {
+            if (b)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        return true;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool b)
+        {
+            if (b)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        return true;
     }
 }
 

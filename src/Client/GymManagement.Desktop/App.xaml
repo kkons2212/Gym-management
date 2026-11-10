@@ -18,6 +18,7 @@
             <converters:BmiEvaluationConverter x:Key="BmiEvaluationConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:TimeOnlyFormatterConverter x:Key="TimeOnlyFormatterConverter" />
         </ResourceDictionary>
