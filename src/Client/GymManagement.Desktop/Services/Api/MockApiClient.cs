@@ -3,6 +3,7 @@ using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -399,6 +400,12 @@ public class MockApiClient : IApiClient
 
         _ptSlots.Add(newSlot);
         return Task.FromResult(newSlot);
+    }
+
+    public Task<bool> AssignPtAsync(AssignPtRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return Task.FromResult(true);
     }
 
     public Task<DashboardSummaryDto> GetDashboardSummaryAsync()

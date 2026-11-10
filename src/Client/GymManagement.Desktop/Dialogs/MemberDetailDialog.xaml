@@ -1,0 +1,58 @@
+<ContentDialog
+    x:Class="GymManagement.Desktop.Dialogs.MemberDetailDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="CẬP NHẬT HỒ SƠ HỘI VIÊN"
+    PrimaryButtonText="Lưu Thay Đổi"
+    CloseButtonText="Đóng"
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16" Width="440">
+        <!-- Subtitle -->
+        <TextBlock Text="Chỉnh sửa thông tin liên hệ của hội viên. Mã định danh không thể thay đổi."
+                   FontSize="12"
+                   Foreground="{StaticResource TextSecondaryBrush}"
+                   TextWrapping="Wrap" />
+
+        <!-- Read-only Info -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Mã hội viên" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBox x:Name="TxtUserName" IsReadOnly="True" Height="36" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Text="Ngày tham gia" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBox x:Name="TxtCreatedAt" IsReadOnly="True" Height="36" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Editable Form Fields -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Họ và tên *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBox x:Name="TxtFullName" PlaceholderText="Nguyễn Văn A" Height="36" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="Số điện thoại *" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBox x:Name="TxtPhone" PlaceholderText="0901234567" Height="36" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="Địa chỉ Email" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBox x:Name="TxtEmail" PlaceholderText="nguyenvana@gmail.com" Height="36" />
+        </StackPanel>
+
+        <!-- Validation Error Info -->
+        <TextBlock x:Name="TxtValidationError"
+                   Foreground="{StaticResource StatusDangerBrush}"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>
+

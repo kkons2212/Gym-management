@@ -3,6 +3,7 @@ using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -39,6 +40,7 @@ public interface IApiClient
     // PT Services (UC04)
     Task<IReadOnlyList<PtSessionSlotDto>> GetPtScheduleSlotsAsync(DateTime startDate, DateTime endDate);
     Task<PtSessionSlotDto> BookPtSlotAsync(BookPtSlotRequest request);
+    Task<bool> AssignPtAsync(AssignPtRequest request);
 
     // Reports & BI (UC06)
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();

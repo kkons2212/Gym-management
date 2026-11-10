@@ -25,6 +25,9 @@ public partial class MembersViewModel : ObservableObject
     private bool _isLoading;
 
     [ObservableProperty]
+    private bool _isEmpty;
+
+    [ObservableProperty]
     private bool _isFreezeModalOpen;
 
     [ObservableProperty]
@@ -32,6 +35,7 @@ public partial class MembersViewModel : ObservableObject
 
     public MembersViewModel(IApiClient apiClient)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
     }
 
@@ -55,6 +59,15 @@ public partial class MembersViewModel : ObservableObject
                 {
                     Members.Add(m);
                 }
+            }
+
+            if (Members.Count == 0)
+            {
+                IsEmpty = true;
+            }
+            else
+            {
+                IsEmpty = false;
             }
 
             if (Members.Count > 0 && SelectedMember == null)

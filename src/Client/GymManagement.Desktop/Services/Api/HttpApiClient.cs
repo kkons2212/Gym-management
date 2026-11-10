@@ -5,6 +5,7 @@ using GymManagement.Server.Core.DTOs.Common;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
@@ -271,6 +272,14 @@ public sealed class HttpApiClient : IApiClient
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/book", request);
         return await HandleResponseAsync<PtSessionSlotDto>(response);
+    }
+
+    public async Task<bool> AssignPtAsync(AssignPtRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/assign", request);
+        return await HandleResponseAsync<bool>(response);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
