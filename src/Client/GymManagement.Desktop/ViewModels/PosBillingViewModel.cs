@@ -100,7 +100,7 @@ public partial class PosBillingViewModel : ObservableObject
     private decimal _totalAmount;
 
     [ObservableProperty]
-    private string _selectedPaymentMethod = "VIETQR"; // CASH, VIETQR, CREDIT_CARD
+    private string _selectedPaymentMethod = "VIETQR"; // CASH, VIETQR
 
     [ObservableProperty]
     private string _transactionType = "SUBSCRIPTION_PURCHASE"; // SUBSCRIPTION_PURCHASE, SUBSCRIPTION_RENEWAL
@@ -182,6 +182,41 @@ public partial class PosBillingViewModel : ObservableObject
         SelectedPackage = package;
         SubtotalAmount = package.Price;
         TotalAmount = package.Price; // Exactly equal, 0 discount (CSDL invoice has no discount)
+    }
+
+    public async Task<bool> PrepareVietQrPayloadAsync()
+    {
+        if (SelectedMember == null)
+        {
+            StatusMessage = "Vui lòng chọn hội viên và gói tập!";
+            return false;
+        }
+
+        if (SelectedPackage == null)
+        {
+            StatusMessage = "Vui lòng chọn hội viên và gói tập!";
+            return false;
+        }
+
+        IsLoading = true;
+        StatusMessage = null;
+
+        try
+        {
+            string content = $"GYM {SelectedMember.UserId} {SelectedPackage.PlanId}";
+            VietQrPayload = await _apiClient.GenerateVietQrAsync("TEMP", TotalAmount, content);
+            IsVietQrModalOpen = true;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Lỗi tạo mã QR: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]

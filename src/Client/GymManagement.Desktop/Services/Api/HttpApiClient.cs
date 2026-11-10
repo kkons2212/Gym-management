@@ -253,13 +253,42 @@ public sealed class HttpApiClient : IApiClient
 
     public async Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent)
     {
-        if (string.IsNullOrWhiteSpace(invoiceCode))
+        if (invoiceCode != "TEMP" && !string.IsNullOrWhiteSpace(invoiceCode))
         {
-            throw new ValidationException("Mã hóa đơn không được để trống.");
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceCode)}/qr");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await HandleResponseAsync<VietQrPayloadDto>(response);
+                }
+            }
+            catch
+            {
+                // Fallback to client-side QuickLink generation
+            }
         }
 
-        var response = await _httpClient.GetAsync($"/api/v1/invoices/{Uri.EscapeDataString(invoiceCode)}/qr");
-        return await HandleResponseAsync<VietQrPayloadDto>(response);
+        string bankBin = Environment.GetEnvironmentVariable("VIETQR_BANK_BIN") ?? "970422";
+        string accountNo = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NO") ?? "0901234567";
+        string accountName = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NAME") ?? "CONG TY TNHH PHONG TAP THE THAO";
+        string bankName = Environment.GetEnvironmentVariable("VIETQR_BANK_NAME") ?? "MB Bank (Napas 247)";
+        string imageBaseUrl = Environment.GetEnvironmentVariable("VIETQR_IMAGE_BASE_URL") ?? "https://img.vietqr.io/image";
+
+        string encodedContent = Uri.EscapeDataString(transferContent);
+        string encodedAccountName = Uri.EscapeDataString(accountName);
+        string qrImageUrl = $"{imageBaseUrl}/{bankBin}-{accountNo}-compact2.png?amount={(long)amount}&addInfo={encodedContent}&accountName={encodedAccountName}";
+
+        var payload = new VietQrPayloadDto(
+            qrImageUrl,
+            accountNo,
+            bankName,
+            amount,
+            transferContent,
+            600
+        );
+
+        return payload;
     }
 
     public async Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode)
