@@ -32,6 +32,7 @@ public interface IApiClient
 
     // Packages & POS Billing (UC05, UC07)
     Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync();
+    Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null);
     Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request);
     Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent);
     Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode);

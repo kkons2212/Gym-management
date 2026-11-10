@@ -213,6 +213,36 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<IReadOnlyList<PackagePlanDto>>(response);
     }
 
+    public async Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        string url;
+        url = "/api/v1/invoices";
+
+        var queryParams = new List<string>();
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            queryParams.Add($"search={Uri.EscapeDataString(searchQuery.Trim())}");
+        }
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<IReadOnlyList<InvoiceDto>>(response);
+    }
+
     public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

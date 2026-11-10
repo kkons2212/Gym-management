@@ -46,6 +46,15 @@ public class MockApiClient : IApiClient
         new("SESS03", "PT002", "HLV Hoàng Tuấn Anh", "USR005", "Vũ Minh Đức", DateTime.Today.AddDays(1), new TimeSpan(16, 0, 0), new TimeSpan(17, 0, 0), "SCHEDULED")
     ];
 
+    private readonly List<InvoiceDto> _invoices =
+    [
+        new("INV001", "INV-20261108-001", 500000m, 500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-2), "Nguyễn Văn An", "Gói 1 Tháng Tiêu Chuẩn", "Admin Quầy", "PAID"),
+        new("INV002", "INV-20261108-002", 4500000m, 4500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-5), "Trần Thị Bích", "Gói 1 Năm VIP", "Admin Quầy", "PAID"),
+        new("INV003", "INV-20261108-003", 1350000m, 1350000m, "CASH", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-10), "Lê Hoàng Cường", "Gói 3 Tháng Thể Thao", "Admin Quầy", "PAID"),
+        new("INV004", "INV-20261108-004", 500000m, 500000m, "CASH", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-15), "Phạm Thị Dung", "Gói 1 Tháng Tiêu Chuẩn", "Admin Quầy", "REFUNDED", 500000m),
+        new("INV005", "INV-20261108-005", 2500000m, 2500000m, "VIETQR", "SUBSCRIPTION_PURCHASE", DateTime.Now.AddDays(-1), "Vũ Minh Đức", "Gói 6 Tháng Platinum", "Admin Quầy", "PAID")
+    ];
+
     public Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -256,6 +265,33 @@ public class MockApiClient : IApiClient
         return Task.FromResult<IReadOnlyList<PackagePlanDto>>(_packages);
     }
 
+    public Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(string? searchQuery = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        IEnumerable<InvoiceDto> filtered;
+        filtered = _invoices;
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            string q = searchQuery.Trim().ToLowerInvariant();
+            filtered = filtered.Where(i =>
+                i.InvoiceCode.ToLowerInvariant().Contains(q) ||
+                (i.MemberName != null && i.MemberName.ToLowerInvariant().Contains(q)));
+        }
+
+        if (fromDate.HasValue)
+        {
+            filtered = filtered.Where(i => (i.PaidAt ?? DateTime.Now).Date >= fromDate.Value.Date);
+        }
+
+        if (toDate.HasValue)
+        {
+            filtered = filtered.Where(i => (i.PaidAt ?? DateTime.Now).Date <= toDate.Value.Date);
+        }
+
+        var result = filtered.OrderByDescending(i => i.PaidAt ?? DateTime.MinValue).ToList();
+        return Task.FromResult<IReadOnlyList<InvoiceDto>>(result);
+    }
+
     public Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         var pkg = _packages.FirstOrDefault(p => p.PlanId == request.PlanId) ?? _packages[0];
@@ -275,6 +311,7 @@ public class MockApiClient : IApiClient
             "PAID"
         );
 
+        _invoices.Insert(0, invoice);
         return Task.FromResult(invoice);
     }
 
@@ -309,20 +346,35 @@ public class MockApiClient : IApiClient
 
     public Task<InvoiceDto> RefundInvoiceAsync(string invoiceCode, decimal refundAmount, string reason)
     {
-        return Task.FromResult(new InvoiceDto(
+        var invoice = _invoices.FirstOrDefault(i => i.InvoiceCode == invoiceCode);
+        if (invoice != null)
+        {
+            var updated = invoice with
+            {
+                Status = "REFUNDED",
+                RefundAmount = refundAmount
+            };
+            int index = _invoices.IndexOf(invoice);
+            _invoices[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        var fallback = new InvoiceDto(
             "INV001",
             invoiceCode,
-            500000m,
-            500000m,
-            "VIETQR",
-            "SUBSCRIPTION_PURCHASE",
+            refundAmount,
+            refundAmount,
+            "CASH",
+            "REFUND",
             DateTime.Now,
-            "Nguyễn Văn An",
+            "Hội Viên",
             "Gói Tập Tiêu Chuẩn",
             "Admin Quầy",
             "REFUNDED",
             refundAmount
-        ));
+        );
+        _invoices.Insert(0, fallback);
+        return Task.FromResult(fallback);
     }
 
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)

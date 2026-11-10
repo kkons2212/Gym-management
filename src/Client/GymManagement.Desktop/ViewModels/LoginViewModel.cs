@@ -69,7 +69,13 @@ public partial class LoginViewModel : ObservableObject
             HasError = true;
             Password = string.Empty;
 
-            if (ex.Message.Contains("LOCKED", StringComparison.OrdinalIgnoreCase) ||
+            if (ex is HttpRequestException ||
+                ex.InnerException is System.Net.Sockets.SocketException ||
+                ex.Message.Contains("actively refused", StringComparison.OrdinalIgnoreCase))
+            {
+                ErrorMessage = "Không thể kết nối đến máy chủ hệ thống (localhost:5000). Vui lòng kiểm tra dịch vụ Backend hoặc bật chế độ Mock API.";
+            }
+            else if (ex.Message.Contains("LOCKED", StringComparison.OrdinalIgnoreCase) ||
                 ex.Message.Contains("khóa", StringComparison.OrdinalIgnoreCase))
             {
                 ErrorMessage = "Tài khoản đã bị khóa. Vui lòng liên hệ Super Admin.";

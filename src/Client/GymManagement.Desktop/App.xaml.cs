@@ -70,12 +70,16 @@ public partial class App : Application
         services.AddSingleton<LoginViewModel>();
         services.AddTransient<CheckInCounterViewModel>();
         services.AddTransient<PosBillingViewModel>();
+        services.AddTransient<InvoiceHistoryViewModel>();
         services.AddTransient<MembersViewModel>();
         services.AddTransient<PtScheduleViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<PackagePlansViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddSingleton<ShellViewModel>();
+
+        // 4. Views
+        services.AddTransient<Views.InvoiceHistoryPage>();
 
         return services.BuildServiceProvider();
     }

@@ -47,6 +47,10 @@ public sealed partial class MainPage : Page
         {
             targetPage = typeof(PosBillingPage);
         }
+        else if (tag == "Invoices")
+        {
+            targetPage = typeof(InvoiceHistoryPage);
+        }
         else if (tag == "Members")
         {
             targetPage = typeof(MembersPage);
@@ -101,6 +105,10 @@ public sealed partial class MainPage : Page
         else if (key == Windows.System.VirtualKey.F5)
         {
             SelectMenuItemByTag("Schedule");
+        }
+        else if (key == Windows.System.VirtualKey.F6)
+        {
+            SelectMenuItemByTag("Invoices");
         }
     }
 
