@@ -26,11 +26,24 @@ public sealed partial class LoginPage : Page
     private void LoginPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         ViewModel.OnLoginSuccess += OnLoginSuccess;
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     private void LoginPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         ViewModel.OnLoginSuccess -= OnLoginSuccess;
+        ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LoginViewModel.Password))
+        {
+            if (TxtPassword.Password != ViewModel.Password)
+            {
+                TxtPassword.Password = ViewModel.Password;
+            }
+        }
     }
 
     private void OnLoginSuccess()

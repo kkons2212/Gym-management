@@ -18,6 +18,9 @@ public partial class LoginViewModel : ObservableObject
     private string _password = "admin";
 
     [ObservableProperty]
+    private bool _rememberMe = true;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -30,6 +33,9 @@ public partial class LoginViewModel : ObservableObject
 
     public LoginViewModel(IApiClient apiClient, IAdminSessionService sessionService)
     {
+        ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(sessionService);
+
         _apiClient = apiClient;
         _sessionService = sessionService;
     }
@@ -61,7 +67,17 @@ public partial class LoginViewModel : ObservableObject
         catch (Exception ex)
         {
             HasError = true;
-            ErrorMessage = ex.Message;
+            Password = string.Empty;
+
+            if (ex.Message.Contains("LOCKED", StringComparison.OrdinalIgnoreCase) ||
+                ex.Message.Contains("khóa", StringComparison.OrdinalIgnoreCase))
+            {
+                ErrorMessage = "Tài khoản đã bị khóa. Vui lòng liên hệ Super Admin.";
+            }
+            else
+            {
+                ErrorMessage = ex.Message;
+            }
         }
         finally
         {

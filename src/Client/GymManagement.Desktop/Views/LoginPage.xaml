@@ -47,9 +47,15 @@
                         <PasswordBox x:Name="TxtPassword"
                                      PasswordChanged="TxtPassword_PasswordChanged"
                                      KeyDown="Input_KeyDown"
-                                     PlaceholderText="Nhập mật khẩu..."
+                                     PlaceholderText="Nhập mật khẩu…"
                                      Height="40" />
                     </StackPanel>
+
+                    <!-- Remember Me Checkbox (ui_rules.md 3.2) -->
+                    <CheckBox Content="Ghi nhớ tên đăng nhập"
+                              IsChecked="{x:Bind ViewModel.RememberMe, Mode=TwoWay}"
+                              FontSize="13"
+                              Foreground="{StaticResource TextSecondaryBrush}" />
 
                     <!-- Error message banner -->
                     <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
@@ -59,9 +65,9 @@
                              IsClosable="False" />
                 </StackPanel>
 
-                <!-- Login Button -->
-                <Button Content="Đăng Nhập Hệ Thống"
-                        Command="{x:Bind ViewModel.LoginCommand}"
+                <!-- Login Button with ProgressRing Spinner & Idempotency Lock -->
+                <Button Command="{x:Bind ViewModel.LoginCommand}"
+                        IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
                         HorizontalAlignment="Stretch"
                         Height="44"
                         Background="{StaticResource AccentPrimaryBrush}"
@@ -69,7 +75,19 @@
                         FontWeight="Bold"
                         FontSize="14"
                         CornerRadius="8"
-                        Margin="0,10,0,0" />
+                        Margin="0,10,0,0">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ProgressRing IsActive="True" Width="18" Height="18" Foreground="#FFFFFF" />
+                            <TextBlock Text="Đang xác thực…" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Đăng Nhập Hệ Thống"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
+                    </Grid>
+                </Button>
 
                 <!-- Footer info -->
                 <TextBlock Text="Hệ thống nội bộ WinUI 3 Desktop • Quyền Quản trị viên"
