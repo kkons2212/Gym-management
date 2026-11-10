@@ -143,15 +143,21 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <StackPanel Spacing="4">
+                <Grid Grid.Row="0" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="4">
                         <TextBlock Text="LỊCH TRÌNH DẠY THEO TUẦN"
                                    FontSize="16" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="Các ca tập đã xếp của huấn luyện viên trong khung giờ 06:00 - 22:00"
-                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                         <Button Content="+ Thêm HLV Mới" Click="BtnAddNewTrainer_Click" Height="36"
                                 Background="{StaticResource AccentPrimaryBrush}" Foreground="#FFFFFF" FontWeight="SemiBold" />
                         <Button Content="Danh Sách HLV" Click="BtnManageTrainers_Click" Height="36" />

@@ -28,6 +28,7 @@ public partial class App : Application
 
     public App()
     {
+        RequestedTheme = ApplicationTheme.Dark;
         InitializeComponent();
         UnhandledException += OnAppUnhandledException;
         Services = ConfigureServices();

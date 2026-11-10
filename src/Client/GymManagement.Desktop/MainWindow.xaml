@@ -12,13 +12,16 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid RequestedTheme="Dark" Background="{StaticResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="AppTitleBar" Title="GymManagement.Desktop">
+        <TitleBar x:Name="AppTitleBar"
+                  Title="Hệ Thống Quản Lý Phòng Tập Thể Thao • Gym Management System"
+                  Background="{StaticResource LayerFillColorDefaultBrush}"
+                  Foreground="{StaticResource TextFillColorPrimaryBrush}">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="Assets/AppIcon.ico" />
             </TitleBar.IconSource>
@@ -29,6 +32,6 @@
             MainPage.xaml rather than here so you can use Page features such as
             navigation events and the Loaded lifecycle.
         -->
-        <Frame x:Name="RootFrame" Grid.Row="1" />
+        <Frame x:Name="RootFrame" Grid.Row="1" RequestedTheme="Dark" />
     </Grid>
 </Window>
