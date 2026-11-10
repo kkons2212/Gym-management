@@ -93,24 +93,6 @@ public sealed class InvoicesController : ApiControllerBase
         var invoice = await _billingService.RefundInvoiceAsync(invoiceCode, request.Reason, cancellationToken);
         return OkResponse(invoice, "Hoàn tiền hóa đơn thành công.");
     }
-
-    /// <summary>
-    /// Kích hoạt giả lập thanh toán VietQR trên môi trường Sandbox (UC 5.1).
-    /// </summary>
-    [HttpPost("{invoiceCode}/simulate-vietqr")]
-    [Authorize(Policy = "AdminOnly")]
-    public async Task<IActionResult> SimulateVietQr(
-        string invoiceCode,
-        CancellationToken cancellationToken = default)
-    {
-        bool success = await _billingService.SimulateVietQrSandboxAsync(invoiceCode, null, cancellationToken);
-        if (success)
-        {
-            return OkResponse(new { Simulated = true }, "Kích hoạt giả lập VietQR Sandbox thành công.");
-        }
-
-        return BadRequest(new ApiResponse<object>(false, null, "SIMULATION_FAILED", "Kích hoạt giả lập VietQR Sandbox thất bại."));
-    }
 }
 
 public record RefundInvoiceApiRequest(string Reason);

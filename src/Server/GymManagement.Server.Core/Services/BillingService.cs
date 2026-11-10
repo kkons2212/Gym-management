@@ -489,66 +489,6 @@ public sealed class BillingService : IBillingService
         return result;
     }
 
-    public async Task<bool> SimulateVietQrSandboxAsync(
-        string invoiceCode,
-        string? bearerToken = null,
-        CancellationToken cancellationToken = default)
-    {
-        invoiceCode = RequireText(invoiceCode, "Mã hóa đơn");
-        var context = await LoadInvoiceContextAsync(invoiceCode, cancellationToken);
-
-        if (context.Invoice.Status == PaidStatus)
-        {
-            return true;
-        }
-
-        if (context.Invoice.Status != PendingStatus)
-        {
-            throw new BusinessRuleException("Chỉ có thể giả lập thanh toán cho hóa đơn đang chờ thanh toán.");
-        }
-
-        if (!context.Invoice.TotalAmount.HasValue)
-        {
-            throw new BusinessRuleException("Hóa đơn chưa có tổng tiền hợp lệ.");
-        }
-
-        decimal totalAmount = context.Invoice.TotalAmount.Value;
-        string content = context.Invoice.InvoiceCode;
-        string bankAccount = _vietQrOptions.AccountNo;
-        string bankCode = _vietQrOptions.BankCode;
-
-        var request = new VietQrTestCallbackRequest(
-            BankAccount: bankAccount,
-            Content: content,
-            Amount: Convert.ToInt64(totalAmount),
-            BankCode: bankCode,
-            TransType: "C"
-        );
-
-        bool triggered = await _vietQrAdapter.TriggerTestCallbackAsync(request, bearerToken, cancellationToken);
-
-        if (triggered && _vietQrOptions.IsSandbox)
-        {
-            var syncReq = new VietQrTransactionSyncRequest(
-                BankAccount: bankAccount,
-                Amount: totalAmount,
-                TransType: "C",
-                Content: content
-            );
-
-            try
-            {
-                await ProcessVietQrCallbackAsync(syncReq, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Tự động đối soát nội bộ sau Test Callback phát sinh ngoại lệ: {Message}", ex.Message);
-            }
-        }
-
-        return triggered;
-    }
-
     private async Task<InvoiceContext> LoadInvoiceContextAsync(
         string invoiceCode,
         CancellationToken cancellationToken)

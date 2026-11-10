@@ -9,16 +9,15 @@
     Style="{StaticResource DefaultContentDialogStyle}">
 
     <StackPanel Spacing="16" Width="440">
-        <!-- Sandbox Banner -->
-        <Border x:Name="SandboxBanner" Background="#78350F" BorderBrush="#B45309" BorderThickness="1" CornerRadius="8" Padding="12,8">
-            <TextBlock Text="MÔ PHỎNG THANH TOÁN (SANDBOX VIETQR)"
-                       Foreground="#FDE68A" FontWeight="Bold" FontSize="12"
-                       TextAlignment="Center" TextWrapping="Wrap" />
-        </Border>
-
-        <!-- QR Code Placeholder / Image -->
+        <!-- QR Code Container -->
         <Border Background="#FFFFFF" CornerRadius="12" Padding="16" HorizontalAlignment="Center" Width="260" Height="260">
-            <Image x:Name="QrImage" Stretch="Uniform" />
+            <Grid>
+                <ProgressRing x:Name="QrLoadingRing" IsActive="True" Width="36" Height="36" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Image x:Name="QrImage" Stretch="Uniform" />
+                <TextBlock x:Name="TxtQrError" Text="Không thể tải ảnh mã QR.&#x0a;Vui lòng quét bằng thông tin bên dưới."
+                           Foreground="#DC2626" FontSize="12" TextAlignment="Center" TextWrapping="Wrap"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+            </Grid>
         </Border>
 
         <!-- Bank Info Box -->
@@ -66,33 +65,19 @@
             </StackPanel>
         </Border>
 
-        <!-- Simulation & Manual Confirmation Action -->
+        <!-- Payment Confirmation Action -->
         <StackPanel Spacing="8">
-            <Button x:Name="BtnSimulatePayment"
-                    Content="⚡ Giả lập thanh toán thành công"
+            <Button x:Name="BtnManualConfirm"
+                    Content="✓ Xác nhận đã nhận tiền (Enter)"
                     HorizontalAlignment="Stretch"
                     Height="40"
-                    Background="{StaticResource AccentPrimaryBrush}"
+                    Background="{StaticResource StatusSuccessBrush}"
                     Foreground="#FFFFFF"
                     FontWeight="SemiBold"
-                    Click="BtnSimulatePayment_Click" />
-
-            <Button x:Name="BtnManualConfirm"
-                    Content="Xác nhận đã nhận tiền (Thủ công)"
-                    HorizontalAlignment="Stretch"
-                    Height="36"
-                    Foreground="{StaticResource StatusSuccessBrush}"
                     Click="BtnManualConfirm_Click" />
 
-            <ProgressRing x:Name="LoadingRing"
-                          IsActive="False"
-                          Visibility="Collapsed"
-                          Width="24"
-                          Height="24"
-                          HorizontalAlignment="Center" />
-
             <TextBlock x:Name="TxtPaymentStatus"
-                       Text="Đang chờ hội viên quét mã..."
+                       Text="Đang chờ hội viên quét mã VietQR..."
                        Foreground="{StaticResource TextSecondaryBrush}"
                        FontSize="12"
                        HorizontalAlignment="Center" />

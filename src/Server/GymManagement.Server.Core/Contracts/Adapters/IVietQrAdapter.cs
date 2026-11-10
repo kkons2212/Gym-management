@@ -29,12 +29,4 @@ public interface IVietQrAdapter
         string transactionReference,
         decimal paidAmount,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Kích hoạt API Test Callback chính thức trên môi trường VietQR Sandbox (https://dev.vietqr.org/vqr/bank/api/test/transaction-callback).
-    /// </summary>
-    Task<bool> TriggerTestCallbackAsync(
-        VietQrTestCallbackRequest request,
-        string? bearerToken = null,
-        CancellationToken cancellationToken = default);
 }

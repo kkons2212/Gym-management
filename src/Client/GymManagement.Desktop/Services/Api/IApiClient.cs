@@ -37,7 +37,6 @@ public interface IApiClient
     Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent);
     Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode);
     Task<InvoiceDto> RefundInvoiceAsync(string invoiceCode, decimal refundAmount, string reason);
-    Task<bool> SimulateVietQrCallbackAsync(string bankAccount, string content, long amount, string bankCode);
 
     // PT Services (UC04)
     Task<IReadOnlyList<PtSessionSlotDto>> GetPtScheduleSlotsAsync(DateTime startDate, DateTime endDate);

@@ -226,21 +226,6 @@ public sealed class BillingServiceTests
         await act.Should().ThrowAsync<BusinessRuleException>();
     }
 
-    [Fact]
-    public async Task SimulateVietQrSandboxAsync_WhenValidInvoice_TriggersAdapterAndActivates()
-    {
-        var created = await _sut.CreateInvoiceAsync(CreateRequest("VIETQR"));
-        _vietQr
-            .Setup(v => v.TriggerTestCallbackAsync(It.IsAny<VietQrTestCallbackRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        var triggered = await _sut.SimulateVietQrSandboxAsync(created.InvoiceCode);
-
-        triggered.Should().BeTrue();
-        _invoices.Single().Status.Should().Be("PAID");
-        _subscriptions.Single().Status.Should().Be("ACTIVE");
-    }
-
     private CreateInvoiceRequest CreateRequest(string paymentMethod = "CASH")
         => new(_user.UserName, _plan.PlanId, paymentMethod, "SUBSCRIPTION_PURCHASE");
 

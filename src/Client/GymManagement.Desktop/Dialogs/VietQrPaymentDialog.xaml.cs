@@ -1,3 +1,6 @@
+using System.IO;
+using System.Net.Http;
+using Windows.Storage.Streams;
 using GymManagement.Desktop.Services.Api;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,11 +11,6 @@ namespace GymManagement.Desktop.Dialogs;
 
 public sealed partial class VietQrPaymentDialog : ContentDialog
 {
-    private readonly decimal _amount;
-    private readonly string _accountNumber;
-    private readonly string _transferContent;
-    private readonly IApiClient? _apiClient;
-
     public bool IsPaymentConfirmed { get; private set; }
 
     public VietQrPaymentDialog(
@@ -25,84 +23,106 @@ public sealed partial class VietQrPaymentDialog : ContentDialog
     {
         InitializeComponent();
 
-        _amount = amount;
-        _accountNumber = accountNumber;
-        _transferContent = transferContent;
-        _apiClient = apiClient;
-
         TxtAmount.Text = $"{amount:N0} đ";
         TxtBank.Text = bankName;
         TxtAccount.Text = accountNumber;
         TxtContent.Text = transferContent;
 
-        if (!string.IsNullOrEmpty(qrImageUrl))
-        {
-            QrImage.Source = new BitmapImage(new Uri(qrImageUrl));
-        }
-
         IsPrimaryButtonEnabled = false;
 
-        // Ràng buộc hiển thị nút giả lập thanh toán theo biến môi trường (ui_rules.md 2.2)
-        string? simEnv = Environment.GetEnvironmentVariable("VIETQR_ENABLE_SIMULATION");
-        string? aspnetEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        bool isSimulationEnabled = false;
-
-        if (string.Equals(simEnv, "true", StringComparison.OrdinalIgnoreCase))
-        {
-            isSimulationEnabled = true;
-        }
-        else if (string.Equals(aspnetEnv, "Development", StringComparison.OrdinalIgnoreCase))
-        {
-            isSimulationEnabled = true;
-        }
-
-        if (!isSimulationEnabled)
-        {
-            BtnSimulatePayment.Visibility = Visibility.Collapsed;
-            SandboxBanner.Visibility = Visibility.Collapsed;
-        }
+        LoadQrImage(qrImageUrl);
     }
 
-    private async void BtnSimulatePayment_Click(object sender, RoutedEventArgs e)
+    private async void LoadQrImage(string? qrImageUrl)
     {
-        BtnSimulatePayment.IsEnabled = false;
-        BtnManualConfirm.IsEnabled = false;
-        LoadingRing.Visibility = Visibility.Visible;
-        LoadingRing.IsActive = true;
-        TxtPaymentStatus.Text = "Đang gửi tín hiệu Test Callback tới VietQR Sandbox...";
-
-        if (_apiClient != null)
+        if (string.IsNullOrWhiteSpace(qrImageUrl))
         {
-            string bankCode = Environment.GetEnvironmentVariable("VIETQR_BANK_CODE") ?? "MB";
-            await _apiClient.SimulateVietQrCallbackAsync(_accountNumber, _transferContent, Convert.ToInt64(_amount), bankCode);
+            QrLoadingRing.IsActive = false;
+            QrLoadingRing.Visibility = Visibility.Collapsed;
+            TxtQrError.Visibility = Visibility.Visible;
+            return;
         }
 
-        LoadingRing.IsActive = false;
-        LoadingRing.Visibility = Visibility.Collapsed;
-
-        IsPaymentConfirmed = true;
-        BtnSimulatePayment.Content = "✓ Đã xác nhận thanh toán (Sandbox VietQR)";
-        TxtPaymentStatus.Text = "Kích hoạt gói tập thành công! Hóa đơn đã sẵn sàng in.";
-
-        var brush = Application.Current.Resources["StatusSuccessBrush"] as Brush;
-        if (brush != null)
+        try
         {
-            TxtPaymentStatus.Foreground = brush;
-        }
+            if (qrImageUrl.StartsWith("data:image", StringComparison.OrdinalIgnoreCase))
+            {
+                int commaIndex = qrImageUrl.IndexOf(",");
+                string base64Data = qrImageUrl.Substring(commaIndex + 1);
+                byte[] bytes = Convert.FromBase64String(base64Data);
 
-        IsPrimaryButtonEnabled = true;
+                var stream = new InMemoryRandomAccessStream();
+                using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
+                {
+                    writer.WriteBytes(bytes);
+                    await writer.StoreAsync();
+                }
+
+                var bitmap = new BitmapImage();
+                await bitmap.SetSourceAsync(stream);
+                QrImage.Source = bitmap;
+            }
+            else
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                var response = await httpClient.GetAsync(qrImageUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+                    var stream = new InMemoryRandomAccessStream();
+                    using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
+                    {
+                        writer.WriteBytes(imageBytes);
+                        await writer.StoreAsync();
+                    }
+
+                    string mediaType = string.Empty;
+                    if (response.Content.Headers.ContentType != null && response.Content.Headers.ContentType.MediaType != null)
+                    {
+                        mediaType = response.Content.Headers.ContentType.MediaType;
+                    }
+
+                    if (mediaType.Contains("svg", StringComparison.OrdinalIgnoreCase) || qrImageUrl.Contains(".svg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var svgSource = new SvgImageSource();
+                        svgSource.RasterizePixelWidth = 260;
+                        svgSource.RasterizePixelHeight = 260;
+                        await svgSource.SetSourceAsync(stream);
+                        QrImage.Source = svgSource;
+                    }
+                    else
+                    {
+                        var bitmap = new BitmapImage();
+                        await bitmap.SetSourceAsync(stream);
+                        QrImage.Source = bitmap;
+                    }
+                }
+                else
+                {
+                    TxtQrError.Visibility = Visibility.Visible;
+                }
+            }
+        }
+        catch
+        {
+            TxtQrError.Visibility = Visibility.Visible;
+        }
+        finally
+        {
+            QrLoadingRing.IsActive = false;
+            QrLoadingRing.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void BtnManualConfirm_Click(object sender, RoutedEventArgs e)
     {
-        BtnSimulatePayment.IsEnabled = false;
-        BtnManualConfirm.IsEnabled = false;
-        LoadingRing.IsActive = false;
-        LoadingRing.Visibility = Visibility.Collapsed;
-
         IsPaymentConfirmed = true;
-        BtnManualConfirm.Content = "✓ Đã xác nhận thủ công";
-        TxtPaymentStatus.Text = "Thu ngân đã xác nhận thanh toán thành công.";
+        BtnManualConfirm.IsEnabled = false;
+        BtnManualConfirm.Content = "✓ Đã ghi nhận thanh toán";
+        TxtPaymentStatus.Text = "Hóa đơn đã thanh toán thành công. Sẵn sàng in phiếu thu!";
 
         var brush = Application.Current.Resources["StatusSuccessBrush"] as Brush;
         if (brush != null)
