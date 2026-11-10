@@ -138,9 +138,30 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     public async Task CreateUserAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewFullName) || string.IsNullOrWhiteSpace(NewUsername))
+        if (string.IsNullOrWhiteSpace(NewFullName) || NewFullName.Trim().Length < 3)
         {
-            StatusMessage = "Vui lòng nhập họ tên và tên đăng nhập.";
+            StatusMessage = "Họ và tên nhân sự phải có ít nhất 3 ký tự.";
+            IsSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewUsername))
+        {
+            StatusMessage = "Vui lòng nhập tên đăng nhập.";
+            IsSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewPhone) || !System.Text.RegularExpressions.Regex.IsMatch(NewPhone.Trim(), @"^0\d{9}$"))
+        {
+            StatusMessage = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).";
+            IsSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewEmail) || !System.Text.RegularExpressions.Regex.IsMatch(NewEmail.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            StatusMessage = "Địa chỉ email không đúng định dạng.";
             IsSuccess = false;
             return;
         }

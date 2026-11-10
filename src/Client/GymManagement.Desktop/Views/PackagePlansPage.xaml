@@ -154,8 +154,8 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Price & Status -->
-                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="6">
+                                    <!-- Price, Status & Actions -->
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="8">
                                         <TextBlock Text="{x:Bind Price, Converter={StaticResource CurrencyFormatterConverter}}"
                                                    FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusSuccessBrush}"
                                                    HorizontalAlignment="Right" />
@@ -163,6 +163,12 @@
                                                 CornerRadius="10" Padding="8,3" HorizontalAlignment="Right">
                                             <TextBlock Text="{x:Bind Status}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" />
                                         </Border>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                                            <Button Content="Sửa" Click="OnEditPackageClicked" Height="30" FontSize="11" Padding="10,0" />
+                                            <Button Content="Xóa" Click="OnDeletePackageClicked" Height="30" FontSize="11" Padding="10,0"
+                                                    Background="#3D1212" BorderBrush="{StaticResource StatusDangerBrush}" BorderThickness="1"
+                                                    Foreground="{StaticResource StatusDangerBrush}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
                             </Border>

@@ -474,6 +474,53 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<UserSessionDto>(response);
     }
 
+    public async Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            throw new ValidationException("Tên đăng nhập không được để trống.");
+        }
+
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userName)}", request);
+        return await HandleResponseAsync<UserSessionDto>(response);
+    }
+
+    public async Task<bool> SetUserStatusAsync(string userName, string status)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            throw new ValidationException("Tên đăng nhập không được để trống.");
+        }
+
+        var payload = new { Status = status };
+        var response = await _httpClient.PostAsJsonAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userName)}/status", payload);
+        return await HandleResponseAsync<bool>(response);
+    }
+
+    public async Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(planId))
+        {
+            throw new ValidationException("Mã gói tập không được để trống.");
+        }
+
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/admin/packages/{Uri.EscapeDataString(planId)}", request);
+        return await HandleResponseAsync<PackagePlanDto>(response);
+    }
+
+    public async Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId)
+    {
+        if (string.IsNullOrWhiteSpace(planId))
+        {
+            throw new ValidationException("Mã gói tập không được để trống.");
+        }
+
+        var response = await _httpClient.DeleteAsync($"/api/v1/admin/packages/{Uri.EscapeDataString(planId)}");
+        return await HandleResponseAsync<DeletePackageResultDto>(response);
+    }
+
     private static async Task<T> HandleResponseAsync<T>(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)

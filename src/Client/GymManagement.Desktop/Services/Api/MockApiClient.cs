@@ -651,4 +651,107 @@ public class MockApiClient : IApiClient
         _users.Add(newUser);
         return Task.FromResult(newUser);
     }
+
+    public Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var existing = _users.FirstOrDefault(u => u.UserId == userName || u.Email == userName);
+        if (existing != null)
+        {
+            int index = _users.IndexOf(existing);
+            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+            _users[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        var fallback = new UserSessionDto(userName, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+        _users.Add(fallback);
+        return Task.FromResult(fallback);
+    }
+
+    public Task<bool> SetUserStatusAsync(string userName, string status)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var existing = _packages.FirstOrDefault(p => p.PlanId == planId);
+        if (existing != null)
+        {
+            int index = _packages.IndexOf(existing);
+            int? maxCheckIn = existing.MaxCheckInSessions;
+            if (request.MaxCheckInSessions.HasValue)
+            {
+                maxCheckIn = request.MaxCheckInSessions.Value;
+            }
+
+            int? totalPt = existing.TotalPtSessions;
+            if (request.TotalPtSessions.HasValue)
+            {
+                totalPt = request.TotalPtSessions.Value;
+            }
+
+            var updated = new PackagePlanDto(
+                existing.PlanId,
+                request.Name.Trim(),
+                request.Description ?? string.Empty,
+                request.Price,
+                request.DurationDays,
+                maxCheckIn,
+                totalPt,
+                request.IsPtIncluded,
+                existing.Status
+            );
+            _packages[index] = updated;
+            return Task.FromResult(updated);
+        }
+
+        throw new NotFoundException($"Không tìm thấy gói tập với mã {planId}.");
+    }
+
+    public Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId)
+    {
+        var existing = _packages.FirstOrDefault(p => p.PlanId == planId);
+        if (existing == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập với mã {planId}.");
+        }
+
+        bool hasInvoices = _invoices.Any(i => i.PlanName != null && i.PlanName.Contains(existing.Name, StringComparison.OrdinalIgnoreCase));
+        if (hasInvoices)
+        {
+            int index = _packages.IndexOf(existing);
+            var discontinued = new PackagePlanDto(
+                existing.PlanId,
+                existing.Name,
+                existing.Description,
+                existing.Price,
+                existing.DurationDays,
+                existing.MaxCheckInSessions,
+                existing.TotalPtSessions,
+                existing.IsPtIncluded,
+                "DISCONTINUED"
+            );
+            _packages[index] = discontinued;
+
+            return Task.FromResult(new DeletePackageResultDto(
+                planId,
+                false,
+                true,
+                "Gói tập đang có giao dịch phát sinh. Đã tự động chuyển sang trạng thái Ngừng kinh doanh để bảo toàn dữ liệu lịch sử."
+            ));
+        }
+
+        _packages.Remove(existing);
+        return Task.FromResult(new DeletePackageResultDto(
+            planId,
+            true,
+            false,
+            "Đã xóa gói tập thành công."
+        ));
+    }
 }

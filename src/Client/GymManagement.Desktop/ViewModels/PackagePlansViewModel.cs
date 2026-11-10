@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymManagement.Desktop.Services.Api;
 using GymManagement.Server.Core.DTOs.Packages;
+using GymManagement.Server.Core.DTOs.Settings;
 
 namespace GymManagement.Desktop.ViewModels;
 
@@ -138,6 +139,29 @@ public partial class PackagePlansViewModel : ObservableObject
         {
             StatusMessage = $"Không thể tạo gói tập: {ex.Message}";
             IsSuccess = false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public async Task<DeletePackageResultDto?> DeletePackageAsync(string planId)
+    {
+        try
+        {
+            IsLoading = true;
+            var result = await _apiClient.DeletePackagePlanAsync(planId);
+            await LoadPackagesAsync();
+            StatusMessage = result.Message;
+            IsSuccess = true;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể xóa gói tập: {ex.Message}";
+            IsSuccess = false;
+            return null;
         }
         finally
         {

@@ -54,6 +54,10 @@ public interface IApiClient
     // Staff RBAC (UC07)
     Task<IReadOnlyList<UserSessionDto>> GetUsersAsync();
     Task<bool> ToggleUserLockAsync(string userId);
+    Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request);
+    Task<bool> SetUserStatusAsync(string userName, string status);
     Task<PackagePlanDto> CreatePackagePlanAsync(PackagePlanDto plan);
+    Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request);
+    Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId);
     Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role);
 }
