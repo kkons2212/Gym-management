@@ -49,7 +49,6 @@ public sealed partial class PosBillingPage : Page
             var accentBrush = Application.Current.Resources["AccentPrimaryBrush"] as Brush;
             BtnCash.Background = null;
             BtnVietQr.Background = null;
-            BtnCard.Background = null;
 
             if (method == "CASH")
             {
@@ -58,10 +57,6 @@ public sealed partial class PosBillingPage : Page
             else if (method == "VIETQR")
             {
                 BtnVietQr.Background = accentBrush;
-            }
-            else if (method == "CREDIT_CARD")
-            {
-                BtnCard.Background = accentBrush;
             }
         }
     }
@@ -84,27 +79,68 @@ public sealed partial class PosBillingPage : Page
 
     private async void OnProcessCheckoutClicked(object sender, RoutedEventArgs e)
     {
-        if (ViewModel.SelectedPaymentMethod == "VIETQR" && ViewModel.VietQrPayload != null)
+        if (ViewModel.SelectedMember == null)
         {
-            var dialog = new VietQrPaymentDialog(
-                ViewModel.VietQrPayload.Amount,
-                ViewModel.VietQrPayload.BankName,
-                ViewModel.VietQrPayload.BankAccount,
-                ViewModel.VietQrPayload.TransferContent,
-                ViewModel.VietQrPayload.QrDataUrl)
-            {
-                XamlRoot = this.XamlRoot
-            };
+            ViewModel.StatusMessage = "Vui lòng chọn hội viên thanh toán!";
+            return;
+        }
 
-            var result = await dialog.ShowAsync();
-            if (dialog.IsPaymentConfirmed || result == ContentDialogResult.Primary)
+        if (ViewModel.SelectedPackage == null)
+        {
+            ViewModel.StatusMessage = "Vui lòng chọn gói tập niêm yết!";
+            return;
+        }
+
+        if (ViewModel.SelectedPaymentMethod == "VIETQR")
+        {
+            bool prepared = await ViewModel.PrepareVietQrPayloadAsync();
+            if (!prepared)
             {
-                await ViewModel.FinalizeInvoiceAsync();
+                return;
+            }
+
+            if (ViewModel.VietQrPayload != null)
+            {
+                var dialog = new VietQrPaymentDialog(
+                    ViewModel.VietQrPayload.Amount,
+                    ViewModel.VietQrPayload.BankName,
+                    ViewModel.VietQrPayload.BankAccount,
+                    ViewModel.VietQrPayload.TransferContent,
+                    ViewModel.VietQrPayload.QrDataUrl,
+                    ViewModel.ApiClient)
+                {
+                    XamlRoot = this.XamlRoot
+                };
+
+                var result = await dialog.ShowAsync();
+                if (dialog.IsPaymentConfirmed)
+                {
+                    await ViewModel.FinalizeInvoiceAsync();
+                    await ShowReceiptDialogAsync();
+                }
+                else if (result == ContentDialogResult.Primary)
+                {
+                    await ViewModel.FinalizeInvoiceAsync();
+                    await ShowReceiptDialogAsync();
+                }
             }
         }
         else
         {
             await ViewModel.FinalizeInvoiceAsync();
+            await ShowReceiptDialogAsync();
+        }
+    }
+
+    private async Task ShowReceiptDialogAsync()
+    {
+        if (ViewModel.CreatedInvoice != null)
+        {
+            var receiptDialog = new Dialogs.ReceiptPreviewDialog(ViewModel.CreatedInvoice)
+            {
+                XamlRoot = this.XamlRoot
+            };
+            await receiptDialog.ShowAsync();
         }
     }
 

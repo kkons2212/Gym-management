@@ -321,6 +321,12 @@
 
                             <!-- Table Rows -->
                             <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.TodayLogs, Mode=OneWay}" SelectionMode="None">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="Padding" Value="0" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="dto:CheckInLogDto">
                                         <Grid Padding="12,8">

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net.Http.Json;
 using System.Text.Encodings.Web;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.DTOs.Adapters;

@@ -1,5 +1,6 @@
 using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.DTOs.Billing;
+using GymManagement.Server.Core.DTOs.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

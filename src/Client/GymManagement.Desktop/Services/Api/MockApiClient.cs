@@ -9,6 +9,7 @@ using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
+using System.Net.Http.Json;
 
 namespace GymManagement.Desktop.Services.Api;
 
@@ -325,14 +326,26 @@ public class MockApiClient : IApiClient
 
     public Task<VietQrPayloadDto> GenerateVietQrAsync(string invoiceCode, decimal amount, string transferContent)
     {
-        return Task.FromResult(new VietQrPayloadDto(
-            $"https://api.vietqr.io/image/970422-0901234567-print.jpg?amount={amount}&addInfo={Uri.EscapeDataString(transferContent)}",
-            "0901234567",
-            "MB Bank (Napas 247)",
+        string bankBin = Environment.GetEnvironmentVariable("VIETQR_BANK_BIN") ?? "970422";
+        string accountNo = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NO") ?? "0901234567";
+        string accountName = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NAME") ?? "CONG TY TNHH PHONG TAP THE THAO";
+        string bankName = Environment.GetEnvironmentVariable("VIETQR_BANK_NAME") ?? "MB Bank (Napas 247)";
+        string imageBaseUrl = Environment.GetEnvironmentVariable("VIETQR_IMAGE_BASE_URL") ?? "https://img.vietqr.io/image";
+
+        string encodedContent = Uri.EscapeDataString(transferContent);
+        string encodedAccountName = Uri.EscapeDataString(accountName);
+        string qrImageUrl = $"{imageBaseUrl}/{bankBin}-{accountNo}-compact2.svg?amount={(long)amount}&addInfo={encodedContent}&accountName={encodedAccountName}";
+
+        var payload = new VietQrPayloadDto(
+            qrImageUrl,
+            accountNo,
+            bankName,
             amount,
             transferContent,
             600
-        ));
+        );
+
+        return Task.FromResult(payload);
     }
 
     public Task<InvoiceDto> ConfirmPaymentAsync(string invoiceCode)

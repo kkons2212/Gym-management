@@ -107,17 +107,23 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <StackPanel Spacing="4">
+                <Grid Grid.Row="0" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="4">
                         <TextBlock Text="DANH SÁCH GÓI TẬP ĐANG LƯU HÀNH"
                                    FontSize="16" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="Tất cả các gói dịch vụ phòng tập và huấn luyện viên"
-                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <Button Content="Tải Lại"
+                    <Button Grid.Column="1" Content="Tải Lại"
                             Command="{x:Bind ViewModel.LoadPackagesCommand}"
-                            HorizontalAlignment="Right" Height="36" />
+                            Height="36" />
                 </Grid>
 
                 <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Packages}">

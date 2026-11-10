@@ -6,6 +6,7 @@ using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GymManagement.Server.Core.Services;
 
@@ -25,12 +26,14 @@ public sealed class BillingService : IBillingService
     private readonly IVietQrAdapter _vietQrAdapter;
     private readonly INotificationAdapter _notification;
     private readonly ILogger<BillingService> _logger;
+    private readonly VietQrOptions _vietQrOptions;
 
     public BillingService(
         IUnitOfWork unitOfWork,
         IVietQrAdapter vietQrAdapter,
         INotificationAdapter notification,
-        ILogger<BillingService> logger)
+        ILogger<BillingService> logger,
+        Microsoft.Extensions.Options.IOptions<VietQrOptions>? vietQrOptions = null)
     {
         ArgumentNullException.ThrowIfNull(unitOfWork);
         ArgumentNullException.ThrowIfNull(vietQrAdapter);
@@ -41,6 +44,15 @@ public sealed class BillingService : IBillingService
         _vietQrAdapter = vietQrAdapter;
         _notification = notification;
         _logger = logger;
+
+        if (vietQrOptions != null && vietQrOptions.Value != null)
+        {
+            _vietQrOptions = vietQrOptions.Value;
+        }
+        else
+        {
+            _vietQrOptions = new VietQrOptions();
+        }
     }
 
     public async Task<InvoiceDto> CreateInvoiceAsync(
@@ -315,6 +327,166 @@ public sealed class BillingService : IBillingService
 
             return MapToDto(invoice, context.User, context.Plan);
         }, cancellationToken);
+    }
+
+    public async Task<InvoiceDto> ProcessVietQrCallbackAsync(
+        VietQrTransactionSyncRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+        {
+            throw new ValidationException("Thông tin biến động số dư VietQR không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Content))
+        {
+            throw new ValidationException("Nội dung chuyển khoản VietQR không được để trống.");
+        }
+
+        if (!string.Equals(request.TransType, "C", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation(
+                "Bỏ qua webhook VietQR do giao dịch không phải là tiền vào (Ghi có C): TransType={TransType}",
+                request.TransType);
+            throw new BusinessRuleException("Giao dịch VietQR không phải là biến động tăng số dư (C).");
+        }
+
+        string rawContent = request.Content.Trim();
+        string candidateInvoiceCode = rawContent;
+
+        if (!string.IsNullOrWhiteSpace(request.OrderId))
+        {
+            candidateInvoiceCode = request.OrderId.Trim();
+        }
+        else
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(
+                rawContent,
+                @"HD-\d{8}-[A-Za-z0-9]+",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                candidateInvoiceCode = match.Value;
+            }
+        }
+
+        var invoice = await _unitOfWork.Repository<Invoice>()
+            .FindSingleOrDefaultAsync(i => i.InvoiceCode == candidateInvoiceCode, cancellationToken);
+
+        if (invoice == null)
+        {
+            var pendingInvoices = await _unitOfWork.Repository<Invoice>()
+                .FindAsync(i => i.Status == PendingStatus && i.PaymentMethod == VietQrPaymentMethod, cancellationToken);
+
+            foreach (var pending in pendingInvoices)
+            {
+                if (rawContent.Contains(pending.InvoiceCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    invoice = pending;
+                    break;
+                }
+            }
+        }
+
+        if (invoice == null)
+        {
+            _logger.LogWarning("Không tìm thấy hóa đơn khớp với nội dung chuyển khoản VietQR: {Content}", rawContent);
+            throw new NotFoundException($"Không tìm thấy hóa đơn khớp với nội dung chuyển tiền: {rawContent}");
+        }
+
+        var context = await LoadInvoiceContextAsync(invoice.InvoiceCode, cancellationToken);
+
+        if (invoice.Status == PaidStatus)
+        {
+            _logger.LogInformation("Hóa đơn {InvoiceCode} đã được thanh toán trước đó (idempotent callback).", invoice.InvoiceCode);
+            return MapToDto(invoice, context.User, context.Plan);
+        }
+
+        if (invoice.Status != PendingStatus)
+        {
+            throw new BusinessRuleException($"Hóa đơn {invoice.InvoiceCode} không còn ở trạng thái chờ thanh toán ({invoice.Status}).");
+        }
+
+        if (!invoice.TotalAmount.HasValue)
+        {
+            throw new BusinessRuleException("Hóa đơn chưa có tổng tiền hợp lệ.");
+        }
+
+        decimal expectedAmount = invoice.TotalAmount.Value;
+        if (request.Amount < expectedAmount)
+        {
+            throw new BusinessRuleException(
+                $"Số tiền thanh toán ({request.Amount:N0} VNĐ) nhỏ hơn tổng tiền hóa đơn ({expectedAmount:N0} VNĐ).");
+        }
+
+        DateTime paidAt = DateTime.UtcNow;
+        if (request.TransactionTime.HasValue && request.TransactionTime.Value > 0)
+        {
+            paidAt = DateTimeOffset.FromUnixTimeSeconds(request.TransactionTime.Value).UtcDateTime;
+        }
+
+        bool shouldSendReceipt = false;
+        InvoiceDto result = await _unitOfWork.ExecuteTransactionAsync(async () =>
+        {
+            var currentInvoice = await _unitOfWork.Repository<Invoice>()
+                .FindSingleOrDefaultAsync(i => i.InvoiceCode == invoice.InvoiceCode, cancellationToken);
+
+            if (currentInvoice == null)
+            {
+                throw new NotFoundException($"Không tìm thấy hóa đơn: {invoice.InvoiceCode}");
+            }
+
+            if (currentInvoice.Status == PaidStatus)
+            {
+                return MapToDto(currentInvoice, context.User, context.Plan);
+            }
+
+            if (currentInvoice.Status != PendingStatus)
+            {
+                throw new BusinessRuleException("Hóa đơn không còn ở trạng thái chờ thanh toán.");
+            }
+
+            var subscriptions = await _unitOfWork.Repository<MemberSubscription>()
+                .FindAsync(s => s.UserName == currentInvoice.UserName && s.Status == ActiveStatus, cancellationToken);
+            foreach (var existingSubscription in subscriptions)
+            {
+                existingSubscription.Status = CancelledStatus;
+                _unitOfWork.Repository<MemberSubscription>().Update(existingSubscription);
+            }
+
+            var subscription = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(s => s.SubscriptionId == currentInvoice.SubscriptionId, cancellationToken);
+
+            if (subscription == null)
+            {
+                throw new NotFoundException($"Không tìm thấy gói hội viên: {currentInvoice.SubscriptionId}");
+            }
+
+            DateOnly startDate = DateOnly.FromDateTime(paidAt);
+            subscription.Status = ActiveStatus;
+            subscription.StartDate = startDate;
+            if (context.Plan.DurationDays.HasValue)
+            {
+                subscription.EndDate = startDate.AddDays(context.Plan.DurationDays.Value);
+            }
+            _unitOfWork.Repository<MemberSubscription>().Update(subscription);
+
+            currentInvoice.Status = PaidStatus;
+            currentInvoice.PaidAt = DateOnly.FromDateTime(paidAt);
+            _unitOfWork.Repository<Invoice>().Update(currentInvoice);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            shouldSendReceipt = true;
+
+            return MapToDto(currentInvoice, context.User, context.Plan);
+        }, cancellationToken);
+
+        if (shouldSendReceipt)
+        {
+            await SendReceiptAsync(context, result, paidAt, cancellationToken);
+        }
+
+        return result;
     }
 
     private async Task<InvoiceContext> LoadInvoiceContextAsync(

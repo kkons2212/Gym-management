@@ -175,6 +175,57 @@ public sealed class BillingServiceTests
             Times.Never);
     }
 
+    [Fact]
+    public async Task ProcessVietQrCallbackAsync_WhenValidPayment_ActivatesSubscriptionAndMarksPaid()
+    {
+        var created = await _sut.CreateInvoiceAsync(CreateRequest("VIETQR"));
+        var callbackReq = new VietQrTransactionSyncRequest(
+            BankAccount: "0912345678",
+            Amount: 1000,
+            TransType: "C",
+            Content: created.InvoiceCode
+        );
+
+        var result = await _sut.ProcessVietQrCallbackAsync(callbackReq);
+
+        result.Status.Should().Be("PAID");
+        result.PaidAt.Should().NotBeNull();
+        _invoices.Single().Status.Should().Be("PAID");
+        _subscriptions.Single().Status.Should().Be("ACTIVE");
+    }
+
+    [Fact]
+    public async Task ProcessVietQrCallbackAsync_WhenDebitTransaction_ThrowsBusinessRuleException()
+    {
+        var created = await _sut.CreateInvoiceAsync(CreateRequest("VIETQR"));
+        var callbackReq = new VietQrTransactionSyncRequest(
+            BankAccount: "0912345678",
+            Amount: 1000,
+            TransType: "D",
+            Content: created.InvoiceCode
+        );
+
+        var act = () => _sut.ProcessVietQrCallbackAsync(callbackReq);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+    }
+
+    [Fact]
+    public async Task ProcessVietQrCallbackAsync_WhenUnderpaid_ThrowsBusinessRuleException()
+    {
+        var created = await _sut.CreateInvoiceAsync(CreateRequest("VIETQR"));
+        var callbackReq = new VietQrTransactionSyncRequest(
+            BankAccount: "0912345678",
+            Amount: 500,
+            TransType: "C",
+            Content: created.InvoiceCode
+        );
+
+        var act = () => _sut.ProcessVietQrCallbackAsync(callbackReq);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+    }
+
     private CreateInvoiceRequest CreateRequest(string paymentMethod = "CASH")
         => new(_user.UserName, _plan.PlanId, paymentMethod, "SUBSCRIPTION_PURCHASE");
 

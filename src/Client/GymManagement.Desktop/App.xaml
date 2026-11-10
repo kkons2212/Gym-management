@@ -21,6 +21,11 @@
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:TimeOnlyFormatterConverter x:Key="TimeOnlyFormatterConverter" />
+
+            <!-- Global Control Styles for Clean 100% Dark Layout -->
+            <Style TargetType="ListViewItem">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -213,7 +213,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Button x:Name="BtnCash" Grid.Column="0" Content="💵 Tiền Mặt"
@@ -223,9 +222,6 @@
                                 HorizontalAlignment="Stretch" Height="40"
                                 Background="{StaticResource AccentPrimaryBrush}" Foreground="#FFFFFF"
                                 Click="BtnPaymentMethod_Click" Tag="VIETQR" />
-                        <Button x:Name="BtnCard" Grid.Column="2" Content="💳 Quẹt Thẻ"
-                                HorizontalAlignment="Stretch" Height="40"
-                                Click="BtnPaymentMethod_Click" Tag="CREDIT_CARD" />
                     </Grid>
 
                     <TextBlock x:Name="TxtStatus" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
@@ -235,7 +231,6 @@
                 <!-- Process Checkout Button -->
                 <Button Grid.Row="4"
                         Content="Thanh Toán &amp; Xuất Hóa Đơn (Enter)"
-                        Command="{x:Bind ViewModel.ProcessCheckoutCommand}"
                         Click="OnProcessCheckoutClicked"
                         HorizontalAlignment="Stretch"
                         Height="46"

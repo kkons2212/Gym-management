@@ -68,17 +68,17 @@
                 </Grid.RowDefinitions>
 
                 <!-- Table Header -->
-                <Border Grid.Row="0" Background="#0F172A" CornerRadius="12,12,0,0" Padding="20,12" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
+                <Border Grid.Row="0" Background="#0F172A" CornerRadius="12,12,0,0" Padding="16,12" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.8*" />
-                            <ColumnDefinition Width="1.6*" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="1.6*" />
-                            <ColumnDefinition Width="1.4*" />
-                            <ColumnDefinition Width="1.4*" />
-                            <ColumnDefinition Width="2.2*" />
+                            <ColumnDefinition Width="1.8*" MinWidth="130" />
+                            <ColumnDefinition Width="1.6*" MinWidth="110" />
+                            <ColumnDefinition Width="2*" MinWidth="140" />
+                            <ColumnDefinition Width="2*" MinWidth="130" />
+                            <ColumnDefinition Width="1.6*" MinWidth="110" />
+                            <ColumnDefinition Width="1.4*" MinWidth="90" />
+                            <ColumnDefinition Width="1.4*" MinWidth="90" />
+                            <ColumnDefinition Width="180" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="MÃ HÓA ĐƠN" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="THỜI GIAN" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -109,18 +109,24 @@
 
                 <!-- Table Content -->
                 <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Invoices}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="dto:InvoiceDto">
-                            <Grid Padding="12,10">
+                            <Grid Padding="16,10">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1.8*" />
-                                    <ColumnDefinition Width="1.6*" />
-                                    <ColumnDefinition Width="2*" />
-                                    <ColumnDefinition Width="2*" />
-                                    <ColumnDefinition Width="1.6*" />
-                                    <ColumnDefinition Width="1.4*" />
-                                    <ColumnDefinition Width="1.4*" />
-                                    <ColumnDefinition Width="2.2*" />
+                                    <ColumnDefinition Width="1.8*" MinWidth="130" />
+                                    <ColumnDefinition Width="1.6*" MinWidth="110" />
+                                    <ColumnDefinition Width="2*" MinWidth="140" />
+                                    <ColumnDefinition Width="2*" MinWidth="130" />
+                                    <ColumnDefinition Width="1.6*" MinWidth="110" />
+                                    <ColumnDefinition Width="1.4*" MinWidth="90" />
+                                    <ColumnDefinition Width="1.4*" MinWidth="90" />
+                                    <ColumnDefinition Width="180" />
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Invoice Code -->
