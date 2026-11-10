@@ -67,7 +67,7 @@
 
                 <!-- Login Button with ProgressRing Spinner & Idempotency Lock -->
                 <Button Command="{x:Bind ViewModel.LoginCommand}"
-                        IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                        IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}"
                         HorizontalAlignment="Stretch"
                         Height="44"
                         Background="{StaticResource AccentPrimaryBrush}"
