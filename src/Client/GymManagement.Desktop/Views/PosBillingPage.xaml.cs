@@ -106,7 +106,8 @@ public sealed partial class PosBillingPage : Page
                     ViewModel.VietQrPayload.BankName,
                     ViewModel.VietQrPayload.BankAccount,
                     ViewModel.VietQrPayload.TransferContent,
-                    ViewModel.VietQrPayload.QrDataUrl)
+                    ViewModel.VietQrPayload.QrDataUrl,
+                    ViewModel.ApiClient)
                 {
                     XamlRoot = this.XamlRoot
                 };

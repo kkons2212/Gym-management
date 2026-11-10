@@ -8,11 +8,14 @@
         "VIETQR_API_BASE_URL": "https://api.vietqr.io/v2",
         "VIETQR_IMAGE_BASE_URL": "https://img.vietqr.io/image",
         "VIETQR_BANK_BIN": "970422",
+        "VIETQR_BANK_CODE": "MB",
         "VIETQR_BANK_NAME": "MB Bank (Napas 247)",
         "VIETQR_ACCOUNT_NO": "0901234567",
         "VIETQR_ACCOUNT_NAME": "CONG TY TNHH PHONG TAP THE THAO",
         "VIETQR_CLIENT_ID": "sandbox-client-id",
-        "VIETQR_API_KEY": "sandbox-api-key"
+        "VIETQR_API_KEY": "sandbox-api-key",
+        "VIETQR_TEST_CALLBACK_URL": "https://dev.vietqr.org/vqr/bank/api/test/transaction-callback",
+        "VIETQR_TOKEN": "sandbox-bearer-token"
       }
     }
   }

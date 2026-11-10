@@ -129,6 +129,14 @@ public partial class PosBillingViewModel : ObservableObject
         _apiClient = apiClient;
     }
 
+    public IApiClient ApiClient
+    {
+        get
+        {
+            return _apiClient;
+        }
+    }
+
     public async Task InitializeAsync()
     {
         IsLoading = true;

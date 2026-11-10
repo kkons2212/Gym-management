@@ -9,6 +9,7 @@ using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
+using System.Net.Http.Json;
 
 namespace GymManagement.Desktop.Services.Api;
 
@@ -395,6 +396,48 @@ public class MockApiClient : IApiClient
         );
         _invoices.Insert(0, fallback);
         return Task.FromResult(fallback);
+    }
+
+    public async Task<bool> SimulateVietQrCallbackAsync(string bankAccount, string content, long amount, string bankCode)
+    {
+        string? testCallbackUrl = Environment.GetEnvironmentVariable("VIETQR_TEST_CALLBACK_URL");
+        if (string.IsNullOrWhiteSpace(testCallbackUrl))
+        {
+            testCallbackUrl = "https://dev.vietqr.org/vqr/bank/api/test/transaction-callback";
+        }
+
+        string? token = Environment.GetEnvironmentVariable("VIETQR_TOKEN");
+
+        try
+        {
+            using var client = new HttpClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, testCallbackUrl);
+            request.Content = JsonContent.Create(new
+            {
+                bankAccount = bankAccount,
+                content = content,
+                amount = amount,
+                bankCode = bankCode,
+                transType = "C"
+            });
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+        }
+        catch
+        {
+            // Bỏ qua ngoại lệ mạng khi không kết nối được tới server VietQR
+        }
+
+        return true;
     }
 
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)

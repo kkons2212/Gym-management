@@ -84,6 +84,13 @@
                     Foreground="{StaticResource StatusSuccessBrush}"
                     Click="BtnManualConfirm_Click" />
 
+            <ProgressRing x:Name="LoadingRing"
+                          IsActive="False"
+                          Visibility="Collapsed"
+                          Width="24"
+                          Height="24"
+                          HorizontalAlignment="Center" />
+
             <TextBlock x:Name="TxtPaymentStatus"
                        Text="Đang chờ hội viên quét mã..."
                        Foreground="{StaticResource TextSecondaryBrush}"
