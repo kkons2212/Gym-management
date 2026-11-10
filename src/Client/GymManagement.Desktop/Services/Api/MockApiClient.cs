@@ -619,6 +619,47 @@ public class MockApiClient : IApiClient
         ));
     }
 
+    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var byPackage = new List<PackageRevenueDto>
+        {
+            new("PLAN01", "Gói 1 Năm VIP", 45000000m, 10),
+            new("PLAN02", "Gói 6 Tháng Platinum", 22500000m, 9),
+            new("PLAN03", "Gói 3 Tháng Thể Thao", 13500000m, 10),
+            new("PLAN04", "Gói 1 Tháng Tiêu Chuẩn", 6500000m, 13)
+        };
+
+        var byPaymentMethod = new List<PaymentMethodRevenueDto>
+        {
+            new("VIETQR", 58000000m, 66.3m, 28),
+            new("CASH", 20500000m, 23.4m, 10),
+            new("CREDIT_CARD", 9000000m, 10.3m, 4)
+        };
+
+        var trend = new List<TimePeriodRevenueDto>
+        {
+            new("T2", 11200000m, 0m, 11200000m),
+            new("T3", 14500000m, 500000m, 14000000m),
+            new("T4", 9800000m, 0m, 9800000m),
+            new("T5", 16200000m, 0m, 16200000m),
+            new("T6", 18500000m, 0m, 18500000m),
+            new("T7", 12000000m, 0m, 12000000m),
+            new("CN", 5300000m, 0m, 5300000m)
+        };
+
+        var dto = new RevenueReportDto(
+            TotalGrossRevenue: 87500000m,
+            TotalRefundAmount: 500000m,
+            TotalNetRevenue: 87000000m,
+            InvoiceCount: 42,
+            ByPaymentMethod: byPaymentMethod,
+            ByPackage: byPackage,
+            Trend: trend
+        );
+
+        return Task.FromResult(dto);
+    }
+
     public Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
         return Task.FromResult(new byte[] { 0x50, 0x4B, 0x03, 0x04 });

@@ -31,55 +31,35 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private string _exportStatus = string.Empty;
 
+    [ObservableProperty]
+    private decimal _totalGrossRevenue;
+
+    [ObservableProperty]
+    private decimal _totalNetRevenue;
+
+    [ObservableProperty]
+    private decimal _totalRefundAmount;
+
+    [ObservableProperty]
+    private int _totalInvoices;
+
     public ObservableCollection<PeakHourTrafficDto> PeakHours { get; } = [];
+    public ObservableCollection<PackageRevenueDto> PackageRevenues { get; } = [];
+    public ObservableCollection<PaymentMethodRevenueDto> PaymentMethodRevenues { get; } = [];
 
     public DashboardViewModel(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }
 
-    [RelayCommand]
-    public async Task ExportExcelAsync()
+    public async Task<byte[]> GetExcelBytesAsync()
     {
-        try
-        {
-            IsLoading = true;
-            ExportStatus = "Đang kết xuất báo cáo Excel...";
-            var bytes = await _apiClient.ExportExcelReportAsync();
-            ExportStatus = $"Đã xuất thành công file báo cáo Excel ({bytes.Length} bytes)!";
-            await Task.Delay(3000);
-            ExportStatus = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            ExportStatus = $"Lỗi xuất Excel: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        return await _apiClient.ExportExcelReportAsync();
     }
 
-    [RelayCommand]
-    public async Task ExportPdfAsync()
+    public async Task<byte[]> GetPdfBytesAsync()
     {
-        try
-        {
-            IsLoading = true;
-            ExportStatus = "Đang kết xuất báo cáo PDF...";
-            var bytes = await _apiClient.ExportPdfReportAsync();
-            ExportStatus = $"Đã xuất thành công file báo cáo PDF ({bytes.Length} bytes)!";
-            await Task.Delay(3000);
-            ExportStatus = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            ExportStatus = $"Lỗi xuất PDF: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        return await _apiClient.ExportPdfReportAsync();
     }
 
     [RelayCommand]
@@ -100,6 +80,24 @@ public partial class DashboardViewModel : ObservableObject
             foreach (var item in summary.PeakHours)
             {
                 PeakHours.Add(item);
+            }
+
+            var revenueReport = await _apiClient.GetRevenueReportAsync();
+            TotalGrossRevenue = revenueReport.TotalGrossRevenue;
+            TotalRefundAmount = revenueReport.TotalRefundAmount;
+            TotalNetRevenue = revenueReport.TotalNetRevenue;
+            TotalInvoices = revenueReport.InvoiceCount;
+
+            PackageRevenues.Clear();
+            foreach (var pkg in revenueReport.ByPackage)
+            {
+                PackageRevenues.Add(pkg);
+            }
+
+            PaymentMethodRevenues.Clear();
+            foreach (var pm in revenueReport.ByPaymentMethod)
+            {
+                PaymentMethodRevenues.Add(pm);
             }
         }
         catch (Exception ex)
