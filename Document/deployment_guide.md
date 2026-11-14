@@ -102,13 +102,25 @@ echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password
 
 ---
 
-## 4. HƯỚNG DẪN CÀI ĐẶT ỨNG DỤNG DESKTOP CHO NHÂN VIÊN LỄ TÂN
+## 4. HƯỚNG DẪN CÀI ĐẶT ỨNG DỤNG DESKTOP CHO NHÂN VIÊN LỄ TÂN & QUẢN TRỊ
 
-1. Truy cập mục **Releases** trên GitHub repository: `https://github.com/kkons2212/Gym-management/releases`
-2. Tải về gói file nén phiên bản mới nhất: `GymManagement-Desktop-vX.Y.Z-win-x64.zip`.
-3. Giải nén vào thư mục cài đặt trên máy tính Windows (ví dụ: `C:\Program Files\GymManagement\`).
-4. Khởi chạy file thực thi `GymManagement.Desktop.exe`.
-5. Trong trường hợp cần trỏ tới máy chủ API khác, mở file `appsettings.json` trong thư mục giải nén và điều chỉnh giá trị `ApiBaseUrl` tương ứng (mặc định: `http://localhost:5000`).
+Truy cập mục **Releases** trên GitHub repository: `https://github.com/kkons2212/Gym-management/releases` (hoặc mục **Artifacts** trong tab Actions đối với các bản build nội bộ). Hệ thống cung cấp sẵn 2 định dạng:
+
+### Cách 1: Sử dụng Bộ cài đặt tự động (Khuyến nghị cho Lễ tân)
+1. Tải về file cài đặt: **`GymManagement-Setup-vX.Y.Z-win-x64.exe`**.
+2. Nháy đúp chuột vào file `.exe` vừa tải về để khởi động trình cài đặt.
+3. Bấm **Next** $\rightarrow$ chọn tùy chọn tạo lối tắt trên màn hình (**Create a desktop shortcut**) $\rightarrow$ **Install**.
+4. Trình cài đặt sẽ tự động:
+   - Cài đặt toàn bộ phần mềm và dependencies vào máy.
+   - Tạo biểu tượng lối tắt ngoài màn hình Desktop và trong Start Menu.
+   - Tích hợp mục gỡ cài đặt sạch sẽ trong *Windows Settings > Installed apps*.
+5. Khởi chạy phần mềm ngay từ biểu tượng ngoài Desktop.
+
+### Cách 2: Sử dụng Bản Portable nén (.ZIP) (Dành cho Kỹ thuật viên)
+1. Tải về file nén: **`GymManagement-Desktop-vX.Y.Z-win-x64.zip`**.
+2. Giải nén vào thư mục tùy ý trên máy tính Windows.
+3. Khởi chạy trực tiếp file thực thi `GymManagement.Desktop.exe` mà không cần cài đặt.
+4. Trong trường hợp cần trỏ tới máy chủ API khác, mở file `appsettings.json` trong thư mục giải nén và điều chỉnh giá trị `ApiBaseUrl` tương ứng (mặc định: `http://localhost:5000`).
 
 ---
 

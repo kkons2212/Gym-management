@@ -445,6 +445,24 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
 * **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
 
+### 📌 [Task DevOps.4] Tự Động Hóa Đóng Gói Bộ Cài Đặt Windows (.EXE) Cho WinUI 3 Desktop Client Trong CD Pipeline
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `c550258` (nhánh `feat/cd-pipeline-automation`)
+* **Phân hệ nghiệp vụ liên quan:** Hạ tầng DevOps, CI/CD Pipeline & Desktop Client Distribution.
+* **Ranh giới thành phần:** `DevOps` / `Installer` / `InnoSetup` / `GitHub Actions`.
+* **Mã nguồn tạo / sửa:**
+  - `installer/setup.iss`: Kịch bản Inno Setup cấu hình đóng gói toàn bộ thư mục output của `GymManagement.Desktop`, thiết lập cài đặt vào `Program Files` hoặc `AppData`, tạo biểu tượng lối tắt ngoài Desktop và Start Menu, tích hợp `AppIcon.ico` và uninstaller trong Windows Settings.
+  - `.github/workflows/cd.yml`: Nâng cấp Job `build-release-desktop` cài đặt Inno Setup Compiler (`ISCC.exe`), tự động build file cài đặt `GymManagement-Setup-win-x64.exe`, upload song song cả bản cài đặt `.exe` và bản portable `.zip` vào GitHub Actions Artifacts và GitHub Releases.
+  - `Document/deployment_guide.md`: Cập nhật hướng dẫn chi tiết cho nhân viên lễ tân cài đặt 1-click bằng file setup `.exe` hoặc sử dụng bản portable `.zip`.
+* **Kiểm thử tương ứng (Verification):**
+  - Kịch bản Inno Setup `installer/setup.iss` đạt chuẩn cú pháp Inno Setup 6.
+  - Mô hình phân phối kép (Dual Distribution): Đóng gói tự động cả `.exe` (Installer) và `.zip` (Portable).
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Toàn bộ 186/186 tests trong hệ thống pass 100%.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
+* **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>
