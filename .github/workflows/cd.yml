@@ -1,0 +1,187 @@
+name: Continuous Deployment & Delivery (CD)
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]
+    paths-ignore:
+      - 'Document/**'
+      - '**.md'
+      - '.agents/**'
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Môi trường triển khai mục tiêu'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - 'production'
+          - 'staging'
+
+# Tránh chạy trùng lặp khi có push dồn dập
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ===================================================================
+  # JOB 1: DOCKER CONTAINER CHO SERVER API (GHCR)
+  # ===================================================================
+  build-push-server-api:
+    name: Build & Push Server API Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Prepare Lowercase Repository Name
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=ghcr.io/${REPO_LOWER}/server-api" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata for Server API
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=tag
+            type=sha,prefix=sha-
+
+      - name: Build and Push Server API Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Server/GymManagement.Server.Api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===================================================================
+  # JOB 2: DOCKER CONTAINER CHO BLAZOR WEB PORTAL (GHCR)
+  # ===================================================================
+  build-push-web-portal:
+    name: Build & Push Blazor Web Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Prepare Lowercase Repository Name
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=ghcr.io/${REPO_LOWER}/web-portal" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata for Web Portal
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=tag
+            type=sha,prefix=sha-
+
+      - name: Build and Push Web Portal Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Client/GymManagement.Web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===================================================================
+  # JOB 3: WINUI 3 DESKTOP CLIENT PACKAGING & GITHUB RELEASES
+  # ===================================================================
+  build-release-desktop:
+    name: Package Desktop Client (WinUI 3)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Extract Version / Tag Identifier
+        id: version_step
+        shell: pwsh
+        run: |
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $tag = "${{ github.ref_name }}"
+          } else {
+            $shortSha = "${{ github.sha }}".Substring(0, 7)
+            $tag = "latest-$shortSha"
+          }
+          Write-Host "Determined artifact tag: $tag"
+          echo "ARTIFACT_TAG=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Publish WinUI 3 Desktop App
+        shell: pwsh
+        run: |
+          Write-Host "Publishing Desktop App for win-x64 architecture..."
+          dotnet publish src/Client/GymManagement.Desktop/GymManagement.Desktop.csproj `
+            -c Release `
+            -p:Platform=x64 `
+            -r win-x64 `
+            --self-contained false `
+            -o publish/desktop
+
+      - name: Archive Desktop Binaries to ZIP
+        shell: pwsh
+        run: |
+          $artifactName = "GymManagement-Desktop-$($steps.version_step.outputs.ARTIFACT_TAG)-win-x64.zip"
+          Write-Host "Creating ZIP archive: $artifactName..."
+          Compress-Archive -Path publish/desktop/* -DestinationPath "publish/$artifactName" -Force
+          echo "ZIP_PATH=publish/$artifactName" >> $env:GITHUB_ENV
+          echo "ZIP_NAME=$artifactName" >> $env:GITHUB_ENV
+
+      - name: Upload Desktop Artifact to GitHub Actions Run
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_PATH }}
+          retention-days: 14
+
+      - name: Create or Update GitHub Release (Khi Push Tag v*.*.*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_PATH }}
+          name: "Gym Management Release ${{ github.ref_name }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false

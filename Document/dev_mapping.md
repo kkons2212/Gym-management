@@ -405,6 +405,29 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trên giao diện & comment).
 * **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`.
 
+### 📌 [Task DevOps.2] Thiết Lập Continuous Deployment (CD) Toàn Diện & Tự Động Hóa Phân Phối
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `d4e5c5f` (nhánh `feat/cd-pipeline-automation`)
+* **Phân hệ nghiệp vụ liên quan:** Hạ tầng DevOps, CI/CD Pipeline, Containerization & Client Distribution.
+* **Ranh giới thành phần:** `DevOps` / `Docker` / `GitHub Actions` / `Scripts`.
+* **Mã nguồn tạo / sửa:**
+  - `.github/workflows/cd.yml`: Workflow GitHub Actions tự động hóa quy trình CD: build & push Docker image lên GitHub Container Registry (GHCR) cho Server API và Blazor Web Portal; biên dịch, nén ZIP và phát hành tự động ứng dụng Desktop (WinUI 3) đính kèm GitHub Releases khi có tag `v*.*.*` hoặc push nhánh `main`.
+  - `src/Server/GymManagement.Server.Api/Dockerfile`: Multi-stage Dockerfile tối ưu kích thước và bảo mật cho Backend API (.NET 8 runtime).
+  - `src/Client/GymManagement.Web/Dockerfile`: Multi-stage Dockerfile cho Blazor Web Portal (.NET 8 runtime).
+  - `.dockerignore`: Loại trừ cache, thư mục tạm, Git và build artifacts khỏi Docker build context.
+  - `docker-compose.prod.yml`: Điều phối 3 thành phần production: SQL Server 2022 (Volume bền vững `gym_mssql_prod_data`, healthcheck tự động), Server API và Web Portal với mạng nội bộ `gym-network`.
+  - `.env.example`: Mẫu khai báo biến môi trường chuẩn cho Production (SA password, JWT key, port mapping, image tags).
+  - `scripts/deploy.sh` & `scripts/deploy.ps1`: Script 1-click tự động hóa kiểm tra cấu hình, kéo image mới nhất từ GHCR và kích hoạt container không gián đoạn trên Linux và Windows.
+  - `Document/deployment_guide.md`: Cẩm nang hướng dẫn triển khai máy chủ và phân phối ứng dụng Desktop bằng tiếng Việt chi tiết.
+* **Kiểm thử tương ứng (Verification):**
+  - Cấu hình Docker Compose: `docker compose -f docker-compose.prod.yml config` đạt chuẩn cú pháp 100%.
+  - Biên dịch thử nghiệm Docker images `Server.Api` và `Web`: Cả 2 image build thành công 100%.
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Toàn bộ 186/186 tests trong hệ thống pass 100%.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trong tài liệu & script).
+* **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>
