@@ -10,9 +10,8 @@ public interface IQrDecoderService
 {
     /// <summary>
     /// Giải mã mã QR từ đối tượng SoftwareBitmap nhận được từ luồng camera.
-    /// Hỗ trợ cờ isMirrored để tự động đảo ngược pixel nếu hình ảnh camera bị lật gương.
     /// </summary>
-    string? DecodeFromSoftwareBitmap(SoftwareBitmap bitmap, bool isMirrored = false);
+    string? DecodeFromSoftwareBitmap(SoftwareBitmap bitmap);
 
     /// <summary>
     /// Giải mã mã QR từ file hình ảnh do người dùng chọn trên máy tính.

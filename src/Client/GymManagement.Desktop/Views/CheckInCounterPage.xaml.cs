@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -18,6 +19,33 @@ namespace GymManagement.Desktop.Views;
 /// </summary>
 public sealed partial class CheckInCounterPage : Page
 {
+    // ====================================================================
+    // CẤU HÌNH HIỆU CHỈNH CAMERA / WEBCAM (CAMERA ORIENTATION & TRANSFORM)
+    // Khai báo tập trung tại đầu file theo đúng dev_rule.md (Mục 3.5.5 & 3.6).
+    // Dễ dàng điều chỉnh góc xoay, lật gương (flip/mirror) và tỷ lệ hiển thị.
+    // ====================================================================
+
+    /// <summary>
+    /// Góc xoay hình ảnh camera (đơn vị: độ).
+    /// Mặc định: -90 độ (hoặc 270) để khử góc nghiêng lệch phải của cảm biến webcam.
+    /// Giá trị khả dụng: 0, 90, 180, 270, -90.
+    /// </summary>
+    private static readonly double CAMERA_ROTATION_DEGREES = -90.0;
+
+    /// <summary>
+    /// Lật ảnh theo trục ngang (Horizontal Flip / Mirroring).
+    /// true: Lật gương giúp cử động của người dùng tự nhiên như soi gương.
+    /// false: Giữ nguyên chiều gốc của cảm biến camera.
+    /// </summary>
+    private static readonly bool CAMERA_FLIP_HORIZONTAL = true;
+
+    /// <summary>
+    /// Lật ảnh theo trục dọc (Vertical Flip).
+    /// true: Đảo ngược trên - dưới.
+    /// false: Giữ nguyên chiều gốc (mặc định).
+    /// </summary>
+    private static readonly bool CAMERA_FLIP_VERTICAL = false;
+
     private SoftwareBitmapSource? _bitmapSource;
     private int _isRenderingFrameFlag;
 
@@ -41,12 +69,45 @@ public sealed partial class CheckInCounterPage : Page
     {
         TxtSearchInput.Focus(FocusState.Programmatic);
 
+        ApplyCameraTransform();
+
         _bitmapSource = new SoftwareBitmapSource();
         ImgCameraPreview.Source = _bitmapSource;
 
         ViewModel.VideoFrameReady += OnViewModelVideoFrameReady;
 
         await ViewModel.InitializeAsync();
+    }
+
+    /// <summary>
+    /// Áp dụng phép biến đổi xoay góc và lật gương cho khung hiển thị camera.
+    /// Tuân thủ quy chuẩn dev_rule.md (0 toán tử 3 ngôi, flat guard clauses).
+    /// </summary>
+    private void ApplyCameraTransform()
+    {
+        double scaleX;
+        double scaleY;
+
+        scaleX = 1.0;
+        if (CAMERA_FLIP_HORIZONTAL)
+        {
+            scaleX = -1.0;
+        }
+
+        scaleY = 1.0;
+        if (CAMERA_FLIP_VERTICAL)
+        {
+            scaleY = -1.0;
+        }
+
+        var transform = new CompositeTransform
+        {
+            Rotation = CAMERA_ROTATION_DEGREES,
+            ScaleX = scaleX,
+            ScaleY = scaleY
+        };
+
+        ImgCameraPreview.RenderTransform = transform;
     }
 
     private async void CheckInCounterPage_Unloaded(object sender, RoutedEventArgs e)
