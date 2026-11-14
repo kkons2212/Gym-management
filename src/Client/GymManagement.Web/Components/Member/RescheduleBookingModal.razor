@@ -35,7 +35,7 @@
                     <button type="button"
                             @onclick="() => SelectDate(date)"
                             class="tabular-nums"
-                            style="flex: 0 0 58px; padding: 6px 2px; border-radius: 6px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer;">
+                            style="@GetDateButtonStyle(isSelected)">
                         <div style="font-size: 10px;">@date.Day.ToString("00")/Th.@date.Month</div>
                     </button>
                 }
@@ -63,12 +63,18 @@
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px; max-height: 180px; overflow-y: auto;">
                     @foreach (var slot in _availableSlots)
                     {
-                        var isChosen = _chosenSlot?.AvailabilityId == slot.AvailabilityId;
+                        var isPast = IsSlotPast(slot);
+                        var isChosen = false;
+                        if (_chosenSlot != null && _chosenSlot.AvailabilityId == slot.AvailabilityId)
+                        {
+                            isChosen = true;
+                        }
+
                         <button type="button"
-                                disabled="@slot.IsBooked"
-                                @onclick="() => _chosenSlot = slot"
-                                class="@(slot.IsBooked ? "slot-pt-booked" : (isChosen ? "slot-pt-selected" : "slot-pt-open")) tabular-nums"
-                                style="padding: 8px 6px; border-radius: 6px; text-align: center; font-size: 12px; cursor: @(slot.IsBooked ? "not-allowed" : "pointer");">
+                                disabled="@(slot.IsBooked || isPast)"
+                                @onclick="() => SelectSlot(slot)"
+                                class="@GetSlotCssClass(slot, isChosen, isPast) tabular-nums"
+                                style="padding: 8px 6px; border-radius: 6px; text-align: center; font-size: 12px;">
                             @slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")
                         </button>
                     }
@@ -151,6 +157,55 @@
         {
             _isLoadingSlots = false;
         }
+    }
+
+    private string GetDateButtonStyle(bool isSelected)
+    {
+        if (isSelected)
+        {
+            return "flex: 0 0 58px; padding: 6px 2px; border-radius: 6px; text-align: center; border: 1px solid #38BDF8; background: rgba(56, 189, 248, 0.15); color: #38BDF8; cursor: pointer;";
+        }
+        return "flex: 0 0 58px; padding: 6px 2px; border-radius: 6px; text-align: center; border: 1px solid var(--border-subtle); background: var(--bg-canvas); color: var(--text-primary); cursor: pointer;";
+    }
+
+    private bool IsSlotPast(PtSlotDto slot)
+    {
+        if (_selectedDate < _today)
+        {
+            return true;
+        }
+        if (_selectedDate == _today)
+        {
+            var nowTime = TimeOnly.FromDateTime(DateTime.Now);
+            if (slot.StartTime <= nowTime)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private string GetSlotCssClass(PtSlotDto slot, bool isChosen, bool isPast)
+    {
+        if (slot.IsBooked)
+        {
+            return "slot-pt-booked";
+        }
+        if (isPast)
+        {
+            return "slot-pt-past";
+        }
+        if (isChosen)
+        {
+            return "slot-pt-selected";
+        }
+        return "slot-pt-open";
+    }
+
+    private void SelectSlot(PtSlotDto slot)
+    {
+        if (slot.IsBooked || IsSlotPast(slot)) return;
+        _chosenSlot = slot;
     }
 
     private async Task HandleClose()

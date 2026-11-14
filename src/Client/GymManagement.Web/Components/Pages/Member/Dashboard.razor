@@ -27,22 +27,121 @@
     <!-- Digital Subscription & Check-in QR Widget -->
     <DigitalSubscriptionWidget @ref="_subWidget" />
 
+    <!-- Personal Profile Information & Update Form -->
+    <div class="gym-card" style="padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 class="gym-card-title" style="font-size: 15px; margin: 0;">Thông Tin Cá Nhân &amp; Tài Khoản</h2>
+            <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 11px;">
+                Mã HV: @_userName
+            </span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_profileMessage))
+        {
+            @if (_isProfileSuccess)
+            {
+                <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #6EE7B7; font-size: 12px; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px;">
+                    ✓ @_profileMessage
+                </div>
+            }
+            else
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px;">
+                    ✕ @_profileMessage
+                </div>
+            }
+        }
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Member Code (Read-only / Locked) -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Mã hội viên (Cố định)
+                </label>
+                <div style="position: relative;">
+                    <input type="text"
+                           value="@_userName"
+                           disabled
+                           style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-muted); font-size: 13px; font-family: monospace; cursor: not-allowed;" />
+                    <span style="position: absolute; right: 10px; top: 9px; font-size: 12px; color: var(--text-muted);">🔒</span>
+                </div>
+            </div>
+
+            <!-- Full Name -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Họ và tên *
+                </label>
+                <input type="text"
+                       @bind="_fullName"
+                       placeholder="Nhập họ và tên..."
+                       style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+            </div>
+
+            <!-- Phone & Email Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Số điện thoại *
+                    </label>
+                    <input type="text"
+                           @bind="_phone"
+                           placeholder="0901234567"
+                           maxlength="10"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Địa chỉ Email *
+                    </label>
+                    <input type="email"
+                           @bind="_email"
+                           placeholder="email@example.com"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                </div>
+            </div>
+
+            <!-- New Password -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Mật khẩu mới
+                </label>
+                <input type="password"
+                       @bind="_newPassword"
+                       placeholder="Nhập mật khẩu mới nếu muốn đổi..."
+                       style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                    Để trống nếu không có nhu cầu đổi mật khẩu (tối thiểu 6 ký tự).
+                </div>
+            </div>
+
+            <!-- Save Profile Button -->
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@_isSavingProfile"
+                    @onclick="HandleUpdateProfileAsync"
+                    style="width: 100%; padding: 10px; font-size: 13px; font-weight: 600; margin-top: 4px;">
+                @if (_isSavingProfile)
+                {
+                    <span>Đang lưu thông tin...</span>
+                }
+                else
+                {
+                    <span>Cập Nhật Thông Tin Cá Nhân</span>
+                }
+            </button>
+        </div>
+    </div>
+
     <!-- Quick Actions (Tác Vụ Nhanh) -->
     <div class="gym-card" style="padding: 14px;">
         <h2 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Tác Vụ Thường Dùng</h2>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
             <NavLink href="/member/booking"
                      class="btn-secondary"
                      style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
                 <span style="font-size: 22px;">📅</span>
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Đặt Lịch PT</span>
-            </NavLink>
-
-            <NavLink href="/member/packages"
-                     class="btn-secondary"
-                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
-                <span style="font-size: 22px;">💳</span>
-                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Mua Gói Tập</span>
             </NavLink>
 
             <NavLink href="/member/inbody"
@@ -96,15 +195,129 @@
     private string _memberName = "Hội Viên";
     private PtSessionDto? _upcomingSession;
 
+    private string _userName = string.Empty;
+    private string _fullName = string.Empty;
+    private string _phone = string.Empty;
+    private string _email = string.Empty;
+    private string _newPassword = string.Empty;
+    private string _profileMessage = string.Empty;
+    private bool _isProfileSuccess = false;
+    private bool _isSavingProfile = false;
+
     protected override async Task OnInitializedAsync()
     {
-        var session = await ApiClient.GetCurrentUserSessionAsync();
-        if (session != null)
+        await LoadProfileAsync();
+        await LoadUpcomingSessionAsync();
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        try
         {
-            _memberName = session.FullName;
+            var profile = await ApiClient.GetMyProfileAsync();
+            if (profile != null)
+            {
+                _userName = profile.UserName;
+                _fullName = profile.FullName;
+                _phone = profile.Phone;
+                _email = profile.Email;
+                _memberName = profile.FullName;
+            }
+            else
+            {
+                var session = await ApiClient.GetCurrentUserSessionAsync();
+                if (session != null)
+                {
+                    _userName = session.UserId;
+                    _fullName = session.FullName;
+                    _email = session.Email;
+                    if (!string.IsNullOrWhiteSpace(session.Phone))
+                    {
+                        _phone = session.Phone;
+                    }
+                    _memberName = session.FullName;
+                }
+            }
+        }
+        catch
+        {
+            // fallback gracefully
+        }
+    }
+
+    private async Task HandleUpdateProfileAsync()
+    {
+        _profileMessage = string.Empty;
+        _isProfileSuccess = false;
+
+        string trimmedName = _fullName.Trim();
+        string trimmedPhone = _phone.Trim();
+        string trimmedEmail = _email.Trim();
+        string? newPass = null;
+        if (!string.IsNullOrWhiteSpace(_newPassword))
+        {
+            newPass = _newPassword;
         }
 
-        await LoadUpcomingSessionAsync();
+        if (string.IsNullOrWhiteSpace(trimmedName) || trimmedName.Length < 2)
+        {
+            _profileMessage = "Họ và tên không được để trống (tối thiểu 2 ký tự).";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(trimmedPhone) || !System.Text.RegularExpressions.Regex.IsMatch(trimmedPhone, @"^0\d{9}$"))
+        {
+            _profileMessage = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(trimmedEmail) || !trimmedEmail.Contains('@'))
+        {
+            _profileMessage = "Địa chỉ email không đúng định dạng.";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (newPass != null && newPass.Length < 6)
+        {
+            _profileMessage = "Mật khẩu mới phải có ít nhất 6 ký tự.";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        _isSavingProfile = true;
+        try
+        {
+            var request = new UpdateMemberProfileRequest(trimmedName, trimmedPhone, trimmedEmail, newPass);
+            bool success = await ApiClient.UpdateMyProfileAsync(request);
+            if (success)
+            {
+                _profileMessage = "Cập nhật thông tin cá nhân thành công!";
+                _isProfileSuccess = true;
+                _memberName = trimmedName;
+                _newPassword = string.Empty;
+                if (_subWidget != null)
+                {
+                    await _subWidget.ReloadAsync();
+                }
+            }
+            else
+            {
+                _profileMessage = "Không thể cập nhật thông tin. Vui lòng thử lại.";
+                _isProfileSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _profileMessage = ex.Message;
+            _isProfileSuccess = false;
+        }
+        finally
+        {
+            _isSavingProfile = false;
+        }
     }
 
     private async Task LoadUpcomingSessionAsync()
@@ -129,6 +342,7 @@
         {
             await _subWidget.ReloadAsync();
         }
+        await LoadProfileAsync();
         await LoadUpcomingSessionAsync();
     }
 }

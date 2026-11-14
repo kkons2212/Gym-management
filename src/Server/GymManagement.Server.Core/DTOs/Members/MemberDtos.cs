@@ -138,7 +138,8 @@ public record UpdateMemberRequest(
     string FullName,
     string Phone,
     string Email,
-    string? NewUserName = null
+    string? NewUserName = null,
+    string? NewPassword = null
 );
 
 /// <summary>
