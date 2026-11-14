@@ -8,16 +8,13 @@ public sealed class GlobalExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
-    private readonly IHostEnvironment _environment;
 
     public GlobalExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<GlobalExceptionHandlingMiddleware> logger,
-        IHostEnvironment environment)
+        ILogger<GlobalExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -44,12 +41,6 @@ public sealed class GlobalExceptionHandlingMiddleware
 
     private async Task WriteErrorResponseAsync(HttpContext context, Exception exception)
     {
-        string unexpectedMessage = "An unexpected error occurred.";
-        if (_environment.IsDevelopment())
-        {
-            unexpectedMessage = exception.Message;
-        }
-
         var (statusCode, errorCode, message) = exception switch
         {
             ValidationException => (
@@ -71,7 +62,7 @@ public sealed class GlobalExceptionHandlingMiddleware
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "INTERNAL_SERVER_ERROR",
-                unexpectedMessage)
+                "An unexpected error occurred.")
         };
 
         if (statusCode >= StatusCodes.Status500InternalServerError)
