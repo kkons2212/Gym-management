@@ -19,6 +19,10 @@
   #define OutputBaseFilename "GymManagement-Setup-win-x64"
 #endif
 
+#ifndef IconFile
+  #define IconFile "..\src\Client\GymManagement.Desktop\Assets\AppIcon.ico"
+#endif
+
 [Setup]
 AppId={{8B264E2A-5D21-4A59-8653-C8B99D854F2E}
 AppName=Gym Management System
@@ -30,7 +34,7 @@ DefaultGroupName=Gym Management
 AllowNoIcons=yes
 OutputDir={#OutputDir}
 OutputBaseFilename={#OutputBaseFilename}
-SetupIconFile=..\src\Client\GymManagement.Desktop\Assets\AppIcon.ico
+SetupIconFile={#IconFile}
 UninstallDisplayIcon={app}\GymManagement.Desktop.exe
 Compression=lzma2/max
 SolidCompression=yes

@@ -148,6 +148,7 @@ jobs:
           }
           Write-Host "Determined artifact tag: $tag"
           echo "ARTIFACT_TAG=$tag" >> $env:GITHUB_OUTPUT
+          echo "ARTIFACT_TAG=$tag" >> $env:GITHUB_ENV
 
       - name: Publish WinUI 3 Desktop App
         shell: pwsh
@@ -162,8 +163,10 @@ jobs:
 
       - name: Archive Desktop Binaries to ZIP (Portable)
         shell: pwsh
+        env:
+          ARTIFACT_TAG: ${{ steps.version_step.outputs.ARTIFACT_TAG }}
         run: |
-          $artifactName = "GymManagement-Desktop-$($steps.version_step.outputs.ARTIFACT_TAG)-win-x64.zip"
+          $artifactName = "GymManagement-Desktop-$env:ARTIFACT_TAG-win-x64.zip"
           Write-Host "Creating ZIP archive: $artifactName..."
           Compress-Archive -Path publish/desktop/* -DestinationPath "publish/$artifactName" -Force
           echo "ZIP_PATH=publish/$artifactName" >> $env:GITHUB_ENV
@@ -172,25 +175,49 @@ jobs:
       - name: Install Inno Setup
         shell: pwsh
         run: |
-          if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue) -and -not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") -and -not (Test-Path "C:\Program Files\Inno Setup 6\ISCC.exe")) {
             Write-Host "Installing Inno Setup via Chocolatey..."
             choco install innosetup --no-progress -y
           } else {
-            Write-Host "Inno Setup is already installed on runner."
+            Write-Host "Inno Setup is already available on runner."
           }
 
       - name: Build Windows Setup Installer (.exe)
         shell: pwsh
+        env:
+          ARTIFACT_TAG: ${{ steps.version_step.outputs.ARTIFACT_TAG }}
         run: |
-          $outputBase = "GymManagement-Setup-$($steps.version_step.outputs.ARTIFACT_TAG)-win-x64"
+          $outputBase = "GymManagement-Setup-$env:ARTIFACT_TAG-win-x64"
           $installerName = "$outputBase.exe"
           $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $isccPath)) {
+            $isccCmd = Get-Command iscc -ErrorAction SilentlyContinue
+            if ($isccCmd) {
+              $isccPath = $isccCmd.Source
+            }
+          }
+          if (-not (Test-Path "publish/desktop")) {
+            Write-Error "Published desktop directory not found: publish/desktop"
+            exit 1
+          }
+          $publishDesktop = (Resolve-Path "publish/desktop").Path
+          $publishOutput = (Resolve-Path "publish").Path
+          $iconPath = (Resolve-Path "src/Client/GymManagement.Desktop/Assets/AppIcon.ico").Path
+          $setupScript = (Resolve-Path "installer/setup.iss").Path
+
           Write-Host "Compiling Inno Setup Installer: $installerName..."
-          & $isccPath /DAppVersion="$($steps.version_step.outputs.ARTIFACT_TAG)" `
-                      /DSourceDir="publish\desktop" `
-                      /DOutputDir="publish" `
-                      /DOutputBaseFilename="$outputBase" `
-                      installer\setup.iss
+          Write-Host "Using ISCC executable: $isccPath"
+          Write-Host "Source directory: $publishDesktop"
+          Write-Host "Output directory: $publishOutput"
+          Write-Host "Icon path: $iconPath"
+          Write-Host "Setup script: $setupScript"
+
+          & $isccPath "/DAppVersion=$env:ARTIFACT_TAG" `
+                      "/DSourceDir=$publishDesktop" `
+                      "/DOutputDir=$publishOutput" `
+                      "/DIconFile=$iconPath" `
+                      "/DOutputBaseFilename=$outputBase" `
+                      "$setupScript"
 
           if (-not (Test-Path "publish\$installerName")) {
             Write-Error "Installer file was not created: publish\$installerName"
