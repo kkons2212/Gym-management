@@ -431,6 +431,14 @@ public sealed class MockWebApiClient : IWebApiClient
             }
             else if (update.Register)
             {
+                var now = DateTime.Now;
+                if (update.AvailableDate < DateOnly.FromDateTime(now) ||
+                    (update.AvailableDate == DateOnly.FromDateTime(now) && update.StartTime <= TimeOnly.FromDateTime(now)))
+                {
+                    throw new BusinessRuleException(
+                        $"Không thể đăng ký khung giờ rảnh ở thời điểm đã qua ({update.AvailableDate:dd/MM/yyyy} {update.StartTime:HH\\:mm}).");
+                }
+
                 _ptSlots.Add(new PtSlotDto(
                     $"SLOT_{DateTime.Now.Ticks}",
                     update.AvailableDate,

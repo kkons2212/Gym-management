@@ -451,6 +451,15 @@ public sealed class PtService : IPtService
                 }
                 else if (item.Register)
                 {
+                    // Ràng buộc: Không được đăng ký thời gian đã qua
+                    var now = DateTime.Now;
+                    if (item.AvailableDate < DateOnly.FromDateTime(now) ||
+                        (item.AvailableDate == DateOnly.FromDateTime(now) && item.StartTime <= TimeOnly.FromDateTime(now)))
+                    {
+                        throw new BusinessRuleException(
+                            $"Không thể đăng ký khung giờ rảnh ở thời điểm đã qua ({item.AvailableDate:dd/MM/yyyy} {item.StartTime:hh\\:mm}).");
+                    }
+
                     // Tạo slot mới
                     int count = await availRepo.CountAsync(s => s.PtId == request.PtId, cancellationToken);
                     var newSlot = new PTAvailability
