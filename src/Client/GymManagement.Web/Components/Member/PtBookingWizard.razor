@@ -34,14 +34,15 @@
             <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;">
                 @for (int i = 0; i < 7; i++)
                 {
-                    var date = _today.AddDays(i);
+                    var dayIdx = i;
+                    var date = _today.AddDays(dayIdx);
                     var isSelected = _selectedDate == date;
                     <button type="button"
                             @onclick="() => SelectDate(date)"
                             class="tabular-nums"
-                            style="flex: 0 0 64px; padding: 10px 4px; border-radius: 8px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer; transition: all 0.2s;">
-                        <div style="font-size: 10px; color: @(isSelected ? "#38BDF8" : "var(--text-secondary)");">
-                            @(i == 0 ? "Hôm nay" : $"Thứ {((int)date.DayOfWeek == 0 ? "CN" : ((int)date.DayOfWeek + 1).ToString())}")
+                            style="@GetDateButtonStyle(isSelected)">
+                        <div style="font-size: 10px; color: @GetDateTextColor(isSelected);">
+                            @GetDateSubtext(dayIdx, date)
                         </div>
                         <div style="font-size: 15px; font-weight: 700; margin-top: 2px;">
                             @date.Day.ToString("00")
@@ -85,15 +86,21 @@
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                     @foreach (var slot in _daySlots)
                     {
-                        var isChosen = _selectedSlot?.AvailabilityId == slot.AvailabilityId;
+                        var isPast = IsSlotPast(slot);
+                        var isChosen = false;
+                        if (_selectedSlot != null && _selectedSlot.AvailabilityId == slot.AvailabilityId)
+                        {
+                            isChosen = true;
+                        }
+
                         <button type="button"
-                                disabled="@slot.IsBooked"
+                                disabled="@(slot.IsBooked || isPast)"
                                 @onclick="() => SelectSlot(slot)"
-                                class="@(slot.IsBooked ? "slot-pt-booked" : (isChosen ? "slot-pt-selected" : "slot-pt-open")) tabular-nums"
-                                style="padding: 10px 8px; border-radius: 8px; text-align: center; cursor: @(slot.IsBooked ? "not-allowed" : "pointer"); font-size: 13px; font-weight: 600;">
+                                class="@GetSlotCssClass(slot, isChosen, isPast) tabular-nums"
+                                style="padding: 10px 8px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600;">
                             <div>@slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")</div>
                             <div style="font-size: 10px; font-weight: 400; margin-top: 2px;">
-                                @(slot.IsBooked ? "Đã có người đặt" : (isChosen ? "Đang chọn" : "Còn trống"))
+                                @GetSlotStatusText(slot, isChosen, isPast)
                             </div>
                         </button>
                     }
@@ -180,9 +187,93 @@
 
     private void SelectSlot(PtSlotDto slot)
     {
-        if (slot.IsBooked) return;
+        if (slot.IsBooked || IsSlotPast(slot)) return;
         _selectedSlot = slot;
         _errorMessage = null;
+    }
+
+    private bool IsSlotPast(PtSlotDto slot)
+    {
+        if (_selectedDate < _today)
+        {
+            return true;
+        }
+        if (_selectedDate == _today)
+        {
+            var nowTime = TimeOnly.FromDateTime(DateTime.Now);
+            if (slot.StartTime <= nowTime)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private string GetSlotCssClass(PtSlotDto slot, bool isChosen, bool isPast)
+    {
+        if (slot.IsBooked)
+        {
+            return "slot-pt-booked";
+        }
+        if (isPast)
+        {
+            return "slot-pt-past";
+        }
+        if (isChosen)
+        {
+            return "slot-pt-selected";
+        }
+        return "slot-pt-open";
+    }
+
+    private string GetSlotStatusText(PtSlotDto slot, bool isChosen, bool isPast)
+    {
+        if (slot.IsBooked)
+        {
+            return "Đã có người đặt";
+        }
+        if (isPast)
+        {
+            return "Đã qua giờ";
+        }
+        if (isChosen)
+        {
+            return "Đang chọn";
+        }
+        return "Còn trống";
+    }
+
+    private string GetDateButtonStyle(bool isSelected)
+    {
+        if (isSelected)
+        {
+            return "flex: 0 0 64px; padding: 10px 4px; border-radius: 8px; text-align: center; border: 1px solid #38BDF8; background: rgba(56, 189, 248, 0.15); color: #38BDF8; cursor: pointer; transition: all 0.2s;";
+        }
+        return "flex: 0 0 64px; padding: 10px 4px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle); background: var(--bg-canvas); color: var(--text-primary); cursor: pointer; transition: all 0.2s;";
+    }
+
+    private string GetDateSubtext(int dayIndex, DateOnly date)
+    {
+        if (dayIndex == 0)
+        {
+            return "Hôm nay";
+        }
+        int dow = (int)date.DayOfWeek;
+        if (dow == 0)
+        {
+            return "Thứ CN";
+        }
+        int vnDay = dow + 1;
+        return "Thứ " + vnDay.ToString();
+    }
+
+    private string GetDateTextColor(bool isSelected)
+    {
+        if (isSelected)
+        {
+            return "#38BDF8";
+        }
+        return "var(--text-secondary)";
     }
 
     private async Task LoadSlotsForSelectedDateAsync()

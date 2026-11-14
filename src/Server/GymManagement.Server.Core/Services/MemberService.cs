@@ -305,6 +305,11 @@ public sealed class MemberService : IMemberService
         user.Phone = request.Phone.Trim();
         user.Email = request.Email.Trim();
 
+        if (!string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        }
+
         if (targetUserName != user.UserName)
         {
             await _unitOfWork.ExecuteTransactionAsync(async () =>
@@ -611,6 +616,14 @@ public sealed class MemberService : IMemberService
 
         if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
             errors.Add("Email không hợp lệ.");
+
+        if (!string.IsNullOrWhiteSpace(req.NewPassword))
+        {
+            if (req.NewPassword.Length < 6)
+            {
+                errors.Add("Mật khẩu mới phải có ít nhất 6 ký tự.");
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(req.NewUserName))
         {

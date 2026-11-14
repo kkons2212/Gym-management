@@ -182,10 +182,17 @@ public sealed class MockWebApiClient : IWebApiClient
         var current = _authStateProvider.CurrentUser;
         if (current == null) return Task.FromResult<MemberProfileResponse?>(null);
 
+        var existingUser = _users.FirstOrDefault(u => string.Equals(u.UserId, current.UserId, StringComparison.OrdinalIgnoreCase));
+        string phone = "0901234567";
+        if (existingUser != null && !string.IsNullOrWhiteSpace(existingUser.Phone))
+        {
+            phone = existingUser.Phone;
+        }
+
         return Task.FromResult<MemberProfileResponse?>(new MemberProfileResponse(
             UserName: current.UserId,
             FullName: current.FullName,
-            Phone: "0901234567",
+            Phone: phone,
             Email: current.Email,
             Status: "ACTIVE",
             ActiveSubscription: new SubscriptionDetailResponse(
@@ -203,6 +210,66 @@ public sealed class MockWebApiClient : IWebApiClient
                 AssignedPtId: _memberSubscription.AssignedPtId
             )
         ));
+    }
+
+    public Task<bool> UpdateMyProfileAsync(UpdateMemberProfileRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var current = _authStateProvider.CurrentUser;
+        if (current == null)
+        {
+            throw new ValidationException("Người dùng chưa đăng nhập.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FullName) || request.FullName.Trim().Length < 2)
+        {
+            throw new ValidationException("Họ và tên phải có ít nhất 2 ký tự.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Phone) || !System.Text.RegularExpressions.Regex.IsMatch(request.Phone.Trim(), @"^0\d{9}$"))
+        {
+            throw new ValidationException("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
+        {
+            throw new ValidationException("Email không đúng định dạng.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            if (request.NewPassword.Length < 6)
+            {
+                throw new ValidationException("Mật khẩu mới phải có ít nhất 6 ký tự.");
+            }
+        }
+
+        var userIndex = _users.FindIndex(u => string.Equals(u.UserId, current.UserId, StringComparison.OrdinalIgnoreCase));
+        var updatedSession = new UserSessionDto(
+            current.UserId,
+            request.FullName.Trim(),
+            request.Email.Trim(),
+            current.Role,
+            request.Phone.Trim()
+        );
+
+        if (userIndex >= 0)
+        {
+            _users[userIndex] = updatedSession;
+        }
+
+        _authStateProvider.SetAuthenticated(updatedSession);
+
+        if (_memberSubscription != null && string.Equals(_memberSubscription.UserName, current.UserId, StringComparison.OrdinalIgnoreCase))
+        {
+            _memberSubscription = _memberSubscription with
+            {
+                MemberFullName = request.FullName.Trim()
+            };
+        }
+
+        return Task.FromResult(true);
     }
 
     public Task<MemberSubscriptionDetailDto?> GetMySubscriptionAsync()
@@ -290,6 +357,12 @@ public sealed class MockWebApiClient : IWebApiClient
         }
 
         var slot = _ptSlots[slotIndex];
+        var slotStartDateTime = slot.AvailableDate.ToDateTime(slot.StartTime);
+        if (slotStartDateTime <= DateTime.Now)
+        {
+            throw new BusinessRuleException("Không thể đặt lịch cho khung giờ đã trôi qua.");
+        }
+
         _ptSlots[slotIndex] = slot with { IsBooked = true };
 
         _memberSubscription = _memberSubscription with
@@ -355,6 +428,12 @@ public sealed class MockWebApiClient : IWebApiClient
         }
 
         var newSlot = _ptSlots[newSlotIndex];
+        var newSlotStartDateTime = newSlot.AvailableDate.ToDateTime(newSlot.StartTime);
+        if (newSlotStartDateTime <= DateTime.Now)
+        {
+            throw new BusinessRuleException("Không thể chuyển sang khung giờ đã trôi qua.");
+        }
+
         _ptSlots[newSlotIndex] = newSlot with { IsBooked = true };
 
         var oldSession = _ptSessions[sessionIndex];

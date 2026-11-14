@@ -27,6 +27,13 @@ public record MemberSubscriptionDetailDto(
     DateOnly? FreezeEndDate
 );
 
+public record UpdateMemberProfileRequest(
+    string FullName,
+    string Phone,
+    string Email,
+    string? NewPassword = null
+);
+
 /// <summary>
 /// Hợp đồng giao tiếp dữ liệu cho Cổng thông tin Hội viên & Huấn luyện viên PT.
 /// </summary>
@@ -38,6 +45,7 @@ public interface IWebApiClient
 
     // Hồ sơ & Gói tập số của Hội viên (UC09, UC03)
     Task<MemberProfileResponse?> GetMyProfileAsync();
+    Task<bool> UpdateMyProfileAsync(UpdateMemberProfileRequest request);
     Task<MemberSubscriptionDetailDto?> GetMySubscriptionAsync();
     Task<string> GetMyCheckInQrCodeAsync();
     Task<string> RefreshCheckInQrCodeAsync();
