@@ -7,6 +7,7 @@ using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.DTOs;
 
 namespace GymManagement.Desktop.Services.Api;
 
@@ -54,6 +55,7 @@ public interface IApiClient
 
     // Staff RBAC (UC07)
     Task<IReadOnlyList<UserSessionDto>> GetUsersAsync();
+    Task<IReadOnlyList<RoleDto>> GetRolesAsync();
     Task<bool> ToggleUserLockAsync(string userId);
     Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request);
     Task<bool> SetUserStatusAsync(string userName, string status);

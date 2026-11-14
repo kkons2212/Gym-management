@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="Electron" modified="2026-11-15T10:00:00.000Z" agent="5.0" etag="abc123" version="16.0.0" type="device">
+  <diagram id="architecture_diagram" name="Horizontal Scaling Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="Architecture: Horizontal Scaling" style="text;html=1;align=left;verticalAlign=top;fontSize=16;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Load Balancer (Nginx/ALB) -->
+        <mxCell id="lb" value="Load Balancer (Nginx/ALB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#2c3e50;strokeWidth=2;fontSize=12;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="350" y="80" width="250" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Connector from LB down -->
+        <mxCell id="lb_connector" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="lb" target="api_connector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- API Connector node (invisible) -->
+        <mxCell id="api_connector" style="point;shape=point;rounded=0;fontSize=0" vertex="1" parent="1">
+          <mxGeometry x="475" y="180" width="0" height="0" as="geometry" />
+        </mxCell>
+        
+        <!-- Connectors from API connector to each API -->
+        <mxCell id="connector_api1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api_connector" target="api1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="connector_api2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api_connector" target="api2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="connector_api3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api_connector" target="api3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- API1 -->
+        <mxCell id="api1" value="API1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a9dfbf;strokeColor=#1e8449;strokeWidth=2;fontSize=12;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- API2 -->
+        <mxCell id="api2" value="API2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a9dfbf;strokeColor=#1e8449;strokeWidth=2;fontSize=12;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="415" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- API3 -->
+        <mxCell id="api3" value="API3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a9dfbf;strokeColor=#1e8449;strokeWidth=2;fontSize=12;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="750" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Stateless label -->
+        <mxCell id="stateless_label" value="(stateless)" style="text;html=1;align=right;verticalAlign=middle;fontSize=11;fontStyle=italic;fillColor=none;strokeColor=none" vertex="1" parent="1">
+          <mxGeometry x="870" y="230" width="100" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Connectors from APIs down -->
+        <mxCell id="connector_db_line" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api1" target="db_connector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="connector_db_line2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api2" target="db_connector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="connector_db_line3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="api3" target="db_connector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- DB Connector node (invisible) -->
+        <mxCell id="db_connector" style="point;shape=point;rounded=0;fontSize=0" vertex="1" parent="1">
+          <mxGeometry x="475" y="350" width="0" height="0" as="geometry" />
+        </mxCell>
+        
+        <!-- Connector from DB connector to DB -->
+        <mxCell id="connector_rds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2c3e50" edge="1" parent="1" source="db_connector" target="rds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- RDS SQL Server -->
+        <mxCell id="rds" value="RDS SQL Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9e79f;strokeColor=#9a7d0a;strokeWidth=2;fontSize=12;fontStyle=bold" vertex="1" parent="1">
+          <mxGeometry x="300" y="420" width="350" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Multi-AZ label -->
+        <mxCell id="multiaz_label" value="(Multi-AZ, auto-failover)" style="text;html=1;align=right;verticalAlign=middle;fontSize=11;fontStyle=italic;fillColor=none;strokeColor=none" vertex="1" parent="1">
+          <mxGeometry x="650" y="430" width="180" height="40" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

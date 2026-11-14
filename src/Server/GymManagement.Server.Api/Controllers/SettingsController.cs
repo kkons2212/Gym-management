@@ -41,6 +41,18 @@ public sealed class SettingsController : ApiControllerBase
     // =========================================================================
 
     /// <summary>
+    /// Lấy danh sách vai trò sẵn có trong hệ thống (để populate role dropdown).
+    /// </summary>
+    [HttpGet("roles")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetRoles(
+        CancellationToken cancellationToken = default)
+    {
+        var roles = await _systemSettingService.GetRolesAsync(cancellationToken);
+        return OkResponse(roles, "Lấy danh sách vai trò thành công.");
+    }
+
+    /// <summary>
     /// Lấy danh sách tài khoản theo bộ lọc vai trò và trạng thái (UC 7.1).
     /// </summary>
     [HttpGet("users")]

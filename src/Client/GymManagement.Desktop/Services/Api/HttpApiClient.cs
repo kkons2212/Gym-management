@@ -9,6 +9,7 @@ using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.Exceptions;
 
 namespace GymManagement.Desktop.Services.Api;
@@ -476,6 +477,12 @@ public sealed class HttpApiClient : IApiClient
     {
         var response = await _httpClient.GetAsync("/api/v1/admin/users");
         return await HandleResponseAsync<IReadOnlyList<UserSessionDto>>(response);
+    }
+
+    public async Task<IReadOnlyList<RoleDto>> GetRolesAsync()
+    {
+        var response = await _httpClient.GetAsync("/api/v1/admin/roles");
+        return await HandleResponseAsync<IReadOnlyList<RoleDto>>(response);
     }
 
     public async Task<bool> ToggleUserLockAsync(string userId)

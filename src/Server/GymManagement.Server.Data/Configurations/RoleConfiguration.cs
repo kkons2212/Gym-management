@@ -28,7 +28,8 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .HasMaxLength(50)
             .IsRequired(false);
 
-        builder.Ignore(r => r.RoleId);
+        // NOTE: Do NOT ignore RoleId - it's needed for EF Core relationships
+        // EF Core automatically maps RoleId to RoleID column via the property naming convention
     }
 }
 

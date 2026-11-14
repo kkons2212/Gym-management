@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Data;
+using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.Settings;
 using GymManagement.Server.Core.Entities;
@@ -642,6 +643,19 @@ public sealed class SystemSettingService : ISystemSettingService
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyList<RoleDto>> GetRolesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var roleRepo = _unitOfWork.Repository<Role>();
+        var roles = await roleRepo.GetAllAsync(cancellationToken);
+
+        var results = roles
+            .Select(r => new RoleDto(r.RoleID, r.RoleName ?? string.Empty))
+            .ToList();
+
+        return results.AsReadOnly();
+    }
+
     public async Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync(
         bool includeInactive = false,
         CancellationToken cancellationToken = default)
