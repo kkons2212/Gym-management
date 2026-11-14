@@ -37,7 +37,7 @@
                 <TextBlock Text="QUẢN LÝ HỘI VIÊN &amp; GÓI TẬP"
                            FontSize="20" FontWeight="Bold"
                            Foreground="{StaticResource TextPrimaryBrush}" />
-                <TextBlock Text="Tra cứu thông tin, bảo lưu gói tập và ghi nhận số đo InBody (F3)"
+                <TextBlock Text="Tra cứu thông tin, gia hạn và bảo lưu gói tập (F3)"
                            FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
             <Button Grid.Column="1"
@@ -177,7 +177,6 @@
                                             <MenuFlyout Placement="BottomEdgeAlignedRight">
                                                 <MenuFlyoutItem Text="Phân công PT" Click="OnAssignPtClicked" Icon="Contact" />
                                                 <MenuFlyoutItem Text="Bảo lưu gói tập" Click="OnFreezeClicked" Icon="Pause" />
-                                                <MenuFlyoutItem Text="Đo InBody" Click="OnInBodyClicked" Icon="ReportHacked" />
                                                 <MenuFlyoutSeparator />
                                                 <MenuFlyoutItem Text="Hủy đăng ký gói" Click="OnCancelSubscriptionClicked" Icon="Cancel" Foreground="{StaticResource StatusDangerBrush}" />
                                             </MenuFlyout>
