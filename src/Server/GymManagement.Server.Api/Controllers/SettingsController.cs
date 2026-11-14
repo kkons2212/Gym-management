@@ -76,7 +76,8 @@ public sealed class SettingsController : ApiControllerBase
         _logger.LogInformation("SettingsController: Tao tai khoan moi {UserName} voi quyen {RoleId}",
             request.UserName, request.RoleId);
 
-        var user = await _systemSettingService.CreateUserAsync(request, cancellationToken);
+        string currentUserName = GetCurrentUserName();
+        var user = await _systemSettingService.CreateUserAsync(request, currentUserName, cancellationToken);
         return CreatedResponse($"/api/v1/admin/users/{user.UserName}", user, "Tạo tài khoản người dùng thành công.");
     }
 

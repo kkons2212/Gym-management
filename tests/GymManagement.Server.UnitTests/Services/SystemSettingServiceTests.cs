@@ -63,6 +63,9 @@ public class SystemSettingServiceTests
         _roleRepoMock.Setup(r => r.GetByIdAsync("ADMIN", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Role { RoleID = "ADMIN", RoleName = "Quản trị viên" });
 
+        _userRepoMock.Setup(u => u.GetByIdAsync("superadmin", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { UserName = "superadmin", RoleId = "SUPERADMIN" });
+
         _userRepoMock.Setup(u => u.GetByIdAsync("staff01", It.IsAny<CancellationToken>()))
             .ReturnsAsync((User?)null);
 
@@ -70,7 +73,7 @@ public class SystemSettingServiceTests
             .ReturnsAsync((User?)null);
 
         // Act
-        var result = await _sut.CreateUserAsync(request);
+        var result = await _sut.CreateUserAsync(request, "superadmin");
 
         // Assert
         result.Should().NotBeNull();
@@ -86,6 +89,57 @@ public class SystemSettingServiceTests
     }
 
     [Fact]
+    public async Task CreateUserAsync_WhenRoleIsAdminAndCreatorIsNotSuperAdmin_ThrowsBusinessRuleException()
+    {
+        // Arrange
+        var request = new CreateUserRequest(
+            "staff02", "ADMIN", "Admin Mới", "0901234568",
+            "admin2@gym.vn", "P@ssword123", 1);
+
+        _roleRepoMock.Setup(r => r.GetByIdAsync("ADMIN", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Role { RoleID = "ADMIN", RoleName = "Quản trị viên" });
+
+        _userRepoMock.Setup(u => u.GetByIdAsync("admin01", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { UserName = "admin01", RoleId = "ADMIN" });
+
+        // Act
+        Func<Task> act = async () =>
+        {
+            await _sut.CreateUserAsync(request, "admin01");
+        };
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("*Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền tạo tài khoản Quản trị viên.*");
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_WhenRoleIsPtAndCreatorIsAdmin_CreatesSuccessfully()
+    {
+        // Arrange
+        var request = new CreateUserRequest(
+            "pt99", "PT", "HLV Mới", "0909999999",
+            "pt99@gym.vn", "P@ssword123", 1);
+
+        _roleRepoMock.Setup(r => r.GetByIdAsync("PT", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Role { RoleID = "PT", RoleName = "Huấn luyện viên" });
+
+        _userRepoMock.Setup(u => u.GetByIdAsync("pt99", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        _userRepoMock.Setup(u => u.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        // Act
+        var result = await _sut.CreateUserAsync(request, "admin01");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.UserName.Should().Be("pt99");
+        result.RoleId.Should().Be("PT");
+    }
+
+    [Fact]
     public async Task CreateUserAsync_WhenDuplicateUserName_ThrowsBusinessRuleException()
     {
         // Arrange
@@ -96,13 +150,16 @@ public class SystemSettingServiceTests
         _roleRepoMock.Setup(r => r.GetByIdAsync("ADMIN", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Role { RoleID = "ADMIN", RoleName = "Quản trị viên" });
 
+        _userRepoMock.Setup(u => u.GetByIdAsync("superadmin", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { UserName = "superadmin", RoleId = "SUPERADMIN" });
+
         _userRepoMock.Setup(u => u.GetByIdAsync("admin", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new User { UserName = "admin", RoleId = "ADMIN" });
 
         // Act
         Func<Task> act = async () =>
         {
-            await _sut.CreateUserAsync(request);
+            await _sut.CreateUserAsync(request, "superadmin");
         };
 
         // Assert
@@ -262,6 +319,42 @@ public class SystemSettingServiceTests
 
         _userRepoMock.Verify(u => u.Update(It.IsAny<User>()), Times.Once);
         _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_WhenPromotingToAdminAndCallerIsNotSuperAdmin_ThrowsBusinessRuleException()
+    {
+        // Arrange
+        var request = new UpdateUserRequest("Trần Văn PT", "0908888888", "pt@gym.vn", "ADMIN", 1);
+
+        var existingUser = new User
+        {
+            UserName = "pt01",
+            RoleId = "PT",
+            FullName = "Tên Cũ",
+            Phone = "0901111111",
+            Email = "old@gym.vn",
+            Status = "ACTIVE"
+        };
+
+        _userRepoMock.Setup(u => u.GetByIdAsync("pt01", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingUser);
+
+        _roleRepoMock.Setup(r => r.GetByIdAsync("ADMIN", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Role { RoleID = "ADMIN", RoleName = "Quản trị viên" });
+
+        _userRepoMock.Setup(u => u.GetByIdAsync("admin01", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { UserName = "admin01", RoleId = "ADMIN" });
+
+        // Act
+        Func<Task> act = async () =>
+        {
+            await _sut.UpdateUserAsync("pt01", request, "admin01");
+        };
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("*Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền phân quyền Quản trị viên.*");
     }
 
     [Fact]

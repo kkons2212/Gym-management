@@ -278,6 +278,11 @@ IF OBJECT_ID('dbo.MemberBodyMetric', 'U') IS NOT NULL
 GO
 
 -- 4.1. Nạp danh mục vai trò (Roles)
+IF NOT EXISTS (SELECT 1 FROM dbo.Role WHERE RoleID = 'SUPERADMIN')
+    INSERT INTO dbo.Role (RoleID, RoleName) VALUES ('SUPERADMIN', N'Quản trị viên cấp cao');
+ELSE
+    UPDATE dbo.Role SET RoleName = N'Quản trị viên cấp cao' WHERE RoleID = 'SUPERADMIN';
+
 IF NOT EXISTS (SELECT 1 FROM dbo.Role WHERE RoleID = 'ADMIN')
     INSERT INTO dbo.Role (RoleID, RoleName) VALUES ('ADMIN', N'Quản trị viên');
 ELSE
@@ -301,7 +306,7 @@ BEGIN
     INSERT INTO dbo.[User] (UserName, RoleID, FullName, Phone, Email, PasswordHash, Gender, Status, created_at)
     VALUES (
         'admin',
-        'ADMIN',
+        'SUPERADMIN',
         N'Quản Trị Hệ Thống',
         '0901234567',
         'admin@gymsystem.vn',
@@ -313,7 +318,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    UPDATE dbo.[User] SET FullName = N'Quản Trị Hệ Thống' WHERE UserName = 'admin';
+    UPDATE dbo.[User] SET RoleID = 'SUPERADMIN', FullName = N'Quản Trị Hệ Thống' WHERE UserName = 'admin';
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserName = 'pt01')

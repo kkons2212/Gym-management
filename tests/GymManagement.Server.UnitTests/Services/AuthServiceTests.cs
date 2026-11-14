@@ -151,6 +151,35 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_WhenRoleIsSuperAdmin_NormalizesToSuperAdmin()
+    {
+        // Arrange
+        string rawPassword = "SuperAdminPassword!";
+        string passwordHash = BCrypt.Net.BCrypt.HashPassword(rawPassword);
+
+        var existingUser = new User
+        {
+            UserName = "admin",
+            RoleId = "SUPERADMIN",
+            FullName = "Quản Trị Hệ Thống",
+            Phone = "0901234567",
+            Email = "admin@gymsystem.vn",
+            PasswordHash = passwordHash,
+            Status = "ACTIVE"
+        };
+
+        SetupUserRepoFindResult([existingUser]);
+
+        var request = new LoginRequest("admin", rawPassword);
+
+        // Act
+        var response = await _sut.LoginAsync(request);
+
+        // Assert
+        response.Role.Should().Be("SuperAdmin");
+    }
+
+    [Fact]
     public async Task LoginAsync_WhenInvalidPassword_ThrowsUnauthorizedAccessException()
     {
         // Arrange

@@ -12,10 +12,11 @@ public sealed partial class UserEditDialog : ContentDialog
     private readonly IApiClient _apiClient;
     private readonly UserSessionDto _targetUser;
     private readonly bool _isSelf;
+    private readonly bool _isSuperAdmin;
 
     internal UserSessionDto? SavedUser { get; private set; }
 
-    public UserEditDialog(IApiClient apiClient, UserSessionDto user, bool isSelf)
+    public UserEditDialog(IApiClient apiClient, UserSessionDto user, bool isSelf, bool isSuperAdmin = false)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
         ArgumentNullException.ThrowIfNull(user);
@@ -23,6 +24,7 @@ public sealed partial class UserEditDialog : ContentDialog
         _apiClient = apiClient;
         _targetUser = user;
         _isSelf = isSelf;
+        _isSuperAdmin = isSuperAdmin;
 
         InitializeComponent();
 
@@ -37,6 +39,20 @@ public sealed partial class UserEditDialog : ContentDialog
         {
             CboRole.IsEnabled = false;
             PnlSelfNotice.Visibility = Visibility.Visible;
+        }
+        else if (!_isSuperAdmin)
+        {
+            if (CbiAdminRole != null)
+            {
+                CbiAdminRole.IsEnabled = false;
+            }
+
+            bool isTargetAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase) ||
+                                 string.Equals(user.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            if (isTargetAdmin)
+            {
+                CboRole.IsEnabled = false;
+            }
         }
 
         PrimaryButtonClick += UserEditDialog_PrimaryButtonClick;
@@ -102,6 +118,12 @@ public sealed partial class UserEditDialog : ContentDialog
         if (_isSelf && !string.Equals(roleId, _targetUser.Role, StringComparison.OrdinalIgnoreCase))
         {
             ShowError("Vi phạm quyền quản trị: Bạn không thể tự thay đổi vai trò của tài khoản đang đăng nhập!");
+            return;
+        }
+
+        if (!_isSuperAdmin && string.Equals(roleId, "Admin", StringComparison.OrdinalIgnoreCase) && !string.Equals(_targetUser.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowError("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền phân quyền Quản trị viên.");
             return;
         }
 

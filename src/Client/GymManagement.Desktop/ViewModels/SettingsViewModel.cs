@@ -60,6 +60,18 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    public bool IsSuperAdmin
+    {
+        get
+        {
+            if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.Role))
+            {
+                return string.Equals(_sessionService.CurrentUser.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+    }
+
     public ObservableCollection<UserSessionDto> Users { get; } = [];
 
     public SettingsViewModel(IApiClient apiClient, IAdminSessionService sessionService)
@@ -162,6 +174,13 @@ public partial class SettingsViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(NewEmail) || !System.Text.RegularExpressions.Regex.IsMatch(NewEmail.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
             StatusMessage = "Địa chỉ email không đúng định dạng.";
+            IsSuccess = false;
+            return;
+        }
+
+        if (string.Equals(NewRole, "Admin", StringComparison.OrdinalIgnoreCase) && !IsSuperAdmin)
+        {
+            StatusMessage = "Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền tạo tài khoản Quản trị viên.";
             IsSuccess = false;
             return;
         }

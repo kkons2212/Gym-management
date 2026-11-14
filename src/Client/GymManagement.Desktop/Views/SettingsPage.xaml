@@ -76,7 +76,8 @@
                         <TextBlock Text="Vai trò (Role):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                         <ComboBox x:Name="RoleComboBox" SelectionChanged="OnRoleSelectionChanged" HorizontalAlignment="Stretch" SelectedIndex="0">
                             <ComboBoxItem Content="Huấn luyện viên cá nhân (PT)" Tag="PT" />
-                            <ComboBoxItem Content="Quản trị viên (Admin)" Tag="Admin" />
+                            <ComboBoxItem x:Name="AdminRoleOption" Content="Quản trị viên (Admin)" Tag="Admin"
+                                          Visibility="{x:Bind ViewModel.IsSuperAdmin, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </ComboBox>
                     </StackPanel>
 

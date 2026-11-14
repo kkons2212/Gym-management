@@ -46,7 +46,7 @@ public sealed partial class SettingsPage : Page
                 }
             }
 
-            var dialog = new UserEditDialog(App.GetService<IApiClient>(), user, isSelf)
+            var dialog = new UserEditDialog(App.GetService<IApiClient>(), user, isSelf, ViewModel.IsSuperAdmin)
             {
                 XamlRoot = this.XamlRoot
             };

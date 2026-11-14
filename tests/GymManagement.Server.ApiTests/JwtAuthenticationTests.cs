@@ -76,6 +76,16 @@ public sealed class JwtAuthenticationTests : IClassFixture<JwtApplicationFactory
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AdminEndpoint_WhenAuthenticatedAsSuperAdmin_ShouldSucceed()
+    {
+        using var client = _factory.CreateAuthenticatedClient("SuperAdmin");
+
+        using var response = await client.GetAsync("/test-api/admin");
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
     private static void AssertStandardAuthError(System.Text.Json.JsonElement body, string expectedErrorCode)
     {
         Assert.False(body.GetProperty("success").GetBoolean());
