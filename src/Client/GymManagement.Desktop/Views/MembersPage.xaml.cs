@@ -201,35 +201,6 @@ public sealed partial class MembersPage : Page
         }
     }
 
-    public async void OnInBodyClicked(object sender, RoutedEventArgs e)
-    {
-        var member = ExtractMemberFromSender(sender);
-        if (member == null)
-        {
-            return;
-        }
-
-        var dialog = new InBodyEntryDialog(member.FullName)
-        {
-            XamlRoot = this.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            var api = App.GetService<IApiClient>();
-            var req = new InBodyEntryRequest(
-                member.UserId,
-                dialog.HeightCm,
-                dialog.WeightKg,
-                dialog.BodyFatPercentage,
-                dialog.SkeletalMuscleMass,
-                dialog.Notes
-            );
-            await api.RecordInBodyMetricAsync(req);
-        }
-    }
-
     private async void BtnRegisterNewMember_Click(object sender, RoutedEventArgs e)
     {
         IApiClient api;

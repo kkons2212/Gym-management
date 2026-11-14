@@ -30,9 +30,6 @@ public partial class MembersViewModel : ObservableObject
     [ObservableProperty]
     private bool _isFreezeModalOpen;
 
-    [ObservableProperty]
-    private bool _isInBodyModalOpen;
-
     public MembersViewModel(IApiClient apiClient)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
@@ -86,13 +83,6 @@ public partial class MembersViewModel : ObservableObject
     {
         SelectedMember = member;
         IsFreezeModalOpen = true;
-    }
-
-    [RelayCommand]
-    private void OpenInBodyModal(MemberDto member)
-    {
-        SelectedMember = member;
-        IsInBodyModalOpen = true;
     }
 }
 
