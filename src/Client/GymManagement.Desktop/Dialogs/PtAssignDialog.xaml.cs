@@ -16,14 +16,6 @@ public sealed partial class PtAssignDialog : ContentDialog
         }
     }
 
-    public string Notes
-    {
-        get
-        {
-            return TxtNotes.Text.Trim();
-        }
-    }
-
     public PtAssignDialog(string memberName, string subscriptionInfo, IReadOnlyList<UserSessionDto> ptList)
     {
         InitializeComponent();

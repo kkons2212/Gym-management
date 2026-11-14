@@ -34,12 +34,6 @@
             </ComboBox>
         </StackPanel>
 
-        <!-- Notes -->
-        <StackPanel Spacing="6">
-            <TextBlock Text="Ghi chú phân công:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
-            <TextBox x:Name="TxtNotes" PlaceholderText="Ghi chú mục tiêu tập luyện hoặc lưu ý sức khỏe..." HorizontalAlignment="Stretch" />
-        </StackPanel>
-
         <TextBlock x:Name="TxtValidationError" Foreground="{StaticResource StatusDangerBrush}" FontSize="12" Visibility="Collapsed" />
     </StackPanel>
 </ContentDialog>
