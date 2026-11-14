@@ -43,7 +43,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 | **Task 3.3** | API Controllers Component | Toàn bộ 10 Epics (Cổng RESTful API công khai cho Client) | `Server.Api` | `Controllers/ApiControllerBase.cs`, `AuthController.cs`, `MembersController.cs`, `CheckInController.cs`, `PtController.cs`, `InvoicesController.cs`, `ReportsController.cs`, `SettingsController.cs`, `Program.cs` | `tests/GymManagement.Server.ApiTests/Controllers/*Tests.cs` (18 tests mới) | 9 bảng CSDL | `9016fe4` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | Toàn bộ 10 Epics (Admin & Thu ngân) | `Client.Desktop` | `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml`, `Views/*` (In-place Wipe về canvas chuẩn), `ViewModels/*`, `App.xaml(.cs)`, `MainWindow.xaml(.cs)` | Biên dịch WinUI 3 Desktop `0 Warning(s), 0 Error(s)` | 9 bảng CSDL | `6832b09` (WIP) |
-| **Task 4.1.4** | Tích hợp Camera & Quét mã QR Check-in thời gian thực | UC03 (US 03.1 - Quét QR qua Camera tại quầy) | `Client.Desktop` | `Services/Camera/*`, `ViewModels/CheckInCounterViewModel.cs`, `Views/CheckInCounterPage.xaml(.cs)`, `App.xaml.cs` | WinUI 3 Desktop Build `0 Warning(s), 0 Error(s)` & Solution Tests 186/186 pass (100%) | `CheckInLog`, `MemberSubscription`, `[User]` | *(pending commit)* |
+| **Task 4.1.4** | Tích hợp Camera & Quét mã QR Check-in thời gian thực | UC03 (US 03.1 - Quét QR qua Camera tại quầy) | `Client.Desktop` | `Services/Camera/*`, `ViewModels/CheckInCounterViewModel.cs`, `Views/CheckInCounterPage.xaml(.cs)`, `App.xaml.cs` | WinUI 3 Desktop Build `0 Warning(s), 0 Error(s)` & Solution Tests 186/186 pass (100%) | `CheckInLog`, `MemberSubscription`, `[User]` | `79fd3df` |
 | **Docker DB** | Cấu hình Docker SQL Server, DDL Seed, Hỗ trợ Unicode (NVARCHAR) & CI Test | Toàn bộ 10 Epics (9 bảng & Seed Admin) | `Server.Data`, `Server.Api`, `Document/`, CI | `Document/init_docker_db.sql`, `GymManagement_Physical_Model.sql`, `scripts/setup-docker-db.ps1`, `src/Server/GymManagement.Server.Data/Configurations/*`, `appsettings.json`, `DependencyInjection.cs`, `.github/workflows/ci.yml` | Python Schema Verifier, Ephemeral Docker SQL Server Test in CI & Server.DataTests (42/42 pass) | 9 bảng CSDL (`nvarchar` cho toàn bộ cột text tiếng Việt) | `91abb28` |
 
 ---
@@ -371,7 +371,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
 
 ### 📌 [Task 4.1.4] Tích Hợp Camera Phần Cứng & Quét Mã QR Thời Gian Thực Quầy Điểm Danh (UC03 - US 03.1)
-* **Ngày hoàn tất:** 14/11/2026 | **Commit:** *(pending commit)* (nhánh `feat/us-03.1-camera-scanner-integration`)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `79fd3df` (nhánh `feat/us-03.1-camera-scanner-integration`)
 * **Phân hệ nghiệp vụ liên quan:** UC03 (US 03.1) - Quét mã QR qua Camera tại quầy tiếp đón hội viên.
 * **Ranh giới thành phần:** `Client.Desktop` (Services, ViewModels, Views).
 * **Mã nguồn tạo / sửa:**
