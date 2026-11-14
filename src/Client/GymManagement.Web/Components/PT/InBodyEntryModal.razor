@@ -1,4 +1,5 @@
 @inject IWebApiClient ApiClient
+@using System.Globalization
 
 @if (IsOpen && Student != null)
 {
@@ -30,7 +31,7 @@
                            step="0.1"
                            min="30"
                            max="250"
-                           value="@_weightKg"
+                           value="@_weightKg.ToString(CultureInfo.InvariantCulture)"
                            @oninput="HandleWeightChanged"
                            class="tabular-nums"
                            style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
@@ -44,7 +45,7 @@
                            step="1"
                            min="100"
                            max="250"
-                           value="@_heightCm"
+                           value="@_heightCm.ToString(CultureInfo.InvariantCulture)"
                            @oninput="HandleHeightChanged"
                            class="tabular-nums"
                            style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
@@ -59,6 +60,7 @@
                            min="10"
                            max="150"
                            @bind="_skeletalMuscleMass"
+                           @bind:culture="CultureInfo.InvariantCulture"
                            class="tabular-nums"
                            style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
                 </div>
@@ -72,6 +74,7 @@
                            min="3"
                            max="60"
                            @bind="_bodyFatPercentage"
+                           @bind:culture="CultureInfo.InvariantCulture"
                            class="tabular-nums"
                            style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
                 </div>
@@ -150,7 +153,8 @@
 
     private void HandleWeightChanged(ChangeEventArgs e)
     {
-        if (decimal.TryParse(e.Value?.ToString(), out var val) && val > 0)
+        var raw = e.Value?.ToString()?.Replace(',', '.');
+        if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.InvariantCulture, out var val) && val > 0)
         {
             _weightKg = val;
             RecalculateBmi();
@@ -159,7 +163,8 @@
 
     private void HandleHeightChanged(ChangeEventArgs e)
     {
-        if (decimal.TryParse(e.Value?.ToString(), out var val) && val > 0)
+        var raw = e.Value?.ToString()?.Replace(',', '.');
+        if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.InvariantCulture, out var val) && val > 0)
         {
             _heightCm = val;
             RecalculateBmi();
