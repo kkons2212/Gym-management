@@ -2,19 +2,46 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymManagement.Desktop.Services.Api;
+using GymManagement.Desktop.Services.Camera;
 using GymManagement.Server.Core.DTOs.CheckIn;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
 
 namespace GymManagement.Desktop.ViewModels;
 
-public partial class CheckInCounterViewModel : ObservableObject
+/// <summary>
+/// ViewModel quản lý Quầy Điểm Danh & Cổng Tự Động (CheckInCounterPage).
+/// Tích hợp luồng Camera vật lý, giải mã QR thời gian thực và kiểm soát hàng rào bảo vệ.
+/// Tuân thủ nghiêm ngặt quy chuẩn dev_rule.md (0 toán tử 3 ngôi, flat guard clauses, 100% tiếng Việt trên UI/comment).
+/// </summary>
+public partial class CheckInCounterViewModel : ObservableObject, IDisposable
 {
     private readonly IApiClient _apiClient;
+    private readonly ICameraCaptureService _cameraCaptureService;
+    private readonly IQrDecoderService _qrDecoderService;
+
     private CancellationTokenSource? _autoResetCts;
     private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
     private List<CheckInLogDto> _allLogsCache = new();
+    private int _isDecodingFlag;
 
     [ObservableProperty]
     private bool _isCameraActive = true;
+
+    [ObservableProperty]
+    private bool _hasCameraDevice;
+
+    [ObservableProperty]
+    private bool _isCameraRunning;
+
+    [ObservableProperty]
+    private bool _isQrDetectedFlash;
+
+    [ObservableProperty]
+    private string _cameraStatusMessage = string.Empty;
+
+    [ObservableProperty]
+    private CameraDeviceInfo? _selectedCamera;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -75,23 +102,236 @@ public partial class CheckInCounterViewModel : ObservableObject
 
     public ObservableCollection<CheckInLogDto> TodayLogs { get; } = new();
 
-    public CheckInCounterViewModel(IApiClient apiClient)
+    public ObservableCollection<CameraDeviceInfo> AvailableCameras { get; } = new();
+
+    /// <summary>
+    /// Sự kiện thông báo khi có frame camera mới để View cập nhật hình ảnh SoftwareBitmapSource.
+    /// </summary>
+    public event EventHandler<SoftwareBitmap>? VideoFrameReady;
+
+    public CheckInCounterViewModel(
+        IApiClient apiClient,
+        ICameraCaptureService cameraCaptureService,
+        IQrDecoderService qrDecoderService)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
+        ArgumentNullException.ThrowIfNull(cameraCaptureService);
+        ArgumentNullException.ThrowIfNull(qrDecoderService);
+
         _apiClient = apiClient;
+        _cameraCaptureService = cameraCaptureService;
+        _qrDecoderService = qrDecoderService;
         _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
+        _cameraCaptureService.FrameArrived += OnCameraCaptureFrameArrived;
     }
 
     [RelayCommand]
     public async Task InitializeAsync()
     {
         await LoadTodayMonitoringAsync();
+        await LoadCamerasAndStartAsync();
+    }
+
+    /// <summary>
+    /// Tải danh sách thiết bị webcam và kích hoạt camera mặc định.
+    /// </summary>
+    public async Task LoadCamerasAndStartAsync()
+    {
+        try
+        {
+            IReadOnlyList<CameraDeviceInfo> cameras;
+            cameras = await _cameraCaptureService.GetAvailableCamerasAsync();
+
+            AvailableCameras.Clear();
+            foreach (CameraDeviceInfo cam in cameras)
+            {
+                AvailableCameras.Add(cam);
+            }
+
+            if (AvailableCameras.Count > 0)
+            {
+                HasCameraDevice = true;
+                SelectedCamera = AvailableCameras[0];
+                await StartSelectedCameraInternalAsync();
+            }
+            else
+            {
+                HasCameraDevice = false;
+                IsCameraRunning = false;
+                CameraStatusMessage = "Chưa phát hiện thấy webcam trên thiết bị. Bạn có thể sử dụng đầu đọc mã vạch USB hoặc nhập SĐT.";
+            }
+        }
+        catch (Exception ex)
+        {
+            HasCameraDevice = false;
+            IsCameraRunning = false;
+            CameraStatusMessage = "Lỗi khởi động camera: " + ex.Message;
+        }
+    }
+
+    private async Task StartSelectedCameraInternalAsync()
+    {
+        if (SelectedCamera == null)
+        {
+            return;
+        }
+
+        bool initSuccess;
+        initSuccess = await _cameraCaptureService.InitializeAsync(SelectedCamera.DeviceId);
+        if (initSuccess)
+        {
+            bool startSuccess;
+            startSuccess = await _cameraCaptureService.StartPreviewAsync();
+            if (startSuccess)
+            {
+                IsCameraRunning = true;
+                CameraStatusMessage = "Webcam đang hoạt động. Sẵn sàng quét mã QR.";
+            }
+            else
+            {
+                IsCameraRunning = false;
+                CameraStatusMessage = "Không thể kích hoạt luồng video từ webcam này.";
+            }
+        }
+        else
+        {
+            IsCameraRunning = false;
+            CameraStatusMessage = "Không thể khởi tạo webcam được chọn.";
+        }
     }
 
     [RelayCommand]
-    private void ToggleCamera()
+    public async Task SwitchCameraAsync(CameraDeviceInfo? camera)
     {
-        IsCameraActive = !IsCameraActive;
+        if (camera == null)
+        {
+            return;
+        }
+
+        SelectedCamera = camera;
+        await _cameraCaptureService.StopPreviewAsync();
+        await StartSelectedCameraInternalAsync();
+    }
+
+    [RelayCommand]
+    public async Task ToggleCameraAsync()
+    {
+        if (IsCameraRunning)
+        {
+            await _cameraCaptureService.StopPreviewAsync();
+            IsCameraRunning = false;
+            CameraStatusMessage = "Webcam đã tạm dừng.";
+        }
+        else
+        {
+            if (HasCameraDevice && SelectedCamera != null)
+            {
+                await StartSelectedCameraInternalAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Xử lý quét từ file hình ảnh (khi không có webcam hoặc khách cung cấp ảnh chụp mã QR).
+    /// </summary>
+    public async Task ScanFromImageFileAsync(StorageFile? file)
+    {
+        if (file == null)
+        {
+            return;
+        }
+
+        string? decodedQr;
+        decodedQr = await _qrDecoderService.DecodeFromFileAsync(file);
+
+        if (!string.IsNullOrWhiteSpace(decodedQr))
+        {
+            await CheckInWebcamQrAsync(decodedQr);
+        }
+        else
+        {
+            IsSuccess = false;
+            StatusBanner = "TỪ CHỐI CHECK-IN • KHÔNG TÌM THẤY QR";
+            MemberName = "File ảnh";
+            ErrorMessage = "Không tìm thấy hoặc không thể giải mã mã QR trong file hình ảnh đã chọn.";
+            HasResult = true;
+            StartAutoResetTimer();
+        }
+    }
+
+    /// <summary>
+    /// Dừng camera an toàn khi rời khỏi trang.
+    /// </summary>
+    public async Task StopCameraAsync()
+    {
+        await _cameraCaptureService.StopPreviewAsync();
+        IsCameraRunning = false;
+        CameraStatusMessage = "Webcam đã dừng.";
+    }
+
+    private void OnCameraCaptureFrameArrived(object? sender, SoftwareBitmap bitmap)
+    {
+        if (bitmap == null)
+        {
+            return;
+        }
+
+        // Bắn frame lên UI để hiển thị hình ảnh thời gian thực
+        VideoFrameReady?.Invoke(this, bitmap);
+
+        // Bỏ qua nếu đang bận giải mã frame trước đó (tránh quá tải CPU)
+        if (Interlocked.CompareExchange(ref _isDecodingFlag, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                string? rawQr;
+                rawQr = _qrDecoderService.DecodeFromSoftwareBitmap(bitmap);
+
+                if (!string.IsNullOrWhiteSpace(rawQr))
+                {
+                    string? acceptedQr;
+                    bool isAccepted;
+
+                    isAccepted = _qrDecoderService.TryProcessScannedCode(rawQr, out acceptedQr);
+                    if (isAccepted && !string.IsNullOrWhiteSpace(acceptedQr))
+                    {
+                        // Kích hoạt hiệu ứng viền xanh nhấp nháy báo nhận diện QR
+                        TriggerQrFlashFeedback();
+
+                        if (_dispatcherQueue != null)
+                        {
+                            _dispatcherQueue.TryEnqueue(async () =>
+                            {
+                                await CheckInWebcamQrAsync(acceptedQr);
+                            });
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isDecodingFlag, 0);
+            }
+        });
+    }
+
+    private void TriggerQrFlashFeedback()
+    {
+        if (_dispatcherQueue != null)
+        {
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                IsQrDetectedFlash = true;
+                await Task.Delay(400);
+                IsQrDetectedFlash = false;
+            });
+        }
     }
 
     [RelayCommand]
@@ -168,8 +408,11 @@ public partial class CheckInCounterViewModel : ObservableObject
     {
         try
         {
-            var logs = await _apiClient.GetTodayLogsAsync();
-            var count = await _apiClient.GetTodayAttendanceCountAsync();
+            IReadOnlyList<CheckInLogDto> logs;
+            int count;
+
+            logs = await _apiClient.GetTodayLogsAsync();
+            count = await _apiClient.GetTodayAttendanceCountAsync();
 
             _allLogsCache = logs.ToList();
             AttendanceCount = count;
@@ -219,7 +462,8 @@ public partial class CheckInCounterViewModel : ObservableObject
 
         try
         {
-            var response = await _apiClient.CheckInAsync(request);
+            CheckInResponse response;
+            response = await _apiClient.CheckInAsync(request);
 
             IsSuccess = true;
             StatusBanner = "CHECK-IN THÀNH CÔNG • CỔNG MỞ";
@@ -273,7 +517,8 @@ public partial class CheckInCounterViewModel : ObservableObject
         }
 
         _autoResetCts = new CancellationTokenSource();
-        var token = _autoResetCts.Token;
+        CancellationToken token;
+        token = _autoResetCts.Token;
 
         _ = Task.Run(async () =>
         {
@@ -303,5 +548,11 @@ public partial class CheckInCounterViewModel : ObservableObject
             {
             }
         });
+    }
+
+    public void Dispose()
+    {
+        _cameraCaptureService.FrameArrived -= OnCameraCaptureFrameArrived;
+        _ = _cameraCaptureService.StopPreviewAsync();
     }
 }
