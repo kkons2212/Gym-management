@@ -24,8 +24,9 @@ public sealed class QrDecoderService : IQrDecoderService
 
     /// <summary>
     /// Giải mã mã QR từ SoftwareBitmap của camera.
+    /// Hỗ trợ cờ isMirrored để tự động đảo chiều pixel nếu camera đang bị lật gương.
     /// </summary>
-    public string? DecodeFromSoftwareBitmap(SoftwareBitmap bitmap)
+    public string? DecodeFromSoftwareBitmap(SoftwareBitmap bitmap, bool isMirrored = false)
     {
         if (bitmap == null)
         {
@@ -63,6 +64,38 @@ public sealed class QrDecoderService : IQrDecoderService
                 targetBitmap.Dispose();
             }
 
+            // Nếu camera đang cấu hình lật gương, đảo chiều pixel trước khi quét
+            if (isMirrored)
+            {
+                FlipPixelsHorizontally(pixelBytes, width, height);
+            }
+
+            string? decoded;
+            decoded = DecodeFromRgbBytes(pixelBytes, width, height);
+
+            // Nếu quét ban đầu chưa thấy và chưa lật gương, thử lật gương 1 lần để cứu mã QR bị camera phần cứng lật
+            if (string.IsNullOrWhiteSpace(decoded))
+            {
+                if (!isMirrored)
+                {
+                    FlipPixelsHorizontally(pixelBytes, width, height);
+                    decoded = DecodeFromRgbBytes(pixelBytes, width, height);
+                }
+            }
+
+            return decoded;
+        }
+        catch (Exception)
+        {
+            // Trả về null nếu frame không chứa mã QR hoặc hình ảnh bị nhòe
+            return null;
+        }
+    }
+
+    private static string? DecodeFromRgbBytes(byte[] pixelBytes, int width, int height)
+    {
+        try
+        {
             RGBLuminanceSource luminanceSource;
             luminanceSource = new RGBLuminanceSource(pixelBytes, width, height, RGBLuminanceSource.BitmapFormat.BGRA32);
 
@@ -90,8 +123,39 @@ public sealed class QrDecoderService : IQrDecoderService
         }
         catch (Exception)
         {
-            // Trả về null nếu frame không chứa mã QR hoặc hình ảnh bị nhòe
             return null;
+        }
+    }
+
+    private static void FlipPixelsHorizontally(byte[] pixels, int width, int height)
+    {
+        int bytesPerPixel;
+        int rowBytes;
+
+        bytesPerPixel = 4;
+        rowBytes = width * bytesPerPixel;
+
+        for (int y = 0; y < height; y++)
+        {
+            int rowOffset;
+            rowOffset = y * rowBytes;
+
+            for (int x = 0; x < width / 2; x++)
+            {
+                int leftIndex;
+                int rightIndex;
+
+                leftIndex = rowOffset + (x * bytesPerPixel);
+                rightIndex = rowOffset + ((width - 1 - x) * bytesPerPixel);
+
+                for (int b = 0; b < bytesPerPixel; b++)
+                {
+                    byte temp;
+                    temp = pixels[leftIndex + b];
+                    pixels[leftIndex + b] = pixels[rightIndex + b];
+                    pixels[rightIndex + b] = temp;
+                }
+            }
         }
     }
 

@@ -44,6 +44,15 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
     private CameraDeviceInfo? _selectedCamera;
 
     [ObservableProperty]
+    private int _cameraRotationAngle = 270;
+
+    [ObservableProperty]
+    private double _cameraScaleX = -1.0;
+
+    [ObservableProperty]
+    private double _cameraScaleY = 1.0;
+
+    [ObservableProperty]
     private string _searchQuery = string.Empty;
 
     public string SearchPhone
@@ -177,6 +186,9 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
             return;
         }
 
+        // Tự động nạp lại cấu hình xoay/lật đã lưu của camera này
+        LoadCameraTransformSettings();
+
         bool initSuccess;
         initSuccess = await _cameraCaptureService.InitializeAsync(SelectedCamera.DeviceId);
         if (initSuccess)
@@ -199,6 +211,112 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
             IsCameraRunning = false;
             CameraStatusMessage = "Không thể khởi tạo webcam được chọn.";
         }
+    }
+
+    [RelayCommand]
+    public void RotateCamera()
+    {
+        CameraRotationAngle = (CameraRotationAngle + 90) % 360;
+        SaveCameraTransformSettings();
+    }
+
+    [RelayCommand]
+    public void FlipHorizontal()
+    {
+        CameraScaleX = -CameraScaleX;
+        SaveCameraTransformSettings();
+    }
+
+    [RelayCommand]
+    public void FlipVertical()
+    {
+        CameraScaleY = -CameraScaleY;
+        SaveCameraTransformSettings();
+    }
+
+    [RelayCommand]
+    public void ResetCameraTransform()
+    {
+        CameraRotationAngle = 270;
+        CameraScaleX = -1.0;
+        CameraScaleY = 1.0;
+        SaveCameraTransformSettings();
+    }
+
+    private void SaveCameraTransformSettings()
+    {
+        if (SelectedCamera == null)
+        {
+            return;
+        }
+
+        try
+        {
+            string key;
+            string value;
+            key = "CameraTransform_" + Math.Abs(SelectedCamera.DeviceId.GetHashCode()).ToString();
+            value = $"{CameraRotationAngle};{CameraScaleX};{CameraScaleY}";
+
+            Windows.Storage.ApplicationDataContainer localSettings;
+            localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            localSettings.Values[key] = value;
+        }
+        catch (Exception)
+        {
+            // Bỏ qua lỗi trong môi trường không hỗ trợ LocalSettings unpackaged
+        }
+    }
+
+    private void LoadCameraTransformSettings()
+    {
+        if (SelectedCamera == null)
+        {
+            return;
+        }
+
+        try
+        {
+            string key;
+            key = "CameraTransform_" + Math.Abs(SelectedCamera.DeviceId.GetHashCode()).ToString();
+
+            Windows.Storage.ApplicationDataContainer localSettings;
+            localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            if (localSettings.Values.TryGetValue(key, out object? rawValue))
+            {
+                if (rawValue is string configStr)
+                {
+                    string[] parts;
+                    parts = configStr.Split(';');
+                    if (parts.Length == 3)
+                    {
+                        if (int.TryParse(parts[0], out int rotation))
+                        {
+                            CameraRotationAngle = rotation;
+                        }
+
+                        if (double.TryParse(parts[1], out double scaleX))
+                        {
+                            CameraScaleX = scaleX;
+                        }
+
+                        if (double.TryParse(parts[2], out double scaleY))
+                        {
+                            CameraScaleY = scaleY;
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Bỏ qua lỗi đọc cấu hình
+        }
+
+        // Mặc định ban đầu bù lỗi nghiêng phải (270 độ) và lật gương (-1)
+        CameraRotationAngle = 270;
+        CameraScaleX = -1.0;
+        CameraScaleY = 1.0;
     }
 
     [RelayCommand]
@@ -291,7 +409,9 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
             try
             {
                 string? rawQr;
-                rawQr = _qrDecoderService.DecodeFromSoftwareBitmap(bitmap);
+                bool isMirrored;
+                isMirrored = CameraScaleX < 0;
+                rawQr = _qrDecoderService.DecodeFromSoftwareBitmap(bitmap, isMirrored);
 
                 if (!string.IsNullOrWhiteSpace(rawQr))
                 {

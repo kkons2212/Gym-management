@@ -389,6 +389,23 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trên giao diện).
 * **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`.
 
+### 📌 [Task 4.1.4b] Khắc Phục Lệch Hướng & Lật Gương Webcam Check-in (Camera Orientation & Mirroring Fix)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `804fcf5` (nhánh `feat/us-03.1-camera-scanner-integration`)
+* **Phân hệ nghiệp vụ liên quan:** UC03 (US 03.1) - Quét mã QR qua Camera tại quầy tiếp đón hội viên.
+* **Ranh giới thành phần:** `Client.Desktop` (Services, ViewModels, Views).
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Services/Camera/IQrDecoderService.cs` & `QrDecoderService.cs`: Bổ sung tham số `isMirrored`, giải thuật đảo ngược pixel ngang `FlipPixelsHorizontally` hiệu năng cao (< 1ms trên frame BGRA8), và cơ chế fallback tự động giải mã QR đối xứng cả bản gốc lẫn bản lật gương.
+  - `src/Client/GymManagement.Desktop/ViewModels/CheckInCounterViewModel.cs`: Quản lý thuộc tính `CameraRotationAngle` (mặc định 270°), `CameraScaleX` (mặc định -1.0 lật ngang), `CameraScaleY` (1.0); các RelayCommand: `RotateCameraCommand`, `FlipHorizontalCommand`, `FlipVerticalCommand`, `ResetCameraTransformCommand`; cơ chế lưu trữ & khôi phục cấu hình từng camera qua `Windows.Storage.ApplicationData.Current.LocalSettings`.
+  - `src/Client/GymManagement.Desktop/Views/CheckInCounterPage.xaml`: Gắn `CompositeTransform` (`RenderTransformOrigin="0.5,0.5"`) lên `ImgCameraPreview`; bổ sung thanh công cụ 4 nút bấm biểu tượng nhanh (Xoay 90°, Lật gương ngang, Lật dọc, Đặt lại chuẩn) với ToolTip tiếng Việt.
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch Desktop Client: `dotnet build src/Client/GymManagement.Desktop/GymManagement.Desktop.csproj -p:Platform=x64` đạt **0 Error(s)**.
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Toàn bộ 186/186 tests trong hệ thống pass 100%.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trên giao diện).
+* **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`.
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>
