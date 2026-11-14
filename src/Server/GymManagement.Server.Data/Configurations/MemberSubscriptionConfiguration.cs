@@ -91,9 +91,10 @@ public class MemberSubscriptionConfiguration : IEntityTypeConfiguration<MemberSu
             .HasMaxLength(10)
             .IsRequired(false);
 
-        // Unique Constraint
+        // Unique Constraint (Filtered Index to allow multiple NULLs for pending subscriptions)
         builder.HasIndex(s => s.QrCode)
             .IsUnique()
+            .HasFilter("[QrCode] IS NOT NULL")
             .HasDatabaseName("UQ_MemberSubscription_QrCode");
 
         // Foreign Keys

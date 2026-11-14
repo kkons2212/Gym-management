@@ -36,8 +36,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Phone)
             .HasColumnName("Phone")
-            .HasColumnType("varchar(10)")
-            .HasMaxLength(10)
+            .HasColumnType("varchar(20)")
+            .HasMaxLength(20)
             .IsRequired(false);
 
         builder.Property(u => u.Email)

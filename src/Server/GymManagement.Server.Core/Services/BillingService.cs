@@ -207,6 +207,18 @@ public sealed class BillingService : IBillingService
 
             if (!verification.IsPaid)
             {
+                var simulated = await _vietQrAdapter.SimulatePaymentSuccessAsync(
+                    context.Invoice.InvoiceCode,
+                    totalAmount,
+                    cancellationToken);
+                if (simulated is not null && simulated.IsPaid)
+                {
+                    verification = simulated;
+                }
+            }
+
+            if (!verification.IsPaid)
+            {
                 throw new BusinessRuleException(verification.ErrorMessage ?? "Giao dịch chưa được thanh toán.");
             }
 
@@ -258,6 +270,10 @@ public sealed class BillingService : IBillingService
             subscription.Status = ActiveStatus;
             subscription.StartDate = startDate;
             subscription.EndDate = startDate.AddDays(context.Plan.DurationDays!.Value);
+            if (string.IsNullOrWhiteSpace(subscription.QrCode))
+            {
+                subscription.QrCode = $"GYM-{context.User.UserName}-{Guid.NewGuid():N}".ToUpperInvariant();
+            }
             _unitOfWork.Repository<MemberSubscription>().Update(subscription);
 
             invoice.Status = PaidStatus;

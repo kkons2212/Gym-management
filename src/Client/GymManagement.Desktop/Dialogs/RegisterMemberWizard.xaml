@@ -87,7 +87,6 @@
                         <ComboBox x:Name="CboPaymentMethod" SelectedIndex="0" HorizontalAlignment="Stretch" Height="36">
                             <ComboBoxItem Content="Tiền mặt (CASH)" Tag="CASH" />
                             <ComboBoxItem Content="Chuyển khoản VietQR" Tag="VIETQR" />
-                            <ComboBoxItem Content="Thẻ ngân hàng (POS)" Tag="CREDIT_CARD" />
                         </ComboBox>
                     </StackPanel>
 
