@@ -46,7 +46,7 @@ public sealed partial class SettingsPage : Page
                 }
             }
 
-            var dialog = new UserEditDialog(App.GetService<IApiClient>(), user, isSelf)
+            var dialog = new UserEditDialog(App.GetService<IApiClient>(), user, isSelf, ViewModel.IsSuperAdmin)
             {
                 XamlRoot = this.XamlRoot
             };
@@ -105,6 +105,14 @@ public sealed partial class SettingsPage : Page
         if (ViewModel != null && RoleComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string role)
         {
             ViewModel.NewRole = role;
+        }
+    }
+
+    public void OnNewPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null && sender is PasswordBox pb)
+        {
+            ViewModel.NewPassword = pb.Password;
         }
     }
 }

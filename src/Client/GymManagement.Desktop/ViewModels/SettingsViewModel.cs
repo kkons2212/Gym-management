@@ -28,6 +28,9 @@ public partial class SettingsViewModel : ObservableObject
     private string _newRole = "PT";
 
     [ObservableProperty]
+    private string _newPassword = string.Empty;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -57,6 +60,18 @@ public partial class SettingsViewModel : ObservableObject
                 return _sessionService.CurrentUser.Role;
             }
             return "Admin";
+        }
+    }
+
+    public bool IsSuperAdmin
+    {
+        get
+        {
+            if (_sessionService.CurrentUser != null && !string.IsNullOrEmpty(_sessionService.CurrentUser.Role))
+            {
+                return string.Equals(_sessionService.CurrentUser.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
         }
     }
 
@@ -166,10 +181,24 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword.Length < 6)
+        {
+            StatusMessage = "Mật khẩu nhân sự phải có ít nhất 6 ký tự.";
+            IsSuccess = false;
+            return;
+        }
+
+        if (string.Equals(NewRole, "Admin", StringComparison.OrdinalIgnoreCase) && !IsSuperAdmin)
+        {
+            StatusMessage = "Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền tạo tài khoản Quản trị viên.";
+            IsSuccess = false;
+            return;
+        }
+
         try
         {
             IsLoading = true;
-            var created = await _apiClient.CreateUserAsync(NewFullName.Trim(), NewEmail.Trim(), NewPhone.Trim(), NewUsername.Trim(), NewRole);
+            var created = await _apiClient.CreateUserAsync(NewFullName.Trim(), NewEmail.Trim(), NewPhone.Trim(), NewUsername.Trim(), NewRole, NewPassword);
             Users.Add(created);
 
             StatusMessage = $"Đã tạo tài khoản {created.FullName} ({created.Role}) thành công!";
@@ -180,6 +209,7 @@ public partial class SettingsViewModel : ObservableObject
             NewEmail = string.Empty;
             NewPhone = string.Empty;
             NewUsername = string.Empty;
+            NewPassword = string.Empty;
             NewRole = "PT";
         }
         catch (Exception ex)

@@ -27,6 +27,7 @@ public sealed class SystemSettingService : ISystemSettingService
     private const int MaxPlanIdLength = 10;
 
     private const string RoleIdAdmin = "ADMIN";
+    private const string RoleIdSuperAdmin = "SUPERADMIN";
     private const string StatusActive = "ACTIVE";
     private const string StatusLocked = "LOCKED";
     private const string StatusInactive = "INACTIVE";
@@ -61,6 +62,7 @@ public sealed class SystemSettingService : ISystemSettingService
     /// <inheritdoc/>
     public async Task<UserDto> CreateUserAsync(
         CreateUserRequest request,
+        string? currentUserName = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -107,6 +109,27 @@ public sealed class SystemSettingService : ISystemSettingService
         if (role == null)
         {
             throw new NotFoundException($"Vai trò '{cleanRoleId}' không tồn tại trong hệ thống.");
+        }
+
+        // Chốt chặn phân quyền: Chỉ SuperAdmin mới được tạo tài khoản Quản trị viên (ADMIN hoặc SUPERADMIN)
+        bool isTargetAdmin = string.Equals(cleanRoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(cleanRoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+        if (isTargetAdmin)
+        {
+            bool isSuperAdmin = false;
+            if (!string.IsNullOrWhiteSpace(currentUserName))
+            {
+                var caller = await _unitOfWork.Repository<User>().GetByIdAsync(currentUserName.Trim(), cancellationToken);
+                if (caller != null && string.Equals(caller.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase))
+                {
+                    isSuperAdmin = true;
+                }
+            }
+
+            if (!isSuperAdmin)
+            {
+                throw new BusinessRuleException("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền tạo tài khoản Quản trị viên.");
+            }
         }
 
         var userRepo = _unitOfWork.Repository<User>();
@@ -211,11 +234,32 @@ public sealed class SystemSettingService : ISystemSettingService
         bool isSelf = string.Equals(cleanUserName, currentUserName.Trim(), StringComparison.OrdinalIgnoreCase);
         if (isSelf)
         {
-            bool wasAdmin = string.Equals(user.RoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase);
-            bool isStillAdmin = string.Equals(newRoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase);
+            bool wasAdmin = string.Equals(user.RoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(user.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+            bool isStillAdmin = string.Equals(newRoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(newRoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
             if (wasAdmin && !isStillAdmin)
             {
                 throw new BusinessRuleException("Không thể tự thay đổi quyền Quản trị của tài khoản đang đăng nhập.");
+            }
+        }
+
+        // Chốt chặn phân quyền: Chỉ SuperAdmin mới được phân quyền hoặc hạ quyền Quản trị viên
+        bool isTargetAdminRole = string.Equals(newRoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase) ||
+                                 string.Equals(newRoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+        bool wasTargetAdminRole = string.Equals(user.RoleId, RoleIdAdmin, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(user.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+
+        if (isTargetAdminRole || wasTargetAdminRole)
+        {
+            if (!string.Equals(user.RoleId, newRoleId, StringComparison.OrdinalIgnoreCase))
+            {
+                var caller = await userRepo.GetByIdAsync(currentUserName.Trim(), cancellationToken);
+                bool isCallerSuperAdmin = caller != null && string.Equals(caller.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+                if (!isCallerSuperAdmin)
+                {
+                    throw new BusinessRuleException("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền phân quyền Quản trị viên.");
+                }
             }
         }
 
@@ -308,6 +352,17 @@ public sealed class SystemSettingService : ISystemSettingService
         if (user == null)
         {
             throw new NotFoundException($"Không tìm thấy tài khoản '{cleanUserName}'.");
+        }
+
+        bool isTargetSuperAdmin = string.Equals(user.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+        if (isTargetSuperAdmin)
+        {
+            var caller = await userRepo.GetByIdAsync(currentUserName.Trim(), cancellationToken);
+            bool isCallerSuperAdmin = caller != null && string.Equals(caller.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+            if (!isCallerSuperAdmin)
+            {
+                throw new BusinessRuleException("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền thao tác trên tài khoản SuperAdmin.");
+            }
         }
 
         user.Status = cleanStatus;

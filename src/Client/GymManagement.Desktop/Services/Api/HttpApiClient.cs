@@ -476,7 +476,45 @@ public sealed class HttpApiClient : IApiClient
     public async Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()
     {
         var response = await _httpClient.GetAsync("/api/v1/admin/users");
-        return await HandleResponseAsync<IReadOnlyList<UserSessionDto>>(response);
+        var userDtos = await HandleResponseAsync<IReadOnlyList<UserDto>>(response);
+        var list = new List<UserSessionDto>();
+        if (userDtos != null)
+        {
+            foreach (var u in userDtos)
+            {
+                if (string.Equals(u.RoleId, "MEMBER", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string role = u.RoleId;
+                if (!string.IsNullOrWhiteSpace(u.RoleName))
+                {
+                    role = u.RoleName;
+                }
+
+                string fullName = u.UserName;
+                if (!string.IsNullOrWhiteSpace(u.FullName))
+                {
+                    fullName = u.FullName;
+                }
+
+                string email = string.Empty;
+                if (!string.IsNullOrWhiteSpace(u.Email))
+                {
+                    email = u.Email;
+                }
+
+                string phone = string.Empty;
+                if (!string.IsNullOrWhiteSpace(u.Phone))
+                {
+                    phone = u.Phone;
+                }
+
+                list.Add(new UserSessionDto(u.UserName, fullName, email, role, phone));
+            }
+        }
+        return list;
     }
 
     public async Task<IReadOnlyList<RoleDto>> GetRolesAsync()
@@ -492,12 +530,21 @@ public sealed class HttpApiClient : IApiClient
             throw new ValidationException("Mã người dùng không được để trống.");
         }
 
-        var payload = new { Status = "LOCKED" };
-        var response = await _httpClient.PutAsJsonAsync(
+        var getRes = await _httpClient.GetAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userId)}");
+        var userDto = await HandleResponseAsync<UserDto>(getRes);
+        string newStatus = "LOCKED";
+        if (userDto != null && string.Equals(userDto.Status, "LOCKED", StringComparison.OrdinalIgnoreCase))
+        {
+            newStatus = "ACTIVE";
+        }
+
+        var payload = new { Status = newStatus };
+        var response = await _httpClient.PostAsJsonAsync(
             $"/api/v1/admin/users/{Uri.EscapeDataString(userId)}/status",
             payload);
 
-        return await HandleResponseAsync<bool>(response);
+        var result = await HandleResponseAsync<UserDto>(response);
+        return result != null;
     }
 
     public async Task<PackagePlanDto> CreatePackagePlanAsync(PackagePlanDto plan)
@@ -519,7 +566,7 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<PackagePlanDto>(response);
     }
 
-    public async Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role)
+    public async Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password)
     {
         var request = new CreateUserRequest(
             UserName: username,
@@ -527,11 +574,17 @@ public sealed class HttpApiClient : IApiClient
             FullName: fullName,
             Phone: phone,
             Email: email,
-            Password: "TemporaryPassword123!"
+            Password: password
         );
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/admin/users", request);
-        return await HandleResponseAsync<UserSessionDto>(response);
+        var userDto = await HandleResponseAsync<UserDto>(response);
+        string assignedRole = role;
+        if (userDto != null && !string.IsNullOrWhiteSpace(userDto.RoleName))
+        {
+            assignedRole = userDto.RoleName;
+        }
+        return new UserSessionDto(username, fullName, email, assignedRole);
     }
 
     public async Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)
@@ -543,7 +596,26 @@ public sealed class HttpApiClient : IApiClient
         }
 
         var response = await _httpClient.PutAsJsonAsync($"/api/v1/admin/users/{Uri.EscapeDataString(userName)}", request);
-        return await HandleResponseAsync<UserSessionDto>(response);
+        var userDto = await HandleResponseAsync<UserDto>(response);
+        string role = request.RoleId;
+        string fullName = request.FullName;
+        string email = request.Email;
+        if (userDto != null)
+        {
+            if (!string.IsNullOrWhiteSpace(userDto.RoleName))
+            {
+                role = userDto.RoleName;
+            }
+            if (!string.IsNullOrWhiteSpace(userDto.FullName))
+            {
+                fullName = userDto.FullName;
+            }
+            if (!string.IsNullOrWhiteSpace(userDto.Email))
+            {
+                email = userDto.Email;
+            }
+        }
+        return new UserSessionDto(userName, fullName, email, role);
     }
 
     public async Task<bool> SetUserStatusAsync(string userName, string status)

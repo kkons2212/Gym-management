@@ -126,7 +126,8 @@ public record RegisterMemberRequest(
     string PlanId,
     DateOnly StartDate,
     string AdminUserName,
-    string? CustomMemberCode = null
+    string? CustomMemberCode = null,
+    string? Password = null
 );
 
 /// <summary>

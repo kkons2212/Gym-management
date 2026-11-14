@@ -18,8 +18,9 @@ public interface ISystemSettingService
 
     /// <summary>
     /// Tạo mới tài khoản và phân quyền nhân sự (UC 7.1.1).
+    /// Chỉ SuperAdmin mới có quyền tạo tài khoản có vai trò Quản trị viên (Admin/SuperAdmin).
     /// </summary>
-    Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default);
+    Task<UserDto> CreateUserAsync(CreateUserRequest request, string? currentUserName = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Cập nhật thông tin tài khoản và điều chỉnh phân quyền nhân sự (UC 7.1.2).

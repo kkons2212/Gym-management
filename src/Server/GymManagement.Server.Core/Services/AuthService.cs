@@ -187,6 +187,11 @@ public sealed class AuthService : IAuthService
         }
 
         string trimmed = roleId.Trim();
+        if (string.Equals(trimmed, "SUPERADMIN", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SuperAdmin";
+        }
+
         if (string.Equals(trimmed, "ADMIN", StringComparison.OrdinalIgnoreCase))
         {
             return "Admin";

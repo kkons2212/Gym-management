@@ -35,7 +35,7 @@ public class MockApiClient : IApiClient
 
     private readonly List<UserSessionDto> _users =
     [
-        new("ADMIN01", "Quản Trị Viên Trưởng", "admin@gymsystem.vn", "Admin"),
+        new("ADMIN01", "Quản Trị Viên Trưởng", "admin@gymsystem.vn", "SuperAdmin"),
         new("ADMIN02", "Quản Lý Vận Hành", "manager@gymsystem.vn", "Admin"),
         new("PT001", "HLV Nguyễn Quốc Huy", "huy.pt@gymsystem.vn", "PT"),
         new("PT002", "HLV Hoàng Tuấn Anh", "anh.pt@gymsystem.vn", "PT")
@@ -72,13 +72,27 @@ public class MockApiClient : IApiClient
             throw new ValidationException("Tên đăng nhập và mật khẩu không được để trống.");
         }
 
-        if (request.Password != "123456" && request.Password != "admin")
+        if (request.Password != "123456" && request.Password != "admin" && request.Password != "admin123")
         {
             throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
         }
 
-        var user = _users.FirstOrDefault(u => u.Email.StartsWith(request.Username, StringComparison.OrdinalIgnoreCase))
-                   ?? _users[0];
+        UserSessionDto? user = null;
+        foreach (var u in _users)
+        {
+            if (u.Email.StartsWith(request.Username, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(u.UserId, request.Username, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(request.Username, "admin", StringComparison.OrdinalIgnoreCase))
+            {
+                user = u;
+                break;
+            }
+        }
+
+        if (user == null)
+        {
+            user = _users[0];
+        }
 
         return Task.FromResult(new LoginResponse(
             "mock-jwt-token-for-admin-session",
@@ -729,9 +743,14 @@ public class MockApiClient : IApiClient
         return Task.FromResult(plan);
     }
 
-    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role)
+    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password)
     {
-        var newUser = new UserSessionDto($"USR{DateTime.Now:mmss}", fullName, email, role);
+        string uId = username;
+        if (string.IsNullOrWhiteSpace(uId))
+        {
+            uId = $"USR{DateTime.Now:mmss}";
+        }
+        var newUser = new UserSessionDto(uId, fullName, email, role);
         _users.Add(newUser);
         return Task.FromResult(newUser);
     }
