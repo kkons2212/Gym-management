@@ -40,7 +40,7 @@ public class PTTrainingSessionConfiguration : IEntityTypeConfiguration<PTTrainin
 
         builder.Property(s => s.WorkoutNotes)
             .HasColumnName("WorkoutNotes")
-            .HasColumnType("varchar(255)")
+            .HasColumnType("nvarchar(255)")
             .HasMaxLength(255)
             .IsRequired(false);
 
@@ -51,7 +51,7 @@ public class PTTrainingSessionConfiguration : IEntityTypeConfiguration<PTTrainin
 
         builder.Property(s => s.ReviewComment)
             .HasColumnName("ReviewComment")
-            .HasColumnType("varchar(255)")
+            .HasColumnType("nvarchar(255)")
             .HasMaxLength(255)
             .IsRequired(false);
 

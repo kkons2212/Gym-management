@@ -24,13 +24,13 @@ public class PackagePlanConfiguration : IEntityTypeConfiguration<PackagePlan>
 
         builder.Property(p => p.Name)
             .HasColumnName("Name")
-            .HasColumnType("varchar(50)")
+            .HasColumnType("nvarchar(50)")
             .HasMaxLength(50)
             .IsRequired(false);
 
         builder.Property(p => p.Description)
             .HasColumnName("Description")
-            .HasColumnType("varchar(255)")
+            .HasColumnType("nvarchar(255)")
             .HasMaxLength(255)
             .IsRequired(false);
 
