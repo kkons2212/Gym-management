@@ -428,6 +428,23 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trong tài liệu & script).
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
 
+### 📌 [Task DevOps.3] Bổ Sung Cơ Chế Kiểm Tra Cưỡng Chế Phiên Bản .NET 8 (TargetFramework Alignment Guard) & Chuẩn Hóa global.json
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `c8b3fad` (nhánh `feat/cd-pipeline-automation`)
+* **Phân hệ nghiệp vụ liên quan:** Hạ tầng DevOps, CI/CD Pipeline & Architecture Governance.
+* **Ranh giới thành phần:** `DevOps` / `CI-CD` / `Governance`.
+* **Mã nguồn tạo / sửa:**
+  - `global.json`: Chuẩn hóa cấu hình pin .NET 8 SDK (`version: "8.0.400"`, `rollForward: "latestFeature"`), loại bỏ hoàn toàn thuộc tính dị biệt `__Do_Not_Use_This_rollForward`.
+  - `.github/workflows/ci.yml`: Bổ sung bước `Verify .NET 8 SDK & Enforce TargetFramework Across All Projects` trong Job `server-compile-and-lint` tự động quét 100% các file `.csproj` trong repo trước khi build; bổ sung bước log phiên bản `dotnet --version` trong Job `client-compile-and-build`.
+* **Kiểm thử tương ứng (Verification):**
+  - Kiểm thử quét 8 dự án trong Solution: Cả 8/8 dự án vượt qua kiểm tra nghiêm ngặt (`net8.0` và `net8.0-windows10.0.19041.0`).
+  - Kiểm thử Fail-safe: Thử nghiệm cố tình chèn dự án giả định nhắm `.NET 9` -> Script phát hiện vi phạm và dừng pipeline ngay lập tức (exit code 1).
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Toàn bộ 186/186 tests trong hệ thống pass 100%.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
+* **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>
