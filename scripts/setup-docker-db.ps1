@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Script khởi tạo và nạp cơ sở dữ liệu GymManagementDb vào SQL Server trên Docker.
 .DESCRIPTION
