@@ -43,6 +43,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 | **Task 3.3** | API Controllers Component | Toàn bộ 10 Epics (Cổng RESTful API công khai cho Client) | `Server.Api` | `Controllers/ApiControllerBase.cs`, `AuthController.cs`, `MembersController.cs`, `CheckInController.cs`, `PtController.cs`, `InvoicesController.cs`, `ReportsController.cs`, `SettingsController.cs`, `Program.cs` | `tests/GymManagement.Server.ApiTests/Controllers/*Tests.cs` (18 tests mới) | 9 bảng CSDL | `9016fe4` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | Toàn bộ 10 Epics (Admin & Thu ngân) | `Client.Desktop` | `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml`, `Views/*` (In-place Wipe về canvas chuẩn), `ViewModels/*`, `App.xaml(.cs)`, `MainWindow.xaml(.cs)` | Biên dịch WinUI 3 Desktop `0 Warning(s), 0 Error(s)` | 9 bảng CSDL | `6832b09` (WIP) |
+| **Task 4.1.4** | Tích hợp Camera & Quét mã QR Check-in thời gian thực | UC03 (US 03.1 - Quét QR qua Camera tại quầy) | `Client.Desktop` | `Services/Camera/*`, `ViewModels/CheckInCounterViewModel.cs`, `Views/CheckInCounterPage.xaml(.cs)`, `App.xaml.cs` | WinUI 3 Desktop Build `0 Warning(s), 0 Error(s)` & Solution Tests 186/186 pass (100%) | `CheckInLog`, `MemberSubscription`, `[User]` | `79fd3df` |
 | **Docker DB** | Cấu hình Docker SQL Server, DDL Seed, Hỗ trợ Unicode (NVARCHAR) & CI Test | Toàn bộ 10 Epics (9 bảng & Seed Admin) | `Server.Data`, `Server.Api`, `Document/`, CI | `Document/init_docker_db.sql`, `GymManagement_Physical_Model.sql`, `scripts/setup-docker-db.ps1`, `src/Server/GymManagement.Server.Data/Configurations/*`, `appsettings.json`, `DependencyInjection.cs`, `.github/workflows/ci.yml` | Python Schema Verifier, Ephemeral Docker SQL Server Test in CI & Server.DataTests (42/42 pass) | 9 bảng CSDL (`nvarchar` cho toàn bộ cột text tiếng Việt) | `91abb28` |
 
 ---
@@ -368,6 +369,41 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Thực thi trực tiếp trên Docker SQL Server `mssql` xác nhận các ký tự tiếng Việt lưu trữ chuẩn xác UTF-16, không còn hiện tượng ký tự `?`.
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (Zero hardcoded secrets, 0 toán tử 3 ngôi, flat guard clauses).
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+
+### 📌 [Task 4.1.4] Tích Hợp Camera Phần Cứng & Quét Mã QR Thời Gian Thực Quầy Điểm Danh (UC03 - US 03.1)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `79fd3df` (nhánh `feat/us-03.1-camera-scanner-integration`)
+* **Phân hệ nghiệp vụ liên quan:** UC03 (US 03.1) - Quét mã QR qua Camera tại quầy tiếp đón hội viên.
+* **Ranh giới thành phần:** `Client.Desktop` (Services, ViewModels, Views).
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Services/Camera/CameraDeviceInfo.cs`: Model thông tin thiết bị camera/webcam trên máy tính.
+  - `src/Client/GymManagement.Desktop/Services/Camera/ICameraCaptureService.cs` & `CameraCaptureService.cs`: Dịch vụ thu nhận luồng video thời gian thực qua `Windows.Media.Capture.MediaCapture` và `MediaFrameReader` (chuẩn Windows App SDK), hỗ trợ liệt kê webcam, bật/tắt camera và bắn frame `SoftwareBitmap`.
+  - `src/Client/GymManagement.Desktop/Services/Camera/IQrDecoderService.cs` & `QrDecoderService.cs`: Dịch vụ giải mã mã QR từ frame camera / file ảnh qua `ZXing.Net`, tích hợp hàng rào chống quét trùng (Debounce Cooldown 3s cho cùng mã QR, 1.2s cho mã khác).
+  - `src/Client/GymManagement.Desktop/App.xaml.cs`: Đăng ký `ICameraCaptureService` và `IQrDecoderService` vào hệ thống DI.
+  - `src/Client/GymManagement.Desktop/ViewModels/CheckInCounterViewModel.cs`: Điều phối luồng camera, ComboBox chọn webcam, bật/tắt camera, xử lý quét từ file ảnh, kết nối API `CheckInWebcamQrAsync`, hiệu ứng viền xanh nhấp nháy khi nhận diện mã QR.
+  - `src/Client/GymManagement.Desktop/Views/CheckInCounterPage.xaml` & `CheckInCounterPage.xaml.cs`: Giao diện khung ngắm camera thời gian thực qua `Image` + `SoftwareBitmapSource`, overlay viền neon căn chỉnh QR, dọn dẹp và tắt camera an toàn khi chuyển trang.
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch toàn bộ Solution: `dotnet build GymManagement.sln -c Release` đạt **0 Warning(s), 0 Error(s)**.
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trên giao diện).
+* **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`.
+
+### 📌 [Task 4.1.4b] Khắc Phục Lệch Hướng Camera, Lật Gương & Căn Giữa Cố Định (Camera Orientation, Mirror & Centered Fix)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `ddb63f7` (nhánh `feat/us-03.1-camera-scanner-integration`)
+* **Phân hệ nghiệp vụ liên quan:** UC03 (US 03.1) - Quét mã QR qua Camera tại quầy tiếp đón hội viên.
+* **Ranh giới thành phần:** `Client.Desktop` (Views, ViewModels).
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Views/CheckInCounterPage.xaml.cs`: Khai báo tập trung hằng số cấu hình hướng camera (`CAMERA_ROTATION_DEGREES = -90.0`, `CAMERA_FLIP_HORIZONTAL = true`, `CAMERA_FLIP_VERTICAL = false`) ở đầu class tuân thủ nghiêm ngặt `dev_rule.md` (Mục 3.5.5 & 3.6); cài đặt hàm `ApplyCameraTransform()` cấu hình `CompositeTransform` và gán vào `ImgCameraPreview.RenderTransform`.
+  - `src/Client/GymManagement.Desktop/Views/CheckInCounterPage.xaml`: Căn giữa cố định video feed (`Stretch="Uniform"`, `HorizontalAlignment="Center"`, `VerticalAlignment="Center"`, `RenderTransformOrigin="0.5,0.5"`), giữ vị trí khung hình cố định không bị trôi hay dịch chuyển.
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch `GymManagement.Desktop.csproj -p:Platform=x64`: **0 Warning(s), 0 Error(s)**.
+  - Kiểm thử `Server.UnitTests`: 113 / 113 tests pass (100%).
+  - Kiểm thử `Server.DataTests`: 42 / 42 tests pass (100%).
+  - Kiểm thử `Server.ApiTests`: 31 / 31 tests pass (100%).
+  - Toàn bộ 186/186 tests trong hệ thống pass 100%.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt trên giao diện & comment).
+* **Bảng CSDL liên quan:** `CheckInLog`, `MemberSubscription`, `[User]`.
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown

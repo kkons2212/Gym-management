@@ -2,6 +2,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using GymManagement.Desktop.Services.Api;
+using GymManagement.Desktop.Services.Camera;
 using GymManagement.Desktop.Services.Session;
 using GymManagement.Desktop.ViewModels;
 
@@ -74,6 +75,10 @@ public partial class App : Application
             });
             services.AddSingleton<IApiClient, HttpApiClient>();
         }
+
+        // 2b. Camera & QR Scanner Hardware Services
+        services.AddSingleton<ICameraCaptureService, CameraCaptureService>();
+        services.AddSingleton<IQrDecoderService, QrDecoderService>();
 
         // 3. ViewModels
         services.AddSingleton<LoginViewModel>();
