@@ -82,11 +82,25 @@ public sealed class MembersController : ApiControllerBase
     /// Cập nhật thông tin cá nhân của hội viên (UC02.2).
     /// </summary>
     [HttpPut]
+    [HttpPut("{userName}")]
     [Authorize]
     public async Task<IActionResult> UpdateMember(
+        string? userName,
         [FromBody] UpdateMemberRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!string.IsNullOrWhiteSpace(userName) && string.IsNullOrWhiteSpace(request.UserName))
+        {
+            request = request with { UserName = userName };
+        }
+        else if (!string.IsNullOrWhiteSpace(userName) && !string.Equals(userName, request.UserName, StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(request.NewUserName))
+            {
+                request = request with { UserName = userName, NewUserName = request.UserName };
+            }
+        }
+
         var profile = await _memberService.UpdateMemberAsync(request, cancellationToken);
         return OkResponse(profile, "Cập nhật hồ sơ hội viên thành công.");
     }

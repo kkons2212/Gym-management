@@ -9,6 +9,19 @@ public sealed partial class RegisterMemberWizard : ContentDialog
 {
     private readonly IReadOnlyList<PackagePlanDto> _packagePlans = [];
 
+    public string? MemberCode
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(TxtMemberCode.Text))
+            {
+                return null;
+            }
+
+            return TxtMemberCode.Text.Trim();
+        }
+    }
+
     public string FullName
     {
         get
@@ -91,6 +104,25 @@ public sealed partial class RegisterMemberWizard : ContentDialog
         name = FullName;
         phone = Phone;
 
+        if (!string.IsNullOrWhiteSpace(MemberCode))
+        {
+            if (MemberCode.Length > 10)
+            {
+                TxtValidationError.Text = "Mã hội viên không được vượt quá 10 ký tự!";
+                TxtValidationError.Visibility = Visibility.Visible;
+                args.Cancel = true;
+                return;
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(MemberCode, @"^[A-Za-z0-9_-]+$"))
+            {
+                TxtValidationError.Text = "Mã hội viên chỉ được chứa chữ cái, chữ số, gạch ngang (-) hoặc gạch dưới (_)!";
+                TxtValidationError.Visibility = Visibility.Visible;
+                args.Cancel = true;
+                return;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(name))
         {
             TxtValidationError.Text = "Họ và tên hội viên không được để trống!";
@@ -99,9 +131,9 @@ public sealed partial class RegisterMemberWizard : ContentDialog
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(phone) || phone.Length < 9)
+        if (string.IsNullOrWhiteSpace(phone) || !System.Text.RegularExpressions.Regex.IsMatch(phone, @"^0\d{9}$"))
         {
-            TxtValidationError.Text = "Số điện thoại hội viên không hợp lệ (tối thiểu 9 chữ số)!";
+            TxtValidationError.Text = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0)!";
             TxtValidationError.Visibility = Visibility.Visible;
             args.Cancel = true;
             return;

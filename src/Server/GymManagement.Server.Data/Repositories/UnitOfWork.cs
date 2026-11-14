@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Data.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -153,7 +154,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     /// <inheritdoc />
-    public async Task ExecuteTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default)
+    public Task ExecuteTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(action);
 
@@ -163,7 +164,15 @@ public class UnitOfWork : IUnitOfWork
             return true;
         }
 
-        await ExecuteTransactionAsync<bool>(ActionWrapperAsync, cancellationToken);
+        return ExecuteTransactionAsync<bool>(ActionWrapperAsync, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<int> ExecuteSqlRawAsync(string sql, CancellationToken cancellationToken = default, params object[] parameters)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(sql);
+        return _context.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
     }
 
     // ====================================================================

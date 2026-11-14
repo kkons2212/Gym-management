@@ -22,25 +22,8 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="Họ và tên (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                        <TextBox x:Name="TxtFullName" PlaceholderText="Nguyễn Văn A" Height="36" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Text="Số điện thoại (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                        <TextBox x:Name="TxtPhone" PlaceholderText="0901234567" Height="36" />
-                    </StackPanel>
-                </Grid>
-
-                <Grid ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="6*" />
-                        <ColumnDefinition Width="4*" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="Email liên hệ:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                        <TextBox x:Name="TxtEmail" PlaceholderText="member@example.com" Height="36" />
+                        <TextBlock Text="Mã hội viên (Để trống để tự sinh mã):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtMemberCode" PlaceholderText="VD: MBR-0010 (Tối đa 10 ký tự)" MaxLength="10" Height="36" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Spacing="4">
@@ -52,6 +35,28 @@
                         </ComboBox>
                     </StackPanel>
                 </Grid>
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="6*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Họ và tên (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtFullName" PlaceholderText="Nguyễn Văn A" Height="36" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Số điện thoại (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox x:Name="TxtPhone" PlaceholderText="0901234567" MaxLength="10" Height="36" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Email liên hệ:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                    <TextBox x:Name="TxtEmail" PlaceholderText="member@example.com" Height="36" />
+                </StackPanel>
             </StackPanel>
         </Border>
 

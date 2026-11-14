@@ -76,7 +76,20 @@ public sealed partial class MembersPage : Page
         if (result == ContentDialogResult.Primary)
         {
             var api = App.GetService<IApiClient>();
-            var req = new UpdateMemberRequest(member.UserName, dialog.FullName, dialog.Phone, dialog.Email);
+            string newUserName = dialog.UserName;
+            string? renameTarget = null;
+            if (!string.Equals(newUserName, member.UserName, StringComparison.OrdinalIgnoreCase))
+            {
+                renameTarget = newUserName;
+            }
+
+            var req = new UpdateMemberRequest(
+                member.UserName,
+                dialog.FullName,
+                dialog.Phone,
+                dialog.Email,
+                renameTarget
+            );
             await api.UpdateMemberProfileAsync(member.UserName, req);
             await ViewModel.LoadMembersAsync();
         }
@@ -242,7 +255,8 @@ public sealed partial class MembersPage : Page
                     dialog.Email,
                     dialog.SelectedPackage.PlanId,
                     DateOnly.FromDateTime(DateTime.Today),
-                    "Admin"
+                    "Admin",
+                    dialog.MemberCode
                 );
 
                 InvoiceDto? confirmedInvoice = null;

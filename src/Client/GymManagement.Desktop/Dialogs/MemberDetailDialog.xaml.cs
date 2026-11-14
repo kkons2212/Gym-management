@@ -6,6 +6,8 @@ namespace GymManagement.Desktop.Dialogs;
 
 public sealed partial class MemberDetailDialog : ContentDialog
 {
+    public string OriginalUserName { get; }
+
     public string UserName
     {
         get
@@ -44,6 +46,7 @@ public sealed partial class MemberDetailDialog : ContentDialog
 
         InitializeComponent();
 
+        OriginalUserName = member.UserName;
         TxtUserName.Text = member.UserName;
         TxtFullName.Text = member.FullName;
         TxtPhone.Text = member.Phone;
@@ -55,6 +58,30 @@ public sealed partial class MemberDetailDialog : ContentDialog
 
     private void MemberDetailDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
+        if (string.IsNullOrWhiteSpace(UserName))
+        {
+            TxtValidationError.Text = "Mã hội viên không được để trống.";
+            TxtValidationError.Visibility = Visibility.Visible;
+            args.Cancel = true;
+            return;
+        }
+
+        if (UserName.Length > 10)
+        {
+            TxtValidationError.Text = "Mã hội viên không được vượt quá 10 ký tự.";
+            TxtValidationError.Visibility = Visibility.Visible;
+            args.Cancel = true;
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(UserName, @"^[A-Za-z0-9_-]+$"))
+        {
+            TxtValidationError.Text = "Mã hội viên chỉ được chứa chữ cái, chữ số, gạch ngang (-) hoặc gạch dưới (_).";
+            TxtValidationError.Visibility = Visibility.Visible;
+            args.Cancel = true;
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(FullName))
         {
             TxtValidationError.Text = "Họ và tên không được để trống.";
@@ -63,17 +90,9 @@ public sealed partial class MemberDetailDialog : ContentDialog
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(Phone))
+        if (string.IsNullOrWhiteSpace(Phone) || !System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^0\d{9}$"))
         {
-            TxtValidationError.Text = "Số điện thoại không được để trống.";
-            TxtValidationError.Visibility = Visibility.Visible;
-            args.Cancel = true;
-            return;
-        }
-
-        if (Phone.Length < 9 || Phone.Length > 11)
-        {
-            TxtValidationError.Text = "Số điện thoại phải có độ dài từ 9 đến 11 chữ số.";
+            TxtValidationError.Text = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).";
             TxtValidationError.Visibility = Visibility.Visible;
             args.Cancel = true;
             return;
