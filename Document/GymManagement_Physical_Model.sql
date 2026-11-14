@@ -22,7 +22,7 @@ GO
 -- 1. Bảng Role
 CREATE TABLE dbo.Role (
     RoleID VARCHAR(10) NOT NULL,
-    RoleName VARCHAR(50) NULL,
+    RoleName NVARCHAR(50) NULL,
     CONSTRAINT PK_Role PRIMARY KEY (RoleID)
 );
 GO
@@ -31,7 +31,7 @@ GO
 CREATE TABLE dbo.[User] (
     UserName VARCHAR(10) NOT NULL,
     RoleID VARCHAR(10) NOT NULL,
-    FullName VARCHAR(50) NULL,
+    FullName NVARCHAR(50) NULL,
     Phone VARCHAR(10) NULL,
     Email VARCHAR(255) NULL,
     PasswordHash VARCHAR(255) NULL,
@@ -45,8 +45,8 @@ GO
 -- 3. Bảng PackagePlan
 CREATE TABLE dbo.PackagePlan (
     PlanId VARCHAR(10) NOT NULL,
-    Name VARCHAR(50) NULL,
-    Description VARCHAR(255) NULL,
+    Name NVARCHAR(50) NULL,
+    Description NVARCHAR(255) NULL,
     DurationDays INT NULL,
     Price DECIMAL(19, 0) NULL,
     MaxCheckInSessions INT NULL,
@@ -75,9 +75,9 @@ CREATE TABLE dbo.PTTrainingSession (
     SessionStartTime DATE NULL,
     SessionEndTime DATE NULL,
     Status VARCHAR(20) NULL,
-    WorkoutNotes VARCHAR(255) NULL,
+    WorkoutNotes NVARCHAR(255) NULL,
     RatingStars TINYINT NULL,
-    ReviewComment VARCHAR(255) NULL,
+    ReviewComment NVARCHAR(255) NULL,
     completed_at DATE NULL,
     MemberID VARCHAR(10) NOT NULL,
     PtID VARCHAR(10) NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE dbo.CheckInLog (
     CheckInId VARCHAR(10) NOT NULL,
     check_in_at DATE NULL,
     Status VARCHAR(20) NULL,
-    DenialReason VARCHAR(100) NULL,
+    DenialReason NVARCHAR(100) NULL,
     SubscriptionId VARCHAR(10) NOT NULL,
     VerifiedByAdminId VARCHAR(10) NULL,
     UserName VARCHAR(10) NOT NULL,
@@ -124,13 +124,13 @@ GO
 CREATE TABLE dbo.Invoice (
     InvoiceId VARCHAR(10) NOT NULL,
     InvoiceCode VARCHAR(255) NULL,
-    TransactionType VARCHAR(50) NULL,
+    TransactionType NVARCHAR(50) NULL,
     SubtotalAmount DECIMAL(19, 0) NULL,
     TotalAmount INT NULL,
-    PaymentMethod VARCHAR(100) NULL,
+    PaymentMethod NVARCHAR(100) NULL,
     Status VARCHAR(20) NULL,
     RefundAmount DECIMAL(19, 0) NULL,
-    RefundReason VARCHAR(255) NULL,
+    RefundReason NVARCHAR(255) NULL,
     paid_at DATE NULL,
     UserName VARCHAR(10) NOT NULL,
     SubscriptionId VARCHAR(10) NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE dbo.MemberBodyMetric (
     SkeletalMuscleMass DECIMAL(19, 0) NULL,
     BodyFatPercentage DECIMAL(19, 0) NULL,
     Bmi DECIMAL(19, 0) NULL,
-    Notes VARCHAR(255) NULL,
+    Notes NVARCHAR(255) NULL,
     measured_at DATE NULL,
     UserName VARCHAR(10) NOT NULL,
     PTSessionId VARCHAR(10) NULL,

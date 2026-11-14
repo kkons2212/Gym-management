@@ -21,7 +21,7 @@ IF OBJECT_ID('dbo.Role', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Role (
         RoleID VARCHAR(10) NOT NULL,
-        RoleName VARCHAR(50) NULL,
+        RoleName NVARCHAR(50) NULL,
         CONSTRAINT PK_Role PRIMARY KEY (RoleID)
     );
 END
@@ -33,7 +33,7 @@ BEGIN
     CREATE TABLE dbo.[User] (
         UserName VARCHAR(10) NOT NULL,
         RoleID VARCHAR(10) NOT NULL,
-        FullName VARCHAR(50) NULL,
+        FullName NVARCHAR(50) NULL,
         Phone VARCHAR(10) NULL,
         Email VARCHAR(255) NULL,
         PasswordHash VARCHAR(255) NULL,
@@ -50,8 +50,8 @@ IF OBJECT_ID('dbo.PackagePlan', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.PackagePlan (
         PlanId VARCHAR(10) NOT NULL,
-        Name VARCHAR(50) NULL,
-        Description VARCHAR(255) NULL,
+        Name NVARCHAR(50) NULL,
+        Description NVARCHAR(255) NULL,
         DurationDays INT NULL,
         Price DECIMAL(19, 0) NULL,
         MaxCheckInSessions INT NULL,
@@ -86,9 +86,9 @@ BEGIN
         SessionStartTime DATE NULL,
         SessionEndTime DATE NULL,
         Status VARCHAR(20) NULL,
-        WorkoutNotes VARCHAR(255) NULL,
+        WorkoutNotes NVARCHAR(255) NULL,
         RatingStars TINYINT NULL,
-        ReviewComment VARCHAR(255) NULL,
+        ReviewComment NVARCHAR(255) NULL,
         completed_at DATE NULL,
         MemberID VARCHAR(10) NOT NULL,
         PtID VARCHAR(10) NOT NULL,
@@ -129,7 +129,7 @@ BEGIN
         CheckInId VARCHAR(10) NOT NULL,
         check_in_at DATE NULL,
         Status VARCHAR(20) NULL,
-        DenialReason VARCHAR(100) NULL,
+        DenialReason NVARCHAR(100) NULL,
         SubscriptionId VARCHAR(10) NOT NULL,
         VerifiedByAdminId VARCHAR(10) NULL,
         UserName VARCHAR(10) NOT NULL,
@@ -144,13 +144,13 @@ BEGIN
     CREATE TABLE dbo.Invoice (
         InvoiceId VARCHAR(10) NOT NULL,
         InvoiceCode VARCHAR(255) NULL,
-        TransactionType VARCHAR(50) NULL,
+        TransactionType NVARCHAR(50) NULL,
         SubtotalAmount DECIMAL(19, 0) NULL,
         TotalAmount INT NULL,
-        PaymentMethod VARCHAR(100) NULL,
+        PaymentMethod NVARCHAR(100) NULL,
         Status VARCHAR(20) NULL,
         RefundAmount DECIMAL(19, 0) NULL,
-        RefundReason VARCHAR(255) NULL,
+        RefundReason NVARCHAR(255) NULL,
         paid_at DATE NULL,
         UserName VARCHAR(10) NOT NULL,
         SubscriptionId VARCHAR(10) NOT NULL,
@@ -167,12 +167,12 @@ IF OBJECT_ID('dbo.MemberBodyMetric', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.MemberBodyMetric (
         BodyMetricId VARCHAR(10) NOT NULL,
-        Weight DECIMAL(19, 0) NULL,
-        Height DECIMAL(19, 0) NULL,
-        MuscleMass DECIMAL(19, 0) NULL,
+        WeightKg DECIMAL(19, 0) NULL,
+        HeightCm DECIMAL(19, 0) NULL,
+        SkeletalMuscleMass DECIMAL(19, 0) NULL,
         BodyFatPercentage DECIMAL(19, 0) NULL,
         Bmi DECIMAL(19, 0) NULL,
-        Notes VARCHAR(255) NULL,
+        Notes NVARCHAR(255) NULL,
         measured_at DATE NULL,
         UserName VARCHAR(10) NOT NULL,
         PTSessionId VARCHAR(10) NULL,
@@ -242,17 +242,56 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_
     ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserName);
 GO
 
--- 4. NẠP DỮ LIỆU NỀN TẢNG (SEED DATA)
+-- 4. NẠP DỮ LIỆU NỀN TẢNG (SEED DATA) & CẬP NHẬT UNICODE (NVARCHAR)
+
+-- 4.0. Tự động chuyển đổi các cột văn bản sang NVARCHAR nếu bảng đã được tạo trước đó
+IF OBJECT_ID('dbo.Role', 'U') IS NOT NULL
+    ALTER TABLE dbo.Role ALTER COLUMN RoleName NVARCHAR(50) NULL;
+
+IF OBJECT_ID('dbo.[User]', 'U') IS NOT NULL
+    ALTER TABLE dbo.[User] ALTER COLUMN FullName NVARCHAR(50) NULL;
+
+IF OBJECT_ID('dbo.PackagePlan', 'U') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.PackagePlan ALTER COLUMN Name NVARCHAR(50) NULL;
+    ALTER TABLE dbo.PackagePlan ALTER COLUMN Description NVARCHAR(255) NULL;
+END
+
+IF OBJECT_ID('dbo.PTTrainingSession', 'U') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.PTTrainingSession ALTER COLUMN WorkoutNotes NVARCHAR(255) NULL;
+    ALTER TABLE dbo.PTTrainingSession ALTER COLUMN ReviewComment NVARCHAR(255) NULL;
+END
+
+IF OBJECT_ID('dbo.CheckInLog', 'U') IS NOT NULL
+    ALTER TABLE dbo.CheckInLog ALTER COLUMN DenialReason NVARCHAR(100) NULL;
+
+IF OBJECT_ID('dbo.Invoice', 'U') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Invoice ALTER COLUMN TransactionType NVARCHAR(50) NULL;
+    ALTER TABLE dbo.Invoice ALTER COLUMN PaymentMethod NVARCHAR(100) NULL;
+    ALTER TABLE dbo.Invoice ALTER COLUMN RefundReason NVARCHAR(255) NULL;
+END
+
+IF OBJECT_ID('dbo.MemberBodyMetric', 'U') IS NOT NULL
+    ALTER TABLE dbo.MemberBodyMetric ALTER COLUMN Notes NVARCHAR(255) NULL;
+GO
 
 -- 4.1. Nạp danh mục vai trò (Roles)
 IF NOT EXISTS (SELECT 1 FROM dbo.Role WHERE RoleID = 'ADMIN')
     INSERT INTO dbo.Role (RoleID, RoleName) VALUES ('ADMIN', N'Quản trị viên');
+ELSE
+    UPDATE dbo.Role SET RoleName = N'Quản trị viên' WHERE RoleID = 'ADMIN';
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Role WHERE RoleID = 'PT')
     INSERT INTO dbo.Role (RoleID, RoleName) VALUES ('PT', N'Huấn luyện viên');
+ELSE
+    UPDATE dbo.Role SET RoleName = N'Huấn luyện viên' WHERE RoleID = 'PT';
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Role WHERE RoleID = 'MEMBER')
     INSERT INTO dbo.Role (RoleID, RoleName) VALUES ('MEMBER', N'Hội viên');
+ELSE
+    UPDATE dbo.Role SET RoleName = N'Hội viên' WHERE RoleID = 'MEMBER';
 GO
 
 -- 4.2. Nạp người dùng mặc định (Mật khẩu băm BCrypt chuẩn xác cho 'admin123')
@@ -272,6 +311,10 @@ BEGIN
         CAST(GETDATE() AS DATE)
     );
 END
+ELSE
+BEGIN
+    UPDATE dbo.[User] SET FullName = N'Quản Trị Hệ Thống' WHERE UserName = 'admin';
+END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserName = 'pt01')
 BEGIN
@@ -287,6 +330,10 @@ BEGIN
         'ACTIVE',
         CAST(GETDATE() AS DATE)
     );
+END
+ELSE
+BEGIN
+    UPDATE dbo.[User] SET FullName = N'Nguyễn Văn Thành (PT)' WHERE UserName = 'pt01';
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserName = 'member01')
@@ -304,6 +351,10 @@ BEGIN
         CAST(GETDATE() AS DATE)
     );
 END
+ELSE
+BEGIN
+    UPDATE dbo.[User] SET FullName = N'Trần Văn An' WHERE UserName = 'member01';
+END
 GO
 
 -- 4.3. Nạp danh mục gói tập chuẩn (Package Plans)
@@ -312,11 +363,19 @@ BEGIN
     INSERT INTO dbo.PackagePlan (PlanId, Name, Description, DurationDays, Price, MaxCheckInSessions, is_PtIncluded, TotalPtSessions, is_Active)
     VALUES ('PLAN01', N'Gói 1 Tháng Tiêu Chuẩn', N'Tập gym không giới hạn giờ trong 30 ngày', 30, 500000, 30, 0, 0, 1);
 END
+ELSE
+BEGIN
+    UPDATE dbo.PackagePlan SET Name = N'Gói 1 Tháng Tiêu Chuẩn', Description = N'Tập gym không giới hạn giờ trong 30 ngày' WHERE PlanId = 'PLAN01';
+END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.PackagePlan WHERE PlanId = 'PLAN02')
 BEGIN
     INSERT INTO dbo.PackagePlan (PlanId, Name, Description, DurationDays, Price, MaxCheckInSessions, is_PtIncluded, TotalPtSessions, is_Active)
     VALUES ('PLAN02', N'Gói 3 Tháng Thể Thao', N'Gồm 90 ngày tập gym kèm 5 buổi PT định hướng', 90, 1350000, 90, 1, 5, 1);
+END
+ELSE
+BEGIN
+    UPDATE dbo.PackagePlan SET Name = N'Gói 3 Tháng Thể Thao', Description = N'Gồm 90 ngày tập gym kèm 5 buổi PT định hướng' WHERE PlanId = 'PLAN02';
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.PackagePlan WHERE PlanId = 'PLAN03')
@@ -324,11 +383,19 @@ BEGIN
     INSERT INTO dbo.PackagePlan (PlanId, Name, Description, DurationDays, Price, MaxCheckInSessions, is_PtIncluded, TotalPtSessions, is_Active)
     VALUES ('PLAN03', N'Gói 6 Tháng Platinum', N'Tập gym 180 ngày kèm 10 buổi PT và tủ locker riêng', 180, 2500000, 180, 1, 10, 1);
 END
+ELSE
+BEGIN
+    UPDATE dbo.PackagePlan SET Name = N'Gói 6 Tháng Platinum', Description = N'Tập gym 180 ngày kèm 10 buổi PT và tủ locker riêng' WHERE PlanId = 'PLAN03';
+END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.PackagePlan WHERE PlanId = 'PLAN04')
 BEGIN
     INSERT INTO dbo.PackagePlan (PlanId, Name, Description, DurationDays, Price, MaxCheckInSessions, is_PtIncluded, TotalPtSessions, is_Active)
     VALUES ('PLAN04', N'Gói 1 Năm VIP', N'Tập gym 365 ngày kèm 20 buổi PT và phòng xông hơi', 365, 4500000, 365, 1, 20, 1);
+END
+ELSE
+BEGIN
+    UPDATE dbo.PackagePlan SET Name = N'Gói 1 Năm VIP', Description = N'Tập gym 365 ngày kèm 20 buổi PT và phòng xông hơi' WHERE PlanId = 'PLAN04';
 END
 GO
 

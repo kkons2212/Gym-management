@@ -30,7 +30,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.FullName)
             .HasColumnName("FullName")
-            .HasColumnType("varchar(50)")
+            .HasColumnType("nvarchar(50)")
             .HasMaxLength(50)
             .IsRequired(false);
 

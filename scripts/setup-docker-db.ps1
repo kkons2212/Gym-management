@@ -29,7 +29,7 @@ param(
     [string]$User = "sa",
 
     [Parameter(Mandatory = $false)]
-    [string]$Password = "GymPass@2026Secure!",
+    [string]$Password = "SqlServer@2026",
 
     [Parameter(Mandatory = $false)]
     [string]$ContainerName = "",

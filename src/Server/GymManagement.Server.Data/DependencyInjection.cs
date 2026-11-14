@@ -62,7 +62,7 @@ public static class DependencyInjection
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            connectionString = "Server=localhost,1433;Database=GymManagementDb;User Id=sa;Password=GymPass@2026Secure!;TrustServerCertificate=True;MultipleActiveResultSets=true";
+            connectionString = "Server=localhost,1433;Database=GymManagementDb;User Id=sa;Password=SqlServer@2026;TrustServerCertificate=True;MultipleActiveResultSets=true";
         }
 
         services.AddDbContext<GymDbContext>(options =>
