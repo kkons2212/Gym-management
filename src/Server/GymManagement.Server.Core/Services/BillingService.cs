@@ -505,6 +505,152 @@ public sealed class BillingService : IBillingService
         return result;
     }
 
+    public async Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(
+        string? searchQuery = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var invoiceRepo = _unitOfWork.Repository<Invoice>();
+        var userRepo = _unitOfWork.Repository<User>();
+        var subRepo = _unitOfWork.Repository<MemberSubscription>();
+        var planRepo = _unitOfWork.Repository<PackagePlan>();
+
+        var allInvoices = await invoiceRepo.GetAllAsync(cancellationToken);
+        var allUsers = await userRepo.GetAllAsync(cancellationToken);
+        var allSubs = await subRepo.GetAllAsync(cancellationToken);
+        var allPlans = await planRepo.GetAllAsync(cancellationToken);
+
+        var usersDict = allUsers.ToDictionary(u => u.UserName, StringComparer.OrdinalIgnoreCase);
+        var subsDict = allSubs.ToDictionary(s => s.SubscriptionId, StringComparer.OrdinalIgnoreCase);
+        var plansDict = allPlans.ToDictionary(p => p.PlanId, StringComparer.OrdinalIgnoreCase);
+
+        var result = new List<InvoiceDto>();
+
+        foreach (var inv in allInvoices)
+        {
+            DateTime? paidDateTime = null;
+            if (inv.PaidAt.HasValue)
+            {
+                paidDateTime = inv.PaidAt.Value.ToDateTime(TimeOnly.MinValue);
+            }
+
+            if (fromDate.HasValue)
+            {
+                if (paidDateTime == null || paidDateTime.Value.Date < fromDate.Value.Date)
+                {
+                    continue;
+                }
+            }
+
+            if (toDate.HasValue)
+            {
+                if (paidDateTime == null || paidDateTime.Value.Date > toDate.Value.Date)
+                {
+                    continue;
+                }
+            }
+
+            string memberName = inv.UserName;
+            if (usersDict.TryGetValue(inv.UserName, out var user) && !string.IsNullOrWhiteSpace(user.FullName))
+            {
+                memberName = user.FullName;
+            }
+
+            string planName = "Gói tập";
+            if (subsDict.TryGetValue(inv.SubscriptionId, out var sub))
+            {
+                if (plansDict.TryGetValue(sub.PlanId, out var plan) && !string.IsNullOrWhiteSpace(plan.Name))
+                {
+                    planName = plan.Name;
+                }
+                else
+                {
+                    planName = sub.PlanId;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                string q = searchQuery.Trim();
+                bool matchesCode = inv.InvoiceCode.Contains(q, StringComparison.OrdinalIgnoreCase);
+                bool matchesMember = memberName.Contains(q, StringComparison.OrdinalIgnoreCase);
+                bool matchesUser = inv.UserName.Contains(q, StringComparison.OrdinalIgnoreCase);
+                if (!matchesCode && !matchesMember && !matchesUser)
+                {
+                    continue;
+                }
+            }
+
+            decimal subtotal = 0;
+            if (inv.SubtotalAmount.HasValue)
+            {
+                subtotal = inv.SubtotalAmount.Value;
+            }
+            else if (inv.TotalAmount.HasValue)
+            {
+                subtotal = inv.TotalAmount.Value;
+            }
+
+            decimal total = 0;
+            if (inv.TotalAmount.HasValue)
+            {
+                total = inv.TotalAmount.Value;
+            }
+            else if (inv.SubtotalAmount.HasValue)
+            {
+                total = inv.SubtotalAmount.Value;
+            }
+
+            string paymentMethod = "CASH";
+            if (!string.IsNullOrWhiteSpace(inv.PaymentMethod))
+            {
+                paymentMethod = inv.PaymentMethod;
+            }
+
+            string transactionType = "SUBSCRIPTION_PURCHASE";
+            if (!string.IsNullOrWhiteSpace(inv.TransactionType))
+            {
+                transactionType = inv.TransactionType;
+            }
+
+            string status = "PENDING";
+            if (!string.IsNullOrWhiteSpace(inv.Status))
+            {
+                status = inv.Status;
+            }
+
+            string? adminName = null;
+            if (!string.IsNullOrWhiteSpace(inv.CreatedByAdminId))
+            {
+                if (usersDict.TryGetValue(inv.CreatedByAdminId, out var adminUser))
+                {
+                    adminName = adminUser.FullName;
+                }
+            }
+
+            result.Add(new InvoiceDto(
+                inv.InvoiceId,
+                inv.InvoiceCode,
+                subtotal,
+                total,
+                paymentMethod,
+                transactionType,
+                paidDateTime,
+                memberName,
+                planName,
+                adminName,
+                status,
+                inv.RefundAmount
+            ));
+        }
+
+        return result
+            .OrderByDescending(i => i.PaidAt ?? DateTime.MinValue)
+            .ThenByDescending(i => i.InvoiceCode)
+            .ToList();
+    }
+
     private async Task<InvoiceContext> LoadInvoiceContextAsync(
         string invoiceCode,
         CancellationToken cancellationToken)
