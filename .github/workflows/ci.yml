@@ -39,6 +39,8 @@ jobs:
               - 'src/Server/**'
               - 'tests/**'
               - 'Document/GymManagement_Physical_Model.sql'
+              - 'Document/init_docker_db.sql'
+              - 'scripts/**'
               - '.github/workflows/ci.yml'
               - 'GymManagement.sln'
               - 'GymManagement.Server.slnf'
@@ -77,6 +79,43 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Verify .NET 8 SDK & Enforce TargetFramework Across All Projects
+        run: |
+          echo "🔍 [DevOps Guard] Checking active .NET SDK version on runner:"
+          dotnet --version
+
+          echo "🔍 [DevOps Guard] Scanning all .csproj files to enforce .NET 8 (net8.0)..."
+          python3 -c "
+          import glob, xml.etree.ElementTree as ET, sys
+
+          projects = glob.glob('**/*.csproj', recursive=True)
+          if not projects:
+              print('❌ No .csproj files found!')
+              sys.exit(1)
+
+          mismatches = []
+          for path in projects:
+              try:
+                  tree = ET.parse(path)
+                  root = tree.getroot()
+                  tf = root.find('.//TargetFramework')
+                  if tf is None or not tf.text or not tf.text.strip().startswith('net8.0'):
+                      actual = tf.text if tf is not None else 'MISSING'
+                      mismatches.append(f'{path} -> {actual}')
+                  else:
+                      print(f'  ✓ {path}: {tf.text.strip()}')
+              except Exception as ex:
+                  mismatches.append(f'{path} -> XML Parse Error: {ex}')
+
+          if mismatches:
+              print('\n❌ ARCHITECTURE VIOLATION: Projects not targeting .NET 8 (net8.0):')
+              for m in mismatches:
+                  print(f'   - {m}')
+              sys.exit(1)
+
+          print(f'\n✅ Success: All {len(projects)} projects strictly target .NET 8 (net8.0).')
+          "
 
       - name: Check Solution Status
         id: check_sln
@@ -150,6 +189,61 @@ jobs:
           print('✅ All 9 physical tables verified in DDL schema.')
           "
 
+      - name: Verify Docker SQL Server Init Script (Syntax & Seed Data)
+        run: |
+          python3 -c "
+          tables = ['Role', '[User]', 'PackagePlan', 'PTAvailability', 'PTTrainingSession', 'MemberSubscription', 'CheckInLog', 'Invoice', 'MemberBodyMetric']
+          content = open('Document/init_docker_db.sql', encoding='utf-8').read()
+          missing = [t for t in tables if f'dbo.{t}' not in content]
+          if missing:
+              print('❌ Missing required table(s) in init_docker_db.sql:', missing)
+              exit(1)
+          seeds = ['ADMIN', 'PT', 'MEMBER', 'admin', 'admin@gymsystem.vn', 'PLAN01', 'PLAN02', 'PLAN03', 'PLAN04']
+          missing_seeds = [s for s in seeds if s not in content]
+          if missing_seeds:
+              print('❌ Missing required seed data in init_docker_db.sql:', missing_seeds)
+              exit(1)
+          print('✅ init_docker_db.sql verified with all 9 tables and required seed data.')
+          "
+
+      - name: Test Docker SQL Server Container Initialization
+        run: |
+          echo "🐳 Starting ephemeral SQL Server container for initialization verification..."
+          docker run -d --name mssql-ci -p 1433:1433 \
+            -e "ACCEPT_EULA=Y" \
+            -e "MSSQL_SA_PASSWORD=CiTest@2026Secure!" \
+            mcr.microsoft.com/mssql/server:2022-latest
+
+          echo "⏳ Waiting for SQL Server container to become healthy..."
+          for i in {1..30}; do
+            if docker exec mssql-ci /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "CiTest@2026Secure!" -C -Q "SELECT 1" >/dev/null 2>&1; then
+              echo "✅ SQL Server container is ready after $((i * 2)) seconds."
+              break
+            fi
+            sleep 2
+          done
+
+          echo "📥 Executing Document/init_docker_db.sql into SQL Server container..."
+          docker cp Document/init_docker_db.sql mssql-ci:/tmp/init_docker_db.sql
+          docker exec mssql-ci /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "CiTest@2026Secure!" -C -i /tmp/init_docker_db.sql
+
+          echo "🔍 Verifying database creation and seed data assertions..."
+          docker exec mssql-ci /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "CiTest@2026Secure!" -C -d GymManagementDb -Q "
+            SET NOCOUNT ON;
+            DECLARE @tblCount INT = (SELECT COUNT(*) FROM sys.tables WHERE name IN ('Role', 'User', 'PackagePlan', 'PTAvailability', 'PTTrainingSession', 'MemberSubscription', 'CheckInLog', 'Invoice', 'MemberBodyMetric'));
+            IF @tblCount <> 9 BEGIN
+              RAISERROR('Expected 9 tables, found %d', 16, 1, @tblCount);
+            END
+            DECLARE @adminCount INT = (SELECT COUNT(*) FROM dbo.[User] WHERE UserName = 'admin' AND RoleID = 'ADMIN' AND Status = 'ACTIVE');
+            IF @adminCount <> 1 BEGIN
+              RAISERROR('Admin user seed not found!', 16, 1);
+            END
+            PRINT '✅ Docker SQL Server verified successfully with 9 tables and active Admin user.';
+          "
+
+          echo "🧹 Cleaning up ephemeral SQL Server container..."
+          docker stop mssql-ci && docker rm mssql-ci
+
       # 1. Kiểm thử 7 Service Components nội bộ Server (Core)
       - name: Test 7 Server Core Services (UnitTests)
         run: |
@@ -201,6 +295,11 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Verify .NET 8 SDK Environment on Windows Runner
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Active .NET SDK on Windows Runner: $(dotnet --version)"
 
       - name: Compile Admin Desktop App (WinUI 3 / Windows App SDK)
         shell: pwsh

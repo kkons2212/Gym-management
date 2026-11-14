@@ -47,9 +47,23 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration? configuration = null)
     {
-        // 1. Cấu hình GymDbContext với SQL Server
-        string connectionString = configuration?.GetConnectionString("DefaultConnection")
-            ?? "Server=(localdb)\\mssqllocaldb;Database=GymManagementDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+        // 1. Cấu hình GymDbContext với SQL Server (Hỗ trợ cấu hình Docker SQL Server linh hoạt)
+        string? connectionString = null;
+
+        if (configuration != null)
+        {
+            connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        }
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = "Server=localhost,1433;Database=GymManagementDb;User Id=sa;Password=SqlServer@2026;TrustServerCertificate=True;MultipleActiveResultSets=true";
+        }
 
         services.AddDbContext<GymDbContext>(options =>
         {

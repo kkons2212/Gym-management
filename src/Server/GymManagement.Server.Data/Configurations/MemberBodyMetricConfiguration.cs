@@ -49,7 +49,7 @@ public class MemberBodyMetricConfiguration : IEntityTypeConfiguration<MemberBody
 
         builder.Property(m => m.Notes)
             .HasColumnName("Notes")
-            .HasColumnType("varchar(255)")
+            .HasColumnType("nvarchar(255)")
             .HasMaxLength(255)
             .IsRequired(false);
 

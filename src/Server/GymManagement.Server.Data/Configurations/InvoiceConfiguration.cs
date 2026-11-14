@@ -30,7 +30,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(i => i.TransactionType)
             .HasColumnName("TransactionType")
-            .HasColumnType("varchar(50)")
+            .HasColumnType("nvarchar(50)")
             .HasMaxLength(50)
             .IsRequired(false);
 
@@ -46,7 +46,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(i => i.PaymentMethod)
             .HasColumnName("PaymentMethod")
-            .HasColumnType("varchar(100)")
+            .HasColumnType("nvarchar(100)")
             .HasMaxLength(100)
             .IsRequired(false);
 
@@ -63,7 +63,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(i => i.RefundReason)
             .HasColumnName("RefundReason")
-            .HasColumnType("varchar(255)")
+            .HasColumnType("nvarchar(255)")
             .HasMaxLength(255)
             .IsRequired(false);
 

@@ -35,7 +35,7 @@ public class CheckInLogConfiguration : IEntityTypeConfiguration<CheckInLog>
 
         builder.Property(c => c.DenialReason)
             .HasColumnName("DenialReason")
-            .HasColumnType("varchar(100)")
+            .HasColumnType("nvarchar(100)")
             .HasMaxLength(100)
             .IsRequired(false);
 
