@@ -27,10 +27,10 @@ public sealed partial class CheckInCounterPage : Page
 
     /// <summary>
     /// Góc xoay hình ảnh camera (đơn vị: độ).
-    /// Mặc định: -90 độ (hoặc 270) để khử góc nghiêng lệch phải của cảm biến webcam.
+    /// Mặc định: 0 độ (hoặc -90, 90, 180, 270 tùy thuộc góc lắp đặt của webcam phần cứng).
     /// Giá trị khả dụng: 0, 90, 180, 270, -90.
     /// </summary>
-    private static readonly double CAMERA_ROTATION_DEGREES = -90.0;
+    private static readonly double CAMERA_ROTATION_DEGREES = 0;
 
     /// <summary>
     /// Lật ảnh theo trục ngang (Horizontal Flip / Mirroring).
