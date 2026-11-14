@@ -151,6 +151,21 @@ public sealed class MemberService : IMemberService
         if (phoneExists)
             throw new ValidationException("Số điện thoại đã được sử dụng bởi hội viên khác.");
 
+        string? customMemberCode = null;
+        if (!string.IsNullOrWhiteSpace(request.CustomMemberCode))
+        {
+            customMemberCode = request.CustomMemberCode.Trim().ToUpperInvariant();
+        }
+
+        if (customMemberCode != null)
+        {
+            bool codeExists = await userRepo.ExistsAsync(
+                u => u.UserName == customMemberCode,
+                cancellationToken);
+            if (codeExists)
+                throw new ValidationException($"Mã hội viên '{customMemberCode}' đã được sử dụng.");
+        }
+
         // Kiểm tra gói tập tồn tại và đang hoạt động
         var plan = await _unitOfWork.Repository<PackagePlan>()
             .FindSingleOrDefaultAsync(
@@ -160,10 +175,20 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            // Sinh UserName mới theo định dạng MBR-XXXX
-            int memberCount = await userRepo.CountAsync(
-                u => u.RoleId == RoleIdMember, cancellationToken);
-            string newUserName = $"{MemberIdPrefix}-{memberCount + 1:D4}";
+            string newUserName;
+            if (customMemberCode != null)
+            {
+                newUserName = customMemberCode;
+            }
+            else
+            {
+                int memberCounter = await userRepo.CountAsync(u => u.RoleId == RoleIdMember, cancellationToken) + 1;
+                do
+                {
+                    newUserName = $"{MemberIdPrefix}-{memberCounter:D4}";
+                    memberCounter++;
+                } while (await userRepo.ExistsAsync(u => u.UserName == newUserName, cancellationToken));
+            }
 
             // Tạo tài khoản hội viên trong bảng [User]
             var newUser = new User
@@ -179,9 +204,15 @@ public sealed class MemberService : IMemberService
             await userRepo.AddAsync(newUser, cancellationToken);
 
             // Sinh SubscriptionId và QrCode duy nhất
-            int subCount = await _unitOfWork.Repository<MemberSubscription>()
-                .CountAsync(cancellationToken: cancellationToken);
-            string newSubId = $"{SubscriptionIdPrefix}-{subCount + 1:D5}";
+            int subCounter = await _unitOfWork.Repository<MemberSubscription>()
+                .CountAsync(cancellationToken: cancellationToken) + 1;
+            string newSubId;
+            do
+            {
+                newSubId = $"{SubscriptionIdPrefix}-{subCounter:D5}";
+                subCounter++;
+            } while (await _unitOfWork.Repository<MemberSubscription>().ExistsAsync(s => s.SubscriptionId == newSubId, cancellationToken));
+
             string qrCode = GenerateQrCode(newUserName);
 
             // Tính ngày hết hạn = StartDate + DurationDays của gói
@@ -243,15 +274,49 @@ public sealed class MemberService : IMemberService
         if (phoneConflict)
             throw new ValidationException("Số điện thoại đã được sử dụng bởi hội viên khác.");
 
-        user.FullName = request.FullName;
-        user.Phone = request.Phone;
-        user.Email = request.Email;
-        userRepo.Update(user);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        string targetUserName = user.UserName;
+        string? newUserName = null;
+        if (!string.IsNullOrWhiteSpace(request.NewUserName))
+        {
+            newUserName = request.NewUserName.Trim().ToUpperInvariant();
+        }
+
+        if (newUserName != null && !string.Equals(newUserName, user.UserName, StringComparison.OrdinalIgnoreCase))
+        {
+            bool codeConflict = await userRepo.ExistsAsync(
+                u => u.UserName == newUserName,
+                cancellationToken);
+
+            if (codeConflict)
+                throw new ValidationException($"Mã hội viên mới '{newUserName}' đã được sử dụng.");
+
+            targetUserName = newUserName;
+        }
+
+        user.FullName = request.FullName.Trim();
+        user.Phone = request.Phone.Trim();
+        user.Email = request.Email.Trim();
+
+        if (targetUserName != user.UserName)
+        {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
+                await _unitOfWork.ExecuteSqlRawAsync(
+                    "UPDATE dbo.[User] SET UserName = {0}, FullName = {1}, Phone = {2}, Email = {3} WHERE UserName = {4}",
+                    cancellationToken,
+                    targetUserName, user.FullName, user.Phone, user.Email, user.UserName);
+                user.UserName = targetUserName;
+            }, cancellationToken);
+        }
+        else
+        {
+            userRepo.Update(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
 
         _logger.LogInformation(
             "MemberService.UpdateMember: Cập nhật thông tin hội viên {UserName}",
-            request.UserName);
+            targetUserName);
 
         var activeSub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
@@ -496,14 +561,23 @@ public sealed class MemberService : IMemberService
         if (string.IsNullOrWhiteSpace(req.FullName))
             errors.Add("Họ tên không được để trống.");
 
-        if (string.IsNullOrWhiteSpace(req.Phone) || req.Phone.Length < 9)
-            errors.Add("Số điện thoại không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(req.Phone) || !System.Text.RegularExpressions.Regex.IsMatch(req.Phone.Trim(), @"^0\d{9}$"))
+            errors.Add("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).");
 
         if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
             errors.Add("Email không hợp lệ.");
 
         if (string.IsNullOrWhiteSpace(req.PlanId))
             errors.Add("Gói tập không được để trống.");
+
+        if (!string.IsNullOrWhiteSpace(req.CustomMemberCode))
+        {
+            string code = req.CustomMemberCode.Trim();
+            if (code.Length > 10)
+                errors.Add("Mã hội viên không được vượt quá 10 ký tự.");
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^[A-Za-z0-9_-]+$"))
+                errors.Add("Mã hội viên chỉ được chứa chữ cái, chữ số, dấu gạch ngang (-) hoặc gạch dưới (_).");
+        }
 
         if (errors.Count > 0)
             throw new ValidationException(string.Join(" ", errors));
@@ -516,11 +590,20 @@ public sealed class MemberService : IMemberService
         if (string.IsNullOrWhiteSpace(req.FullName))
             errors.Add("Họ tên không được để trống.");
 
-        if (string.IsNullOrWhiteSpace(req.Phone) || req.Phone.Length < 9)
-            errors.Add("Số điện thoại không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(req.Phone) || !System.Text.RegularExpressions.Regex.IsMatch(req.Phone.Trim(), @"^0\d{9}$"))
+            errors.Add("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).");
 
         if (string.IsNullOrWhiteSpace(req.Email) || !req.Email.Contains('@'))
             errors.Add("Email không hợp lệ.");
+
+        if (!string.IsNullOrWhiteSpace(req.NewUserName))
+        {
+            string code = req.NewUserName.Trim();
+            if (code.Length > 10)
+                errors.Add("Mã hội viên mới không được vượt quá 10 ký tự.");
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^[A-Za-z0-9_-]+$"))
+                errors.Add("Mã hội viên mới chỉ được chứa chữ cái, chữ số, dấu gạch ngang (-) hoặc gạch dưới (_).");
+        }
 
         if (errors.Count > 0)
             throw new ValidationException(string.Join(" ", errors));

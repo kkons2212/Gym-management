@@ -181,8 +181,14 @@ public class MockApiClient : IApiClient
 
     public Task<MemberProfileResponse> RegisterMemberAsync(RegisterMemberRequest request)
     {
+        string memberCode = $"USR{DateTime.Now:mmss}";
+        if (!string.IsNullOrWhiteSpace(request.CustomMemberCode))
+        {
+            memberCode = request.CustomMemberCode.Trim();
+        }
+
         var member = new MemberDto(
-            $"USR{DateTime.Now:mmss}",
+            memberCode,
             request.FullName,
             request.Phone,
             request.Email,
@@ -207,11 +213,23 @@ public class MockApiClient : IApiClient
 
     public Task<MemberProfileResponse> UpdateMemberProfileAsync(string userName, UpdateMemberRequest request)
     {
+        string targetUserName = userName;
+        if (!string.IsNullOrWhiteSpace(request.UserName))
+        {
+            targetUserName = request.UserName.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.NewUserName))
+        {
+            targetUserName = request.NewUserName.Trim();
+        }
+
         var idx = _members.FindIndex(m => m.UserName == userName);
         if (idx >= 0)
         {
             _members[idx] = _members[idx] with
             {
+                UserName = targetUserName,
                 FullName = request.FullName,
                 Phone = request.Phone,
                 Email = request.Email
@@ -219,7 +237,7 @@ public class MockApiClient : IApiClient
         }
 
         return Task.FromResult(new MemberProfileResponse(
-            userName,
+            targetUserName,
             request.FullName,
             request.Phone,
             request.Email,

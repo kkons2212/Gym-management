@@ -53,4 +53,13 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <param name="action">Hàm nghiệp vụ cần thực thi trong Transaction.</param>
     /// <param name="cancellationToken">Token hủy thao tác bất đồng bộ.</param>
     Task ExecuteTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Thực thi câu lệnh SQL thô bất đồng bộ trong Transaction hiện tại.
+    /// </summary>
+    /// <param name="sql">Câu lệnh SQL định dạng tham số.</param>
+    /// <param name="cancellationToken">Token hủy thao tác.</param>
+    /// <param name="parameters">Danh sách tham số SQL.</param>
+    /// <returns>Số dòng bị ảnh hưởng.</returns>
+    Task<int> ExecuteSqlRawAsync(string sql, CancellationToken cancellationToken = default, params object[] parameters);
 }

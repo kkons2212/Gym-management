@@ -191,7 +191,7 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_PTAvailability_Us
     ALTER TABLE dbo.PTAvailability ADD CONSTRAINT FK_PTAvailability_User FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserName);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_PTTrainingSession_Member')
-    ALTER TABLE dbo.PTTrainingSession ADD CONSTRAINT FK_PTTrainingSession_Member FOREIGN KEY (MemberID) REFERENCES dbo.[User] (UserName);
+    ALTER TABLE dbo.PTTrainingSession ADD CONSTRAINT FK_PTTrainingSession_Member FOREIGN KEY (MemberID) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_PTTrainingSession_PT')
     ALTER TABLE dbo.PTTrainingSession ADD CONSTRAINT FK_PTTrainingSession_PT FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserName);
@@ -200,7 +200,7 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_PTTrainingSession
     ALTER TABLE dbo.PTTrainingSession ADD CONSTRAINT FK_PTTrainingSession_Availability FOREIGN KEY (AvailabilityId) REFERENCES dbo.PTAvailability (AvailabilityId);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberSubscription_User')
-    ALTER TABLE dbo.MemberSubscription ADD CONSTRAINT FK_MemberSubscription_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName);
+    ALTER TABLE dbo.MemberSubscription ADD CONSTRAINT FK_MemberSubscription_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberSubscription_AssignedPt')
     ALTER TABLE dbo.MemberSubscription ADD CONSTRAINT FK_MemberSubscription_AssignedPt FOREIGN KEY (AssignedPtId) REFERENCES dbo.[User] (UserName);
@@ -215,13 +215,13 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_CheckInLog_Subscr
     ALTER TABLE dbo.CheckInLog ADD CONSTRAINT FK_CheckInLog_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_CheckInLog_User')
-    ALTER TABLE dbo.CheckInLog ADD CONSTRAINT FK_CheckInLog_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName);
+    ALTER TABLE dbo.CheckInLog ADD CONSTRAINT FK_CheckInLog_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_CheckInLog_Admin')
     ALTER TABLE dbo.CheckInLog ADD CONSTRAINT FK_CheckInLog_Admin FOREIGN KEY (VerifiedByAdminId) REFERENCES dbo.[User] (UserName);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_User')
-    ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName);
+    ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_Subscription')
     ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId);
@@ -233,7 +233,7 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_CheckInLo
     ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_CheckInLog FOREIGN KEY (CheckInLogCheckInId) REFERENCES dbo.CheckInLog (CheckInId);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_User')
-    ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName);
+    ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_PTSession')
     ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId);

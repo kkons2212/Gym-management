@@ -167,7 +167,8 @@ public sealed partial class PosBillingPage : Page
                 dialog.Email,
                 dialog.SelectedPackage.PlanId,
                 DateOnly.FromDateTime(DateTime.Today),
-                "Admin"
+                "Admin",
+                dialog.MemberCode
             );
 
             await api.RegisterMemberAsync(req);

@@ -125,7 +125,8 @@ public record RegisterMemberRequest(
     string Email,
     string PlanId,
     DateOnly StartDate,
-    string AdminUserName
+    string AdminUserName,
+    string? CustomMemberCode = null
 );
 
 /// <summary>
@@ -135,7 +136,8 @@ public record UpdateMemberRequest(
     string UserName,
     string FullName,
     string Phone,
-    string Email
+    string Email,
+    string? NewUserName = null
 );
 
 /// <summary>

@@ -63,6 +63,131 @@ public class MemberServiceTests
     }
 
     [Fact]
+    public async Task RegisterMemberAsync_WhenCustomMemberCodeProvided_UsesCustomCode()
+    {
+        // Arrange
+        var request = new RegisterMemberRequest(
+            FullName: "Nguyễn Văn VIP",
+            Phone: "0912345678",
+            Email: "vip@gym.vn",
+            PlanId: "PKG-01",
+            StartDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            AdminUserName: "admin01",
+            CustomMemberCode: "VIP-01");
+
+        SetupUserRepoPhoneExists(exists: false);
+
+        var planRepoMock = new Mock<IGenericRepository<PackagePlan>>();
+        planRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<PackagePlan, bool>>>(), default))
+            .ReturnsAsync(new PackagePlan { PlanId = "PKG-01", IsActive = 1, DurationDays = 30 });
+        _uowMock.Setup(u => u.Repository<PackagePlan>()).Returns(planRepoMock.Object);
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), default)).ReturnsAsync(false);
+        userRepoMock.Setup(r => r.AddAsync(It.IsAny<User>(), default)).Returns(Task.CompletedTask);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default)).ReturnsAsync(0);
+        subRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default)).ReturnsAsync(false);
+        subRepoMock.Setup(r => r.AddAsync(It.IsAny<MemberSubscription>(), default)).Returns(Task.CompletedTask);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.RegisterMemberAsync(request);
+
+        // Assert
+        result.UserName.Should().Be("VIP-01");
+        userRepoMock.Verify(r => r.AddAsync(It.Is<User>(u => u.UserName == "VIP-01"), default), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterMemberAsync_WhenCustomMemberCodeExceeds10Chars_ThrowsValidationException()
+    {
+        // Arrange
+        var request = new RegisterMemberRequest(
+            FullName: "Nguyễn Văn VIP",
+            Phone: "0912345678",
+            Email: "vip@gym.vn",
+            PlanId: "PKG-01",
+            StartDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            AdminUserName: "admin01",
+            CustomMemberCode: "VIP-12345678");
+
+        // Act
+        Func<Task> act = () => _sut.RegisterMemberAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("*10 ký tự*");
+    }
+
+    [Theory]
+    [InlineData("090123456")]      // 9 digits
+    [InlineData("09012345678")]    // 11 digits
+    [InlineData("1901234567")]     // Not starting with 0
+    [InlineData("090123456A")]     // Non-digit character
+    public async Task RegisterMemberAsync_WhenPhoneIsNotExactly10Digits_ThrowsValidationException(string invalidPhone)
+    {
+        // Arrange
+        var request = new RegisterMemberRequest(
+            FullName: "Nguyễn Văn Test",
+            Phone: invalidPhone,
+            Email: "test@gym.vn",
+            PlanId: "PKG-01",
+            StartDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            AdminUserName: "admin01");
+
+        // Act
+        Func<Task> act = () => _sut.RegisterMemberAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("*10 chữ số*");
+    }
+
+    [Fact]
+    public async Task UpdateMemberAsync_WhenNewUserNameProvided_ExecutesSqlUpdate()
+    {
+        // Arrange
+        var request = new UpdateMemberRequest(
+            UserName: "MBR-0001",
+            FullName: "Nguyễn Văn C",
+            Phone: "0901234567",
+            Email: "c@gym.vn",
+            NewUserName: "VIP-99");
+
+        SetupUserRepoFindExisting("MBR-0001");
+        SetupUserRepoPhoneConflict(exists: false);
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(new User { UserName = "MBR-0001", FullName = "Old", Phone = "0900000000", Email = "old@gym.vn", Status = "ACTIVE" });
+        userRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(false);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock.Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync(BuildSubscription("SUB-001", "VIP-99"));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        _uowMock.Setup(u => u.ExecuteSqlRawAsync(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
+            .ReturnsAsync(1);
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.UpdateMemberAsync(request);
+
+        // Assert
+        result.UserName.Should().Be("VIP-99");
+        _uowMock.Verify(u => u.ExecuteSqlRawAsync(It.Is<string>(s => s.Contains("UPDATE dbo.[User] SET UserName")), It.IsAny<CancellationToken>(), It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
     public async Task RegisterMemberAsync_WhenPlanNotFound_ThrowsNotFoundException()
     {
         // Arrange
