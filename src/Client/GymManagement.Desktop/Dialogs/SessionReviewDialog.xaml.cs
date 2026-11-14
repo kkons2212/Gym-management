@@ -5,6 +5,9 @@ namespace GymManagement.Desktop.Dialogs;
 
 public sealed partial class SessionReviewDialog : ContentDialog
 {
+    private DateTime _scheduledDate;
+    private TimeSpan _endTime;
+
     public PtSessionStatus SelectedOutcome
     {
         get
@@ -32,8 +35,24 @@ public sealed partial class SessionReviewDialog : ContentDialog
     {
         InitializeComponent();
 
+        _scheduledDate = scheduledDate;
+        _endTime = endTime;
+
         TxtSessionDetails.Text = $"HLV: {ptName} • Hội viên: {memberName}";
         TxtScheduledTime.Text = $"Thời gian: {scheduledDate:dd/MM/yyyy} ({startTime:hh\\:mm} - {endTime:hh\\:mm})";
+
+        // Disable confirm button if session hasn't ended yet
+        UpdatePrimaryButtonState();
+    }
+
+    private void UpdatePrimaryButtonState()
+    {
+        // Calculate end time
+        var sessionEndDateTime = _scheduledDate.Add(_endTime);
+        var now = DateTime.Now;
+
+        // If session hasn't ended, disable the button
+        IsPrimaryButtonEnabled = now >= sessionEndDateTime;
     }
 }
 
