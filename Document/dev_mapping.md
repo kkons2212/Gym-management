@@ -43,6 +43,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 | **Task 2.7** | ReportService Component (UC06) | UC06 (US 06.1, US 06.2) — Xem & Xuất báo cáo thống kê BI đa chiều | `Server.Core` & `Server.Api` | `Contracts/IReportService.cs`, `DTOs/Reports/ReportDtos.cs`, `Services/Reporting/ReportExportHelper.cs`, `Services/ReportService.cs`, `Server.Api/Program.cs` | `tests/.../Services/ReportServiceTests.cs` (16 tests) | `Invoice`, `MemberSubscription`, `CheckInLog`, `PTTrainingSession`, `[User]`, `PackagePlan` | `ce9e620` |
 | **Task 3.3** | API Controllers Component | Toàn bộ 10 Epics (Cổng RESTful API công khai cho Client) | `Server.Api` | `Controllers/ApiControllerBase.cs`, `AuthController.cs`, `MembersController.cs`, `CheckInController.cs`, `PtController.cs`, `InvoicesController.cs`, `ReportsController.cs`, `SettingsController.cs`, `Program.cs` | `tests/GymManagement.Server.ApiTests/Controllers/*Tests.cs` (18 tests mới) | 9 bảng CSDL | `9016fe4` |
 | **Task 4.1** | Admin Desktop App (WinUI 3 MVVM) | Toàn bộ 10 Epics (Admin & Thu ngân) | `Client.Desktop` | `src/Client/GymManagement.Desktop/Styles/ColorTokens.xaml`, `Views/*` (In-place Wipe về canvas chuẩn), `ViewModels/*`, `App.xaml(.cs)`, `MainWindow.xaml(.cs)` | Biên dịch WinUI 3 Desktop `0 Warning(s), 0 Error(s)` | 9 bảng CSDL | `6832b09` (WIP) |
+| **Docker DB** | Cấu hình Docker SQL Server, DDL Seed & CI Test | Toàn bộ 10 Epics (9 bảng & Seed Admin) | `Server.Data`, `Server.Api`, CI | `Document/init_docker_db.sql`, `scripts/setup-docker-db.ps1`, `.env.example`, `appsettings.json`, `DependencyInjection.cs`, `.github/workflows/ci.yml` | Python Schema Verifier & Ephemeral Docker SQL Server Test in CI | 9 bảng CSDL | `91abb28` |
 
 ---
 
@@ -344,6 +345,23 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Biên dịch toàn bộ dự án Desktop: `dotnet build src/Client/GymManagement.Desktop -p:Platform=x64` đạt **0 Warning(s), 0 Error(s)**.
   - Toàn bộ 183 / 183 unit/integration tests trên solution đều đạt 100% Pass.
   - Tuân thủ nghiêm ngặt [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, 0 expression body `=>` trên hàm nghiệp vụ, 100% tiếng Việt trên giao diện UI).
+* **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+
+### 📌 [Chore / Infrastructure] Chuẩn Bị Cấu Hình Docker SQL Server, Script DDL Seed Data & Kiểm Thử Tự Động Trong CI
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `91abb28` (nhánh `feat/docker-sqlserver-setup`)
+* **Phân hệ nghiệp vụ liên quan:** Nền tảng dữ liệu cho toàn bộ 10 Epics (UC01 – UC10) phục vụ kết nối Docker SQL Server tự host.
+* **Ranh giới thành phần:** `Document/`, `scripts/`, `Server.Data`, `Server.Api`, `.github/workflows/`.
+* **Mã nguồn tạo / sửa:**
+  - `Document/init_docker_db.sql`: Script khởi tạo cơ sở dữ liệu `GymManagementDb`, tạo đầy đủ 9 bảng vật lý chuẩn DDL, ràng buộc Foreign Keys, Unique Constraints và nạp dữ liệu hạt giống (Seed Data): 3 Roles (`ADMIN`, `PT`, `MEMBER`), 3 Users mặc định với PasswordHash băm BCrypt chuẩn xác cho `admin123`, và 4 gói tập chuẩn `PackagePlan`.
+  - `scripts/setup-docker-db.ps1`: Script PowerShell tiện ích hỗ trợ nạp CSDL vào Docker host qua `docker exec` hoặc `sqlcmd` / .NET `SqlClient`.
+  - `.env.example`: File mẫu biến môi trường phục vụ kết nối Docker SQL Server an toàn, không lộ secret.
+  - `src/Server/GymManagement.Server.Api/appsettings.json` & `appsettings.Development.json`: Chuẩn hóa chuỗi kết nối Docker SQL Server `Server=localhost,1433;...`.
+  - `src/Server/GymManagement.Server.Data/DependencyInjection.cs`: Tái cấu trúc hàm đọc connection string dạng phẳng (`if / else`), hỗ trợ fallback biến môi trường `ConnectionStrings__DefaultConnection` tuân thủ 100% `dev_rule.md` (0 toán tử 3 ngôi `? :`).
+  - `.github/workflows/ci.yml`: Bổ sung bài test Docker SQL Server tự động (khởi chạy ephemeral container `mcr.microsoft.com/mssql/server:2022-latest`, nạp `init_docker_db.sql` và xác thực 9 bảng cùng tài khoản Admin active trong CI).
+* **Kiểm thử tương ứng (Verification):**
+  - Python schema verification: `init_docker_db.sql` đạt 9/9 bảng và đầy đủ seed data.
+  - Biên dịch toàn bộ Solution: `GymManagement.Server.Api`, `GymManagement.Web`, `GymManagement.Desktop` đạt **0 Errors**.
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (Zero hardcoded secrets, 0 toán tử 3 ngôi, flat guard clauses).
 * **Bảng CSDL liên quan:** Toàn bộ 9 bảng CSDL (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
 
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
