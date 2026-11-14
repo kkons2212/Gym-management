@@ -256,7 +256,8 @@ public sealed partial class MembersPage : Page
                     dialog.SelectedPackage.PlanId,
                     DateOnly.FromDateTime(DateTime.Today),
                     "Admin",
-                    dialog.MemberCode
+                    dialog.MemberCode,
+                    dialog.Password
                 );
 
                 InvoiceDto? confirmedInvoice = null;

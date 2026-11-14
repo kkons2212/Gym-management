@@ -107,4 +107,12 @@ public sealed partial class SettingsPage : Page
             ViewModel.NewRole = role;
         }
     }
+
+    public void OnNewPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null && sender is PasswordBox pb)
+        {
+            ViewModel.NewPassword = pb.Password;
+        }
+    }
 }

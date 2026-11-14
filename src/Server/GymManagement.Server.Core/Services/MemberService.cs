@@ -190,6 +190,13 @@ public sealed class MemberService : IMemberService
                 } while (await userRepo.ExistsAsync(u => u.UserName == newUserName, cancellationToken));
             }
 
+            string rawPassword = "MemberPassword123!";
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                rawPassword = request.Password;
+            }
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(rawPassword);
+
             // Tạo tài khoản hội viên trong bảng [User]
             var newUser = new User
             {
@@ -198,6 +205,7 @@ public sealed class MemberService : IMemberService
                 FullName = request.FullName.Trim(),
                 Phone = request.Phone.Trim(),
                 Email = request.Email.Trim(),
+                PasswordHash = passwordHash,
                 Status = StatusActive,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };
@@ -569,6 +577,14 @@ public sealed class MemberService : IMemberService
 
         if (string.IsNullOrWhiteSpace(req.PlanId))
             errors.Add("Gói tập không được để trống.");
+
+        if (!string.IsNullOrWhiteSpace(req.Password))
+        {
+            if (req.Password.Length < 6)
+            {
+                errors.Add("Mật khẩu phải có ít nhất 6 ký tự.");
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(req.CustomMemberCode))
         {

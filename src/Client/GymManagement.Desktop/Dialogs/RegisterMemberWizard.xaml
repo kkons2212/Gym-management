@@ -57,6 +57,11 @@
                     <TextBlock Text="Email liên hệ:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                     <TextBox x:Name="TxtEmail" PlaceholderText="member@example.com" Height="36" />
                 </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Mật khẩu đăng nhập (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                    <PasswordBox x:Name="PbPassword" PlaceholderText="Nhập mật khẩu (tối thiểu 6 ký tự)..." Height="36" />
+                </StackPanel>
             </StackPanel>
         </Border>
 

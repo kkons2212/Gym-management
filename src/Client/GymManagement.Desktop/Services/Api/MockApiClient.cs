@@ -731,9 +731,14 @@ public class MockApiClient : IApiClient
         return Task.FromResult(plan);
     }
 
-    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role)
+    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password)
     {
-        var newUser = new UserSessionDto($"USR{DateTime.Now:mmss}", fullName, email, role);
+        string uId = username;
+        if (string.IsNullOrWhiteSpace(uId))
+        {
+            uId = $"USR{DateTime.Now:mmss}";
+        }
+        var newUser = new UserSessionDto(uId, fullName, email, role);
         _users.Add(newUser);
         return Task.FromResult(newUser);
     }

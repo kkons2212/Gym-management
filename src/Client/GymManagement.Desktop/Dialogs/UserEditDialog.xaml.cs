@@ -31,7 +31,14 @@ public sealed partial class UserEditDialog : ContentDialog
         TxtUserName.Text = user.UserId;
         TxtFullName.Text = user.FullName;
         TxtEmail.Text = user.Email;
-        TxtPhone.Text = "0901234567";
+        if (!string.IsNullOrWhiteSpace(user.Phone))
+        {
+            TxtPhone.Text = user.Phone;
+        }
+        else
+        {
+            TxtPhone.Text = string.Empty;
+        }
 
         SelectRole(user.Role);
 

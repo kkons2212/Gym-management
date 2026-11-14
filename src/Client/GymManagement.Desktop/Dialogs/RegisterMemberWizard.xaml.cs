@@ -46,6 +46,18 @@ public sealed partial class RegisterMemberWizard : ContentDialog
         }
     }
 
+    public string Password
+    {
+        get
+        {
+            if (PbPassword != null)
+            {
+                return PbPassword.Password;
+            }
+            return string.Empty;
+        }
+    }
+
     public string Gender
     {
         get
@@ -134,6 +146,14 @@ public sealed partial class RegisterMemberWizard : ContentDialog
         if (string.IsNullOrWhiteSpace(phone) || !System.Text.RegularExpressions.Regex.IsMatch(phone, @"^0\d{9}$"))
         {
             TxtValidationError.Text = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0)!";
+            TxtValidationError.Visibility = Visibility.Visible;
+            args.Cancel = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password) || Password.Length < 6)
+        {
+            TxtValidationError.Text = "Mật khẩu đăng nhập phải có ít nhất 6 ký tự!";
             TxtValidationError.Visibility = Visibility.Visible;
             args.Cancel = true;
             return;

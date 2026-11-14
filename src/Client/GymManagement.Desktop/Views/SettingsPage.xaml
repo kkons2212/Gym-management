@@ -53,23 +53,28 @@
                     <TextBlock Text="Thêm tài khoản nhân viên / HLV:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Họ và tên:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="Tên đăng nhập (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBox Text="{x:Bind ViewModel.NewUsername, Mode=TwoWay}" PlaceholderText="tên_đăng_nhập" Height="38" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Họ và tên (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                         <TextBox Text="{x:Bind ViewModel.NewFullName, Mode=TwoWay}" PlaceholderText="Nhập họ và tên..." Height="38" />
                     </StackPanel>
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Email:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="Email (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                         <TextBox Text="{x:Bind ViewModel.NewEmail, Mode=TwoWay}" PlaceholderText="email@gymsystem.vn" Height="38" />
                     </StackPanel>
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Số điện thoại:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="Số điện thoại (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                         <TextBox Text="{x:Bind ViewModel.NewPhone, Mode=TwoWay}" PlaceholderText="0901234567" Height="38" />
                     </StackPanel>
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Tên đăng nhập:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                        <TextBox Text="{x:Bind ViewModel.NewUsername, Mode=TwoWay}" PlaceholderText="tên_đăng_nhập" Height="38" />
+                        <TextBlock Text="Mật khẩu (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <PasswordBox x:Name="PbNewPassword" PasswordChanged="OnNewPasswordChanged" PlaceholderText="Nhập mật khẩu (tối thiểu 6 ký tự)..." Height="38" />
                     </StackPanel>
 
                     <StackPanel Spacing="6">

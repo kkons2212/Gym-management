@@ -14,6 +14,7 @@ public record UserSessionDto(
     string UserId,
     string FullName,
     string Email,
-    string Role
+    string Role,
+    string? Phone = null
 );
 

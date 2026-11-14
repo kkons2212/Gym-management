@@ -48,7 +48,6 @@
             <ComboBox x:Name="CboRole" HorizontalAlignment="Stretch" Height="36">
                 <ComboBoxItem x:Name="CbiAdminRole" Content="Quản trị viên (Admin)" Tag="Admin" />
                 <ComboBoxItem Content="Huấn luyện viên cá nhân (PT)" Tag="PT" />
-                <ComboBoxItem Content="Nhân viên quầy lễ tân (Staff)" Tag="Staff" />
             </ComboBox>
         </StackPanel>
 
