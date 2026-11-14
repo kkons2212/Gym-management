@@ -81,11 +81,26 @@ public sealed partial class UserEditDialog : ContentDialog
             CboRole.Items.Clear();
             foreach (var role in roles)
             {
-                CboRole.Items.Add(new ComboBoxItem
+                bool isPt = string.Equals(role.RoleId, "PT", StringComparison.OrdinalIgnoreCase);
+                bool isAdmin = string.Equals(role.RoleId, "ADMIN", StringComparison.OrdinalIgnoreCase) ||
+                               string.Equals(role.RoleId, "Admin", StringComparison.OrdinalIgnoreCase);
+                if (!isPt && !isAdmin)
+                {
+                    continue;
+                }
+
+                var item = new ComboBoxItem
                 {
                     Content = role.RoleName,
                     Tag = role.RoleId
-                });
+                };
+
+                if (isAdmin && !_isSuperAdmin)
+                {
+                    item.IsEnabled = false;
+                }
+
+                CboRole.Items.Add(item);
             }
             
             // Re-select the current user's role after loading
