@@ -1,3 +1,4 @@
+using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.Settings;
 
@@ -41,6 +42,11 @@ public interface ISystemSettingService
     /// Lấy danh sách tài khoản theo bộ lọc vai trò và trạng thái hoạt động.
     /// </summary>
     Task<IReadOnlyList<UserDto>> GetUsersAsync(string? roleId = null, string? status = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lấy danh sách tất cả vai trò sẵn có trong hệ thống.
+    /// </summary>
+    Task<IReadOnlyList<RoleDto>> GetRolesAsync(CancellationToken cancellationToken = default);
 
     // =========================================================================
     // NHÓM 2: QUẢN LÝ DANH MỤC GÓI TẬP (UC 7.2.1, UC 7.2.2, UC 7.2.3)

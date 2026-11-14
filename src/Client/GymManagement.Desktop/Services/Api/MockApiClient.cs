@@ -7,6 +7,7 @@ using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.DTOs.Reports;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 using System.Net.Http.Json;
@@ -704,6 +705,17 @@ public class MockApiClient : IApiClient
     public Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()
     {
         return Task.FromResult<IReadOnlyList<UserSessionDto>>(_users);
+    }
+
+    public Task<IReadOnlyList<RoleDto>> GetRolesAsync()
+    {
+        var roles = new List<RoleDto>
+        {
+            new RoleDto("ADMIN", "Quản trị viên"),
+            new RoleDto("PT", "Huấn luyện viên cá nhân"),
+            new RoleDto("MEMBER", "Hội viên"),
+        };
+        return Task.FromResult<IReadOnlyList<RoleDto>>(roles.AsReadOnly());
     }
 
     public Task<bool> ToggleUserLockAsync(string userId)

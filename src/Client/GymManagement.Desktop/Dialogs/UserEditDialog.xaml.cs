@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using GymManagement.Desktop.Services.Api;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Settings;
+using GymManagement.Server.Core.DTOs;
 
 namespace GymManagement.Desktop.Dialogs;
 
@@ -40,6 +41,38 @@ public sealed partial class UserEditDialog : ContentDialog
         }
 
         PrimaryButtonClick += UserEditDialog_PrimaryButtonClick;
+        
+        // Load roles from database async
+        _ = LoadRolesAsync();
+    }
+
+    /// <summary>
+    /// Load roles từ API endpoint và populate vào dropdown.
+    /// </summary>
+    private async Task LoadRolesAsync()
+    {
+        try
+        {
+            var roles = await _apiClient.GetRolesAsync();
+            
+            CboRole.Items.Clear();
+            foreach (var role in roles)
+            {
+                CboRole.Items.Add(new ComboBoxItem
+                {
+                    Content = role.RoleName,
+                    Tag = role.RoleId
+                });
+            }
+            
+            // Re-select the current user's role after loading
+            SelectRole(_targetUser.Role);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load roles: {ex.Message}");
+            // Fallback: Keep the hardcoded roles if API fails
+        }
     }
 
     private void SelectRole(string role)
@@ -140,4 +173,3 @@ public sealed partial class UserEditDialog : ContentDialog
         PnlValidationError.Visibility = Visibility.Visible;
     }
 }
-
