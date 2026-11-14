@@ -30,6 +30,8 @@ public sealed partial class VietQrPaymentDialog : ContentDialog
 
         IsPrimaryButtonEnabled = false;
 
+        PrimaryButtonClick += (s, e) => { IsPaymentConfirmed = true; };
+
         LoadQrImage(qrImageUrl);
     }
 
@@ -131,5 +133,6 @@ public sealed partial class VietQrPaymentDialog : ContentDialog
         }
 
         IsPrimaryButtonEnabled = true;
+        this.Hide();
     }
 }

@@ -170,9 +170,9 @@ public sealed class MemberService : IMemberService
             {
                 UserName = newUserName,
                 RoleId = RoleIdMember,
-                FullName = request.FullName,
-                Phone = request.Phone,
-                Email = request.Email,
+                FullName = request.FullName.Trim(),
+                Phone = request.Phone.Trim(),
+                Email = request.Email.Trim(),
                 Status = StatusActive,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };

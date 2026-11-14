@@ -226,32 +226,110 @@ public sealed partial class MembersPage : Page
         api = App.GetService<IApiClient>();
         var packages = await api.GetPackagePlansAsync();
 
-        dialog = new RegisterMemberWizard(packages);
-        dialog.XamlRoot = this.XamlRoot;
+        dialog = new RegisterMemberWizard(packages)
+        {
+            XamlRoot = this.XamlRoot
+        };
 
         result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary && dialog.SelectedPackage != null)
         {
-            var memberReq = new RegisterMemberRequest(
-                dialog.FullName,
-                dialog.Phone,
-                dialog.Email,
-                dialog.SelectedPackage.PlanId,
-                DateOnly.FromDateTime(DateTime.Today),
-                "Admin"
-            );
+            try
+            {
+                var memberReq = new RegisterMemberRequest(
+                    dialog.FullName,
+                    dialog.Phone,
+                    dialog.Email,
+                    dialog.SelectedPackage.PlanId,
+                    DateOnly.FromDateTime(DateTime.Today),
+                    "Admin"
+                );
 
-            var registeredMember = await api.RegisterMemberAsync(memberReq);
+                InvoiceDto? confirmedInvoice = null;
 
-            var invoiceReq = new CreateInvoiceRequest(
-                registeredMember.UserName,
-                dialog.SelectedPackage.PlanId,
-                dialog.PaymentMethod,
-                "SUBSCRIPTION_PURCHASE"
-            );
+                if (dialog.PaymentMethod == "VIETQR")
+                {
+                    string transferContent = $"GYM {dialog.Phone} {dialog.SelectedPackage.PlanId}";
+                    var qrPayload = await api.GenerateVietQrAsync("TEMP", dialog.SelectedPackage.Price, transferContent);
 
-            await api.CreateInvoiceAsync(invoiceReq);
-            await ViewModel.LoadMembersAsync();
+                    // Allow previous ContentDialog to fully close in WinUI 3
+                    await Task.Delay(100);
+
+                    var qrDialog = new VietQrPaymentDialog(
+                        qrPayload.Amount,
+                        qrPayload.BankName,
+                        qrPayload.BankAccount,
+                        qrPayload.TransferContent,
+                        qrPayload.QrDataUrl,
+                        api)
+                    {
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var qrResult = await qrDialog.ShowAsync();
+                    if (!qrDialog.IsPaymentConfirmed && qrResult != ContentDialogResult.Primary)
+                    {
+                        // Khách chưa chuyển tiền hoặc thu ngân bấm đóng: không tạo hội viên, giữ nguyên danh sách
+                        return;
+                    }
+
+                    // Đã xác nhận nhận tiền chuyển khoản: tiến hành tạo hội viên và kích hoạt hóa đơn
+                    var registeredMember = await api.RegisterMemberAsync(memberReq);
+
+                    var invoiceReq = new CreateInvoiceRequest(
+                        registeredMember.UserName,
+                        dialog.SelectedPackage.PlanId,
+                        dialog.PaymentMethod,
+                        "SUBSCRIPTION_PURCHASE"
+                    );
+
+                    var invoice = await api.CreateInvoiceAsync(invoiceReq);
+                    confirmedInvoice = await api.ConfirmPaymentAsync(invoice.InvoiceCode);
+                }
+                else
+                {
+                    // Thanh toán tiền mặt CASH trực tiếp tại quầy
+                    var registeredMember = await api.RegisterMemberAsync(memberReq);
+
+                    var invoiceReq = new CreateInvoiceRequest(
+                        registeredMember.UserName,
+                        dialog.SelectedPackage.PlanId,
+                        dialog.PaymentMethod,
+                        "SUBSCRIPTION_PURCHASE"
+                    );
+
+                    var invoice = await api.CreateInvoiceAsync(invoiceReq);
+                    confirmedInvoice = await api.ConfirmPaymentAsync(invoice.InvoiceCode);
+                }
+
+                if (confirmedInvoice != null)
+                {
+                    // Allow previous ContentDialog to fully close in WinUI 3
+                    await Task.Delay(100);
+
+                    var receiptDialog = new ReceiptPreviewDialog(confirmedInvoice)
+                    {
+                        XamlRoot = this.XamlRoot
+                    };
+                    await receiptDialog.ShowAsync();
+                }
+
+                await ViewModel.LoadMembersAsync();
+            }
+            catch (Exception ex)
+            {
+                await Task.Delay(100);
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Thông báo",
+                    Content = $"Không thể hoàn tất đăng ký: {ex.Message}",
+                    CloseButtonText = "Đóng",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+                await ViewModel.LoadMembersAsync();
+            }
         }
     }
 }

@@ -120,6 +120,20 @@ public class VietQrAdapter : IVietQrAdapter
             return Task.FromResult(simulatedResult);
         }
 
+        if (_options.IsSandbox)
+        {
+            _logger.LogInformation("Chế độ Sandbox: Tự động đối soát thành công cho giao dịch {TransactionRef} với số tiền {PaidAmount} VNĐ",
+                transactionReference, expectedAmount);
+            var sandboxResult = new PaymentVerificationResult(
+                IsPaid: true,
+                TransactionReference: transactionReference,
+                PaidAmount: expectedAmount,
+                PaidAt: DateTime.UtcNow,
+                BankTransactionId: $"SANDBOX-TX-{DateTime.UtcNow:yyyyMMddHHmmss}"
+            );
+            return Task.FromResult(sandboxResult);
+        }
+
         _logger.LogInformation("Đối soát giao dịch {TransactionRef} qua cổng VietQR: Chưa nhận được giao dịch tiền về.", transactionReference);
 
         var pendingResult = new PaymentVerificationResult(

@@ -32,7 +32,7 @@ CREATE TABLE dbo.[User] (
     UserName VARCHAR(10) NOT NULL,
     RoleID VARCHAR(10) NOT NULL,
     FullName NVARCHAR(50) NULL,
-    Phone VARCHAR(10) NULL,
+    Phone VARCHAR(20) NULL,
     Email VARCHAR(255) NULL,
     PasswordHash VARCHAR(255) NULL,
     Gender TINYINT NULL,
@@ -102,9 +102,9 @@ CREATE TABLE dbo.MemberSubscription (
     AssignedPtId VARCHAR(10) NULL,
     PlanId VARCHAR(10) NOT NULL,
     PTSessionId VARCHAR(10) NULL,
-    CONSTRAINT PK_MemberSubscription PRIMARY KEY (SubscriptionId),
-    CONSTRAINT UQ_MemberSubscription_QrCode UNIQUE (QrCode)
+    CONSTRAINT PK_MemberSubscription PRIMARY KEY (SubscriptionId)
 );
+CREATE UNIQUE NONCLUSTERED INDEX UQ_MemberSubscription_QrCode ON dbo.MemberSubscription (QrCode) WHERE QrCode IS NOT NULL;
 GO
 
 -- 7. Bảng CheckInLog
