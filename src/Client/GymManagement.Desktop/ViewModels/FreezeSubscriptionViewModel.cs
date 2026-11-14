@@ -23,7 +23,7 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     private DateTimeOffset _freezeEndDate = DateTimeOffset.Now.AddDays(30);
 
     [ObservableProperty]
-    private string _reason = "Bảo lưu theo nhu cầu cá nhân";
+    private string _reason = string.Empty;
 
     [ObservableProperty]
     private DateTimeOffset _projectedEndDate = DateTimeOffset.Now.AddDays(90);
@@ -87,6 +87,18 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     [RelayCommand]
     private async Task ConfirmFreezeAsync()
     {
+        if (string.IsNullOrWhiteSpace(Reason))
+        {
+            Message = "Lý do bảo lưu là bắt buộc.";
+            return;
+        }
+
+        if (Reason.Trim().Length < 3)
+        {
+            Message = "Lý do bảo lưu phải có tối thiểu 3 ký tự.";
+            return;
+        }
+
         IsLoading = true;
         Message = null;
 

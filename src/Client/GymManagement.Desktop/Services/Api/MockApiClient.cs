@@ -433,6 +433,18 @@ public class MockApiClient : IApiClient
 
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new ValidationException("Lý do bảo lưu là bắt buộc.");
+        }
+
+        if (request.Reason.Trim().Length < 3)
+        {
+            throw new ValidationException("Lý do bảo lưu phải có tối thiểu 3 ký tự.");
+        }
+
         var member = _members.FirstOrDefault(m => m.UserName == request.SubscriptionId || m.UserName == "USR001");
         if (member == null)
         {

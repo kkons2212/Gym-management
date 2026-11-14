@@ -34,8 +34,19 @@
         </Grid>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="Lý do bảo lưu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
-            <TextBox x:Name="TxtReason" PlaceholderText="Nhập lý do (ví dụ: Công tác, nghỉ ốm...)" HorizontalAlignment="Stretch" />
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Lý do bảo lưu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" />
+                <TextBlock Text="*" Foreground="#EF4444" FontWeight="Bold" FontSize="13" />
+            </StackPanel>
+            <TextBox x:Name="TxtReason"
+                     PlaceholderText="Nhập lý do bảo lưu (ví dụ: Đi công tác, điều trị chấn thương...)"
+                     HorizontalAlignment="Stretch"
+                     TextChanged="OnReasonTextChanged" />
+            <TextBlock x:Name="TxtReasonError"
+                       Text="Vui lòng nhập lý do bảo lưu gói tập (tối thiểu 3 ký tự)."
+                       Foreground="#EF4444"
+                       FontSize="11"
+                       Visibility="Collapsed" />
         </StackPanel>
 
         <!-- Projected Calculation Box -->

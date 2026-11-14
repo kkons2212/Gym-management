@@ -475,6 +475,23 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
 * **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
 
+### 📌 [Task 2.4.1] Bắt Buộc Nhập Lý Do Khi Bảo Lưu Gói Tập Hội Viên (Force Freeze Reason)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `a487fc4` (nhánh `feat/us-02.4-force-freeze-subscription-reason`)
+* **Phân hệ nghiệp vụ liên quan:** US-02.4 (Bảo Lưu Gói Tập) - Quản lý Hội viên & Gói dịch vụ.
+* **Ranh giới thành phần:** `Client.Desktop` / `Dialogs` / `Services.Api` / `ViewModels`.
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Dialogs/FreezeSubscriptionDialog.xaml`: Bổ sung dấu sao đỏ bắt buộc (`*`), liên kết sự kiện `TextChanged="OnReasonTextChanged"` và thêm `TxtReasonError` hiển thị thông báo lỗi inline trực quan.
+  - `src/Client/GymManagement.Desktop/Dialogs/FreezeSubscriptionDialog.xaml.cs`: Nâng cấp `UpdateCalculations()` khóa nút xác nhận (`IsPrimaryButtonEnabled = false`) khi lý do rỗng hoặc dưới 3 ký tự; cập nhật theo dõi sự kiện thời gian thực.
+  - `src/Client/GymManagement.Desktop/Services/Api/MockApiClient.cs`: Kiểm tra tính hợp lệ của `request.Reason` quăng `ValidationException` đồng bộ với backend.
+  - `src/Client/GymManagement.Desktop/ViewModels/FreezeSubscriptionViewModel.cs`: Xóa bỏ chuỗi mặc định, chặn xác nhận khi lý do rỗng.
+  - `src/Client/GymManagement.Desktop/Views/MembersPage.xaml.cs`: Bổ sung khối `try/catch` hiển thị dialog thông báo lỗi thân thiện nếu thao tác bảo lưu thất bại.
+* **Kiểm thử tương ứng (Verification):**
+  - Unit Test Backend: `MemberServiceTests.FreezeSubscriptionAsync_WhenReasonIsEmpty_ThrowsValidationException` pass 100%.
+  - Biên dịch WinUI 3 Desktop: `dotnet build src/Client/GymManagement.Desktop/GymManagement.Desktop.csproj` thành công (0 errors, 0 warnings).
+  - Kiểm thử toàn hệ thống: 198/198 tests pass (100%).
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
+* **Bảng CSDL liên quan:** Không tác động lược đồ CSDL (`MemberSubscriptions`).
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>

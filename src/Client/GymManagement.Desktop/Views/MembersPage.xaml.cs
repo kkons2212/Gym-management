@@ -194,10 +194,24 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var api = App.GetService<IApiClient>();
-            var req = new FreezeSubscriptionRequest(member.UserId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
-            await api.FreezeSubscriptionAsync(req);
-            await ViewModel.LoadMembersAsync();
+            try
+            {
+                var api = App.GetService<IApiClient>();
+                var req = new FreezeSubscriptionRequest(member.UserId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
+                await api.FreezeSubscriptionAsync(req);
+                await ViewModel.LoadMembersAsync();
+            }
+            catch (Exception ex)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi bảo lưu gói tập",
+                    Content = ex.Message,
+                    CloseButtonText = "Đóng",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 
