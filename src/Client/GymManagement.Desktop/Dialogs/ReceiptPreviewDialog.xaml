@@ -14,29 +14,6 @@
             Width="340"
             HorizontalAlignment="Center">
         <StackPanel Spacing="10">
-            <!-- Brand & Gym Info -->
-            <StackPanel Spacing="2" HorizontalAlignment="Center">
-                <TextBlock Text="GYM MANAGEMENT SYSTEM"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           Foreground="#0F172A"
-                           HorizontalAlignment="Center" />
-                <TextBlock Text="123 Nguyễn Thị Minh Khai, Q.1, TP.HCM"
-                           FontSize="10"
-                           Foreground="#475569"
-                           HorizontalAlignment="Center" />
-                <TextBlock Text="Hotline: 1900 6868 • Website: gymsystem.vn"
-                           FontSize="10"
-                           Foreground="#475569"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
-
-            <!-- Dashed Line -->
-            <TextBlock Text="--------------------------------------------------"
-                       FontSize="11"
-                       Foreground="#94A3B8"
-                       HorizontalAlignment="Center" />
-
             <!-- Receipt Title -->
             <TextBlock Text="PHIẾU THU DỊCH VỤ"
                        FontWeight="Bold"

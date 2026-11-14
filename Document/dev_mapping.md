@@ -463,6 +463,18 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
 * **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
 
+### 📌 [Task 4.1.5] Tinh Gọn Phiếu Thu K80 (Loại Bỏ Header Thông Tin Thương Hiệu Cố Định)
+* **Ngày hoàn tất:** 14/11/2026 | **Commit:** `0cc73a2` (nhánh `refactor/receipt-preview-header`)
+* **Phân hệ nghiệp vụ liên quan:** US-04.1 (POS Bán Gói & In Phiếu Thu Lễ Tân) - Thu ngân & Quản trị Desktop.
+* **Ranh giới thành phần:** `Client.Desktop` / `Dialogs` / `ReceiptPreviewDialog`.
+* **Mã nguồn tạo / sửa:**
+  - `src/Client/GymManagement.Desktop/Dialogs/ReceiptPreviewDialog.xaml`: Loại bỏ khối thông tin phòng gym tĩnh (`GYM MANAGEMENT SYSTEM`, địa chỉ, hotline) và dòng phân cách đầu tiên, đưa tiêu đề `PHIẾU THU DỊCH VỤ` lên vị trí đỉnh của phiếu thu K80 giúp giao diện tinh gọn, thoáng đãng và chuẩn hóa.
+* **Kiểm thử tương ứng (Verification):**
+  - Biên dịch WinUI 3 Desktop: `dotnet build src/Client/GymManagement.Desktop/GymManagement.Desktop.csproj` thành công (0 errors, 0 warnings).
+  - Kiểm thử toàn hệ thống: 193/193 tests pass (100%).
+  - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
+* **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
+
 ### [MẪU ENTRY CHUẨN ĐỂ GHI NHẬN KHI HOÀN THÀNH TASK TIẾP THEO]
 ```markdown
 ### 📌 [Task X.Y] <Tên Task>
