@@ -27,6 +27,23 @@ public partial class InvoiceHistoryViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
+    public bool HasStatusMessage
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(StatusMessage))
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasStatusMessage));
+    }
+
     public InvoiceHistoryViewModel(IApiClient apiClient)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
@@ -51,7 +68,7 @@ public partial class InvoiceHistoryViewModel : ObservableObject
 
             foreach (var inv in list)
             {
-                if (SelectedStatus == "ALL" || inv.Status == SelectedStatus)
+                if (SelectedStatus == "ALL" || string.Equals(inv.Status, SelectedStatus, StringComparison.OrdinalIgnoreCase))
                 {
                     Invoices.Add(inv);
                 }
