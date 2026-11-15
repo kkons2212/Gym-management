@@ -261,3 +261,44 @@ public class DecimalToDoubleConverter : IValueConverter
         return 0m;
     }
 }
+public class StatusTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value == null) return string.Empty;
+        string status = value.ToString()?.ToUpperInvariant() ?? string.Empty;
+        return status switch
+        {
+            "ACTIVE" => "Đang Hoạt Động",
+            "PAID" => "Đã Thanh Toán",
+            "PENDING" => "Chờ Xử Lý",
+            "REFUNDED" => "Đã Hoàn Tiền",
+            "FROZEN" => "Đang Bảo Lưu",
+            "EXPIRED" => "Hết Hạn",
+            "CANCELLED" => "Đã Hủy",
+            "SUCCESS" => "Thành Công",
+            "FAILED" => "Thất Bại",
+            "DENIED" => "Từ Chối",
+            _ => status
+        };
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+
+public class PaymentMethodConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value == null) return string.Empty;
+        string method = value.ToString()?.ToUpperInvariant() ?? string.Empty;
+        return method switch
+        {
+            "CASH" => "Tiền Mặt",
+            "VIETQR" => "VIETQR",
+            "BANK_TRANSFER" => "Chuyển khoản",
+            "CREDIT_CARD" => "Thẻ tín dụng",
+            _ => method
+        };
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
