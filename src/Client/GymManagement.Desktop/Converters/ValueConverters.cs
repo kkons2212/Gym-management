@@ -236,3 +236,28 @@ public class TimeOnlyFormatterConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+public class DecimalToDoubleConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is decimal d)
+        {
+            return (double)d;
+        }
+        if (value is int i)
+        {
+            return (double)i;
+        }
+        return 0.0;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        if (value is double d)
+        {
+            return (decimal)d;
+        }
+        return 0m;
+    }
+}

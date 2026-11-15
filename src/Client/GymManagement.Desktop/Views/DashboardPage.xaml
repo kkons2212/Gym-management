@@ -17,6 +17,7 @@
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+            <converters:DecimalToDoubleConverter x:Key="DecimalToDoubleConverter" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -28,7 +29,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Row 0: Header & Action Buttons -->
         <Grid Grid.Row="0">
             <StackPanel Spacing="4">
                 <TextBlock Text="BÁO CÁO &amp; THỐNG KÊ DOANH THU BI"
@@ -78,7 +79,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- UC06: Bộ Lọc Thống Kê & Báo Cáo -->
+        <!-- Row 1: UC06 Bộ Lọc Thống Kê & Báo Cáo -->
         <Border Grid.Row="1"
                 Background="{StaticResource BgSurfaceBrush}"
                 BorderBrush="{StaticResource BorderSubtleBrush}"
@@ -201,8 +202,13 @@
             </StackPanel>
         </Border>
 
-        <!-- 4 Flat KPI Cards Grid -->
-        <Grid Grid.Row="2" ColumnSpacing="16">
+        <!-- ========================================================================= -->
+        <!-- Row 2: 4 Flat KPI Cards (Dynamic Switching per Report Category)             -->
+        <!-- ========================================================================= -->
+
+        <!-- 1. KPI Cards: Overview / Revenue -->
+        <Grid Grid.Row="2" ColumnSpacing="16"
+              Visibility="{x:Bind ViewModel.IsOverviewVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -210,23 +216,17 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Card 1: Revenue -->
-            <Border Grid.Column="0"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="12" Padding="20">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="DOANH THU HÔM NAY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <TextBlock Text="{x:Bind ViewModel.TodayRevenue, Mode=OneWay, Converter={StaticResource CurrencyFormatterConverter}}"
+                    <TextBlock Text="DOANH THU THỰC THU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalNetRevenue, Mode=OneWay, Converter={StaticResource CurrencyFormatterConverter}}"
                                FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusSuccessBrush}" />
-                    <TextBlock Text="Hóa đơn đã ghi nhận" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="Đã trừ khoản hoàn tiền" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                 </StackPanel>
             </Border>
 
-            <!-- Card 2: Check-ins -->
-            <Border Grid.Column="1"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="12" Padding="20">
                 <StackPanel Spacing="8">
                     <TextBlock Text="LƯỢT CHECK-IN HÔM NAY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -236,10 +236,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- Card 3: New Members -->
-            <Border Grid.Column="2"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="2" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="12" Padding="20">
                 <StackPanel Spacing="8">
                     <TextBlock Text="HỘI VIÊN MỚI THÁNG NÀY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -249,10 +246,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- Card 4: PT Sessions -->
-            <Border Grid.Column="3"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="3" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="12" Padding="20">
                 <StackPanel Spacing="8">
                     <TextBlock Text="BUỔI PT HOÀN THÀNH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -263,17 +257,185 @@
             </Border>
         </Grid>
 
-        <!-- BI Detail Row: Left = Peak Hours, Right = Package Revenue Distribution -->
-        <Grid Grid.Row="3" ColumnSpacing="20">
+        <!-- 2. KPI Cards: Member Fluctuation -->
+        <Grid Grid.Row="2" ColumnSpacing="16"
+              Visibility="{x:Bind ViewModel.IsMemberVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỔNG HỘI VIÊN HOẠT ĐỘNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalActiveMembers, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusSuccessBrush}" />
+                    <TextBlock Text="Tài khoản đang có gói hiệu lực" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="HỘI VIÊN MỚI ĐĂNG KÝ" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.NewMemberSignups, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+                    <TextBlock Text="Gia nhập trong khoảng thời gian" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="LƯỢT GIA HẠN GÓI TẬP" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.MemberRenewals, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" />
+                    <TextBlock Text="Tái đăng ký hợp đồng" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỶ LỆ DUY TRÌ (RETENTION)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.MemberRetentionRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" />
+                        <TextBlock Text="%" FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                    </StackPanel>
+                    <TextBlock Text="Hội viên tiếp tục gắn bó" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 3. KPI Cards: CheckIn Traffic -->
+        <Grid Grid.Row="2" ColumnSpacing="16"
+              Visibility="{x:Bind ViewModel.IsCheckInVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỔNG LƯỢT CHECK-IN" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalCheckInTraffic, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+                    <TextBlock Text="Quét mã qua cổng Turnstile" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="CHECK-IN THÀNH CÔNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.SuccessfulCheckInCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusSuccessBrush}" />
+                    <TextBlock Text="Mở cửa thành công" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="LƯỢT BỊ TỪ CHỐI" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.DeniedCheckInCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusDangerBrush}" />
+                    <TextBlock Text="Hết hạn, sai mã hoặc bị chặn" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỶ LỆ THÀNH CÔNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.CheckInSuccessRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" />
+                        <TextBlock Text="%" FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                    </StackPanel>
+                    <TextBlock Text="Tỷ lệ hợp lệ qua cổng" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 4. KPI Cards: PT Performance -->
+        <Grid Grid.Row="2" ColumnSpacing="16"
+              Visibility="{x:Bind ViewModel.IsPtVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỔNG CA PT ĐÃ ĐẶT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalPtSessionsScheduled, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+                    <TextBlock Text="Lịch dạy được học viên đặt" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="CA HOÀN THÀNH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalPtSessionsCompleted, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                               FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusSuccessBrush}" />
+                    <TextBlock Text="Đã hoàn tất tập luyện" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="TỶ LỆ HOÀN THÀNH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.PtCompletionRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" />
+                        <TextBlock Text="%" FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                    </StackPanel>
+                    <TextBlock Text="Tỷ lệ ca dạy không bị hủy" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="ĐIỂM ĐÁNH GIÁ TRUNG BÌNH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{x:Bind ViewModel.PtAverageRating, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" />
+                        <FontIcon Glyph="&#xE735;" FontSize="20" Foreground="{StaticResource StatusWarningBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Đánh giá từ hội viên" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ========================================================================= -->
+        <!-- Row 3: Detail Content Area (Dynamic Views per Report Category)             -->
+        <!-- ========================================================================= -->
+
+        <!-- 1. Detail View: Overview / Revenue -->
+        <Grid Grid.Row="3" ColumnSpacing="20"
+              Visibility="{x:Bind ViewModel.IsOverviewVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.1*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!-- Left: Peak Hour Traffic Breakdown -->
-            <Border Grid.Column="0"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="14" Padding="20">
                 <Grid RowSpacing="14">
                     <Grid.RowDefinitions>
@@ -319,9 +481,7 @@
             </Border>
 
             <!-- Right: Revenue Distribution Breakdown by Package & Payment Method -->
-            <Border Grid.Column="1"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="14" Padding="20">
                 <Grid RowSpacing="14">
                     <Grid.RowDefinitions>
@@ -337,32 +497,40 @@
 
                     <!-- Package Breakdown List -->
                     <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.PackageRevenues}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="dto:PackageRevenueDto">
-                                    <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
-                                            BorderThickness="1" CornerRadius="8" Margin="0,4" Padding="12">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Spacing="2">
-                                                <TextBlock Text="{x:Bind PlanName}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="Đã đăng ký:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                    <TextBlock Text="{x:Bind SubscriptionCount}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                                    <TextBlock Text="lượt" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <StackPanel>
+                            <!-- Empty State UC06 A5.1 -->
+                            <TextBlock Text="Không có dữ liệu phù hợp."
+                                       Visibility="{x:Bind ViewModel.HasRevenueData, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,30" />
+
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.PackageRevenues}"
+                                          Visibility="{x:Bind ViewModel.HasRevenueData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:PackageRevenueDto">
+                                        <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                BorderThickness="1" CornerRadius="8" Margin="0,4" Padding="12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="{x:Bind PlanName}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="Đã đăng ký:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                        <TextBlock Text="{x:Bind SubscriptionCount, Converter={StaticResource StringFormatConverter}}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                                        <TextBlock Text="lượt" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    </StackPanel>
                                                 </StackPanel>
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{x:Bind Amount, Converter={StaticResource CurrencyFormatterConverter}}"
-                                                       FontWeight="Bold" FontSize="14" Foreground="{StaticResource StatusSuccessBrush}"
-                                                       VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                                <TextBlock Grid.Column="1" Text="{x:Bind Amount, Converter={StaticResource CurrencyFormatterConverter}}"
+                                                           FontWeight="Bold" FontSize="14" Foreground="{StaticResource StatusSuccessBrush}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </ScrollViewer>
 
                     <!-- Payment Methods Summary -->
@@ -381,7 +549,7 @@
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
                                                 <TextBlock Text="{x:Bind PaymentMethod}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
                                                 <TextBlock Text="(" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Text="{x:Bind Percentage}" FontSize="11" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                                <TextBlock Text="{x:Bind Percentage, Converter={StaticResource StringFormatConverter}}" FontSize="11" Foreground="{StaticResource AccentPrimaryBrush}" />
                                                 <TextBlock Text="%)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{x:Bind Amount, Converter={StaticResource CurrencyFormatterConverter}}"
@@ -392,6 +560,339 @@
                             </ItemsControl>
                         </StackPanel>
                     </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 2. Detail View: Member Fluctuation -->
+        <Grid Grid.Row="3" ColumnSpacing="20"
+              Visibility="{x:Bind ViewModel.IsMemberVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Member Distribution by Package -->
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="14" Padding="20">
+                <Grid RowSpacing="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4">
+                        <TextBlock Text="PHÂN BỔ HỘI VIÊN THEO GÓI TẬP" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Số lượng và tỷ trọng hội viên theo các gói tập đang sử dụng" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <StackPanel>
+                            <!-- Empty State UC06 A5.1 -->
+                            <TextBlock Text="Không có dữ liệu phù hợp."
+                                       Visibility="{x:Bind ViewModel.HasMemberData, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,40" />
+
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.MemberPackageDistributions}"
+                                          Visibility="{x:Bind ViewModel.HasMemberData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:PackageDistributionDto">
+                                        <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                BorderThickness="1" CornerRadius="8" Margin="0,5" Padding="14">
+                                            <Grid RowSpacing="8">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid Grid.Row="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{x:Bind PlanName}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{x:Bind ActiveCount, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource StatusSuccessBrush}" />
+                                                        <TextBlock Text="hội viên" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="(" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{x:Bind Percentage, Converter={StaticResource StringFormatConverter}}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="%)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Grid>
+                                                <Border Grid.Row="1" Height="8" Background="#1E293B" CornerRadius="4">
+                                                    <ProgressBar Value="{x:Bind Percentage, Converter={StaticResource DecimalToDoubleConverter}}" Maximum="100"
+                                                                 Foreground="{StaticResource AccentPrimaryBrush}" Background="Transparent" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right: Member Status Breakdown -->
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="14" Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="TRẠNG THÁI HỘI VIÊN" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Tổng hợp phân loại tài khoản hội viên toàn hệ thống" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- Active -->
+                    <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Đang Hoạt Động (Active)" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Hội viên có quyền check-in và tập luyện" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.TotalActiveMembers, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                       FontWeight="Bold" FontSize="16" Foreground="{StaticResource StatusSuccessBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Frozen -->
+                    <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Đang Đóng Băng (Frozen)" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Hội viên tạm dừng gói theo yêu cầu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.FrozenMemberCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                       FontWeight="Bold" FontSize="16" Foreground="{StaticResource StatusWarningBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Expired -->
+                    <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Đã Hết Hạn (Expired)" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Chưa gia hạn gói tập sau kỳ hạn" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ExpiredMemberCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                       FontWeight="Bold" FontSize="16" Foreground="{StaticResource StatusDangerBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Cancelled -->
+                    <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Đã Hủy Gói (Cancelled)" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Hợp đồng bị hủy hoặc hoàn tiền" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.CancelledMemberCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                       FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 3. Detail View: CheckIn Traffic -->
+        <Grid Grid.Row="3" ColumnSpacing="20"
+              Visibility="{x:Bind ViewModel.IsCheckInVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.1*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: CheckIn 24 Hourly Distribution -->
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="14" Padding="20">
+                <Grid RowSpacing="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4">
+                        <TextBlock Text="LƯU LƯỢNG CHECK-IN 24 KHUNG GIỜ" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Mật độ quét mã hội viên theo từng khung giờ trong ngày" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.PeakHours}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="dto:PeakHourTrafficDto">
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="70" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="50" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Text="{x:Bind Hour, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                                   FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+
+                                        <Border Grid.Column="1" Height="16" Background="#0F172A" CornerRadius="4" HorizontalAlignment="Stretch">
+                                            <ProgressBar Value="{x:Bind CheckInCount, Mode=OneWay}" Maximum="60"
+                                                         Foreground="{StaticResource AccentPrimaryBrush}" Background="Transparent"
+                                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                        </Border>
+
+                                        <TextBlock Grid.Column="2" Text="{x:Bind CheckInCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
+                                                   FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right: CheckIn Denial Reasons -->
+            <Border Grid.Column="1" Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="14" Padding="20">
+                <Grid RowSpacing="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4">
+                        <TextBlock Text="LÝ DO TỪ CHỐI CHECK-IN HÀNG ĐẦU" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Thống kê các lượt không mở được cổng Turnstile theo nguyên nhân" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <StackPanel>
+                            <!-- Empty State UC06 A5.1 -->
+                            <TextBlock Text="Không có dữ liệu phù hợp."
+                                       Visibility="{x:Bind ViewModel.HasCheckInData, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,40" />
+
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.CheckInDenialReasons}"
+                                          Visibility="{x:Bind ViewModel.HasCheckInData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:DenialReasonDto">
+                                        <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                BorderThickness="1" CornerRadius="8" Margin="0,5" Padding="14">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="{x:Bind Reason}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource StatusDangerBrush}" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="Tỷ trọng:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                        <TextBlock Text="{x:Bind Percentage, Converter={StaticResource StringFormatConverter}}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource StatusWarningBrush}" />
+                                                        <TextBlock Text="%" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                    <TextBlock Text="{x:Bind Count, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock Text="lượt" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 4. Detail View: PT Performance -->
+        <Grid Grid.Row="3"
+              Visibility="{x:Bind ViewModel.IsPtVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="{StaticResource BgSurfaceBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="14" Padding="20">
+                <Grid RowSpacing="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4">
+                        <TextBlock Text="BẢNG ĐÁNH GIÁ &amp; HIỆU SUẤT HUẤN LUYỆN VIÊN (PT)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Thống kê số ca hoàn thành, ca hủy, học viên phụ trách và điểm đánh giá của từng HLV" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <StackPanel>
+                            <!-- Empty State UC06 A5.1 -->
+                            <TextBlock Text="Không có dữ liệu phù hợp."
+                                       Visibility="{x:Bind ViewModel.HasPtData, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,50" />
+
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.TrainerPerformances}"
+                                          Visibility="{x:Bind ViewModel.HasPtData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:PtTrainerPerformanceDto">
+                                        <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                BorderThickness="1" CornerRadius="10" Margin="0,5" Padding="16">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="2*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="1.2*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Trainer Info -->
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="{x:Bind TrainerName}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock Text="{x:Bind TrainerId}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                </StackPanel>
+
+                                                <!-- Completed Sessions -->
+                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                    <TextBlock Text="Ca hoàn thành" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Text="{x:Bind CompletedSessions, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource StatusSuccessBrush}" />
+                                                </StackPanel>
+
+                                                <!-- Cancelled Sessions -->
+                                                <StackPanel Grid.Column="2" Spacing="2">
+                                                    <TextBlock Text="Ca đã hủy" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Text="{x:Bind CancelledSessions, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource StatusDangerBrush}" />
+                                                </StackPanel>
+
+                                                <!-- Students Count -->
+                                                <StackPanel Grid.Column="3" Spacing="2">
+                                                    <TextBlock Text="Học viên kèm" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Text="{x:Bind AssignedStudentsCount, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                                </StackPanel>
+
+                                                <!-- Rating -->
+                                                <StackPanel Grid.Column="4" Spacing="2" HorizontalAlignment="Right">
+                                                    <TextBlock Text="Đánh giá TB" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="{x:Bind AverageRating, Converter={StaticResource StringFormatConverter}}" FontWeight="Bold" FontSize="15" Foreground="{StaticResource StatusWarningBrush}" />
+                                                        <FontIcon Glyph="&#xE735;" FontSize="14" Foreground="{StaticResource StatusWarningBrush}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>

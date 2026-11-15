@@ -111,6 +111,90 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
+    public bool IsOverviewVisible
+    {
+        get
+        {
+            if (SelectedReportTypeOption == null)
+            {
+                return true;
+            }
+            if (SelectedReportTypeOption.Key == "OVERVIEW" || SelectedReportTypeOption.Key == "REVENUE")
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public bool IsMemberVisible
+    {
+        get
+        {
+            if (SelectedReportTypeOption != null && SelectedReportTypeOption.Key == "MEMBER")
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public bool IsCheckInVisible
+    {
+        get
+        {
+            if (SelectedReportTypeOption != null && SelectedReportTypeOption.Key == "CHECKIN")
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public bool IsPtVisible
+    {
+        get
+        {
+            if (SelectedReportTypeOption != null && SelectedReportTypeOption.Key == "PT")
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public bool HasMemberData
+    {
+        get
+        {
+            return MemberPackageDistributions.Count > 0;
+        }
+    }
+
+    public bool HasCheckInData
+    {
+        get
+        {
+            return PeakHours.Count > 0 || CheckInDenialReasons.Count > 0;
+        }
+    }
+
+    public bool HasPtData
+    {
+        get
+        {
+            return TrainerPerformances.Count > 0;
+        }
+    }
+
+    public bool HasRevenueData
+    {
+        get
+        {
+            return PackageRevenues.Count > 0;
+        }
+    }
+
     [ObservableProperty]
     private string? _errorMessage;
 
@@ -143,6 +227,15 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private decimal _memberRetentionRate;
 
+    [ObservableProperty]
+    private int _frozenMemberCount;
+
+    [ObservableProperty]
+    private int _cancelledMemberCount;
+
+    [ObservableProperty]
+    private int _expiredMemberCount;
+
     // CheckIn KPIs
     [ObservableProperty]
     private int _totalCheckInTraffic;
@@ -162,6 +255,9 @@ public partial class DashboardViewModel : ObservableObject
 
     [ObservableProperty]
     private int _totalPtSessionsCompleted;
+
+    [ObservableProperty]
+    private int _totalSessionsCancelled;
 
     [ObservableProperty]
     private decimal _ptCompletionRate;
@@ -211,6 +307,10 @@ public partial class DashboardViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(FilterSummaryText));
         OnPropertyChanged(nameof(ActiveReportTypeKey));
+        OnPropertyChanged(nameof(IsOverviewVisible));
+        OnPropertyChanged(nameof(IsMemberVisible));
+        OnPropertyChanged(nameof(IsCheckInVisible));
+        OnPropertyChanged(nameof(IsPtVisible));
         _ = LoadDashboardAsync();
     }
 
@@ -377,6 +477,9 @@ public partial class DashboardViewModel : ObservableObject
             NewMemberSignups = memberReport.NewMembers;
             MemberRenewals = memberReport.Renewals;
             MemberRetentionRate = memberReport.RetentionRatePercentage;
+            FrozenMemberCount = memberReport.FrozenCount;
+            CancelledMemberCount = memberReport.CancelledCount;
+            ExpiredMemberCount = memberReport.ExpiredCount;
 
             MemberPackageDistributions.Clear();
             foreach (var dist in memberReport.PackageDistribution)
@@ -401,6 +504,7 @@ public partial class DashboardViewModel : ObservableObject
             var ptReport = await _apiClient.GetPtPerformanceReportAsync(fromDate, toDate);
             TotalPtSessionsScheduled = ptReport.TotalSessionsScheduled;
             TotalPtSessionsCompleted = ptReport.TotalSessionsCompleted;
+            TotalSessionsCancelled = ptReport.TotalSessionsCancelled;
             PtCompletionRate = ptReport.CompletionRatePercentage;
             PtAverageRating = ptReport.OverallAverageRating;
 
@@ -409,6 +513,11 @@ public partial class DashboardViewModel : ObservableObject
             {
                 TrainerPerformances.Add(trainer);
             }
+
+            OnPropertyChanged(nameof(HasMemberData));
+            OnPropertyChanged(nameof(HasCheckInData));
+            OnPropertyChanged(nameof(HasPtData));
+            OnPropertyChanged(nameof(HasRevenueData));
         }
         catch (Exception ex)
         {
