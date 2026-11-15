@@ -193,8 +193,7 @@ public sealed class HttpApiClient : IApiClient
         ArgumentNullException.ThrowIfNull(request);
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/members/cancel", request);
-        var result = await HandleResponseAsync<SubscriptionDetailResponse>(response);
-        return result != null;
+        return await HandleResponseAsync<bool>(response);
     }
 
     public async Task<InBodyMetricDto> RecordInBodyMetricAsync(InBodyEntryRequest request)

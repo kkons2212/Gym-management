@@ -299,6 +299,30 @@ public class MockApiClient : IApiClient
 
     public Task<bool> CancelSubscriptionAsync(CancelSubscriptionRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new ValidationException("Lý do hủy gói tập là bắt buộc.");
+        }
+
+        var member = _members.FirstOrDefault(m =>
+            m.SubscriptionId == request.SubscriptionId ||
+            m.UserName == request.SubscriptionId);
+
+        if (member != null)
+        {
+            var index = _members.FindIndex(m => m.UserName == member.UserName);
+            _members[index] = member with
+            {
+                Status = "CANCELLED",
+                ActivePlanName = null,
+                EndDate = null,
+                RemainingCheckInSessions = 0,
+                RemainingPtSessions = 0
+            };
+        }
+
         return Task.FromResult(true);
     }
 

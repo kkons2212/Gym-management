@@ -177,15 +177,29 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var api = App.GetService<IApiClient>();
-            string targetSubId = member.UserName;
-            if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+            try
             {
-                targetSubId = member.SubscriptionId;
+                var api = App.GetService<IApiClient>();
+                string targetSubId = member.UserName;
+                if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                {
+                    targetSubId = member.SubscriptionId;
+                }
+                var req = new CancelSubscriptionRequest(targetSubId, dialog.Reason, "admin");
+                await api.CancelSubscriptionAsync(req);
+                await ViewModel.LoadMembersAsync();
             }
-            var req = new CancelSubscriptionRequest(targetSubId, dialog.Reason, "admin");
-            await api.CancelSubscriptionAsync(req);
-            await ViewModel.LoadMembersAsync();
+            catch (Exception ex)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi hủy gói tập",
+                    Content = ex.Message,
+                    CloseButtonText = "Đóng",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 

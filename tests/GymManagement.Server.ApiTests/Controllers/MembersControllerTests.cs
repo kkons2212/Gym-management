@@ -109,4 +109,24 @@ public sealed class MembersControllerTests
         result.FreezeEndDate.Should().Be(new DateOnly(2026, 11, 29));
         result.Reason.Should().Be("Đi công tác");
     }
+
+    [Fact]
+    public void CancelSubscriptionResponse_CanDeserializeAsApiResponseBool()
+    {
+        var json = """
+        {
+            "success": true,
+            "message": "Hủy gói tập thành công.",
+            "data": true
+        }
+        """;
+
+        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<bool>>(json, options);
+
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Data.Should().BeTrue();
+        result.Message.Should().Be("Hủy gói tập thành công.");
+    }
 }

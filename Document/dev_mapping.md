@@ -476,7 +476,7 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
 * **Bảng CSDL liên quan:** Không tác động lược đồ CSDL.
 
 ### 📌 [Task 2.4.1] Bắt Buộc Nhập Lý Do Khi Bảo Lưu Gói Tập Hội Viên (Force Freeze Reason)
-* **Ngày hoàn tất:** 15/11/2026 | **Commit:** `c036268` (nhánh `feat/us-02.4-force-freeze-subscription-reason`)
+* **Ngày hoàn tất:** 15/11/2026 | **Commit:** `c036268`, `3a55103`, `592bcbb` (nhánh `feat/us-02.4-force-freeze-subscription-reason`)
 * **Phân hệ nghiệp vụ liên quan:** US-02.4 (Bảo Lưu Gói Tập) - Quản lý Hội viên & Gói dịch vụ.
 * **Ranh giới thành phần:** `Client.Desktop` / `Dialogs` / `Services.Api` / `ViewModels` / `Server.Core` / `Server.ApiTests`.
 * **Mã nguồn tạo / sửa:**
@@ -488,17 +488,17 @@ Tra cứu nhanh toàn bộ task đã hoàn thành theo hàng ngang:
   - `src/Server/GymManagement.Server.Core/DTOs/Members/MemberDtos.cs`: Thêm thuộc tính `[method: JsonConstructor]` vào record `FreezeSubscriptionRequest`, bổ sung constructor không tham số, và bổ sung trường `SubscriptionId` cho `MemberDto`.
   - `src/Server/GymManagement.Server.Core/Services/MemberService.cs`: Nâng cấp `SearchMembersAsync`, `GetActiveSubscriptionAsync`, `GetMemberProfileAsync`, `UpdateMemberAsync` hỗ trợ hợp đồng `FROZEN`, giữ nguyên vẹn tên gói tập, hạn sử dụng mới đã kéo dài, số buổi tập và phản ánh `Status = "FROZEN"` lên kết quả tìm kiếm. Bổ sung hàm trợ giúp `FindSubscriptionByIdOrUserAsync` phân giải linh hoạt theo `SubscriptionId` hoặc `UserName`.
   - `src/Server/GymManagement.Server.Api/Controllers/MembersController.cs`: Bổ sung route alias (`[HttpPost("{userName}/freeze")]`, `renew`, `upgrade`, `cancel`) hỗ trợ gọi API linh hoạt cả 2 định dạng route.
-  - `src/Client/GymManagement.Desktop/Services/Api/HttpApiClient.cs`: Ánh xạ `ActiveSubscriptionId` sang `MemberDto.SubscriptionId`.
-  - `src/Client/GymManagement.Desktop/Services/Api/MockApiClient.cs`: Cập nhật mock data và logic tìm kiếm hỗ trợ cả `SubscriptionId` lẫn `UserName`.
-  - `src/Client/GymManagement.Desktop/Views/MembersPage.xaml.cs`: Bổ sung kiểm tra sớm (Flat Guard Clause) khi hội viên đã ở trạng thái `FROZEN` để thông báo rõ ràng cho Admin, tránh gửi request trùng lặp. Truyền ưu tiên `SubscriptionId` thật sang các DTO yêu cầu vòng đời gói tập.
+  - `src/Client/GymManagement.Desktop/Services/Api/HttpApiClient.cs`: Ánh xạ `ActiveSubscriptionId` sang `MemberDto.SubscriptionId`; sửa hàm `CancelSubscriptionAsync` gọi `HandleResponseAsync<bool>` (thay vì `<SubscriptionDetailResponse>`) tương thích hoàn toàn với payload backend `ApiResponse<bool>` (`{"success":true,"data":true}`).
+  - `src/Client/GymManagement.Desktop/Services/Api/MockApiClient.cs`: Cập nhật mock data và logic tìm kiếm hỗ trợ cả `SubscriptionId` lẫn `UserName`; cập nhật `CancelSubscriptionAsync` đặt trạng thái gói tập về `CANCELLED` và làm sạch thông tin gói tập đang hoạt động.
+  - `src/Client/GymManagement.Desktop/Views/MembersPage.xaml.cs`: Bổ sung kiểm tra sớm (Flat Guard Clause) khi hội viên đã ở trạng thái `FROZEN` để thông báo rõ ràng cho Admin, tránh gửi request trùng lặp. Truyền ưu tiên `SubscriptionId` thật sang các DTO yêu cầu vòng đời gói tập. Bọc khối `try/catch` hiển thị `ContentDialog` thông báo lỗi thân thiện khi hủy gói tập (`OnCancelSubscriptionClicked`).
   - `src/Client/GymManagement.Desktop/ViewModels/FreezeSubscriptionViewModel.cs`: Tiếp nhận `SubscriptionId` và truyền vào `FreezeSubscriptionRequest`.
-  - `tests/GymManagement.Server.ApiTests/Controllers/MembersControllerTests.cs`: Bổ sung unit test `FreezeSubscriptionRequest_CanDeserializeFromJson` kiểm chứng deserialization System.Text.Json.
+  - `tests/GymManagement.Server.ApiTests/Controllers/MembersControllerTests.cs`: Bổ sung unit test `FreezeSubscriptionRequest_CanDeserializeFromJson` và `CancelSubscriptionResponse_CanDeserializeAsApiResponseBool` kiểm chứng deserialization System.Text.Json cho cả request và response.
   - `tests/GymManagement.Server.UnitTests/Services/MemberServiceTests.cs`: Bổ sung unit test kiểm tra `FreezeSubscriptionAsync` và `CancelSubscriptionAsync` giải quyết chuẩn xác cả theo `SubscriptionId` lẫn fallback `UserName`, cùng 3 tests kiểm tra tra cứu khi gói ở trạng thái `FROZEN`.
 * **Kiểm thử tương ứng (Verification):**
   - Unit Test Backend: `MemberServiceTests` (bao gồm các kịch bản `FROZEN`) pass 100%.
-  - Unit Test Controller/API: `MembersControllerTests.FreezeSubscriptionRequest_CanDeserializeFromJson` pass 100%.
+  - Unit Test Controller/API: `MembersControllerTests` pass 100% (34/34 tests).
   - Biên dịch WinUI 3 Desktop: `dotnet build src/Client/GymManagement.Desktop/GymManagement.Desktop.csproj` thành công (0 errors, 0 warnings).
-  - Kiểm thử toàn hệ thống: 205/205 tests pass (100%).
+  - Kiểm thử toàn hệ thống: 206/206 tests pass (100%).
   - Tuân thủ 100% [`dev_rule.md`](dev_rule.md) (0 toán tử 3 ngôi `? :`, flat guard clauses, 100% tiếng Việt).
 * **Bảng CSDL liên quan:** Không tác động lược đồ CSDL (`MemberSubscriptions`).
 
