@@ -1,7 +1,7 @@
 -- ====================================================================
 -- HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
 -- SCRIPT KHỞI TẠO CƠ SỞ DỮ LIỆU DOCKER SQL SERVER (INIT DOCKER DB)
--- Chuẩn hóa: 9 bảng vật lý DDL + Ràng buộc Foreign Keys + Dữ liệu nền tảng
+-- Chuẩn hóa: 10 bảng vật lý DDL + Ràng buộc Foreign Keys + Dữ liệu nền tảng
 -- ====================================================================
 
 -- 1. TẠO CƠ SỞ DỮ LIỆU NẾU CHƯA TỒN TẠI
@@ -182,6 +182,21 @@ BEGIN
 END
 GO
 
+-- 2.10. Bảng Notification (Hệ thống thông báo trong ứng dụng)
+IF OBJECT_ID('dbo.Notification', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Notification (
+        NotificationId VARCHAR(10) NOT NULL,
+        Title NVARCHAR(255) NOT NULL,
+        Message NVARCHAR(2000) NOT NULL,
+        IsRead BIT NOT NULL CONSTRAINT DF_Notification_IsRead DEFAULT (0),
+        CreatedAt DATE NOT NULL CONSTRAINT DF_Notification_CreatedAt DEFAULT (CAST(GETDATE() AS DATE)),
+        UserName VARCHAR(10) NOT NULL,
+        CONSTRAINT PK_Notification PRIMARY KEY (NotificationId)
+    );
+END
+GO
+
 -- 3. THIẾT LẬP RÀNG BUỘC KHÓA NGOẠI (FOREIGN KEYS) NẾU CHƯA CÓ
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_User_Role')
@@ -240,6 +255,12 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_RecordedByPt')
     ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserName);
+
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Notification_User')
+    ALTER TABLE dbo.Notification ADD CONSTRAINT FK_Notification_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON DELETE CASCADE;
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Notification_UserName_IsRead' AND object_id = OBJECT_ID('dbo.Notification'))
+    CREATE NONCLUSTERED INDEX IX_Notification_UserName_IsRead ON dbo.Notification (UserName, IsRead);
 GO
 
 -- 4. NẠP DỮ LIỆU NỀN TẢNG (SEED DATA) & CẬP NHẬT UNICODE (NVARCHAR)

@@ -92,7 +92,7 @@
   * Cho phép nhập: Họ tên, Số điện thoại, CCCD, Email, Ngày sinh, Ngày bắt đầu hiệu lực và chọn Gói tập từ danh mục.
   * Kiểm tra trùng lặp: Nếu SĐT hoặc CCCD đã tồn tại trong CSDL, hệ thống ngăn chặn và hiển thị cảnh báo: *"Hội viên đã tồn tại trong hệ thống"* kèm nút *"Xem hồ sơ cũ"*.
   * Sau khi xác nhận thanh toán, hệ thống lưu hồ sơ, tạo gói tập trạng thái `ACTIVE`, tự động tính ngày hết hạn và sinh mã định danh hội viên duy nhất (kèm mã QR).
-  * Kích hoạt tiến trình ngầm gửi Email/SMS thông báo chào mừng kèm thông tin gói tập cho Hội viên.
+  * Kích hoạt tạo thông báo chào mừng kèm thông tin gói tập trong ứng dụng (In-App Notification) cho Hội viên.
 * **Danh sách task:**
   * **Task 2.1.1:** *(Backend)* Xây dựng API tiếp nhận đăng ký hội viên, tạo transaction kích hoạt gói tập và sinh mã QR code định danh.
   * **Task 2.1.2:** *(Frontend)* Thiết kế Wizard biểu mẫu đăng ký hội viên 2 bước (Thông tin cá nhân -> Chọn gói & Thanh toán).
@@ -163,9 +163,9 @@
 * **Tiêu chí chấp nhận:**
   * Cho phép chọn hội viên, thêm nhiều mục thanh toán (Gói tập, Buổi tập PT, Phụ kiện), tự động áp dụng mã ưu đãi/chiết khấu và tính thuế VAT (nếu có).
   * Hỗ trợ 3 phương thức thanh toán: Tiền mặt, Chuyển khoản VietQR (hiển thị mã QR động có sẵn số tiền), và Thẻ POS.
-  * Sau khi bấm "Xác nhận thanh toán", hóa đơn chuyển sang trạng thái `PAID`, kích hoạt gói dịch vụ tương ứng và tự động gửi hóa đơn điện tử qua Email cho hội viên.
+  * Sau khi bấm "Xác nhận thanh toán", hóa đơn chuyển sang trạng thái `PAID`, kích hoạt gói dịch vụ tương ứng và tự động gửi thông báo hóa đơn điện tử trong ứng dụng (In-App Notification) cho hội viên.
 * **Danh sách task:**
-  * **Task 5.1.1:** *(Backend)* Xây dựng API tạo hóa đơn `/api/v1/invoices`, tích hợp thư viện tạo mã VietQR chuẩn NAPAS và gửi email hóa đơn.
+  * **Task 5.1.1:** *(Backend)* Xây dựng API tạo hóa đơn `/api/v1/invoices`, tích hợp thư viện tạo mã VietQR chuẩn NAPAS và tạo thông báo hóa đơn trong ứng dụng.
   * **Task 5.1.2:** *(Frontend)* Xây dựng giao diện thu ngân POS tại quầy: chọn sản phẩm, tính tiền thối, hiển thị mã QR thanh toán.
   * **Task 5.1.3:** *(Database)* Thiết kế bảng `INVOICES` và `INVOICE_DETAILS` với đầy đủ các trường đơn giá, chiết khấu, tổng tiền và phương thức thanh toán.
 

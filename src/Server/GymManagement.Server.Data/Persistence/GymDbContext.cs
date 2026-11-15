@@ -10,7 +10,7 @@ namespace GymManagement.Server.Data.Persistence;
 public class GymDbContext : DbContext
 {
     // ====================================================================
-    // 1. DBSETS CHO 9 THỰC THỂ CSDL VẬT LÝ
+    // 1. DBSETS CHO 10 THỰC THỂ CSDL VẬT LÝ
     // ====================================================================
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
@@ -21,6 +21,7 @@ public class GymDbContext : DbContext
     public DbSet<CheckInLog> CheckInLogs => Set<CheckInLog>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<MemberBodyMetric> MemberBodyMetrics => Set<MemberBodyMetric>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     // ====================================================================
     // 2. CONSTRUCTOR

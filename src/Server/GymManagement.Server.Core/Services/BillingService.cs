@@ -701,6 +701,39 @@ public sealed class BillingService : IBillingService
         DateTime paidAt,
         CancellationToken cancellationToken)
     {
+        // 1. Tạo thông báo trong ứng dụng (In-App Notification)
+        try
+        {
+            string planName = context.Plan.PlanId;
+            if (!string.IsNullOrWhiteSpace(context.Plan.Name))
+            {
+                planName = context.Plan.Name;
+            }
+
+            var appNotification = new Notification
+            {
+                NotificationId = NewId(),
+                Title = "Thanh toán thành công",
+                Message = $"Hóa đơn {invoice.InvoiceCode} cho gói tập {planName} trị giá {invoice.TotalAmount:N0} đ đã được thanh toán thành công.",
+                IsRead = false,
+                CreatedAt = DateOnly.FromDateTime(paidAt),
+                UserName = context.User.UserName
+            };
+
+            await _unitOfWork.Repository<Notification>().AddAsync(appNotification, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Đã tạo thông báo hóa đơn {InvoiceCode} trong ứng dụng cho {UserName}.",
+                invoice.InvoiceCode,
+                context.User.UserName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Tạo thông báo In-App cho hóa đơn {InvoiceCode} thất bại.", invoice.InvoiceCode);
+        }
+
+        // 2. Gửi email biên lai (nếu hội viên có email)
         if (string.IsNullOrWhiteSpace(context.User.Email))
         {
             _logger.LogWarning(
@@ -712,11 +745,17 @@ public sealed class BillingService : IBillingService
 
         try
         {
+            string planName = context.Plan.PlanId;
+            if (!string.IsNullOrWhiteSpace(context.Plan.Name))
+            {
+                planName = context.Plan.Name;
+            }
+
             NotificationResult result = await _notification.SendInvoiceReceiptAsync(
                 context.User.Email,
                 invoice.InvoiceCode,
                 invoice.TotalAmount,
-                context.Plan.Name ?? context.Plan.PlanId,
+                planName,
                 paidAt,
                 cancellationToken);
 
