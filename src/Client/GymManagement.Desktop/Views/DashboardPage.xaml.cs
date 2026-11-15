@@ -41,7 +41,7 @@ public sealed partial class DashboardPage : Page
             var savePicker = new Windows.Storage.Pickers.FileSavePicker();
             savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             savePicker.FileTypeChoices.Add("Excel Workbook (*.xlsx)", new List<string> { ".xlsx" });
-            savePicker.SuggestedFileName = $"BaoCaoDoanhThu_{DateTime.Now:yyyyMMdd_HHmm}";
+            savePicker.SuggestedFileName = $"BaoCao_{ViewModel.ActiveReportTypeKey}_{DateTime.Now:yyyyMMdd_HHmm}";
 
             var hwnd = App.WindowHandle;
             WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
@@ -95,7 +95,7 @@ public sealed partial class DashboardPage : Page
             var savePicker = new Windows.Storage.Pickers.FileSavePicker();
             savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             savePicker.FileTypeChoices.Add("PDF Document (*.pdf)", new List<string> { ".pdf" });
-            savePicker.SuggestedFileName = $"BaoCaoDoanhThu_{DateTime.Now:yyyyMMdd_HHmm}";
+            savePicker.SuggestedFileName = $"BaoCao_{ViewModel.ActiveReportTypeKey}_{DateTime.Now:yyyyMMdd_HHmm}";
 
             var hwnd = App.WindowHandle;
             WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);

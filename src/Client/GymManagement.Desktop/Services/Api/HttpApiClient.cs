@@ -411,6 +411,83 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<RevenueReportDto>(response);
     }
 
+    public async Task<MemberFluctuationReportDto> GetMemberFluctuationReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        string url = "/api/v1/reports/members";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<MemberFluctuationReportDto>(response);
+    }
+
+    public async Task<CheckInTrafficReportDto> GetCheckInTrafficReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        string url = "/api/v1/reports/checkin";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<CheckInTrafficReportDto>(response);
+    }
+
+    public async Task<PtPerformanceReportDto> GetPtPerformanceReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? trainerId = null)
+    {
+        string url = "/api/v1/reports/pt";
+        var queryParams = new List<string>();
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (!string.IsNullOrEmpty(trainerId))
+        {
+            queryParams.Add($"trainerId={Uri.EscapeDataString(trainerId)}");
+        }
+
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        var response = await _httpClient.GetAsync(url);
+        return await HandleResponseAsync<PtPerformanceReportDto>(response);
+    }
+
     public async Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
         var requestPayload = new ExportReportRequest(

@@ -708,6 +708,82 @@ public class MockApiClient : IApiClient
         return Task.FromResult(dto);
     }
 
+    public Task<MemberFluctuationReportDto> GetMemberFluctuationReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var distribution = new List<PackageDistributionDto>
+        {
+            new("PLAN-01", "Gói Cơ Bản (1 Tháng)", 45, 36.0m),
+            new("PLAN-02", "Gói Nâng Cao (3 Tháng)", 38, 30.4m),
+            new("PLAN-03", "Gói VIP Toàn Diện (12 Tháng)", 25, 20.0m),
+            new("PLAN-04", "Gói Kèm PT 1-1", 17, 13.6m)
+        };
+
+        var dto = new MemberFluctuationReportDto(
+            TotalActiveMembers: 125,
+            NewMembers: 28,
+            Renewals: 42,
+            FrozenCount: 5,
+            CancelledCount: 2,
+            ExpiredCount: 8,
+            RetentionRatePercentage: 86.5m,
+            PackageDistribution: distribution
+        );
+
+        return Task.FromResult(dto);
+    }
+
+    public Task<CheckInTrafficReportDto> GetCheckInTrafficReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var hourly = new List<PeakHourTrafficDto>
+        {
+            new(6, 12), new(7, 25), new(8, 18), new(9, 14), new(10, 8),
+            new(11, 10), new(12, 15), new(14, 11), new(15, 16),
+            new(16, 28), new(17, 52), new(18, 58), new(19, 45),
+            new(20, 30), new(21, 15)
+        };
+
+        var denialReasons = new List<DenialReasonDto>
+        {
+            new("Gói tập đã hết hạn", 14, 56.0m),
+            new("Chưa thanh toán gia hạn", 6, 24.0m),
+            new("Tài khoản đang bị đóng băng", 3, 12.0m),
+            new("Quét mã QR sai định dạng", 2, 8.0m)
+        };
+
+        var dto = new CheckInTrafficReportDto(
+            TotalCheckIns: 359,
+            SuccessfulCheckIns: 334,
+            DeniedCheckIns: 25,
+            SuccessRatePercentage: 93.0m,
+            HourlyDistribution: hourly,
+            TopDenialReasons: denialReasons
+        );
+
+        return Task.FromResult(dto);
+    }
+
+    public Task<PtPerformanceReportDto> GetPtPerformanceReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? trainerId = null)
+    {
+        var trainers = new List<PtTrainerPerformanceDto>
+        {
+            new("PT-001", "Nguyễn Văn Hùng", 48, 2, 12, 4.9m),
+            new("PT-002", "Trần Thị Mai", 42, 1, 10, 4.8m),
+            new("PT-003", "Lê Hoàng Long", 36, 3, 9, 4.7m),
+            new("PT-004", "Phạm Quốc Bảo", 28, 0, 7, 4.9m)
+        };
+
+        var dto = new PtPerformanceReportDto(
+            TotalSessionsScheduled: 160,
+            TotalSessionsCompleted: 154,
+            TotalSessionsCancelled: 6,
+            CompletionRatePercentage: 96.25m,
+            OverallAverageRating: 4.83m,
+            Trainers: trainers
+        );
+
+        return Task.FromResult(dto);
+    }
+
     public Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
         var (title, headers, rows) = BuildMockExportData(reportType ?? "REVENUE");

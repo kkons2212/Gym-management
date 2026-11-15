@@ -24,6 +24,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -77,8 +78,131 @@
             </StackPanel>
         </Grid>
 
+        <!-- UC06: Bộ Lọc Thống Kê & Báo Cáo -->
+        <Border Grid.Row="1"
+                Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="1" CornerRadius="12" Padding="16">
+            <StackPanel Spacing="12">
+                <!-- Top Row: Tiêu đề bộ lọc & Phân loại báo cáo -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE71C;" FontSize="15" Foreground="{StaticResource AccentPrimaryBrush}" />
+                        <TextBlock Text="BỘ LỌC DỮ LIỆU &amp; DANH MỤC (UC06)"
+                                   FontSize="12" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Summary Pill on the Right -->
+                    <Border Grid.Column="2"
+                            Background="#0F172A"
+                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10,4">
+                        <TextBlock Text="{x:Bind ViewModel.FilterSummaryText, Mode=OneWay}"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Border>
+                </Grid>
+
+                <!-- Middle Controls: Report Category Selector, Presets, Date Pickers, Apply Button -->
+                <Grid ColumnSpacing="16" RowSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 1. Report Type ComboBox -->
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Loại báo cáo:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <ComboBox ItemsSource="{x:Bind ViewModel.ReportTypeOptions}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedReportTypeOption, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  HorizontalAlignment="Stretch"
+                                  Height="36" />
+                    </StackPanel>
+
+                    <!-- 2. Date Presets (Hôm nay, Tuần này, Tháng này, Năm nay) -->
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Chọn nhanh:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Button Content="Hôm nay"
+                                    Command="{x:Bind ViewModel.ApplyPresetCommand}"
+                                    CommandParameter="TODAY"
+                                    Height="36" Padding="12,0"
+                                    FontSize="12" />
+                            <Button Content="Tuần này"
+                                    Command="{x:Bind ViewModel.ApplyPresetCommand}"
+                                    CommandParameter="THIS_WEEK"
+                                    Height="36" Padding="12,0"
+                                    FontSize="12" />
+                            <Button Content="Tháng này"
+                                    Command="{x:Bind ViewModel.ApplyPresetCommand}"
+                                    CommandParameter="THIS_MONTH"
+                                    Height="36" Padding="12,0"
+                                    FontSize="12" />
+                            <Button Content="Năm nay"
+                                    Command="{x:Bind ViewModel.ApplyPresetCommand}"
+                                    CommandParameter="THIS_YEAR"
+                                    Height="36" Padding="12,0"
+                                    FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 3. Calendar Date Pickers & Apply Button -->
+                    <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right">
+                        <TextBlock Text="Khoảng thời gian (Từ ngày - Đến ngày):" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <CalendarDatePicker Date="{x:Bind ViewModel.SelectedFromDate, Mode=TwoWay}"
+                                                PlaceholderText="Từ ngày"
+                                                DateFormat="{}{day.integer(2)}/{month.integer(2)}/{year.full}"
+                                                Width="140" Height="36" />
+                            <TextBlock Text="→" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" />
+                            <CalendarDatePicker Date="{x:Bind ViewModel.SelectedToDate, Mode=TwoWay}"
+                                                PlaceholderText="Đến ngày"
+                                                DateFormat="{}{day.integer(2)}/{month.integer(2)}/{year.full}"
+                                                Width="140" Height="36" />
+                            <Button Command="{x:Bind ViewModel.LoadDashboardCommand}"
+                                    IsEnabled="{x:Bind ViewModel.CanExport, Mode=OneWay}"
+                                    Background="{StaticResource AccentPrimaryBrush}"
+                                    Foreground="#FFFFFF"
+                                    Height="36" Padding="14,0"
+                                    FontWeight="SemiBold">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE71C;" FontSize="12" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Áp Dụng" FontSize="12" Foreground="#FFFFFF" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Date Range Validation Warning Banner (UC06 A5.2) -->
+                <Border Background="#2B7F1D1D"
+                        BorderBrush="{StaticResource StatusDangerBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="12,8"
+                        Visibility="{x:Bind ViewModel.HasDateValidationError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{StaticResource StatusDangerBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.DateValidationError, Mode=OneWay}"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource StatusDangerBrush}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
         <!-- 4 Flat KPI Cards Grid -->
-        <Grid Grid.Row="1" ColumnSpacing="16">
+        <Grid Grid.Row="2" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -140,7 +264,7 @@
         </Grid>
 
         <!-- BI Detail Row: Left = Peak Hours, Right = Package Revenue Distribution -->
-        <Grid Grid.Row="2" ColumnSpacing="20">
+        <Grid Grid.Row="3" ColumnSpacing="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.1*" />
                 <ColumnDefinition Width="*" />
