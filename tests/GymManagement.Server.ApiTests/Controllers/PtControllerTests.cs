@@ -3,6 +3,7 @@ using GymManagement.Server.Api.Controllers;
 using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.DTOs.Common;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -76,5 +77,47 @@ public sealed class PtControllerTests
         response.Success.Should().BeTrue();
         response.Data!.SessionId.Should().Be("PTS01");
         response.Data.Status.Should().Be(PtSessionStatus.Booked);
+    }
+
+    [Fact]
+    public async Task GetScheduleSlots_WhenCalled_ReturnsScheduleSlots()
+    {
+        // Arrange
+        var slots = new List<PtSessionSlotDto>
+        {
+            new("SES-001", "pt01", "HLV Nguyen Van A", "mem01", "Tran Thi B", DateTime.Today, new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "Booked", "Ghi chu")
+        };
+        _ptServiceMock.Setup(s => s.GetScheduleSlotsAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(slots);
+
+        // Act
+        var result = await _sut.GetScheduleSlots(DateTime.Today, DateTime.Today.AddDays(7), CancellationToken.None);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeOfType<ApiResponse<IReadOnlyList<PtSessionSlotDto>>>().Subject;
+        response.Success.Should().BeTrue();
+        response.Data.Should().HaveCount(1);
+        response.Data![0].SessionId.Should().Be("SES-001");
+    }
+
+    [Fact]
+    public async Task BookScheduleSlot_WhenValidRequest_ReturnsBookedSlot()
+    {
+        // Arrange
+        var request = new BookPtSlotRequest("pt01", "mem01", DateTime.Today, new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0));
+        var expectedSlot = new PtSessionSlotDto("SES-002", "pt01", "HLV Nguyen Van A", "mem01", "Tran Thi B", DateTime.Today, new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "Booked", null);
+        _ptServiceMock.Setup(s => s.BookScheduleSlotAsync(request, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedSlot);
+
+        // Act
+        var result = await _sut.BookScheduleSlot(request, CancellationToken.None);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeOfType<ApiResponse<PtSessionSlotDto>>().Subject;
+        response.Success.Should().BeTrue();
+        response.Data.Should().NotBeNull();
+        response.Data!.SessionId.Should().Be("SES-002");
     }
 }

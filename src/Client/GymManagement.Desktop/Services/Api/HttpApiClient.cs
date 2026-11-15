@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Common;
@@ -330,7 +331,7 @@ public sealed class HttpApiClient : IApiClient
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/book", request);
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/schedule/slots/book", request);
         return await HandleResponseAsync<PtSessionSlotDto>(response);
     }
 
@@ -374,7 +375,8 @@ public sealed class HttpApiClient : IApiClient
         ArgumentNullException.ThrowIfNull(request);
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/confirm-result", request);
-        return await HandleResponseAsync<bool>(response);
+        var session = await HandleResponseAsync<PtSessionDto>(response);
+        return session != null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -683,11 +685,18 @@ public sealed class HttpApiClient : IApiClient
             }
         }
 
-        var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         string errorMessage = "Lỗi xử lý yêu cầu từ máy chủ.";
-        if (errorResult != null && !string.IsNullOrEmpty(errorResult.Message))
+        try
         {
-            errorMessage = errorResult.Message;
+            var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+            if (errorResult != null && !string.IsNullOrEmpty(errorResult.Message))
+            {
+                errorMessage = errorResult.Message;
+            }
+        }
+        catch (JsonException)
+        {
+            errorMessage = $"Máy chủ phản hồi mã lỗi {(int)response.StatusCode}: {response.ReasonPhrase}";
         }
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

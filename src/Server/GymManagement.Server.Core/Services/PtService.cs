@@ -2,6 +2,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
@@ -510,6 +511,244 @@ public sealed class PtService : IPtService
             .OrderBy(s => s.SessionStartTime)
             .Select(s => MapToSessionDto(s))
             .ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<PtSessionSlotDto>> GetScheduleSlotsAsync(
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        DateOnly? fromDate = null;
+        if (startDate.HasValue)
+        {
+            fromDate = DateOnly.FromDateTime(startDate.Value.Date);
+        }
+
+        DateOnly? toDate = null;
+        if (endDate.HasValue)
+        {
+            toDate = DateOnly.FromDateTime(endDate.Value.Date);
+        }
+
+        var sessions = await _unitOfWork.Repository<PTTrainingSession>()
+            .FindAsync(
+                s => (!fromDate.HasValue || s.SessionStartTime >= fromDate.Value) &&
+                     (!toDate.HasValue || s.SessionStartTime <= toDate.Value),
+                cancellationToken);
+
+        var availIds = sessions
+            .Where(s => !string.IsNullOrEmpty(s.AvailabilityId))
+            .Select(s => s.AvailabilityId!)
+            .Distinct()
+            .ToList();
+
+        var availabilities = new Dictionary<string, PTAvailability>();
+        if (availIds.Count > 0)
+        {
+            var avails = await _unitOfWork.Repository<PTAvailability>()
+                .FindAsync(a => availIds.Contains(a.AvailabilityId), cancellationToken);
+            foreach (var a in avails)
+            {
+                availabilities[a.AvailabilityId] = a;
+            }
+        }
+
+        var userNames = sessions
+            .SelectMany(s => new[] { s.PtId, s.MemberId })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Distinct()
+            .ToList();
+
+        var users = new Dictionary<string, User>();
+        if (userNames.Count > 0)
+        {
+            var userList = await _unitOfWork.Repository<User>()
+                .FindAsync(u => userNames.Contains(u.UserName), cancellationToken);
+            foreach (var u in userList)
+            {
+                users[u.UserName] = u;
+            }
+        }
+
+        var results = new List<PtSessionSlotDto>(sessions.Count);
+        foreach (var s in sessions.OrderBy(x => x.SessionStartTime))
+        {
+            string ptName = s.PtId;
+            if (users.TryGetValue(s.PtId, out var ptUser))
+            {
+                if (!string.IsNullOrWhiteSpace(ptUser.FullName))
+                {
+                    ptName = ptUser.FullName;
+                }
+            }
+
+            string memberName = s.MemberId;
+            if (users.TryGetValue(s.MemberId, out var memUser))
+            {
+                if (!string.IsNullOrWhiteSpace(memUser.FullName))
+                {
+                    memberName = memUser.FullName;
+                }
+            }
+
+            TimeSpan startTime = new TimeSpan(8, 0, 0);
+            TimeSpan endTime = new TimeSpan(9, 0, 0);
+
+            if (!string.IsNullOrEmpty(s.AvailabilityId) && availabilities.TryGetValue(s.AvailabilityId, out var avail))
+            {
+                startTime = avail.StartTime.ToTimeSpan();
+                endTime = avail.EndTime.ToTimeSpan();
+            }
+
+            string status = nameof(PtSessionStatus.Booked);
+            if (!string.IsNullOrEmpty(s.Status))
+            {
+                status = s.Status;
+            }
+
+            DateTime scheduledDate = s.SessionStartTime.ToDateTime(TimeOnly.MinValue);
+
+            results.Add(new PtSessionSlotDto(
+                SessionId: s.PTSessionId,
+                PtId: s.PtId,
+                PtName: ptName,
+                MemberId: s.MemberId,
+                MemberName: memberName,
+                ScheduledDate: scheduledDate,
+                StartTime: startTime,
+                EndTime: endTime,
+                SessionStatus: status,
+                Notes: s.WorkoutNotes
+            ));
+        }
+
+        return results;
+    }
+
+    /// <inheritdoc/>
+    public async Task<PtSessionSlotDto> BookScheduleSlotAsync(
+        BookPtSlotRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return await _unitOfWork.ExecuteTransactionAsync(async () =>
+        {
+            var pt = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(
+                    u => u.UserName == request.PtId &&
+                         (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer),
+                    cancellationToken);
+
+            if (pt == null)
+            {
+                throw new NotFoundException($"Không tìm thấy HLV với mã: {request.PtId}");
+            }
+
+            var member = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(
+                    u => u.UserName == request.MemberId,
+                    cancellationToken);
+
+            if (member == null)
+            {
+                throw new NotFoundException($"Không tìm thấy hội viên với mã: {request.MemberId}");
+            }
+
+            var subscription = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(
+                    s => s.UserName == request.MemberId && s.Status == StatusActive,
+                    cancellationToken);
+
+            if (subscription == null)
+            {
+                throw new BusinessRuleException("Hội viên chưa có gói tập đang hoạt động.");
+            }
+
+            if (subscription.RemainingPtSessions <= 0)
+            {
+                throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng.");
+            }
+
+            if (string.IsNullOrEmpty(subscription.AssignedPtId))
+            {
+                subscription.AssignedPtId = request.PtId;
+                _unitOfWork.Repository<MemberSubscription>().Update(subscription);
+            }
+
+            var targetDate = DateOnly.FromDateTime(request.ScheduledDate);
+            var startTime = new TimeOnly(request.StartTime.Hours, request.StartTime.Minutes, request.StartTime.Seconds);
+            var endTime = new TimeOnly(request.EndTime.Hours, request.EndTime.Minutes, request.EndTime.Seconds);
+
+            var existingSlots = await _unitOfWork.Repository<PTAvailability>()
+                .FindAsync(
+                    a => a.PtId == request.PtId &&
+                         a.AvailableDate == targetDate &&
+                         a.IsBooked == 1 &&
+                         a.StartTime < endTime &&
+                         a.EndTime > startTime,
+                    cancellationToken);
+
+            if (existingSlots.Count > 0)
+            {
+                throw new BusinessRuleException("HLV đã có ca tập được xếp trong khung giờ này.");
+            }
+
+            int availCount = await _unitOfWork.Repository<PTAvailability>()
+                .CountAsync(cancellationToken: cancellationToken);
+            string availId = $"AVL-{request.PtId}-{availCount + 1:D5}";
+
+            var newSlot = new PTAvailability
+            {
+                AvailabilityId = availId,
+                PtId = request.PtId,
+                AvailableDate = targetDate,
+                StartTime = startTime,
+                EndTime = endTime,
+                IsBooked = 1
+            };
+            await _unitOfWork.Repository<PTAvailability>().AddAsync(newSlot, cancellationToken);
+
+            int sessionCount = await _unitOfWork.Repository<PTTrainingSession>()
+                .CountAsync(cancellationToken: cancellationToken);
+            string sessionId = $"SES-{sessionCount + 1:D5}";
+
+            var newSession = new PTTrainingSession
+            {
+                PTSessionId = sessionId,
+                PtId = request.PtId,
+                MemberId = request.MemberId,
+                AvailabilityId = availId,
+                SessionStartTime = targetDate,
+                SessionEndTime = targetDate,
+                Status = nameof(PtSessionStatus.Booked),
+                WorkoutNotes = "Admin xếp lịch trực tiếp"
+            };
+            await _unitOfWork.Repository<PTTrainingSession>().AddAsync(newSession, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "PtService.BookScheduleSlot: Admin xếp lịch PT {PtId} cho hội viên {MemberId} vào {Date} {Start}-{End}",
+                request.PtId, request.MemberId, targetDate, startTime, endTime);
+
+            string ptDisplayName = pt.FullName ?? pt.UserName;
+            string memberDisplayName = member.FullName ?? member.UserName;
+
+            return new PtSessionSlotDto(
+                SessionId: sessionId,
+                PtId: request.PtId,
+                PtName: ptDisplayName,
+                MemberId: request.MemberId,
+                MemberName: memberDisplayName,
+                ScheduledDate: request.ScheduledDate,
+                StartTime: request.StartTime,
+                EndTime: request.EndTime,
+                SessionStatus: nameof(PtSessionStatus.Booked),
+                Notes: newSession.WorkoutNotes
+            );
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
