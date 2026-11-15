@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using GymManagement.Desktop.Dialogs;
 using GymManagement.Desktop.Services.Api;
+using GymManagement.Desktop.Services.Session;
 using GymManagement.Desktop.ViewModels;
 using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.Identity;
@@ -394,11 +395,19 @@ public sealed partial class MembersPage : Page
                     // Đã xác nhận nhận tiền chuyển khoản: tiến hành tạo hội viên và kích hoạt hóa đơn
                     var registeredMember = await api.RegisterMemberAsync(memberReq);
 
+                    string? adminUserName = null;
+                    var sessionService = App.GetService<IAdminSessionService>();
+                    if (sessionService != null && sessionService.CurrentUser != null)
+                    {
+                        adminUserName = sessionService.CurrentUser.UserId;
+                    }
+
                     var invoiceReq = new CreateInvoiceRequest(
                         registeredMember.UserName,
                         dialog.SelectedPackage.PlanId,
                         dialog.PaymentMethod,
-                        "SUBSCRIPTION_PURCHASE"
+                        "SUBSCRIPTION_PURCHASE",
+                        adminUserName
                     );
 
                     var invoice = await api.CreateInvoiceAsync(invoiceReq);
@@ -409,11 +418,19 @@ public sealed partial class MembersPage : Page
                     // Thanh toán tiền mặt CASH trực tiếp tại quầy
                     var registeredMember = await api.RegisterMemberAsync(memberReq);
 
+                    string? adminUserName = null;
+                    var sessionService = App.GetService<IAdminSessionService>();
+                    if (sessionService != null && sessionService.CurrentUser != null)
+                    {
+                        adminUserName = sessionService.CurrentUser.UserId;
+                    }
+
                     var invoiceReq = new CreateInvoiceRequest(
                         registeredMember.UserName,
                         dialog.SelectedPackage.PlanId,
                         dialog.PaymentMethod,
-                        "SUBSCRIPTION_PURCHASE"
+                        "SUBSCRIPTION_PURCHASE",
+                        adminUserName
                     );
 
                     var invoice = await api.CreateInvoiceAsync(invoiceReq);

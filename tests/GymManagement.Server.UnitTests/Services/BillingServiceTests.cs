@@ -28,6 +28,14 @@ public sealed class BillingServiceTests
         Email = "member@example.test",
         Status = "ACTIVE"
     };
+    private readonly User _adminUser = new()
+    {
+        UserName = "ADMIN01",
+        RoleId = "ADMIN",
+        FullName = "Super Admin",
+        Email = "admin@example.test",
+        Status = "ACTIVE"
+    };
     private readonly PackagePlan _plan = new()
     {
         PlanId = "PLAN000001",
@@ -239,6 +247,42 @@ public sealed class BillingServiceTests
         invoices[0].PlanName.Should().Be("Monthly");
     }
 
+    [Fact]
+    public async Task CreateInvoiceAsync_WithAdminUserName_SetsCreatedByAdminIdAndReturnsAdminName()
+    {
+        var request = new CreateInvoiceRequest(
+            _user.UserName,
+            _plan.PlanId,
+            "CASH",
+            "SUBSCRIPTION_PURCHASE",
+            _adminUser.UserName
+        );
+
+        var result = await _sut.CreateInvoiceAsync(request);
+
+        result.CreatedByAdminName.Should().Be("Super Admin");
+        _invoices.Should().ContainSingle();
+        _invoices[0].CreatedByAdminId.Should().Be(_adminUser.UserName);
+    }
+
+    [Fact]
+    public async Task ConfirmPaymentAsync_WhenInvoiceHasAdmin_PreservesAdminNameOnResult()
+    {
+        var request = new CreateInvoiceRequest(
+            _user.UserName,
+            _plan.PlanId,
+            "CASH",
+            "SUBSCRIPTION_PURCHASE",
+            _adminUser.UserName
+        );
+        var created = await _sut.CreateInvoiceAsync(request);
+
+        var result = await _sut.ConfirmPaymentAsync(created.InvoiceCode);
+
+        result.Status.Should().Be("PAID");
+        result.CreatedByAdminName.Should().Be("Super Admin");
+    }
+
     private CreateInvoiceRequest CreateRequest(string paymentMethod = "CASH")
         => new(_user.UserName, _plan.PlanId, paymentMethod, "SUBSCRIPTION_PURCHASE");
 
@@ -284,13 +328,14 @@ public sealed class BillingServiceTests
             });
 
         var userRepository = new Mock<IGenericRepository<User>>();
-        userRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<User> { _user });
+        var usersList = new List<User> { _user, _adminUser };
+        userRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(usersList);
         userRepository
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<User, bool>>>(),
                 It.IsAny<CancellationToken>()))
             .Returns((Expression<Func<User, bool>> predicate, CancellationToken _) =>
-                Task.FromResult(predicate.Compile()(_user) ? _user : null));
+                Task.FromResult(usersList.FirstOrDefault(predicate.Compile())));
 
         var planRepository = new Mock<IGenericRepository<PackagePlan>>();
         planRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<PackagePlan> { _plan });

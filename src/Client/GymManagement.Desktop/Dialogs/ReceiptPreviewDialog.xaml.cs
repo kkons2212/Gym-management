@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using GymManagement.Desktop.Services.Session;
 using GymManagement.Server.Core.DTOs.Billing;
 
 namespace GymManagement.Desktop.Dialogs;
@@ -14,7 +15,23 @@ public sealed partial class ReceiptPreviewDialog : ContentDialog
         TxtInvoiceCode.Text = invoice.InvoiceCode;
         TxtCreatedAt.Text = (invoice.PaidAt ?? DateTime.Now).ToString("dd/MM/yyyy HH:mm");
         TxtMemberName.Text = invoice.MemberName ?? "Khách hàng vãng lai";
-        TxtStaffName.Text = invoice.CreatedByAdminName ?? "Thu ngân";
+
+        string? staffName = invoice.CreatedByAdminName;
+        if (string.IsNullOrWhiteSpace(staffName))
+        {
+            var session = App.GetService<IAdminSessionService>();
+            if (session != null && session.CurrentUser != null && !string.IsNullOrWhiteSpace(session.CurrentUser.FullName))
+            {
+                staffName = session.CurrentUser.FullName;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(staffName))
+        {
+            staffName = "Thu ngân";
+        }
+
+        TxtStaffName.Text = staffName;
         TxtItemName.Text = invoice.PlanName ?? "Gói tập gym";
         TxtItemPrice.Text = $"{invoice.SubtotalAmount:N0} đ";
         TxtTotalAmount.Text = $"{invoice.TotalAmount:N0} đ";

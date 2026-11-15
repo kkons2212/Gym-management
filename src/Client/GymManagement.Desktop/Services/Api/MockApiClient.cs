@@ -363,6 +363,20 @@ public class MockApiClient : IApiClient
         var pkg = _packages.FirstOrDefault(p => p.PlanId == request.PlanId) ?? _packages[0];
         var member = _members.FirstOrDefault(m => m.UserName == request.UserId) ?? _members[0];
 
+        string adminName = "Admin Quầy";
+        if (!string.IsNullOrWhiteSpace(request.AdminUserName))
+        {
+            var matchedUser = _users.FirstOrDefault(u => u.UserId == request.AdminUserName);
+            if (matchedUser != null && !string.IsNullOrWhiteSpace(matchedUser.FullName))
+            {
+                adminName = matchedUser.FullName;
+            }
+            else
+            {
+                adminName = request.AdminUserName;
+            }
+        }
+
         var invoice = new InvoiceDto(
             $"INV{DateTime.Now:mmss}",
             $"INV-20261108-{DateTime.Now:fff}",
@@ -373,7 +387,7 @@ public class MockApiClient : IApiClient
             DateTime.Now,
             member.FullName,
             pkg.Name,
-            "Admin Quầy",
+            adminName,
             "PAID"
         );
 

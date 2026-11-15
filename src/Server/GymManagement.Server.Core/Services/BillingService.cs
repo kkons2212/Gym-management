@@ -126,6 +126,23 @@ public sealed class BillingService : IBillingService
             SubscriptionId = subscription.SubscriptionId
         };
 
+        string? adminName = null;
+        if (!string.IsNullOrWhiteSpace(request.AdminUserName))
+        {
+            var adminUser = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(u => u.UserName == request.AdminUserName, cancellationToken);
+            if (adminUser != null)
+            {
+                invoice.CreatedByAdminId = adminUser.UserName;
+                adminName = GetAdminDisplayName(adminUser);
+            }
+            else
+            {
+                invoice.CreatedByAdminId = request.AdminUserName;
+                adminName = request.AdminUserName;
+            }
+        }
+
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
             await _unitOfWork.Repository<MemberSubscription>().AddAsync(subscription, cancellationToken);
@@ -133,7 +150,7 @@ public sealed class BillingService : IBillingService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }, cancellationToken);
 
-        return MapToDto(invoice, user, plan);
+        return MapToDto(invoice, user, plan, adminName);
     }
 
     public async Task<VietQrPayloadDto> GeneratePaymentQrAsync(
@@ -183,7 +200,7 @@ public sealed class BillingService : IBillingService
 
         if (context.Invoice.Status == PaidStatus)
         {
-            return MapToDto(context.Invoice, context.User, context.Plan);
+            return MapToDto(context.Invoice, context);
         }
 
         if (context.Invoice.Status != PendingStatus)
@@ -247,7 +264,7 @@ public sealed class BillingService : IBillingService
 
             if (invoice.Status == PaidStatus)
             {
-                return MapToDto(invoice, context.User, context.Plan);
+                return MapToDto(invoice, context);
             }
 
             if (invoice.Status != PendingStatus)
@@ -282,7 +299,7 @@ public sealed class BillingService : IBillingService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             shouldSendReceipt = true;
 
-            return MapToDto(invoice, context.User, context.Plan);
+            return MapToDto(invoice, context);
         }, cancellationToken);
 
         if (shouldSendReceipt)
@@ -304,7 +321,7 @@ public sealed class BillingService : IBillingService
 
         if (context.Invoice.Status == RefundedStatus)
         {
-            return MapToDto(context.Invoice, context.User, context.Plan);
+            return MapToDto(context.Invoice, context);
         }
 
         if (context.Invoice.Status != PaidStatus)
@@ -320,7 +337,7 @@ public sealed class BillingService : IBillingService
 
             if (invoice.Status == RefundedStatus)
             {
-                return MapToDto(invoice, context.User, context.Plan);
+                return MapToDto(invoice, context);
             }
 
             if (invoice.Status != PaidStatus)
@@ -341,7 +358,7 @@ public sealed class BillingService : IBillingService
             _unitOfWork.Repository<MemberSubscription>().Update(subscription);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return MapToDto(invoice, context.User, context.Plan);
+            return MapToDto(invoice, context);
         }, cancellationToken);
     }
 
@@ -416,7 +433,7 @@ public sealed class BillingService : IBillingService
         if (invoice.Status == PaidStatus)
         {
             _logger.LogInformation("Hóa đơn {InvoiceCode} đã được thanh toán trước đó (idempotent callback).", invoice.InvoiceCode);
-            return MapToDto(invoice, context.User, context.Plan);
+            return MapToDto(invoice, context);
         }
 
         if (invoice.Status != PendingStatus)
@@ -455,7 +472,7 @@ public sealed class BillingService : IBillingService
 
             if (currentInvoice.Status == PaidStatus)
             {
-                return MapToDto(currentInvoice, context.User, context.Plan);
+                return MapToDto(currentInvoice, context);
             }
 
             if (currentInvoice.Status != PendingStatus)
@@ -494,7 +511,7 @@ public sealed class BillingService : IBillingService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             shouldSendReceipt = true;
 
-            return MapToDto(currentInvoice, context.User, context.Plan);
+            return MapToDto(currentInvoice, context);
         }, cancellationToken);
 
         if (shouldSendReceipt)
@@ -668,7 +685,14 @@ public sealed class BillingService : IBillingService
             .FindSingleOrDefaultAsync(p => p.PlanId == subscription.PlanId, cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy gói tập: {subscription.PlanId}");
 
-        return new InvoiceContext(invoice, user, plan);
+        User? adminUser = null;
+        if (!string.IsNullOrWhiteSpace(invoice.CreatedByAdminId))
+        {
+            adminUser = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(u => u.UserName == invoice.CreatedByAdminId, cancellationToken);
+        }
+
+        return new InvoiceContext(invoice, user, plan, adminUser);
     }
 
     private async Task SendReceiptAsync(
@@ -710,20 +734,66 @@ public sealed class BillingService : IBillingService
         }
     }
 
-    private static InvoiceDto MapToDto(Invoice invoice, User user, PackagePlan plan)
-        => new(
+    private static string? GetAdminDisplayName(User? adminUser)
+    {
+        if (adminUser == null)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(adminUser.FullName))
+        {
+            return adminUser.FullName;
+        }
+
+        return adminUser.UserName;
+    }
+
+    private static InvoiceDto MapToDto(Invoice invoice, InvoiceContext context)
+    {
+        return MapToDto(invoice, context.User, context.Plan, GetAdminDisplayName(context.AdminUser));
+    }
+
+    private static InvoiceDto MapToDto(Invoice invoice, User user, PackagePlan plan, string? adminName = null)
+    {
+        decimal subtotal = invoice.SubtotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có thành tiền hợp lệ.");
+        decimal total = invoice.TotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có tổng tiền hợp lệ.");
+        string paymentMethod = invoice.PaymentMethod ?? throw new BusinessRuleException("Hóa đơn chưa có phương thức thanh toán.");
+        string transactionType = invoice.TransactionType ?? throw new BusinessRuleException("Hóa đơn chưa có loại giao dịch.");
+        string status = invoice.Status ?? throw new BusinessRuleException("Hóa đơn chưa có trạng thái hợp lệ.");
+
+        string memberName = user.UserName;
+        if (!string.IsNullOrWhiteSpace(user.FullName))
+        {
+            memberName = user.FullName;
+        }
+
+        string planName = plan.PlanId;
+        if (!string.IsNullOrWhiteSpace(plan.Name))
+        {
+            planName = plan.Name;
+        }
+
+        DateTime? paidDateTime = null;
+        if (invoice.PaidAt.HasValue)
+        {
+            paidDateTime = invoice.PaidAt.Value.ToDateTime(TimeOnly.MinValue);
+        }
+
+        return new InvoiceDto(
             invoice.InvoiceId,
             invoice.InvoiceCode,
-            invoice.SubtotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có thành tiền hợp lệ."),
-            invoice.TotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có tổng tiền hợp lệ."),
-            invoice.PaymentMethod ?? throw new BusinessRuleException("Hóa đơn chưa có phương thức thanh toán."),
-            invoice.TransactionType ?? throw new BusinessRuleException("Hóa đơn chưa có loại giao dịch."),
-            invoice.PaidAt?.ToDateTime(TimeOnly.MinValue),
-            user.FullName ?? user.UserName,
-            plan.Name ?? plan.PlanId,
-            null,
-            invoice.Status ?? throw new BusinessRuleException("Hóa đơn chưa có trạng thái hợp lệ."),
+            subtotal,
+            total,
+            paymentMethod,
+            transactionType,
+            paidDateTime,
+            memberName,
+            planName,
+            adminName,
+            status,
             invoice.RefundAmount);
+    }
 
     private static string NewId() => Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
 
@@ -737,5 +807,5 @@ public sealed class BillingService : IBillingService
         return value.Trim();
     }
 
-    private sealed record InvoiceContext(Invoice Invoice, User User, PackagePlan Plan);
+    private sealed record InvoiceContext(Invoice Invoice, User User, PackagePlan Plan, User? AdminUser = null);
 }
