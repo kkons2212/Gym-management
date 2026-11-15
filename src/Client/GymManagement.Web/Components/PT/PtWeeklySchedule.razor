@@ -94,12 +94,26 @@
                     <!-- 1-Tap Complete Session Button (Active/Past booked sessions) -->
                     @if (isBooked)
                     {
-                        <button type="button"
-                                class="btn-primary"
-                                @onclick="() => OpenCompleteModal(s)"
-                                style="width: 100%; min-height: 36px; font-size: 13px; padding: 6px;">
-                            ✓ Xác Nhận Hoàn Thành Buổi Tập
-                        </button>
+                        var hasStarted = DateTime.Now >= s.SessionStartTime;
+                        if (hasStarted)
+                        {
+                            <button type="button"
+                                    class="btn-primary"
+                                    @onclick="() => OpenCompleteModal(s)"
+                                    style="width: 100%; min-height: 36px; font-size: 13px; padding: 6px;">
+                                ✓ Xác Nhận Hoàn Thành Buổi Tập
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn-secondary"
+                                    disabled
+                                    title="Ca tập chưa đến giờ diễn ra. Chỉ có thể xác nhận khi ca tập bắt đầu."
+                                    style="width: 100%; min-height: 36px; font-size: 13px; padding: 6px; opacity: 0.5; cursor: not-allowed;">
+                                ⏳ Chưa Đến Giờ Tập
+                            </button>
+                        }
                     }
                     else if (isCompleted && s.RatingStars.HasValue)
                     {

@@ -216,7 +216,8 @@
                                             <TextBlock Text="{x:Bind SessionStatus}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" />
                                         </Border>
                                         <Button Content="Xác nhận ca tập" Click="BtnReviewSession_Click" Height="32" FontSize="11" Padding="10,0"
-                                                ToolTipService.ToolTip="Xác nhận kết quả buổi tập khi PT quên xác nhận (UC 4.5)" />
+                                                IsEnabled="{x:Bind CanReview, Mode=OneWay}"
+                                                ToolTipService.ToolTip="Xác nhận kết quả buổi tập khi ca tập kết thúc hoặc PT quên xác nhận (UC 4.5)" />
                                     </StackPanel>
                                 </Grid>
                             </Border>

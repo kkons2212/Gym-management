@@ -11,7 +11,27 @@ public record PtSessionSlotDto(
     TimeSpan EndTime,
     string SessionStatus,
     string? Notes = null
-);
+)
+{
+    public bool CanReview
+    {
+        get
+        {
+            if (string.Equals(SessionStatus, "COMPLETED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(SessionStatus, "CANCELLED", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var endDateTime = ScheduledDate.Date.Add(EndTime);
+            if (DateTime.Now >= endDateTime)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+}
 
 public record BookPtSlotRequest(
     string PtId,
