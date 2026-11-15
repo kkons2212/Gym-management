@@ -59,6 +59,41 @@ public class PtServiceTests
     }
 
     [Fact]
+    public async Task GetTrainersAsync_WhenCalled_ReturnsTrainersWithPtRole()
+    {
+        // Arrange
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        var subscriptionRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        var sessionRepoMock = new Mock<IGenericRepository<PTTrainingSession>>();
+
+        var users = new List<User>
+        {
+            new() { UserName = "pt01", FullName = "Nguyễn Văn Thành", RoleId = "PT", Status = "ACTIVE", Email = "pt01@gym.vn", Phone = "0901111111" }
+        };
+
+        userRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(users);
+        subscriptionRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(2);
+        sessionRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+        sessionRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PTTrainingSession>());
+
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subscriptionRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<PTTrainingSession>()).Returns(sessionRepoMock.Object);
+
+        // Act
+        var result = await _sut.GetTrainersAsync(activeOnly: true);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].PtId.Should().Be("pt01");
+        result[0].FullName.Should().Be("Nguyễn Văn Thành");
+    }
+
+    [Fact]
     public async Task SaveTrainerAsync_WhenEmailAlreadyUsedByAnotherPt_ThrowsValidationException()
     {
         // Arrange

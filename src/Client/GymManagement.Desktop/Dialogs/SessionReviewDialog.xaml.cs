@@ -51,8 +51,23 @@ public sealed partial class SessionReviewDialog : ContentDialog
         var sessionEndDateTime = _scheduledDate.Add(_endTime);
         var now = DateTime.Now;
 
-        // If session hasn't ended, disable the button
-        IsPrimaryButtonEnabled = now >= sessionEndDateTime;
+        // If session hasn't ended, disable the button and show warning
+        if (now < sessionEndDateTime)
+        {
+            IsPrimaryButtonEnabled = false;
+            if (PnlEarlyWarning != null)
+            {
+                PnlEarlyWarning.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
+        }
+        else
+        {
+            IsPrimaryButtonEnabled = true;
+            if (PnlEarlyWarning != null)
+            {
+                PnlEarlyWarning.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+        }
     }
 }
 

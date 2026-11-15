@@ -37,6 +37,19 @@ public partial class PtScheduleViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
+    public bool HasStatusMessage
+    {
+        get
+        {
+            return !string.IsNullOrWhiteSpace(StatusMessage);
+        }
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasStatusMessage));
+    }
+
     [ObservableProperty]
     private bool _isSuccess;
 
@@ -85,9 +98,15 @@ public partial class PtScheduleViewModel : ObservableObject
             if (AvailablePts.Count == 0)
             {
                 var users = await _apiClient.GetUsersAsync();
-                foreach (var pt in users.Where(u => u.Role == "PT"))
+                foreach (var pt in users)
                 {
-                    AvailablePts.Add(pt);
+                    bool isPt = string.Equals(pt.Role, "PT", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(pt.Role, "TRAINER", StringComparison.OrdinalIgnoreCase) ||
+                                pt.FullName.Contains("PT", StringComparison.OrdinalIgnoreCase);
+                    if (isPt)
+                    {
+                        AvailablePts.Add(pt);
+                    }
                 }
             }
 

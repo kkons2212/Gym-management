@@ -488,7 +488,21 @@ public sealed class HttpApiClient : IApiClient
                 }
 
                 string role = u.RoleId;
-                if (!string.IsNullOrWhiteSpace(u.RoleName))
+                if (string.Equals(u.RoleId, "PT", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(u.RoleId, "TRAINER", StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(u.RoleName) && u.RoleName.Contains("Huấn luyện viên", StringComparison.OrdinalIgnoreCase)))
+                {
+                    role = "PT";
+                }
+                else if (string.Equals(u.RoleId, "SUPERADMIN", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "SuperAdmin";
+                }
+                else if (string.Equals(u.RoleId, "ADMIN", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "Admin";
+                }
+                else if (!string.IsNullOrWhiteSpace(u.RoleName))
                 {
                     role = u.RoleName;
                 }

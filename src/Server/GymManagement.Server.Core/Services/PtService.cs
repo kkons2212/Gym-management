@@ -30,6 +30,7 @@ public sealed class PtService : IPtService
 
     /// <summary>Tiền tố RoleID trong bảng Role dùng để nhận diện PT.</summary>
     private const string RoleIdTrainer = "TRAINER";
+    private const string RoleIdPt = "PT";
 
     /// <summary>Trạng thái tài khoản đang hoạt động trong bảng [User].</summary>
     private const string StatusActive = "ACTIVE";
@@ -77,7 +78,7 @@ public sealed class PtService : IPtService
         var sessionRepo = _unitOfWork.Repository<PTTrainingSession>();
 
         var users = await userRepo.FindAsync(
-            u => u.RoleId == RoleIdTrainer &&
+            u => (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (activeOnly == null || (u.Status == StatusActive) == activeOnly.Value),
             cancellationToken);
 
@@ -96,9 +97,11 @@ public sealed class PtService : IPtService
                 s => s.PtId == u.UserName && s.RatingStars != null,
                 cancellationToken);
 
-            decimal avgRating = ratedSessions.Count > 0
-                ? (decimal)ratedSessions.Average(s => (double)s.RatingStars!.Value)
-                : 0m;
+            decimal avgRating = 0m;
+            if (ratedSessions.Count > 0)
+            {
+                avgRating = (decimal)ratedSessions.Average(s => (double)s.RatingStars!.Value);
+            }
 
             result.Add(MapToProfileDto(u, studentCount, pendingCount, ratedSessions.Count, avgRating));
         }
@@ -119,7 +122,7 @@ public sealed class PtService : IPtService
 
         var user = await _unitOfWork.Repository<User>()
             .FindSingleOrDefaultAsync(
-                u => u.UserName == ptId && u.RoleId == RoleIdTrainer,
+                u => u.UserName == ptId && (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer),
                 cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy PT với mã: {ptId}");
 
@@ -140,7 +143,7 @@ public sealed class PtService : IPtService
         // Kiểm tra trùng Phone với PT khác
         bool phoneConflict = await userRepo.ExistsAsync(
             u => u.Phone == request.Phone &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (isNew || u.UserName != request.PtId),
             cancellationToken);
 
@@ -152,7 +155,7 @@ public sealed class PtService : IPtService
         // Kiểm tra trùng Email với PT khác
         bool emailConflict = await userRepo.ExistsAsync(
             u => u.Email == request.Email &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (isNew || u.UserName != request.PtId),
             cancellationToken);
 
@@ -167,7 +170,7 @@ public sealed class PtService : IPtService
 
             if (isNew)
             {
-                int count = await userRepo.CountAsync(u => u.RoleId == RoleIdTrainer, cancellationToken);
+                int count = await userRepo.CountAsync(u => u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer, cancellationToken);
                 string newId = $"PT-{count + 1:D2}";
 
                 string status;
@@ -183,7 +186,7 @@ public sealed class PtService : IPtService
                 entity = new User
                 {
                     UserName = newId,
-                    RoleId = RoleIdTrainer,
+                    RoleId = RoleIdPt,
                     FullName = request.FullName,
                     Phone = request.Phone,
                     Email = request.Email,
@@ -303,7 +306,7 @@ public sealed class PtService : IPtService
         // Kiểm tra PT tồn tại và đang hoạt động
         bool ptExists = await _unitOfWork.Repository<User>().ExistsAsync(
             u => u.UserName == request.PtId &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  u.Status == StatusActive,
             cancellationToken);
 
