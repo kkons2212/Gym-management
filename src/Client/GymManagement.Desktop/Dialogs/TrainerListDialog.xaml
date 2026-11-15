@@ -21,25 +21,13 @@
                    FontSize="12"
                    Foreground="{StaticResource TextSecondaryBrush}" />
 
-        <!-- Toolbar: Search & Filter -->
-        <Grid Grid.Row="1" ColumnSpacing="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <AutoSuggestBox x:Name="AsbSearch"
-                            PlaceholderText="Tìm theo tên HLV hoặc số điện thoại…"
-                            QueryIcon="Find"
-                            TextChanged="AsbSearch_TextChanged"
-                            Height="36" />
-
-            <ComboBox x:Name="CboStatusFilter" Grid.Column="1" SelectionChanged="CboStatusFilter_SelectionChanged" Height="36">
-                <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True" Tag="ALL" />
-                <ComboBoxItem Content="Đang hoạt động" Tag="ACTIVE" />
-                <ComboBoxItem Content="Tạm ngừng" Tag="INACTIVE" />
-            </ComboBox>
-        </Grid>
+        <!-- Toolbar: Search -->
+        <AutoSuggestBox Grid.Row="1"
+                        x:Name="AsbSearch"
+                        PlaceholderText="Tìm theo tên HLV hoặc số điện thoại…"
+                        QueryIcon="Find"
+                        TextChanged="AsbSearch_TextChanged"
+                        Height="36" />
 
         <!-- List View of Trainers -->
         <Border Grid.Row="2"
@@ -93,13 +81,20 @@
                                         </TextBlock>
                                     </StackPanel>
 
-                                    <!-- Rating -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
-                                        <FontIcon Glyph="&#xE735;" FontSize="12" Foreground="#F59E0B" />
-                                        <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
-                                        <TextBlock Text="(" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind ReviewCount}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        <TextBlock Text="đánh giá)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <!-- Stats & Students -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" HorizontalAlignment="Right">
+                                        <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Right">
+                                            <FontIcon Glyph="&#xE735;" FontSize="11" Foreground="#F59E0B" />
+                                            <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="(" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind ReviewCount}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="đánh giá)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Right">
+                                            <TextBlock Text="Phụ trách:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind ActiveStudentsCount}" FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                            <TextBlock Text="học viên" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
                             </Border>

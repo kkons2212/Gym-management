@@ -106,12 +106,6 @@ public sealed partial class TrainerListDialog : ContentDialog
             query = AsbSearch.Text.Trim().ToLowerInvariant();
         }
 
-        string statusTag = "ALL";
-        if (CboStatusFilter != null && CboStatusFilter.SelectedItem is ComboBoxItem item && item.Tag != null)
-        {
-            statusTag = item.Tag.ToString()!;
-        }
-
         _displayedTrainers.Clear();
 
         foreach (var t in _allTrainers)
@@ -128,28 +122,11 @@ public sealed partial class TrainerListDialog : ContentDialog
                 phone = t.Phone;
             }
 
-            string specialty = string.Empty;
-            if (t.Specialty != null)
-            {
-                specialty = t.Specialty.ToLowerInvariant();
-            }
-
             bool matchQuery = string.IsNullOrWhiteSpace(query) ||
                               fullName.Contains(query) ||
-                              phone.Contains(query) ||
-                              specialty.Contains(query);
+                              phone.Contains(query);
 
-            bool matchStatus = true;
-            if (statusTag == "ACTIVE")
-            {
-                matchStatus = t.IsActive;
-            }
-            else if (statusTag == "INACTIVE")
-            {
-                matchStatus = !t.IsActive;
-            }
-
-            if (matchQuery && matchStatus)
+            if (matchQuery)
             {
                 _displayedTrainers.Add(t);
             }
@@ -169,11 +146,6 @@ public sealed partial class TrainerListDialog : ContentDialog
     }
 
     private void AsbSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-    {
-        ApplyFilter();
-    }
-
-    private void CboStatusFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         ApplyFilter();
     }
