@@ -667,7 +667,7 @@ public class MockApiClient : IApiClient
         ));
     }
 
-    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? paymentMethod = null, string? planId = null)
     {
         var byPackage = new List<PackageRevenueDto>
         {
@@ -677,12 +677,22 @@ public class MockApiClient : IApiClient
             new("PLAN04", "Gói 1 Tháng Tiêu Chuẩn", 6500000m, 13)
         };
 
+        if (!string.IsNullOrEmpty(planId) && planId != "ALL")
+        {
+            byPackage = byPackage.Where(p => p.PlanId.Equals(planId, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         var byPaymentMethod = new List<PaymentMethodRevenueDto>
         {
             new("VIETQR", 58000000m, 66.3m, 28),
             new("CASH", 20500000m, 23.4m, 10),
             new("CREDIT_CARD", 9000000m, 10.3m, 4)
         };
+
+        if (!string.IsNullOrEmpty(paymentMethod) && paymentMethod != "ALL")
+        {
+            byPaymentMethod = byPaymentMethod.Where(p => p.PaymentMethod.Equals(paymentMethod, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
 
         var trend = new List<TimePeriodRevenueDto>
         {
@@ -695,10 +705,16 @@ public class MockApiClient : IApiClient
             new("CN", 5300000m, 0m, 5300000m)
         };
 
+        decimal gross = 0m;
+        foreach (var pm in byPaymentMethod)
+        {
+            gross += pm.Amount;
+        }
+
         var dto = new RevenueReportDto(
-            TotalGrossRevenue: 87500000m,
+            TotalGrossRevenue: gross,
             TotalRefundAmount: 500000m,
-            TotalNetRevenue: 87000000m,
+            TotalNetRevenue: gross > 500000m ? (gross - 500000m) : gross,
             InvoiceCount: 42,
             ByPaymentMethod: byPaymentMethod,
             ByPackage: byPackage,
@@ -772,11 +788,32 @@ public class MockApiClient : IApiClient
             new("PT-004", "Phạm Quốc Bảo", 28, 0, 7, 4.9m)
         };
 
+        if (!string.IsNullOrEmpty(trainerId) && trainerId != "ALL")
+        {
+            trainers = trainers.Where(t => t.TrainerId.Equals(trainerId, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        int scheduled = 0;
+        int completed = 0;
+        int cancelled = 0;
+        foreach (var t in trainers)
+        {
+            completed += t.CompletedSessions;
+            cancelled += t.CancelledSessions;
+            scheduled += (t.CompletedSessions + t.CancelledSessions);
+        }
+
+        decimal completionRate = 100m;
+        if (scheduled > 0)
+        {
+            completionRate = Math.Round((decimal)completed / scheduled * 100m, 2);
+        }
+
         var dto = new PtPerformanceReportDto(
-            TotalSessionsScheduled: 160,
-            TotalSessionsCompleted: 154,
-            TotalSessionsCancelled: 6,
-            CompletionRatePercentage: 96.25m,
+            TotalSessionsScheduled: scheduled,
+            TotalSessionsCompleted: completed,
+            TotalSessionsCancelled: cancelled,
+            CompletionRatePercentage: completionRate,
             OverallAverageRating: 4.83m,
             Trainers: trainers
         );

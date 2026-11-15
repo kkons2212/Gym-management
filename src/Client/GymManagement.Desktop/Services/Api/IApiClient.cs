@@ -49,7 +49,7 @@ public interface IApiClient
 
     // Reports & BI (UC06)
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();
-    Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null);
+    Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? paymentMethod = null, string? planId = null);
     Task<MemberFluctuationReportDto> GetMemberFluctuationReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null);
     Task<CheckInTrafficReportDto> GetCheckInTrafficReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null);
     Task<PtPerformanceReportDto> GetPtPerformanceReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? trainerId = null);

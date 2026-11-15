@@ -387,7 +387,7 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<DashboardSummaryDto>(response);
     }
 
-    public async Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    public async Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? paymentMethod = null, string? planId = null)
     {
         string url = "/api/v1/reports/revenue";
         var queryParams = new List<string>();
@@ -400,6 +400,16 @@ public sealed class HttpApiClient : IApiClient
         if (toDate.HasValue)
         {
             queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (!string.IsNullOrEmpty(paymentMethod))
+        {
+            queryParams.Add($"paymentMethod={Uri.EscapeDataString(paymentMethod)}");
+        }
+
+        if (!string.IsNullOrEmpty(planId))
+        {
+            queryParams.Add($"planId={Uri.EscapeDataString(planId)}");
         }
 
         if (queryParams.Count > 0)

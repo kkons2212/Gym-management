@@ -7,6 +7,7 @@ using GymManagement.Server.Core.DTOs.Reports;
 namespace GymManagement.Desktop.ViewModels;
 
 public record ReportTypeOption(string Key, string DisplayName);
+public record FilterOption(string Key, string DisplayName);
 
 public partial class DashboardViewModel : ObservableObject
 {
@@ -23,6 +24,29 @@ public partial class DashboardViewModel : ObservableObject
 
     [ObservableProperty]
     private ReportTypeOption _selectedReportTypeOption;
+
+    public IReadOnlyList<FilterOption> PaymentMethodOptions { get; } = new List<FilterOption>
+    {
+        new("ALL", "Tất cả phương thức"),
+        new("VIETQR", "VietQR (Chuyển khoản)"),
+        new("CASH", "Tiền mặt (Cash)"),
+        new("CREDIT_CARD", "Thẻ tín dụng / POS")
+    };
+
+    [ObservableProperty]
+    private FilterOption _selectedPaymentMethodOption;
+
+    public ObservableCollection<FilterOption> TrainerOptions { get; } =
+    [
+        new("ALL", "Tất cả huấn luyện viên"),
+        new("PT-001", "Nguyễn Văn Hùng (PT-001)"),
+        new("PT-002", "Trần Thị Mai (PT-002)"),
+        new("PT-003", "Lê Hoàng Long (PT-003)"),
+        new("PT-004", "Phạm Quốc Bảo (PT-004)")
+    ];
+
+    [ObservableProperty]
+    private FilterOption _selectedTrainerOption;
 
     [ObservableProperty]
     private DateTimeOffset? _selectedFromDate;
@@ -276,6 +300,8 @@ public partial class DashboardViewModel : ObservableObject
     {
         _apiClient = apiClient;
         _selectedReportTypeOption = ReportTypeOptions[0];
+        _selectedPaymentMethodOption = PaymentMethodOptions[0];
+        _selectedTrainerOption = TrainerOptions[0];
 
         var today = DateTime.Today;
         var firstDay = new DateTime(today.Year, today.Month, 1);
@@ -311,6 +337,16 @@ public partial class DashboardViewModel : ObservableObject
         OnPropertyChanged(nameof(IsMemberVisible));
         OnPropertyChanged(nameof(IsCheckInVisible));
         OnPropertyChanged(nameof(IsPtVisible));
+        _ = LoadDashboardAsync();
+    }
+
+    partial void OnSelectedPaymentMethodOptionChanged(FilterOption value)
+    {
+        _ = LoadDashboardAsync();
+    }
+
+    partial void OnSelectedTrainerOptionChanged(FilterOption value)
+    {
         _ = LoadDashboardAsync();
     }
 
@@ -439,6 +475,18 @@ public partial class DashboardViewModel : ObservableObject
                 toDate = DateOnly.FromDateTime(SelectedToDate.Value.DateTime);
             }
 
+            string? paymentMethod = null;
+            if (SelectedPaymentMethodOption != null && SelectedPaymentMethodOption.Key != "ALL")
+            {
+                paymentMethod = SelectedPaymentMethodOption.Key;
+            }
+
+            string? trainerId = null;
+            if (SelectedTrainerOption != null && SelectedTrainerOption.Key != "ALL")
+            {
+                trainerId = SelectedTrainerOption.Key;
+            }
+
             // 1. Overview Summary
             var summary = await _apiClient.GetDashboardSummaryAsync();
             TodayRevenue = summary.TodayRevenue;
@@ -452,8 +500,8 @@ public partial class DashboardViewModel : ObservableObject
                 PeakHours.Add(item);
             }
 
-            // 2. Revenue Report
-            var revenueReport = await _apiClient.GetRevenueReportAsync(fromDate, toDate);
+            // 2. Revenue Report (filtered by paymentMethod if selected)
+            var revenueReport = await _apiClient.GetRevenueReportAsync(fromDate, toDate, paymentMethod);
             TotalGrossRevenue = revenueReport.TotalGrossRevenue;
             TotalRefundAmount = revenueReport.TotalRefundAmount;
             TotalNetRevenue = revenueReport.TotalNetRevenue;
@@ -500,8 +548,8 @@ public partial class DashboardViewModel : ObservableObject
                 CheckInDenialReasons.Add(reason);
             }
 
-            // 5. PT Performance Report
-            var ptReport = await _apiClient.GetPtPerformanceReportAsync(fromDate, toDate);
+            // 5. PT Performance Report (filtered by trainerId if selected)
+            var ptReport = await _apiClient.GetPtPerformanceReportAsync(fromDate, toDate, trainerId);
             TotalPtSessionsScheduled = ptReport.TotalSessionsScheduled;
             TotalPtSessionsCompleted = ptReport.TotalSessionsCompleted;
             TotalSessionsCancelled = ptReport.TotalSessionsCancelled;

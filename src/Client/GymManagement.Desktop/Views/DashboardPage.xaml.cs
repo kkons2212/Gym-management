@@ -56,11 +56,25 @@ public sealed partial class DashboardPage : Page
                 {
                     Title = "XUẤT BÁO CÁO THÀNH CÔNG",
                     Content = $"Đã lưu tệp báo cáo Excel thành công tại:\n\n{file.Path}",
+                    PrimaryButtonText = "Mở Tệp",
+                    SecondaryButtonText = "Mở Thư Mục",
                     CloseButtonText = "Đóng",
-                    DefaultButton = ContentDialogButton.Close,
+                    DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = this.XamlRoot
                 };
-                await successDialog.ShowAsync();
+                var dialogResult = await successDialog.ShowAsync();
+                if (dialogResult == ContentDialogResult.Primary)
+                {
+                    await Windows.System.Launcher.LaunchFileAsync(file);
+                }
+                else if (dialogResult == ContentDialogResult.Secondary)
+                {
+                    var folder = await file.GetParentAsync();
+                    if (folder != null)
+                    {
+                        await Windows.System.Launcher.LaunchFolderAsync(folder);
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -110,11 +124,25 @@ public sealed partial class DashboardPage : Page
                 {
                     Title = "XUẤT BÁO CÁO THÀNH CÔNG",
                     Content = $"Đã lưu tệp báo cáo PDF thành công tại:\n\n{file.Path}",
+                    PrimaryButtonText = "Mở Tệp",
+                    SecondaryButtonText = "Mở Thư Mục",
                     CloseButtonText = "Đóng",
-                    DefaultButton = ContentDialogButton.Close,
+                    DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = this.XamlRoot
                 };
-                await successDialog.ShowAsync();
+                var dialogResult = await successDialog.ShowAsync();
+                if (dialogResult == ContentDialogResult.Primary)
+                {
+                    await Windows.System.Launcher.LaunchFileAsync(file);
+                }
+                else if (dialogResult == ContentDialogResult.Secondary)
+                {
+                    var folder = await file.GetParentAsync();
+                    if (folder != null)
+                    {
+                        await Windows.System.Launcher.LaunchFolderAsync(folder);
+                    }
+                }
             }
         }
         catch (Exception ex)

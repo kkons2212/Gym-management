@@ -187,6 +187,37 @@
                     </StackPanel>
                 </Grid>
 
+                <!-- Sub Filter: Specific Criteria per Report Type -->
+                <Grid ColumnSpacing="16" Visibility="{x:Bind ViewModel.IsOverviewVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Phương thức thanh toán:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <ComboBox ItemsSource="{x:Bind ViewModel.PaymentMethodOptions}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedPaymentMethodOption, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  HorizontalAlignment="Stretch"
+                                  Height="36" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnSpacing="16" Visibility="{x:Bind ViewModel.IsPtVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Lọc theo huấn luyện viên:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <ComboBox ItemsSource="{x:Bind ViewModel.TrainerOptions}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedTrainerOption, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  HorizontalAlignment="Stretch"
+                                  Height="36" />
+                    </StackPanel>
+                </Grid>
+
                 <!-- Date Range Validation Warning Banner (UC06 A5.2) -->
                 <Border Background="#2B7F1D1D"
                         BorderBrush="{StaticResource StatusDangerBrush}"
