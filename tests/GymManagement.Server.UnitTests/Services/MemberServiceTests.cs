@@ -505,6 +505,118 @@ public class MemberServiceTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
+    [Fact]
+    public async Task SearchMembersAsync_WhenSubscriptionFrozen_ReturnsFrozenStatusAndRetainsPlanDetails()
+    {
+        // Arrange
+        var user = new User
+        {
+            UserName = "MBR-0001",
+            RoleId = "MEMBER",
+            FullName = "Nguyễn Văn Bảo Lưu",
+            Phone = "0901112233",
+            Email = "baoluu@gym.vn",
+            Status = "ACTIVE"
+        };
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock
+            .Setup(r => r.FindAsync(
+                It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(new List<User> { user });
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync(frozenSub);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        // Act
+        var results = await _sut.SearchMembersAsync(null);
+
+        // Assert
+        results.Should().NotBeNull();
+        results.Should().HaveCount(1);
+        var member = results[0];
+        member.UserName.Should().Be("MBR-0001");
+        member.Status.Should().Be("FROZEN");
+        member.ActivePlanName.Should().Be("PKG-VIP");
+        member.SubscriptionEndDate.Should().Be(frozenSub.EndDate);
+        member.RemainingCheckInSessions.Should().Be(25);
+        member.RemainingPtSessions.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task GetActiveSubscriptionAsync_WhenSubscriptionFrozen_ReturnsSubscriptionDetail()
+    {
+        // Arrange
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        SetupSubscriptionRepo(frozenSub);
+
+        // Act
+        var result = await _sut.GetActiveSubscriptionAsync("MBR-0001");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.SubscriptionId.Should().Be("SUB-00001");
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+    }
+
+    [Fact]
+    public async Task GetMemberProfileAsync_WhenSubscriptionFrozen_IncludesActiveSubscriptionAndReflectsFrozenStatus()
+    {
+        // Arrange
+        SetupUserRepoFindExisting("MBR-0001");
+
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        SetupSubscriptionRepo(frozenSub);
+
+        // Act
+        var profile = await _sut.GetMemberProfileAsync("MBR-0001");
+
+        // Assert
+        profile.Should().NotBeNull();
+        profile.Status.Should().Be("FROZEN");
+        profile.ActiveSubscription.Should().NotBeNull();
+        profile.ActiveSubscription!.Status.Should().Be(SubscriptionStatus.Frozen);
+    }
+
     // =========================================================================
     // PRIVATE SETUP HELPERS
     // =========================================================================

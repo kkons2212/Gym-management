@@ -197,6 +197,19 @@ public sealed partial class MembersPage : Page
             return;
         }
 
+        if (string.Equals(member.Status, "FROZEN", StringComparison.OrdinalIgnoreCase))
+        {
+            var infoDialog = new ContentDialog
+            {
+                Title = "Thông báo gói tập",
+                Content = $"Gói tập của hội viên {member.FullName} hiện đang trong trạng thái bảo lưu.",
+                CloseButtonText = "Đóng",
+                XamlRoot = this.XamlRoot
+            };
+            await infoDialog.ShowAsync();
+            return;
+        }
+
         var dialog = new FreezeSubscriptionDialog(member.FullName, member.EndDate)
         {
             XamlRoot = this.XamlRoot

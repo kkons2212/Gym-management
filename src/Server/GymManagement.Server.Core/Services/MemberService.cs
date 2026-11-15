@@ -88,16 +88,23 @@ public sealed class MemberService : IMemberService
         var result = new List<MemberSearchResponse>(users.Count);
         foreach (var u in users)
         {
+            // Lấy hợp đồng đang hoạt động hoặc đang tạm ngưng bảo lưu (FROZEN)
             var activeSub = await subRepo.FindSingleOrDefaultAsync(
-                s => s.UserName == u.UserName && s.Status == StatusActive,
+                s => s.UserName == u.UserName && (s.Status == StatusActive || s.Status == StatusFrozen),
                 cancellationToken);
+
+            string memberStatus = u.Status ?? string.Empty;
+            if (string.Equals(memberStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase) && activeSub != null && !string.IsNullOrWhiteSpace(activeSub.Status))
+            {
+                memberStatus = activeSub.Status;
+            }
 
             result.Add(new MemberSearchResponse(
                 UserName: u.UserName,
                 FullName: u.FullName ?? string.Empty,
                 Phone: u.Phone ?? string.Empty,
                 Email: u.Email ?? string.Empty,
-                Status: u.Status ?? string.Empty,
+                Status: memberStatus,
                 ActiveSubscriptionId: activeSub?.SubscriptionId,
                 ActivePlanName: activeSub?.PlanId,
                 SubscriptionEndDate: activeSub?.EndDate,
@@ -127,7 +134,7 @@ public sealed class MemberService : IMemberService
 
         var activeSub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
-                s => s.UserName == userName && s.Status == StatusActive,
+                s => s.UserName == userName && (s.Status == StatusActive || s.Status == StatusFrozen),
                 cancellationToken);
 
         return BuildMemberProfileResponse(user, activeSub);
@@ -333,7 +340,7 @@ public sealed class MemberService : IMemberService
 
         var activeSub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
-                s => s.UserName == request.UserName && s.Status == StatusActive,
+                s => s.UserName == request.UserName && (s.Status == StatusActive || s.Status == StatusFrozen),
                 cancellationToken);
 
         return BuildMemberProfileResponse(user, activeSub);
@@ -352,7 +359,7 @@ public sealed class MemberService : IMemberService
 
         var sub = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
-                s => s.UserName == userName && s.Status == StatusActive,
+                s => s.UserName == userName && (s.Status == StatusActive || s.Status == StatusFrozen),
                 cancellationToken);
 
         if (sub == null)
@@ -680,12 +687,18 @@ public sealed class MemberService : IMemberService
             activeSubResponse = MapToSubscriptionDetailResponse(sub);
         }
 
+        string profileStatus = user.Status ?? string.Empty;
+        if (string.Equals(profileStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase) && sub != null && !string.IsNullOrWhiteSpace(sub.Status))
+        {
+            profileStatus = sub.Status;
+        }
+
         return new MemberProfileResponse(
             UserName: user.UserName,
             FullName: user.FullName ?? string.Empty,
             Phone: user.Phone ?? string.Empty,
             Email: user.Email ?? string.Empty,
-            Status: user.Status ?? string.Empty,
+            Status: profileStatus,
             ActiveSubscription: activeSubResponse);
     }
 
