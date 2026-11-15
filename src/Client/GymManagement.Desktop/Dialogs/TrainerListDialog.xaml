@@ -63,11 +63,10 @@
                         <DataTemplate x:DataType="pt:PtProfileDto">
                             <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
                                     BorderThickness="1" CornerRadius="8" Margin="0,3" Padding="10">
-                                <Grid ColumnSpacing="10">
+                                <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
@@ -94,24 +93,14 @@
                                         </TextBlock>
                                     </StackPanel>
 
-                                    <!-- Stats -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="0,0,6,0">
-                                        <StackPanel Orientation="Horizontal" Spacing="3">
-                                            <FontIcon Glyph="&#xE735;" FontSize="11" Foreground="#F59E0B" />
-                                            <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" />
-                                            <TextBlock Text="(" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind ReviewCount}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text=")" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="3">
-                                            <TextBlock Text="Dạy:" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind ActiveStudentsCount}" FontWeight="SemiBold" FontSize="10" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                            <TextBlock Text="HV" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        </StackPanel>
+                                    <!-- Rating -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+                                        <FontIcon Glyph="&#xE735;" FontSize="12" Foreground="#F59E0B" />
+                                        <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Text="(" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind ReviewCount}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="đánh giá)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                     </StackPanel>
-
-                                    <!-- Action Button -->
-                                    <Button Grid.Column="3" Content="Sửa" Click="BtnEditTrainer_Click" Height="28" FontSize="11" Padding="10,0" VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
