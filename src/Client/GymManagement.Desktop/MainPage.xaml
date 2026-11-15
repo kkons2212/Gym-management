@@ -36,25 +36,25 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Bán Gói &amp; Thanh Toán POS (F2)" Tag="Pos">
+                <NavigationViewItem Content="Bán Gói &amp; Thanh Toán" Tag="Pos">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE7BF;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Lịch Sử &amp; In Hóa Đơn (F6)" Tag="Invoices">
+                <NavigationViewItem Content="Lịch Sử &amp; In Hóa Đơn" Tag="Invoices">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8A1;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Lý Hội Viên &amp; Gói Tập (F3)" Tag="Members">
+                <NavigationViewItem Content="Quản Lý Hội Viên &amp; Gói Tập" Tag="Members">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE716;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Lịch Biểu HLV PT (F5)" Tag="Schedule">
+                <NavigationViewItem Content="Lịch Biểu HLV" Tag="Schedule">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE787;" />
                     </NavigationViewItem.Icon>
@@ -66,7 +66,7 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Lý Nhân Sự (RBAC)" Tag="Staff">
+                <NavigationViewItem Content="Quản Lý Nhân Sự" Tag="Staff">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE77B;" />
                     </NavigationViewItem.Icon>
@@ -115,3 +115,5 @@
         </NavigationView>
     </Grid>
 </Page>
+
+
