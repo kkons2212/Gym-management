@@ -10,6 +10,7 @@ public sealed partial class TrainerListDialog : ContentDialog
 {
     private readonly IApiClient _apiClient;
     private List<PtProfileDto> _allTrainers = [];
+    private bool _isInitialized;
 
     private readonly ObservableCollection<PtProfileDto> _displayedTrainers = [];
 
@@ -19,6 +20,7 @@ public sealed partial class TrainerListDialog : ContentDialog
 
         _apiClient = apiClient;
         InitializeComponent();
+        _isInitialized = true;
         LvTrainers.ItemsSource = _displayedTrainers;
 
         Opened += async (s, e) =>
@@ -37,7 +39,11 @@ public sealed partial class TrainerListDialog : ContentDialog
 
     private async Task LoadTrainersAsync()
     {
-        PbLoading.Visibility = Visibility.Visible;
+        if (PbLoading != null)
+        {
+            PbLoading.Visibility = Visibility.Visible;
+        }
+
         try
         {
             var list = await _apiClient.GetTrainersAsync();
@@ -80,15 +86,28 @@ public sealed partial class TrainerListDialog : ContentDialog
         }
         finally
         {
-            PbLoading.Visibility = Visibility.Collapsed;
+            if (PbLoading != null)
+            {
+                PbLoading.Visibility = Visibility.Collapsed;
+            }
         }
     }
 
     private void ApplyFilter()
     {
-        string query = AsbSearch.Text.Trim().ToLowerInvariant();
+        if (!_isInitialized || PnlEmpty == null)
+        {
+            return;
+        }
+
+        string query = string.Empty;
+        if (AsbSearch != null && AsbSearch.Text != null)
+        {
+            query = AsbSearch.Text.Trim().ToLowerInvariant();
+        }
+
         string statusTag = "ALL";
-        if (CboStatusFilter.SelectedItem is ComboBoxItem item && item.Tag != null)
+        if (CboStatusFilter != null && CboStatusFilter.SelectedItem is ComboBoxItem item && item.Tag != null)
         {
             statusTag = item.Tag.ToString()!;
         }
@@ -136,13 +155,16 @@ public sealed partial class TrainerListDialog : ContentDialog
             }
         }
 
-        if (_displayedTrainers.Count == 0)
+        if (PnlEmpty != null)
         {
-            PnlEmpty.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            PnlEmpty.Visibility = Visibility.Collapsed;
+            if (_displayedTrainers.Count == 0)
+            {
+                PnlEmpty.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PnlEmpty.Visibility = Visibility.Collapsed;
+            }
         }
     }
 
