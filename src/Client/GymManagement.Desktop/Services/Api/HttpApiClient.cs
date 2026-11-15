@@ -140,7 +140,7 @@ public sealed class HttpApiClient : IApiClient
                     EndDate: endDate,
                     RemainingCheckInSessions: m.RemainingCheckInSessions,
                     RemainingPtSessions: m.RemainingPtSessions,
-                    SubscriptionId: m.ActiveSubscriptionId
+                    SubscriptionId: m.ActiveSubscriptionId,
                     ActiveSubscriptionId: m.ActiveSubscriptionId,
                     AssignedPtId: m.AssignedPtId
                 ));

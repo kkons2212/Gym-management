@@ -22,7 +22,7 @@ public record MemberDto(
     DateTime? EndDate = null,
     int RemainingCheckInSessions = 0,
     int RemainingPtSessions = 0,
-    string? SubscriptionId = null
+    string? SubscriptionId = null,
     string? ActiveSubscriptionId = null,
     string? AssignedPtId = null
 )

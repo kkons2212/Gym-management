@@ -116,7 +116,11 @@ public sealed partial class MembersPage : Page
         if (result == ContentDialogResult.Primary && dialog.SelectedPlan != null)
         {
             string targetSubId = member.UserName;
-            if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+            if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+            {
+                targetSubId = member.ActiveSubscriptionId;
+            }
+            else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
             {
                 targetSubId = member.SubscriptionId;
             }
@@ -244,7 +248,11 @@ public sealed partial class MembersPage : Page
             {
                 var api = App.GetService<IApiClient>();
                 string targetSubId = member.UserName;
-                if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+                {
+                    targetSubId = member.ActiveSubscriptionId;
+                }
+                else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
                 {
                     targetSubId = member.SubscriptionId;
                 }
@@ -299,7 +307,11 @@ public sealed partial class MembersPage : Page
             {
                 var api = App.GetService<IApiClient>();
                 string targetSubId = member.UserId;
-                if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+                {
+                    targetSubId = member.ActiveSubscriptionId;
+                }
+                else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
                 {
                     targetSubId = member.SubscriptionId;
                 }
