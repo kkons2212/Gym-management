@@ -268,7 +268,6 @@ Cổng thông tin Web Portal (`GymManagement.Web`) được thiết kế theo t�
   * Thu ngân được bấm nút xác nhận thu tiền thủ công ngay khi có bằng chứng chuyển khoản thành công, đi kèm hộp thoại xác nhận nhanh 2 bước để phòng ngừa bấm nhầm.
 * **Tra Cứu Lịch Sử & In Lại Hóa Đơn (`InvoiceHistoryPage.xaml` - UC 05.2):** Tra cứu theo mã `INV-...`/SĐT/ngày; Cung cấp nút in nhiệt chuẩn K80 tức thì và nút xuất file PDF trong $<2$s.
 * **Xử Lý Hủy Hóa Đơn & Hoàn Tiền (`RefundDialog.xaml` - UC 05.3):** Nhập số tiền hoàn ($\le$ gốc), hình thức hoàn và lý do hoàn tiền bắt buộc; chuyển trạng thái hóa đơn sang `REFUNDED`, thu hồi gói dịch vụ và ghi nhận dòng tiền âm vào sổ quỹ doanh thu.
-* **Báo Cáo Doanh Thu Tài Chính (UC 05.4):** Bộ lọc mốc thời gian linh hoạt; tính tổng doanh thu thực thu (Gộp - Hoàn) và cung cấp nút xuất file Excel/PDF.
 
 ---
 

@@ -32,7 +32,7 @@
 | 2.0 | **UC2** | **Quản lý hội viên và gói tập** | Admin / Lễ tân | Quản trị trọn vẹn vòng đời hội viên: tiếp nhận đăng ký mới, cập nhật hồ sơ, gia hạn/nâng cấp gói, bảo lưu thời hạn và hủy đăng ký gói tập. | [UC02.md](UC02.md) |
 | 3.0 | **UC3** | **Thực hiện check-in điểm danh** | Admin / Lễ tân | Kiểm soát quyền vào phòng tập thông qua quét mã QR hoặc nhập mã/SĐT thủ công; kiểm tra hạn dùng, khung giờ, trừ buổi tập và lưu vết lịch sử ra/vào. | [UC03.md](UC03.md) |
 | 4.0 | **UC4** | **Quản lý PT & ca dạy** | Admin | Quản lý hồ sơ chuyên môn PT, phân công PT phụ trách cố định cho hội viên, xếp lịch làm việc theo ca và xử lý xác nhận kết quả các ca tập ngoại lệ. | [UC04.md](UC04.md) |
-| 5.0 | **UC5** | **Quản lý thanh toán & hóa đơn** | Admin / Thu ngân | Lập hóa đơn thu tiền đa phương thức (Tiền mặt, QR, Thẻ POS), tra cứu/in hóa đơn, xử lý hoàn tiền/hủy hóa đơn và theo dõi báo cáo doanh thu tài chính. | [UC05.md](UC05.md) |
+| 5.0 | **UC5** | **Quản lý thanh toán & hóa đơn** | Admin / Thu ngân | Lập hóa đơn thu tiền đa phương thức (Tiền mặt, QR, Thẻ POS), tra cứu/in hóa đơn và xử lý hoàn tiền/hủy hóa đơn. | [UC05.md](UC05.md) |
 | 6.0 | **UC6** | **Quản lý báo cáo & thống kê** | Admin | Cung cấp các báo cáo quản trị trực quan đa chiều: doanh thu, biến động hội viên, lưu lượng check-in theo ca/giờ, hiệu suất làm việc của đội ngũ PT. | [UC06.md](UC06.md) |
 | 7.0 | **UC7** | **Quản lý tài khoản & Danh mục gói tập** | Super Admin | Quản lý tài khoản nhân viên, phân quyền hạn truy cập (RBAC), khóa/mở khóa tài khoản; quản lý danh mục gói tập (thêm, sửa, chuyển trạng thái ngừng kinh doanh). | [UC07.md](UC07.md) |
 | 8.0 | **UC8** | **Quản lý lịch dạy & Học viên** | Huấn luyện viên (PT) | Cổng tác nghiệp dành riêng cho PT: đăng ký khung giờ làm việc rảnh, theo dõi thời khóa biểu tuần, quản lý học viên phụ trách, cập nhật chỉ số InBody và xác nhận hoàn thành ca dạy. | [UC08.md](UC08.md) |
@@ -41,7 +41,7 @@
 
 ---
 
-## 3. Cây Phân Rã Chi Tiết 37 Use Cases
+## 3. Cây Phân Rã Chi Tiết 36 Use Cases
 
 * **1.0 Phân hệ Xác thực:**
   * [UC01: Đăng nhập](UC01.md)
@@ -66,7 +66,6 @@
   * [UC5.1: Lập hóa đơn và Thu tiền](UC05.md)
   * [UC5.2: Tra cứu và in lại hóa đơn](UC05.md)
   * [UC5.3: Xử lý Hủy / Hoàn tiền hóa đơn](UC05.md)
-  * [UC5.4: Xem và xuất báo cáo doanh thu](UC05.md)
 * **6.0 Phân hệ Báo cáo & Thống kê (Admin):**
   * [UC06: Xem báo cáo và thống kê](UC06.md)
 * **7.0 Phân hệ Quản lý Tài khoản & Gói tập (Super Admin):**
@@ -94,7 +93,7 @@
 
 ---
 
-## 4. Bảng Đặc Tả Tóm Tắt Toàn Bộ 37 Use Cases Chi Tiết
+## 4. Bảng Đặc Tả Tóm Tắt Toàn Bộ 36 Use Cases Chi Tiết
 
 | STT | Mã Use Case | Tên Use Case | Tác nhân | Tóm tắt mục tiêu nghiệp vụ | Tiền điều kiện | Hậu điều kiện chính |
 | :---: | :---: | :--- | :---: | :--- | :--- | :--- |
@@ -116,22 +115,21 @@
 | 16 | **UC5.1** | Lập hóa đơn và Thu tiền | Admin/Thu ngân | Lập phiếu thu tiền gói tập, dịch vụ PT, phụ kiện qua Tiền mặt/QR/Thẻ. | Hội viên và dịch vụ thanh toán hợp lệ. | Lưu hóa đơn `PAID`, kích hoạt gói dịch vụ, gửi hóa đơn điện tử. |
 | 17 | **UC5.2** | Tra cứu và in lại hóa đơn | Admin/Thu ngân | Tìm kiếm lịch sử hóa đơn, thực hiện in nhiệt hoặc xuất file PDF. | Hóa đơn đã tồn tại trong hệ thống. | Xuất file PDF hoặc gửi lệnh in nhiệt thành công. |
 | 18 | **UC5.3** | Xử lý Hủy / Hoàn tiền hóa đơn | Admin | Xử lý hoàn tiền cho hội viên theo đúng chính sách hoàn hủy của cơ sở. | Hóa đơn hợp lệ và còn trong thời hạn hoàn tiền. | Chuyển trạng thái `Đã hủy/Hoàn tiền`, ghi giảm doanh thu trong sổ quỹ. |
-| 19 | **UC5.4** | Xem và xuất báo cáo doanh thu | Admin | Tổng hợp dữ liệu doanh thu theo mốc thời gian và xuất file Excel/PDF. | Đã đăng nhập vào hệ thống. | Báo cáo doanh thu hiển thị trực quan và tải file về máy. |
-| 20 | **UC06** | Xem báo cáo và thống kê | Admin | Xem các báo cáo kinh doanh: doanh thu, hội viên, điểm danh, PT. | Có quyền truy cập báo cáo quản trị. | Hiển thị bảng số liệu chi tiết kèm biểu đồ trực quan hóa. |
-| 21 | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | Super Admin | Cấp tài khoản nhân viên mới và gán vai trò quyền hạn (RBAC). | Đăng nhập bằng tài khoản Quản trị cấp cao nhất. | Lưu tài khoản nhân viên mới vào CSDL với quyền hạn tương ứng. |
-| 22 | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | Super Admin | Chỉnh sửa quyền hoặc thông tin nhân sự; chặn tự tước quyền của chính mình. | Tài khoản nhân sự cần sửa đã tồn tại. | Thông tin và quyền hạn mới được cập nhật vào CSDL. |
-| 23 | **UC 7.1.3** | Khóa / Mở khóa tài khoản | Super Admin | Khóa truy cập tài khoản vi phạm hoặc mở khóa; ngăn tự khóa tài khoản mình. | Tài khoản nhân sự đã tồn tại. | Cập nhật trạng thái `ACTIVE`/`LOCKED` trong CSDL. |
-| 24 | **UC 7.2.1** | Thêm gói tập | Super Admin | Tạo mới gói tập vào danh mục (đơn giá, thời hạn, số buổi, quyền lợi). | Đăng nhập bằng quyền Quản trị cấp cao nhất. | Gói tập mới hiển thị trên danh mục bán lẻ của phòng gym. |
-| 25 | **UC 7.2.2** | Sửa gói tập | Super Admin | Điều chỉnh giá bán, thời hạn hoặc đổi trạng thái kinh doanh của gói. | Gói tập cần sửa đã tồn tại trong danh mục. | Thông tin gói tập mới được cập nhật trong CSDL. |
-| 26 | **UC 7.2.3** | Xóa gói tập | Super Admin | Xóa gói tập chưa phát sinh giao dịch; nếu đã có hội viên thì chuyển ngừng bán. | Gói tập tồn tại trong danh mục. | Xóa khỏi CSDL hoặc chuyển trạng thái `Ngừng kinh doanh`. |
-| 27 | **UC 8.1.1** | Đăng ký lịch rảnh | PT | PT chủ động đăng ký các ca rảnh trong tuần; chặn hủy ca đã có người đặt. | Đăng nhập tài khoản PT hợp lệ. | Lịch rảnh được lưu vào CSDL để học viên phụ trách nhìn thấy. |
-| 28 | **UC 8.1.2** | Xem lịch dạy theo tuần | PT | Tra cứu lịch làm việc biểu diễn theo lưới thời gian các ngày trong tuần. | Đăng nhập tài khoản PT hợp lệ. | Lịch dạy chi tiết hiển thị trực quan theo tuần. |
-| 29 | **UC 8.2.1** | Xem danh sách học viên | PT | Theo dõi học viên đang trực tiếp phụ trách, số buổi còn lại và lịch sử tập. | Đăng nhập tài khoản PT hợp lệ. | Danh sách học viên và thông tin gói tập hiển thị đầy đủ. |
-| 30 | **UC 8.2.2** | Ghi chú tiến độ / Chỉ số (InBody) | PT | Nhập số đo InBody định kỳ (cân nặng, % mỡ, cơ) và ghi chú buổi tập. | Đã chọn học viên trong danh sách phụ trách. | Bản ghi InBody mới được lưu vào CSDL theo thời gian. |
-| 31 | **UC 8.2.3** | Xác nhận hoàn thành ca tập | PT | Xác nhận ca tập đã/đang diễn ra, hệ thống tự động trừ 1 buổi tập của học viên. | Ca tập đã đến giờ hoặc đang diễn ra. | Trạng thái ca chuyển `Hoàn thành`, trừ 1 buổi trong gói học viên. |
-| 32 | **UC 9.1** | Quản lý thông tin cá nhân | Member | Hội viên tra cứu tình trạng gói tập và tự sửa thông tin liên hệ cho phép. | Đăng nhập tài khoản hội viên hợp lệ. | Thông tin cá nhân mới được cập nhật; xem rõ số buổi và hạn dùng. |
-| 33 | **UC 9.2** | Xem lịch sử tập luyện | Member | Xem lại toàn bộ lịch sử điểm danh check-in và ca tập PT đã tham gia. | Đăng nhập tài khoản hội viên hợp lệ. | Dòng thời gian lịch sử điểm danh và ca tập hiển thị theo bộ lọc. |
-| 34 | **UC 10.1** | Đặt lịch tập | Member | Tra cứu ca trống của PT phụ trách cố định và gửi yêu cầu giữ chỗ. | Gói PT còn buổi; đã được gán PT phụ trách cố định. | Lưu lịch hẹn mới; ca dạy PT chuyển sang trạng thái đã đặt. |
-| 35 | **UC 10.2** | Hủy lịch tập | Member | Hủy ca tập đã đặt; hoàn buổi nếu trước giờ quy định, cảnh báo phạt nếu trễ. | Có lịch tập sắp tới ở trạng thái đã đặt. | Chuyển ca sang `Đã hủy`, mở lại ca cho PT; hoàn buổi nếu đúng hạn. |
-| 36 | **UC 10.3** | Đánh giá | Member | Chấm điểm sao (1–5) và nhận xét chất lượng ca tập sau khi hoàn tất. | Buổi tập ở trạng thái `Hoàn thành` chưa được đánh giá. | Lưu đánh giá vào CSDL, cập nhật điểm đánh giá trung bình của PT. |
-| 37 | **UC 10.4** | Đổi lịch tập | Member | Chuyển ca tập đã đặt sang một ca trống khác của cùng PT phụ trách. | Có lịch tập sắp tới đã đặt thành công. | Giải phóng ca cũ, chuyển thông tin lịch tập sang ca mới. |
+| 19 | **UC06** | Xem báo cáo và thống kê | Admin | Xem các báo cáo kinh doanh: doanh thu, hội viên, điểm danh, PT. | Có quyền truy cập báo cáo quản trị. | Hiển thị bảng số liệu chi tiết kèm biểu đồ trực quan hóa. |
+| 20 | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | Super Admin | Cấp tài khoản nhân viên mới và gán vai trò quyền hạn (RBAC). | Đăng nhập bằng tài khoản Quản trị cấp cao nhất. | Lưu tài khoản nhân viên mới vào CSDL với quyền hạn tương ứng. |
+| 21 | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | Super Admin | Chỉnh sửa quyền hoặc thông tin nhân sự; chặn tự tước quyền của chính mình. | Tài khoản nhân sự cần sửa đã tồn tại. | Thông tin và quyền hạn mới được cập nhật vào CSDL. |
+| 22 | **UC 7.1.3** | Khóa / Mở khóa tài khoản | Super Admin | Khóa truy cập tài khoản vi phạm hoặc mở khóa; ngăn tự khóa tài khoản mình. | Tài khoản nhân sự đã tồn tại. | Cập nhật trạng thái `ACTIVE`/`LOCKED` trong CSDL. |
+| 23 | **UC 7.2.1** | Thêm gói tập | Super Admin | Tạo mới gói tập vào danh mục (đơn giá, thời hạn, số buổi, quyền lợi). | Đăng nhập bằng quyền Quản trị cấp cao nhất. | Gói tập mới hiển thị trên danh mục bán lẻ của phòng gym. |
+| 24 | **UC 7.2.2** | Sửa gói tập | Super Admin | Điều chỉnh giá bán, thời hạn hoặc đổi trạng thái kinh doanh của gói. | Gói tập cần sửa đã tồn tại trong danh mục. | Thông tin gói tập mới được cập nhật trong CSDL. |
+| 25 | **UC 7.2.3** | Xóa gói tập | Super Admin | Xóa gói tập chưa phát sinh giao dịch; nếu đã có hội viên thì chuyển ngừng bán. | Gói tập tồn tại trong danh mục. | Xóa khỏi CSDL hoặc chuyển trạng thái `Ngừng kinh doanh`. |
+| 26 | **UC 8.1.1** | Đăng ký lịch rảnh | PT | PT chủ động đăng ký các ca rảnh trong tuần; chặn hủy ca đã có người đặt. | Đăng nhập tài khoản PT hợp lệ. | Lịch rảnh được lưu vào CSDL để học viên phụ trách nhìn thấy. |
+| 27 | **UC 8.1.2** | Xem lịch dạy theo tuần | PT | Tra cứu lịch làm việc biểu diễn theo lưới thời gian các ngày trong tuần. | Đăng nhập tài khoản PT hợp lệ. | Lịch dạy chi tiết hiển thị trực quan theo tuần. |
+| 28 | **UC 8.2.1** | Xem danh sách học viên | PT | Theo dõi học viên đang trực tiếp phụ trách, số buổi còn lại và lịch sử tập. | Đăng nhập tài khoản PT hợp lệ. | Danh sách học viên và thông tin gói tập hiển thị đầy đủ. |
+| 29 | **UC 8.2.2** | Ghi chú tiến độ / Chỉ số (InBody) | PT | Nhập số đo InBody định kỳ (cân nặng, % mỡ, cơ) và ghi chú buổi tập. | Đã chọn học viên trong danh sách phụ trách. | Bản ghi InBody mới được lưu vào CSDL theo thời gian. |
+| 30 | **UC 8.2.3** | Xác nhận hoàn thành ca tập | PT | Xác nhận ca tập đã/đang diễn ra, hệ thống tự động trừ 1 buổi tập của học viên. | Ca tập đã đến giờ hoặc đang diễn ra. | Trạng thái ca chuyển `Hoàn thành`, trừ 1 buổi trong gói học viên. |
+| 31 | **UC 9.1** | Quản lý thông tin cá nhân | Member | Hội viên tra cứu tình trạng gói tập và tự sửa thông tin liên hệ cho phép. | Đăng nhập tài khoản hội viên hợp lệ. | Thông tin cá nhân mới được cập nhật; xem rõ số buổi và hạn dùng. |
+| 32 | **UC 9.2** | Xem lịch sử tập luyện | Member | Xem lại toàn bộ lịch sử điểm danh check-in và ca tập PT đã tham gia. | Đăng nhập tài khoản hội viên hợp lệ. | Dòng thời gian lịch sử điểm danh và ca tập hiển thị theo bộ lọc. |
+| 33 | **UC 10.1** | Đặt lịch tập | Member | Tra cứu ca trống của PT phụ trách cố định và gửi yêu cầu giữ chỗ. | Gói PT còn buổi; đã được gán PT phụ trách cố định. | Lưu lịch hẹn mới; ca dạy PT chuyển sang trạng thái đã đặt. |
+| 34 | **UC 10.2** | Hủy lịch tập | Member | Hủy ca tập đã đặt; hoàn buổi nếu trước giờ quy định, cảnh báo phạt nếu trễ. | Có lịch tập sắp tới ở trạng thái đã đặt. | Chuyển ca sang `Đã hủy`, mở lại ca cho PT; hoàn buổi nếu đúng hạn. |
+| 35 | **UC 10.3** | Đánh giá | Member | Chấm điểm sao (1–5) và nhận xét chất lượng ca tập sau khi hoàn tất. | Buổi tập ở trạng thái `Hoàn thành` chưa được đánh giá. | Lưu đánh giá vào CSDL, cập nhật điểm đánh giá trung bình của PT. |
+| 36 | **UC 10.4** | Đổi lịch tập | Member | Chuyển ca tập đã đặt sang một ca trống khác của cùng PT phụ trách. | Có lịch tập sắp tới đã đặt thành công. | Giải phóng ca cũ, chuyển thông tin lịch tập sang ca mới. |

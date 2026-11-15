@@ -181,7 +181,7 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
 * **2.4 PT Scheduling & Progress Module (`IPtService`):**
   * Quản trị hồ sơ PT, phân công PT cố định cho học viên, thuật toán kiểm tra chống xung đột lịch dạy (Overlapping Check), hội viên đặt/đổi/hủy ca (áp dụng quy tắc phạt không hoàn buổi nếu hủy $< 2\text{h}$), cập nhật số đo InBody định kỳ, xác nhận hoàn thành ca tập, ghi nhận đánh giá sao (UC04, UC08, UC10).
 * **2.5 Billing & Financial Module (`IBillingService`):**
-  * Lập hóa đơn POS đa dịch vụ, tích hợp sinh mã VietQR động chuẩn NAPAS, xử lý hủy hóa đơn và hoàn tiền theo chính sách, trích xuất báo cáo doanh thu tài chính (UC05).
+  * Lập hóa đơn POS đa dịch vụ, tích hợp sinh mã VietQR động chuẩn NAPAS, xử lý hủy hóa đơn và hoàn tiền theo chính sách (UC05).
 * **2.6 Reporting & BI Analytics Module (`IReportService`):**
   * Tổng hợp số liệu đa chiều: Doanh thu thực thu, biến động hội viên mới/tái tục, lưu lượng check-in theo khung giờ, hiệu suất giảng dạy và điểm đánh giá của PT; xuất dữ liệu ra file Excel (.xlsx) và PDF (UC06).
 * **2.7 System Configuration & Catalog Module (`ISystemSettingService`):**

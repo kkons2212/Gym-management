@@ -258,18 +258,6 @@ graph TD
   * *(Business Logic):* Transaction hoàn tiền: Đổi trạng thái Hóa đơn $\rightarrow$ Thu hồi gói tập/dịch vụ $\rightarrow$ Ghi giảm trừ doanh thu.
   * *(Data Access):* Cập nhật `Invoice` và lưu bản ghi vào `Invoice`.
 
-#### ● User Story 05.4: Xem và xuất báo cáo doanh thu tài chính (Tương ứng UC 5.4)
-* **Mô tả:** Là Admin, tôi cần xem biểu đồ thống kê doanh thu theo mốc thời gian và xuất báo cáo ra file Excel/PDF để đối soát kế toán.
-* **Độ ưu tiên:** `Must have` | **Story Point:** `5`
-* **Tiêu chí chấp nhận (AC):**
-  * Bộ lọc thời gian: Hôm nay, Tuần này, Tháng này, hoặc Tùy chỉnh (Từ ngày - Đến ngày).
-  * Hiển thị trực quan: Tổng doanh thu, doanh thu theo gói tập, doanh thu theo dịch vụ PT, số tiền đã hoàn hủy.
-  * Cung cấp nút xuất báo cáo ra file Excel (.xlsx) và PDF định dạng chuẩn có logo và dấu thời gian.
-* **Danh sách task triển khai 3 lớp:**
-  * *(Presentation):* Tab báo cáo doanh thu trên module thanh toán kèm biểu đồ trực quan.
-  * *(Business Logic):* Tính toán tổng hợp số liệu doanh thu thực thu (Thu - Hoàn), xuất tệp Excel/PDF.
-  * *(Data Access):* Truy vấn tổng hợp dữ liệu từ `Invoice` và `Invoice`.
-
 ---
 
 ## THEME 3: ĐIỂM DANH, KIỂM SOÁT VÀO PHÒNG & BÁO CÁO QUẢN TRỊ
@@ -584,7 +572,6 @@ Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Ph�
 | **UC05: Quản lý Thanh toán & Hóa đơn** | **UC 5.1** | Lập hóa đơn và Thu tiền | US 05.1 | POS Billing Counter View | `IBillingService` | `Invoice` |
 | | **UC 5.2** | Tra cứu và in lại hóa đơn | US 05.2 | Invoice History & PDF View | `IBillingService` | `Invoice` |
 | | **UC 5.3** | Xử lý Hủy / Hoàn tiền hóa đơn | US 05.3 | Refund Process Modal | `IBillingService`, `IMemberService` | `Invoice`, `MemberSubscription` |
-| | **UC 5.4** | Xem và xuất báo cáo doanh thu | US 05.4 | Financial Revenue Tab | `IBillingService`, `IReportService` | `Invoice` |
 | **UC06: Báo cáo & Thống kê** | **UC06** | Xem báo cáo và thống kê (BI & Export) | US 06.1, US 06.2 | BI Analytics Dashboard | `IReportService` | Views / Aggregate Queries |
 | **UC07: Quản Lý Tài Khoản & Danh mục Gói Tập** | **UC 7.1.1** | Tạo mới tài khoản và phân quyền | US 07.1 | Staff Account Create Modal | `ISystemSettingService` | `[User]`, `Role` |
 | | **UC 7.1.2** | Cập nhật tài khoản và phân quyền | US 07.2 | Staff Account Edit Modal | `ISystemSettingService` | `[User]`, `Role` |
