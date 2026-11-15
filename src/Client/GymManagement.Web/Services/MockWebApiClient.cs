@@ -189,7 +189,26 @@ public sealed class MockWebApiClient : IWebApiClient
             string.Equals(u.UserId, request.Username, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(u.Email, request.Username, StringComparison.OrdinalIgnoreCase));
 
-        if (user == null || request.Password != "123456")
+        if (user == null)
+        {
+            throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
+        }
+
+        bool isPasswordValid = false;
+        if (string.Equals(user.Role, "PT", StringComparison.OrdinalIgnoreCase) && request.Password == "trainer123")
+        {
+            isPasswordValid = true;
+        }
+        else if (string.Equals(user.Role, "Member", StringComparison.OrdinalIgnoreCase) && request.Password == "member123")
+        {
+            isPasswordValid = true;
+        }
+        else if (request.Password == "admin123" || request.Password == "123456")
+        {
+            isPasswordValid = true;
+        }
+
+        if (!isPasswordValid)
         {
             throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
         }

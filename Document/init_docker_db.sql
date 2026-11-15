@@ -351,7 +351,7 @@ BEGIN
         N'Nguyễn Văn Thành (PT)',
         '0912345678',
         'thanh.pt@gymsystem.vn',
-        '$2a$11$zHVoiwSnJ8lNoqdDi11jCubfv5Q7aiecT7kpeSCTOY4FKMeYlWjyu',
+        '$2a$11$r58Gvigp4dk.ItmzDGiHg.CGNdE9r9UzD8nrnzeGCsyguC/C.FuKu', -- trainer123
         1,
         'ACTIVE',
         CAST(GETDATE() AS DATE)
@@ -359,7 +359,10 @@ BEGIN
 END
 ELSE
 BEGIN
-    UPDATE dbo.[User] SET FullName = N'Nguyễn Văn Thành (PT)' WHERE UserName = 'pt01';
+    UPDATE dbo.[User] 
+    SET FullName = N'Nguyễn Văn Thành (PT)', 
+        PasswordHash = '$2a$11$r58Gvigp4dk.ItmzDGiHg.CGNdE9r9UzD8nrnzeGCsyguC/C.FuKu' 
+    WHERE UserName = 'pt01';
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserName = 'member01')
@@ -371,7 +374,7 @@ BEGIN
         N'Trần Văn An',
         '0987654321',
         'an.tran@example.com',
-        '$2a$11$zHVoiwSnJ8lNoqdDi11jCubfv5Q7aiecT7kpeSCTOY4FKMeYlWjyu',
+        '$2a$11$3TJwUM2sR5AQA2XX7Io15esquziOZIQdKSZtti2TUEbcyK7DzbIwu', -- member123
         1,
         'ACTIVE',
         CAST(GETDATE() AS DATE)
@@ -379,7 +382,10 @@ BEGIN
 END
 ELSE
 BEGIN
-    UPDATE dbo.[User] SET FullName = N'Trần Văn An' WHERE UserName = 'member01';
+    UPDATE dbo.[User] 
+    SET FullName = N'Trần Văn An', 
+        PasswordHash = '$2a$11$3TJwUM2sR5AQA2XX7Io15esquziOZIQdKSZtti2TUEbcyK7DzbIwu' 
+    WHERE UserName = 'member01';
 END
 GO
 
