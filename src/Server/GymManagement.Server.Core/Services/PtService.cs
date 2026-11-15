@@ -683,13 +683,29 @@ public sealed class PtService : IPtService
                     s => s.UserName == request.MemberId && s.Status == StatusActive,
                     cancellationToken);
 
-            if (subscriptions.Count == 0)
+            MemberSubscription? subscription = null;
+            if (subscriptions != null && subscriptions.Count > 0)
+            {
+                subscription = subscriptions.FirstOrDefault(s => s.RemainingPtSessions > 0);
+                if (subscription == null)
+                {
+                    subscription = subscriptions.FirstOrDefault();
+                }
+            }
+            else
+            {
+                subscription = await _unitOfWork.Repository<MemberSubscription>()
+                    .FindSingleOrDefaultAsync(
+                        s => s.UserName == request.MemberId && s.Status == StatusActive,
+                        cancellationToken);
+            }
+
+            if (subscription == null)
             {
                 throw new BusinessRuleException("Hội viên chưa có gói tập đang hoạt động.");
             }
 
-            var subscription = subscriptions.FirstOrDefault(s => s.RemainingPtSessions > 0);
-            if (subscription == null)
+            if (subscription.RemainingPtSessions <= 0)
             {
                 throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng trong gói hiện tại.");
             }
@@ -1332,10 +1348,21 @@ public sealed class PtService : IPtService
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
 
-        var sub = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
-        if (sub == null)
+        MemberSubscription? sub = null;
+        if (subs != null && subs.Count > 0)
         {
-            sub = subs.FirstOrDefault();
+            sub = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
+            if (sub == null)
+            {
+                sub = subs.FirstOrDefault();
+            }
+        }
+        else
+        {
+            sub = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(
+                    s => s.UserName == memberUserName && s.Status == StatusActive,
+                    cancellationToken);
         }
 
         if (sub == null || sub.RemainingPtSessions <= 0)
@@ -1355,7 +1382,18 @@ public sealed class PtService : IPtService
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
 
-        var sub = subs.FirstOrDefault();
+        MemberSubscription? sub = null;
+        if (subs != null && subs.Count > 0)
+        {
+            sub = subs.FirstOrDefault();
+        }
+        else
+        {
+            sub = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(
+                    s => s.UserName == memberUserName && s.Status == StatusActive,
+                    cancellationToken);
+        }
 
         if (sub == null)
         {

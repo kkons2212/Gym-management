@@ -354,6 +354,8 @@ public class PtServiceTests
         var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
         subRepoMock.Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscription);
+        subRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<MemberSubscription> { subscription });
         _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
 
         var availRepoMock = new Mock<IGenericRepository<PTAvailability>>();
