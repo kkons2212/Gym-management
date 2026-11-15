@@ -50,8 +50,8 @@ public interface IApiClient
     // Reports & BI (UC06)
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();
     Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null);
-    Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null);
-    Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null);
+    Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null);
+    Task<byte[]> ExportPdfReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null);
 
     // Staff RBAC (UC07)
     Task<IReadOnlyList<UserSessionDto>> GetUsersAsync();

@@ -8,7 +8,7 @@ namespace GymManagement.Server.Core.Services.Reporting;
 /// Lớp bổ trợ đóng gói và kết xuất dữ liệu báo cáo sang định dạng Excel (.xlsx) và PDF (.pdf).
 /// Sử dụng hoàn toàn thư viện chuẩn .NET BCL (ZipArchive, Streams) đảm bảo hiệu năng cao và không phụ thuộc bên ngoài.
 /// </summary>
-internal static class ReportExportHelper
+public static class ReportExportHelper
 {
     private const string ContentTypeExcel = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string ContentTypePdf = "application/pdf";

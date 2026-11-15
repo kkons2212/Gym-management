@@ -10,6 +10,8 @@ using GymManagement.Server.Core.DTOs.Settings;
 using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
+using GymManagement.Server.Core.Services.Reporting;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace GymManagement.Desktop.Services.Api;
@@ -706,14 +708,76 @@ public class MockApiClient : IApiClient
         return Task.FromResult(dto);
     }
 
-    public Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        return Task.FromResult(new byte[] { 0x50, 0x4B, 0x03, 0x04 });
+        var (title, headers, rows) = BuildMockExportData(reportType ?? "REVENUE");
+        var (_, bytes) = ReportExportHelper.GenerateExcel(title, headers, rows);
+        return Task.FromResult(bytes);
     }
 
-    public Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public Task<byte[]> ExportPdfReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        return Task.FromResult(new byte[] { 0x25, 0x50, 0x44, 0x46 });
+        var (title, headers, rows) = BuildMockExportData(reportType ?? "REVENUE");
+        var (_, bytes) = ReportExportHelper.GeneratePdf(title, headers, rows);
+        return Task.FromResult(bytes);
+    }
+
+    private (string Title, List<string> Headers, List<IReadOnlyList<string>> Rows) BuildMockExportData(string reportType)
+    {
+        string typeUpper = reportType.Trim().ToUpperInvariant();
+        if (typeUpper == "MEMBER")
+        {
+            var title = "BAO CAO BIEN DONG HOI VIEN";
+            var headers = new List<string> { "Chi so", "So luong", "Ty le (%)" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "Tong hoi vien dang hoat dong", _members.Count.ToString(CultureInfo.InvariantCulture), "-" },
+                new List<string> { "Hoi vien moi trong thang", "12", "-" },
+                new List<string> { "Luot gia han goi tap", "8", "-" },
+                new List<string> { "Goi tap dang bao luu", "2", "-" },
+                new List<string> { "Ty le duy tri hoi vien", "-", "88.50%" }
+            };
+            return (title, headers, rows);
+        }
+        else if (typeUpper == "CHECKIN")
+        {
+            var title = "BAO CAO LUU LUONG CHECK-IN";
+            var headers = new List<string> { "Khung gio", "So luot diem danh" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "06:00 - 08:00", "28" },
+                new List<string> { "08:00 - 11:30", "45" },
+                new List<string> { "14:00 - 17:00", "32" },
+                new List<string> { "17:00 - 20:00", "86" },
+                new List<string> { "20:00 - 22:00", "24" }
+            };
+            return (title, headers, rows);
+        }
+        else if (typeUpper == "PT")
+        {
+            var title = "BAO CAO HIEU SUAT HUAN LUYEN VIEN (PT)";
+            var headers = new List<string> { "Ma PT", "Ten PT", "Ca hoan tat", "Hoc vien", "Diem danh gia" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "pt01", "Nguyen Van Thanh", "38", "12", "4.9 *" },
+                new List<string> { "pt02", "Tran Thi Mai", "42", "15", "4.8 *" },
+                new List<string> { "pt03", "Le Hoang Nam", "29", "8", "4.7 *" }
+            };
+            return (title, headers, rows);
+        }
+        else
+        {
+            var title = "BAO CAO DOANH THU THUC THU";
+            var headers = new List<string> { "Nhom goi tap", "So luot", "Doanh thu (VND)" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "Goi 1 Nam VIP", "10", "45,000,000" },
+                new List<string> { "Goi 6 Thang Platinum", "9", "22,500,000" },
+                new List<string> { "Goi 3 Thang The Thao", "10", "13,500,000" },
+                new List<string> { "Goi 1 Thang Tieu Chuan", "13", "6,500,000" }
+            };
+            return (title, headers, rows);
+        }
     }
 
     public Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()

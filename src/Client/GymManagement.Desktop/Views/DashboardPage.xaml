@@ -38,7 +38,13 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <ProgressRing IsActive="{x:Bind ViewModel.IsExporting, Mode=OneWay}"
+                              Width="20" Height="20"
+                              Foreground="{StaticResource AccentPrimaryBrush}"
+                              Visibility="{x:Bind ViewModel.IsExporting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                              VerticalAlignment="Center" />
                 <Button Click="OnExportExcelClicked"
+                        IsEnabled="{x:Bind ViewModel.CanExport, Mode=OneWay}"
                         Background="{StaticResource BgCardBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}"
                         Height="38">
@@ -48,6 +54,7 @@
                     </StackPanel>
                 </Button>
                 <Button Click="OnExportPdfClicked"
+                        IsEnabled="{x:Bind ViewModel.CanExport, Mode=OneWay}"
                         Background="{StaticResource BgCardBrush}"
                         BorderBrush="{StaticResource BorderSubtleBrush}"
                         Height="38">
@@ -57,6 +64,7 @@
                     </StackPanel>
                 </Button>
                 <Button Command="{x:Bind ViewModel.LoadDashboardCommand}"
+                        IsEnabled="{x:Bind ViewModel.CanExport, Mode=OneWay}"
                         Background="{StaticResource AccentPrimaryBrush}"
                         Foreground="#FFFFFF"
                         FontWeight="SemiBold"

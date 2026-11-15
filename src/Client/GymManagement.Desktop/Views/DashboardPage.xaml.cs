@@ -29,13 +29,15 @@ public sealed partial class DashboardPage : Page
 
     private async void OnExportExcelClicked(object sender, RoutedEventArgs e)
     {
-        if (ViewModel == null)
+        if (ViewModel == null || ViewModel.IsExporting)
         {
             return;
         }
 
         try
         {
+            ViewModel.IsExporting = true;
+
             var savePicker = new Windows.Storage.Pickers.FileSavePicker();
             savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             savePicker.FileTypeChoices.Add("Excel Workbook (*.xlsx)", new List<string> { ".xlsx" });
@@ -73,17 +75,23 @@ public sealed partial class DashboardPage : Page
             };
             await errorDialog.ShowAsync();
         }
+        finally
+        {
+            ViewModel.IsExporting = false;
+        }
     }
 
     private async void OnExportPdfClicked(object sender, RoutedEventArgs e)
     {
-        if (ViewModel == null)
+        if (ViewModel == null || ViewModel.IsExporting)
         {
             return;
         }
 
         try
         {
+            ViewModel.IsExporting = true;
+
             var savePicker = new Windows.Storage.Pickers.FileSavePicker();
             savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             savePicker.FileTypeChoices.Add("PDF Document (*.pdf)", new List<string> { ".pdf" });
@@ -120,6 +128,10 @@ public sealed partial class DashboardPage : Page
                 XamlRoot = this.XamlRoot
             };
             await errorDialog.ShowAsync();
+        }
+        finally
+        {
+            ViewModel.IsExporting = false;
         }
     }
 }

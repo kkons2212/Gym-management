@@ -411,59 +411,73 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<RevenueReportDto>(response);
     }
 
-    public async Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        string url = "/api/v1/reports/export/excel";
-        var queryParams = new List<string>();
+        var requestPayload = new ExportReportRequest(
+            ReportType: reportType ?? "REVENUE",
+            Format: "EXCEL",
+            FromDate: fromDate.HasValue ? DateOnly.FromDateTime(fromDate.Value) : null,
+            ToDate: toDate.HasValue ? DateOnly.FromDateTime(toDate.Value) : null,
+            FilterId: null
+        );
 
-        if (fromDate.HasValue)
-        {
-            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
-        }
-
-        if (toDate.HasValue)
-        {
-            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
-        }
-
-        if (queryParams.Count > 0)
-        {
-            url += "?" + string.Join("&", queryParams);
-        }
-
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/reports/export", requestPayload);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        // Dòng phụ: Thử qua GET endpoint nếu POST không phản hồi
+        string url = $"/api/v1/reports/export/excel?reportType={Uri.EscapeDataString(reportType ?? "REVENUE")}";
+        if (fromDate.HasValue)
+        {
+            url += $"&fromDate={fromDate.Value:yyyy-MM-dd}";
+        }
+        if (toDate.HasValue)
+        {
+            url += $"&toDate={toDate.Value:yyyy-MM-dd}";
+        }
+
+        var getResponse = await _httpClient.GetAsync(url);
+        if (getResponse.IsSuccessStatusCode)
+        {
+            return await getResponse.Content.ReadAsByteArrayAsync();
         }
 
         throw new BusinessRuleException("Không thể tải file báo cáo Excel từ máy chủ.");
     }
 
-    public async Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<byte[]> ExportPdfReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        string url = "/api/v1/reports/export/pdf";
-        var queryParams = new List<string>();
+        var requestPayload = new ExportReportRequest(
+            ReportType: reportType ?? "REVENUE",
+            Format: "PDF",
+            FromDate: fromDate.HasValue ? DateOnly.FromDateTime(fromDate.Value) : null,
+            ToDate: toDate.HasValue ? DateOnly.FromDateTime(toDate.Value) : null,
+            FilterId: null
+        );
 
-        if (fromDate.HasValue)
-        {
-            queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
-        }
-
-        if (toDate.HasValue)
-        {
-            queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
-        }
-
-        if (queryParams.Count > 0)
-        {
-            url += "?" + string.Join("&", queryParams);
-        }
-
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/reports/export", requestPayload);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        // Dòng phụ: Thử qua GET endpoint nếu POST không phản hồi
+        string url = $"/api/v1/reports/export/pdf?reportType={Uri.EscapeDataString(reportType ?? "REVENUE")}";
+        if (fromDate.HasValue)
+        {
+            url += $"&fromDate={fromDate.Value:yyyy-MM-dd}";
+        }
+        if (toDate.HasValue)
+        {
+            url += $"&toDate={toDate.Value:yyyy-MM-dd}";
+        }
+
+        var getResponse = await _httpClient.GetAsync(url);
+        if (getResponse.IsSuccessStatusCode)
+        {
+            return await getResponse.Content.ReadAsByteArrayAsync();
         }
 
         throw new BusinessRuleException("Không thể tải file báo cáo PDF từ máy chủ.");

@@ -26,6 +26,27 @@ public partial class DashboardViewModel : ObservableObject
     private bool _isLoading;
 
     [ObservableProperty]
+    private bool _isExporting;
+
+    public bool CanExport
+    {
+        get
+        {
+            return !IsExporting && !IsLoading;
+        }
+    }
+
+    partial void OnIsExportingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanExport));
+    }
+
+    partial void OnIsLoadingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanExport));
+    }
+
+    [ObservableProperty]
     private string? _errorMessage;
 
     [ObservableProperty]
@@ -52,14 +73,14 @@ public partial class DashboardViewModel : ObservableObject
         _apiClient = apiClient;
     }
 
-    public async Task<byte[]> GetExcelBytesAsync()
+    public async Task<byte[]> GetExcelBytesAsync(string reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        return await _apiClient.ExportExcelReportAsync();
+        return await _apiClient.ExportExcelReportAsync(reportType, fromDate, toDate);
     }
 
-    public async Task<byte[]> GetPdfBytesAsync()
+    public async Task<byte[]> GetPdfBytesAsync(string reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
     {
-        return await _apiClient.ExportPdfReportAsync();
+        return await _apiClient.ExportPdfReportAsync(reportType, fromDate, toDate);
     }
 
     [RelayCommand]
