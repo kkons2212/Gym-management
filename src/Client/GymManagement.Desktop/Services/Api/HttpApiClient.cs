@@ -138,7 +138,8 @@ public sealed class HttpApiClient : IApiClient
                     ActivePlanName: m.ActivePlanName,
                     EndDate: endDate,
                     RemainingCheckInSessions: m.RemainingCheckInSessions,
-                    RemainingPtSessions: m.RemainingPtSessions
+                    RemainingPtSessions: m.RemainingPtSessions,
+                    SubscriptionId: m.ActiveSubscriptionId
                 ));
             }
         }

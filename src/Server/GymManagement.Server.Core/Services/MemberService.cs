@@ -378,12 +378,8 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            // Lấy subscription cũ để lấy UserName
-            var oldSub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            // Lấy subscription cũ để lấy UserName (hỗ trợ cả SubscriptionId và UserName)
+            var oldSub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
 
             // Tạo subscription mới với gói được chọn
             int subCount = await _unitOfWork.Repository<MemberSubscription>()
@@ -433,11 +429,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId && s.Status == StatusActive,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập đang hoạt động: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: true, cancellationToken);
 
             // Nâng cấp: giữ nguyên EndDate, đổi PlanId, cộng thêm sessions từ gói mới
             sub.PlanId = request.UpgradeToPlanId;
@@ -464,11 +456,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
 
             // Chỉ bảo lưu gói đang ACTIVE (UC02.4)
             if (sub.Status != StatusActive)
@@ -516,11 +504,7 @@ public sealed class MemberService : IMemberService
 
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
 
             sub.Status = StatusCancelled;
             _unitOfWork.Repository<MemberSubscription>().Update(sub);
@@ -721,5 +705,55 @@ public sealed class MemberService : IMemberService
             FreezeStartDate: sub.FreezeStartDate,
             FreezeEndDate: sub.FreezeEndDate,
             AssignedPtId: sub.AssignedPtId);
+    }
+
+    /// <summary>
+    /// Tìm kiếm hợp đồng gói tập theo SubscriptionId hoặc phân giải theo UserName của hội viên.
+    /// Ưu tiên tìm chính xác theo mã gói tập SubscriptionId. Nếu không có, tìm gói đang ACTIVE của hội viên.
+    /// </summary>
+    private async Task<MemberSubscription> FindSubscriptionByIdOrUserAsync(
+        string targetIdentifier,
+        bool activeOnly,
+        CancellationToken cancellationToken)
+    {
+        var subRepo = _unitOfWork.Repository<MemberSubscription>();
+
+        MemberSubscription? sub = null;
+        if (activeOnly)
+        {
+            sub = await subRepo.FindSingleOrDefaultAsync(
+                s => s.SubscriptionId == targetIdentifier && s.Status == StatusActive,
+                cancellationToken);
+        }
+        else
+        {
+            sub = await subRepo.FindSingleOrDefaultAsync(
+                s => s.SubscriptionId == targetIdentifier,
+                cancellationToken);
+        }
+
+        if (sub != null)
+        {
+            return sub;
+        }
+
+        // Trường hợp Client hoặc Caller truyền nhầm UserName thay vì SubscriptionId
+        sub = await subRepo.FindSingleOrDefaultAsync(
+            s => s.UserName == targetIdentifier && s.Status == StatusActive,
+            cancellationToken);
+
+        if (sub == null && !activeOnly)
+        {
+            sub = await subRepo.FindSingleOrDefaultAsync(
+                s => s.UserName == targetIdentifier,
+                cancellationToken);
+        }
+
+        if (sub == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập với mã: {targetIdentifier}");
+        }
+
+        return sub;
     }
 }

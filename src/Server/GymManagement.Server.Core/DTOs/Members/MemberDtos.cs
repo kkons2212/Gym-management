@@ -21,7 +21,8 @@ public record MemberDto(
     string? ActivePlanName = null,
     DateTime? EndDate = null,
     int RemainingCheckInSessions = 0,
-    int RemainingPtSessions = 0
+    int RemainingPtSessions = 0,
+    string? SubscriptionId = null
 )
 {
     public string UserId => UserName;

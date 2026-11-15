@@ -114,14 +114,20 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary && dialog.SelectedPlan != null)
         {
+            string targetSubId = member.UserName;
+            if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+            {
+                targetSubId = member.SubscriptionId;
+            }
+
             if (dialog.IsUpgrade)
             {
-                var req = new UpgradeSubscriptionRequest(member.UserName, dialog.SelectedPlan.PlanId, "admin");
+                var req = new UpgradeSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, "admin");
                 await api.UpgradeSubscriptionAsync(member.UserName, req);
             }
             else
             {
-                var req = new RenewSubscriptionRequest(member.UserName, dialog.SelectedPlan.PlanId, DateOnly.FromDateTime(DateTime.Today), "admin");
+                var req = new RenewSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, DateOnly.FromDateTime(DateTime.Today), "admin");
                 await api.RenewSubscriptionAsync(member.UserName, req);
             }
 
@@ -172,7 +178,12 @@ public sealed partial class MembersPage : Page
         if (result == ContentDialogResult.Primary)
         {
             var api = App.GetService<IApiClient>();
-            var req = new CancelSubscriptionRequest(member.UserName, dialog.Reason, "admin");
+            string targetSubId = member.UserName;
+            if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+            {
+                targetSubId = member.SubscriptionId;
+            }
+            var req = new CancelSubscriptionRequest(targetSubId, dialog.Reason, "admin");
             await api.CancelSubscriptionAsync(req);
             await ViewModel.LoadMembersAsync();
         }
@@ -197,7 +208,12 @@ public sealed partial class MembersPage : Page
             try
             {
                 var api = App.GetService<IApiClient>();
-                var req = new FreezeSubscriptionRequest(member.UserId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
+                string targetSubId = member.UserId;
+                if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                {
+                    targetSubId = member.SubscriptionId;
+                }
+                var req = new FreezeSubscriptionRequest(targetSubId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
                 await api.FreezeSubscriptionAsync(req);
                 await ViewModel.LoadMembersAsync();
             }

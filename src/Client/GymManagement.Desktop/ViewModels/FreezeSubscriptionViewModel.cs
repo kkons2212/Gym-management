@@ -14,6 +14,9 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     private string _memberId = string.Empty;
 
     [ObservableProperty]
+    private string _subscriptionId = string.Empty;
+
+    [ObservableProperty]
     private string _memberName = string.Empty;
 
     [ObservableProperty]
@@ -48,6 +51,14 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
 
         MemberId = member.UserId;
         MemberName = member.FullName;
+        if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+        {
+            SubscriptionId = member.SubscriptionId;
+        }
+        else
+        {
+            SubscriptionId = member.UserId;
+        }
         FreezeStartDate = DateTimeOffset.Now;
         FreezeEndDate = DateTimeOffset.Now.AddDays(30);
 
@@ -104,8 +115,14 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
 
         try
         {
+            string targetSubId = SubscriptionId;
+            if (string.IsNullOrWhiteSpace(targetSubId))
+            {
+                targetSubId = MemberId;
+            }
+
             var req = new FreezeSubscriptionRequest(
-                MemberId,
+                targetSubId,
                 FreezeStartDate.DateTime,
                 FreezeEndDate.DateTime,
                 Reason

@@ -3,6 +3,7 @@ using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.Entities;
+using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 using GymManagement.Server.Core.Services;
 using Microsoft.Extensions.Logging;
@@ -345,6 +346,106 @@ public class MemberServiceTests
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*kết thúc*");
+    }
+
+    [Fact]
+    public async Task FreezeSubscriptionAsync_WhenTargetIsSubscriptionId_SuccessfullyFreezes()
+    {
+        // Arrange
+        var request = new FreezeSubscriptionRequest(
+            SubscriptionId: "SUB-00001",
+            FreezeStartDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            FreezeEndDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)),
+            Reason: "Đi công tác",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+        SetupSubscriptionRepo(sub);
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.FreezeSubscriptionAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+        sub.Status.Should().Be("FROZEN");
+    }
+
+    [Fact]
+    public async Task FreezeSubscriptionAsync_WhenTargetIsUserName_SuccessfullyResolvesAndFreezes()
+    {
+        // Arrange
+        var request = new FreezeSubscriptionRequest(
+            SubscriptionId: "MBR-0001", // Truyền UserName thay vì SubscriptionId
+            FreezeStartDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            FreezeEndDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)),
+            Reason: "Nghỉ dưỡng bệnh",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .Returns<Expression<Func<MemberSubscription, bool>>, CancellationToken>((expr, _) =>
+            {
+                var compiled = expr.Compile();
+                if (compiled(sub))
+                {
+                    return Task.FromResult<MemberSubscription?>(sub);
+                }
+                return Task.FromResult<MemberSubscription?>(null);
+            });
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.FreezeSubscriptionAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.SubscriptionId.Should().Be("SUB-00001");
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+        sub.Status.Should().Be("FROZEN");
+    }
+
+    [Fact]
+    public async Task CancelSubscriptionAsync_WhenTargetIsUserName_SuccessfullyResolvesAndCancels()
+    {
+        // Arrange
+        var request = new CancelSubscriptionRequest(
+            SubscriptionId: "MBR-0001",
+            Reason: "Chuyển nơi ở",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .Returns<Expression<Func<MemberSubscription, bool>>, CancellationToken>((expr, _) =>
+            {
+                var compiled = expr.Compile();
+                if (compiled(sub))
+                {
+                    return Task.FromResult<MemberSubscription?>(sub);
+                }
+                return Task.FromResult<MemberSubscription?>(null);
+            });
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+        SetupExecuteTransaction();
+
+        // Act
+        Func<Task> act = () => _sut.CancelSubscriptionAsync(request);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+        sub.Status.Should().Be("CANCELLED");
     }
 
     // =========================================================================
