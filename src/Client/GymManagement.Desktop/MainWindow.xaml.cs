@@ -90,9 +90,12 @@ public sealed partial class MainWindow : Window
 
     private void OnLoginSuccessful()
     {
-        var shellVm = App.GetService<ShellViewModel>();
-        shellVm.UpdateUserInfo();
-        RootFrame.Navigate(typeof(MainPage));
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            var shellVm = App.GetService<ShellViewModel>();
+            shellVm.UpdateUserInfo();
+            RootFrame.Navigate(typeof(MainPage));
+        });
     }
 
     private void OnWindowKeyDown(object sender, KeyRoutedEventArgs e)

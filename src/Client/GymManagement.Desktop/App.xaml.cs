@@ -40,6 +40,7 @@ public partial class App : Application
         System.Diagnostics.Debug.WriteLine($"[CRITICAL UNHANDLED ERROR] {e.Message}");
         System.Diagnostics.Debug.WriteLine(e.Exception?.ToString());
         Console.Error.WriteLine($"[CRITICAL UNHANDLED ERROR] {e.Message}: {e.Exception}");
+        e.Handled = true;
     }
 
     private static IServiceProvider ConfigureServices()
