@@ -10,6 +10,8 @@ using GymManagement.Server.Core.DTOs.Settings;
 using GymManagement.Server.Core.DTOs;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
+using GymManagement.Server.Core.Services.Reporting;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace GymManagement.Desktop.Services.Api;
@@ -718,7 +720,7 @@ public class MockApiClient : IApiClient
         ));
     }
 
-    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
+    public Task<RevenueReportDto> GetRevenueReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? paymentMethod = null, string? planId = null)
     {
         var byPackage = new List<PackageRevenueDto>
         {
@@ -728,12 +730,22 @@ public class MockApiClient : IApiClient
             new("PLAN04", "Gói 1 Tháng Tiêu Chuẩn", 6500000m, 13)
         };
 
+        if (!string.IsNullOrEmpty(planId) && planId != "ALL")
+        {
+            byPackage = byPackage.Where(p => p.PlanId.Equals(planId, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         var byPaymentMethod = new List<PaymentMethodRevenueDto>
         {
             new("VIETQR", 58000000m, 66.3m, 28),
             new("CASH", 20500000m, 23.4m, 10),
             new("CREDIT_CARD", 9000000m, 10.3m, 4)
         };
+
+        if (!string.IsNullOrEmpty(paymentMethod) && paymentMethod != "ALL")
+        {
+            byPaymentMethod = byPaymentMethod.Where(p => p.PaymentMethod.Equals(paymentMethod, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
 
         var trend = new List<TimePeriodRevenueDto>
         {
@@ -746,10 +758,16 @@ public class MockApiClient : IApiClient
             new("CN", 5300000m, 0m, 5300000m)
         };
 
+        decimal gross = 0m;
+        foreach (var pm in byPaymentMethod)
+        {
+            gross += pm.Amount;
+        }
+
         var dto = new RevenueReportDto(
-            TotalGrossRevenue: 87500000m,
+            TotalGrossRevenue: gross,
             TotalRefundAmount: 500000m,
-            TotalNetRevenue: 87000000m,
+            TotalNetRevenue: gross > 500000m ? (gross - 500000m) : gross,
             InvoiceCount: 42,
             ByPaymentMethod: byPaymentMethod,
             ByPackage: byPackage,
@@ -759,14 +777,173 @@ public class MockApiClient : IApiClient
         return Task.FromResult(dto);
     }
 
-    public Task<byte[]> ExportExcelReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public Task<MemberFluctuationReportDto> GetMemberFluctuationReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
     {
-        return Task.FromResult(new byte[] { 0x50, 0x4B, 0x03, 0x04 });
+        var distribution = new List<PackageDistributionDto>
+        {
+            new("PLAN-01", "Gói Cơ Bản (1 Tháng)", 45, 36.0m),
+            new("PLAN-02", "Gói Nâng Cao (3 Tháng)", 38, 30.4m),
+            new("PLAN-03", "Gói VIP Toàn Diện (12 Tháng)", 25, 20.0m),
+            new("PLAN-04", "Gói Kèm PT 1-1", 17, 13.6m)
+        };
+
+        var dto = new MemberFluctuationReportDto(
+            TotalActiveMembers: 125,
+            NewMembers: 28,
+            Renewals: 42,
+            FrozenCount: 5,
+            CancelledCount: 2,
+            ExpiredCount: 8,
+            RetentionRatePercentage: 86.5m,
+            PackageDistribution: distribution
+        );
+
+        return Task.FromResult(dto);
     }
 
-    public Task<byte[]> ExportPdfReportAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public Task<CheckInTrafficReportDto> GetCheckInTrafficReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null)
     {
-        return Task.FromResult(new byte[] { 0x25, 0x50, 0x44, 0x46 });
+        var hourly = new List<PeakHourTrafficDto>
+        {
+            new(6, 12), new(7, 25), new(8, 18), new(9, 14), new(10, 8),
+            new(11, 10), new(12, 15), new(14, 11), new(15, 16),
+            new(16, 28), new(17, 52), new(18, 58), new(19, 45),
+            new(20, 30), new(21, 15)
+        };
+
+        var denialReasons = new List<DenialReasonDto>
+        {
+            new("Gói tập đã hết hạn", 14, 56.0m),
+            new("Chưa thanh toán gia hạn", 6, 24.0m),
+            new("Tài khoản đang bị đóng băng", 3, 12.0m),
+            new("Quét mã QR sai định dạng", 2, 8.0m)
+        };
+
+        var dto = new CheckInTrafficReportDto(
+            TotalCheckIns: 359,
+            SuccessfulCheckIns: 334,
+            DeniedCheckIns: 25,
+            SuccessRatePercentage: 93.0m,
+            HourlyDistribution: hourly,
+            TopDenialReasons: denialReasons
+        );
+
+        return Task.FromResult(dto);
+    }
+
+    public Task<PtPerformanceReportDto> GetPtPerformanceReportAsync(DateOnly? fromDate = null, DateOnly? toDate = null, string? trainerId = null)
+    {
+        var trainers = new List<PtTrainerPerformanceDto>
+        {
+            new("PT-001", "Nguyễn Văn Hùng", 48, 2, 12, 4.9m),
+            new("PT-002", "Trần Thị Mai", 42, 1, 10, 4.8m),
+            new("PT-003", "Lê Hoàng Long", 36, 3, 9, 4.7m),
+            new("PT-004", "Phạm Quốc Bảo", 28, 0, 7, 4.9m)
+        };
+
+        if (!string.IsNullOrEmpty(trainerId) && trainerId != "ALL")
+        {
+            trainers = trainers.Where(t => t.TrainerId.Equals(trainerId, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        int scheduled = 0;
+        int completed = 0;
+        int cancelled = 0;
+        foreach (var t in trainers)
+        {
+            completed += t.CompletedSessions;
+            cancelled += t.CancelledSessions;
+            scheduled += (t.CompletedSessions + t.CancelledSessions);
+        }
+
+        decimal completionRate = 100m;
+        if (scheduled > 0)
+        {
+            completionRate = Math.Round((decimal)completed / scheduled * 100m, 2);
+        }
+
+        var dto = new PtPerformanceReportDto(
+            TotalSessionsScheduled: scheduled,
+            TotalSessionsCompleted: completed,
+            TotalSessionsCancelled: cancelled,
+            CompletionRatePercentage: completionRate,
+            OverallAverageRating: 4.83m,
+            Trainers: trainers
+        );
+
+        return Task.FromResult(dto);
+    }
+
+    public Task<byte[]> ExportExcelReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var (title, headers, rows) = BuildMockExportData(reportType ?? "REVENUE");
+        var (_, bytes) = ReportExportHelper.GenerateExcel(title, headers, rows);
+        return Task.FromResult(bytes);
+    }
+
+    public Task<byte[]> ExportPdfReportAsync(string? reportType = "REVENUE", DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var (title, headers, rows) = BuildMockExportData(reportType ?? "REVENUE");
+        var (_, bytes) = ReportExportHelper.GeneratePdf(title, headers, rows);
+        return Task.FromResult(bytes);
+    }
+
+    private (string Title, List<string> Headers, List<IReadOnlyList<string>> Rows) BuildMockExportData(string reportType)
+    {
+        string typeUpper = reportType.Trim().ToUpperInvariant();
+        if (typeUpper == "MEMBER")
+        {
+            var title = "BAO CAO BIEN DONG HOI VIEN";
+            var headers = new List<string> { "Chi so", "So luong", "Ty le (%)" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "Tong hoi vien dang hoat dong", _members.Count.ToString(CultureInfo.InvariantCulture), "-" },
+                new List<string> { "Hoi vien moi trong thang", "12", "-" },
+                new List<string> { "Luot gia han goi tap", "8", "-" },
+                new List<string> { "Goi tap dang bao luu", "2", "-" },
+                new List<string> { "Ty le duy tri hoi vien", "-", "88.50%" }
+            };
+            return (title, headers, rows);
+        }
+        else if (typeUpper == "CHECKIN")
+        {
+            var title = "BAO CAO LUU LUONG CHECK-IN";
+            var headers = new List<string> { "Khung gio", "So luot diem danh" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "06:00 - 08:00", "28" },
+                new List<string> { "08:00 - 11:30", "45" },
+                new List<string> { "14:00 - 17:00", "32" },
+                new List<string> { "17:00 - 20:00", "86" },
+                new List<string> { "20:00 - 22:00", "24" }
+            };
+            return (title, headers, rows);
+        }
+        else if (typeUpper == "PT")
+        {
+            var title = "BAO CAO HIEU SUAT HUAN LUYEN VIEN (PT)";
+            var headers = new List<string> { "Ma PT", "Ten PT", "Ca hoan tat", "Hoc vien", "Diem danh gia" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "pt01", "Nguyen Van Thanh", "38", "12", "4.9 *" },
+                new List<string> { "pt02", "Tran Thi Mai", "42", "15", "4.8 *" },
+                new List<string> { "pt03", "Le Hoang Nam", "29", "8", "4.7 *" }
+            };
+            return (title, headers, rows);
+        }
+        else
+        {
+            var title = "BAO CAO DOANH THU THUC THU";
+            var headers = new List<string> { "Nhom goi tap", "So luot", "Doanh thu (VND)" };
+            var rows = new List<IReadOnlyList<string>>
+            {
+                new List<string> { "Goi 1 Nam VIP", "10", "45,000,000" },
+                new List<string> { "Goi 6 Thang Platinum", "9", "22,500,000" },
+                new List<string> { "Goi 3 Thang The Thao", "10", "13,500,000" },
+                new List<string> { "Goi 1 Thang Tieu Chuan", "13", "6,500,000" }
+            };
+            return (title, headers, rows);
+        }
     }
 
     public Task<IReadOnlyList<UserSessionDto>> GetUsersAsync()

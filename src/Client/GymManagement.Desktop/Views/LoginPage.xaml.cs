@@ -25,13 +25,11 @@ public sealed partial class LoginPage : Page
 
     private void LoginPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        ViewModel.OnLoginSuccess += OnLoginSuccess;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     private void LoginPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        ViewModel.OnLoginSuccess -= OnLoginSuccess;
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
     }
 
@@ -43,16 +41,6 @@ public sealed partial class LoginPage : Page
             {
                 TxtPassword.Password = ViewModel.Password;
             }
-        }
-    }
-
-    private void OnLoginSuccess()
-    {
-        var shellVm = App.GetService<ShellViewModel>();
-        shellVm.UpdateUserInfo();
-        if (Frame != null)
-        {
-            Frame.Navigate(typeof(MainPage));
         }
     }
 

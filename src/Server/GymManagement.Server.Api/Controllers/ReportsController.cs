@@ -125,4 +125,36 @@ public sealed class ReportsController : ApiControllerBase
         var result = await _reportService.ExportReportAsync(request, cancellationToken);
         return File(result.FileData, result.ContentType, result.FileName);
     }
+
+    /// <summary>
+    /// Tải tệp báo cáo Excel (.xlsx) qua phương thức GET (UC 06.2).
+    /// </summary>
+    [HttpGet("export/excel")]
+    public async Task<IActionResult> ExportExcel(
+        [FromQuery] string reportType = "REVENUE",
+        [FromQuery] DateOnly? fromDate = null,
+        [FromQuery] DateOnly? toDate = null,
+        [FromQuery] string? filterId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ExportReportRequest(reportType, "EXCEL", fromDate, toDate, filterId);
+        var result = await _reportService.ExportReportAsync(request, cancellationToken);
+        return File(result.FileData, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Tải tệp báo cáo PDF (.pdf) qua phương thức GET (UC 06.2).
+    /// </summary>
+    [HttpGet("export/pdf")]
+    public async Task<IActionResult> ExportPdf(
+        [FromQuery] string reportType = "REVENUE",
+        [FromQuery] DateOnly? fromDate = null,
+        [FromQuery] DateOnly? toDate = null,
+        [FromQuery] string? filterId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ExportReportRequest(reportType, "PDF", fromDate, toDate, filterId);
+        var result = await _reportService.ExportReportAsync(request, cancellationToken);
+        return File(result.FileData, result.ContentType, result.FileName);
+    }
 }
