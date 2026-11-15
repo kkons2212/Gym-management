@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using GymManagement.Server.Core.Enums;
 
 namespace GymManagement.Server.Core.DTOs.Members;
@@ -21,6 +22,7 @@ public record MemberDto(
     DateTime? EndDate = null,
     int RemainingCheckInSessions = 0,
     int RemainingPtSessions = 0,
+    string? SubscriptionId = null,
     string? ActiveSubscriptionId = null,
     string? AssignedPtId = null
 )
@@ -167,6 +169,7 @@ public record UpgradeSubscriptionRequest(
 /// <summary>
 /// Payload bảo lưu gói tập hội viên (UC02.4).
 /// </summary>
+[method: JsonConstructor]
 public record FreezeSubscriptionRequest(
     string SubscriptionId,
     DateOnly FreezeStartDate,
@@ -175,8 +178,17 @@ public record FreezeSubscriptionRequest(
     string AdminUserName = "admin"
 )
 {
-    public FreezeSubscriptionRequest(string subscriptionId, DateTime freezeStartDate, DateTime freezeEndDate, string reason, string adminUserName = "admin")
+    public FreezeSubscriptionRequest(
+        string subscriptionId,
+        DateTime freezeStartDate,
+        DateTime freezeEndDate,
+        string reason,
+        string adminUserName = "admin")
         : this(subscriptionId, DateOnly.FromDateTime(freezeStartDate), DateOnly.FromDateTime(freezeEndDate), reason, adminUserName)
+    {
+    }
+
+    public FreezeSubscriptionRequest() : this(string.Empty, default(DateOnly), default(DateOnly), string.Empty, "admin")
     {
     }
 }

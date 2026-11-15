@@ -126,11 +126,18 @@ public sealed class MembersController : ApiControllerBase
     /// Gia hạn gói tập cho hội viên (UC02.3).
     /// </summary>
     [HttpPost("renew")]
+    [HttpPost("{userName}/renew")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> RenewSubscription(
         [FromBody] RenewSubscriptionRequest request,
+        string? userName = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(request.SubscriptionId) && !string.IsNullOrWhiteSpace(userName))
+        {
+            request = request with { SubscriptionId = userName };
+        }
+
         var subscription = await _memberService.RenewSubscriptionAsync(request, cancellationToken);
         return OkResponse(subscription, "Gia hạn gói tập thành công.");
     }
@@ -139,11 +146,18 @@ public sealed class MembersController : ApiControllerBase
     /// Nâng cấp gói tập lên gói hạng cao hơn (UC02.3).
     /// </summary>
     [HttpPost("upgrade")]
+    [HttpPost("{userName}/upgrade")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpgradeSubscription(
         [FromBody] UpgradeSubscriptionRequest request,
+        string? userName = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(request.SubscriptionId) && !string.IsNullOrWhiteSpace(userName))
+        {
+            request = request with { SubscriptionId = userName };
+        }
+
         var subscription = await _memberService.UpgradeSubscriptionAsync(request, cancellationToken);
         return OkResponse(subscription, "Nâng cấp gói tập thành công.");
     }
@@ -152,11 +166,18 @@ public sealed class MembersController : ApiControllerBase
     /// Bảo lưu gói tập và kéo dài thời hạn (UC02.4).
     /// </summary>
     [HttpPost("freeze")]
+    [HttpPost("{userName}/freeze")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> FreezeSubscription(
         [FromBody] FreezeSubscriptionRequest request,
+        string? userName = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(request.SubscriptionId) && !string.IsNullOrWhiteSpace(userName))
+        {
+            request = request with { SubscriptionId = userName };
+        }
+
         var subscription = await _memberService.FreezeSubscriptionAsync(request, cancellationToken);
         return OkResponse(subscription, "Bảo lưu gói tập thành công.");
     }
@@ -165,11 +186,18 @@ public sealed class MembersController : ApiControllerBase
     /// Hủy đăng ký gói tập hội viên (UC02.5).
     /// </summary>
     [HttpPost("cancel")]
+    [HttpPost("{userName}/cancel")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> CancelSubscription(
         [FromBody] CancelSubscriptionRequest request,
+        string? userName = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(request.SubscriptionId) && !string.IsNullOrWhiteSpace(userName))
+        {
+            request = request with { SubscriptionId = userName };
+        }
+
         await _memberService.CancelSubscriptionAsync(request, cancellationToken);
         return OkResponse(true, "Hủy gói tập thành công.");
     }

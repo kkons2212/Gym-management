@@ -115,14 +115,24 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary && dialog.SelectedPlan != null)
         {
+            string targetSubId = member.UserName;
+            if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+            {
+                targetSubId = member.ActiveSubscriptionId;
+            }
+            else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+            {
+                targetSubId = member.SubscriptionId;
+            }
+
             if (dialog.IsUpgrade)
             {
-                var req = new UpgradeSubscriptionRequest(member.UserName, dialog.SelectedPlan.PlanId, "admin");
+                var req = new UpgradeSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, "admin");
                 await api.UpgradeSubscriptionAsync(member.UserName, req);
             }
             else
             {
-                var req = new RenewSubscriptionRequest(member.UserName, dialog.SelectedPlan.PlanId, DateOnly.FromDateTime(DateTime.Today), "admin");
+                var req = new RenewSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, DateOnly.FromDateTime(DateTime.Today), "admin");
                 await api.RenewSubscriptionAsync(member.UserName, req);
             }
 
@@ -234,10 +244,33 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var api = App.GetService<IApiClient>();
-            var req = new CancelSubscriptionRequest(member.UserName, dialog.Reason, "admin");
-            await api.CancelSubscriptionAsync(req);
-            await ViewModel.LoadMembersAsync();
+            try
+            {
+                var api = App.GetService<IApiClient>();
+                string targetSubId = member.UserName;
+                if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+                {
+                    targetSubId = member.ActiveSubscriptionId;
+                }
+                else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                {
+                    targetSubId = member.SubscriptionId;
+                }
+                var req = new CancelSubscriptionRequest(targetSubId, dialog.Reason, "admin");
+                await api.CancelSubscriptionAsync(req);
+                await ViewModel.LoadMembersAsync();
+            }
+            catch (Exception ex)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi hủy gói tập",
+                    Content = ex.Message,
+                    CloseButtonText = "Đóng",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 
@@ -249,6 +282,19 @@ public sealed partial class MembersPage : Page
             return;
         }
 
+        if (string.Equals(member.Status, "FROZEN", StringComparison.OrdinalIgnoreCase))
+        {
+            var infoDialog = new ContentDialog
+            {
+                Title = "Thông báo gói tập",
+                Content = $"Gói tập của hội viên {member.FullName} hiện đang trong trạng thái bảo lưu.",
+                CloseButtonText = "Đóng",
+                XamlRoot = this.XamlRoot
+            };
+            await infoDialog.ShowAsync();
+            return;
+        }
+
         var dialog = new FreezeSubscriptionDialog(member.FullName, member.EndDate)
         {
             XamlRoot = this.XamlRoot
@@ -257,10 +303,33 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var api = App.GetService<IApiClient>();
-            var req = new FreezeSubscriptionRequest(member.UserId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
-            await api.FreezeSubscriptionAsync(req);
-            await ViewModel.LoadMembersAsync();
+            try
+            {
+                var api = App.GetService<IApiClient>();
+                string targetSubId = member.UserId;
+                if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+                {
+                    targetSubId = member.ActiveSubscriptionId;
+                }
+                else if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+                {
+                    targetSubId = member.SubscriptionId;
+                }
+                var req = new FreezeSubscriptionRequest(targetSubId, dialog.FreezeStartDate, dialog.FreezeEndDate, dialog.Reason);
+                await api.FreezeSubscriptionAsync(req);
+                await ViewModel.LoadMembersAsync();
+            }
+            catch (Exception ex)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi bảo lưu gói tập",
+                    Content = ex.Message,
+                    CloseButtonText = "Đóng",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 

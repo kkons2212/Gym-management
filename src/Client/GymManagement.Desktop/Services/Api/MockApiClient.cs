@@ -18,11 +18,11 @@ public class MockApiClient : IApiClient
 {
     private readonly List<MemberDto> _members =
     [
-        new("USR001", "Nguyễn Văn An", "0901234567", "an.nguyen@example.com", "ACTIVE", DateTime.Now.AddMonths(-3), "Gói 3 Tháng Thể Thao", DateTime.Now.AddDays(45), 28, 5),
-        new("USR002", "Trần Thị Bích", "0912345678", "bich.tran@example.com", "ACTIVE", DateTime.Now.AddMonths(-6), "Gói 1 Năm VIP", DateTime.Now.AddDays(180), 95, 12),
-        new("USR003", "Lê Hoàng Cường", "0987654321", "cuong.le@example.com", "FROZEN", DateTime.Now.AddMonths(-2), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(10), 4, 0),
-        new("USR004", "Phạm Thị Dung", "0933334444", "dung.pham@example.com", "EXPIRED", DateTime.Now.AddMonths(-5), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(-5), 0, 0),
-        new("USR005", "Vũ Minh Đức", "0944445555", "duc.vu@example.com", "ACTIVE", DateTime.Now.AddMonths(-1), "Gói 6 Tháng Platinum", DateTime.Now.AddDays(140), 62, 8)
+        new("USR001", "Nguyễn Văn An", "0901234567", "an.nguyen@example.com", "ACTIVE", DateTime.Now.AddMonths(-3), "Gói 3 Tháng Thể Thao", DateTime.Now.AddDays(45), 28, 5, "SUB001"),
+        new("USR002", "Trần Thị Bích", "0912345678", "bich.tran@example.com", "ACTIVE", DateTime.Now.AddMonths(-6), "Gói 1 Năm VIP", DateTime.Now.AddDays(180), 95, 12, "SUB002"),
+        new("USR003", "Lê Hoàng Cường", "0987654321", "cuong.le@example.com", "FROZEN", DateTime.Now.AddMonths(-2), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(10), 4, 0, "SUB003"),
+        new("USR004", "Phạm Thị Dung", "0933334444", "dung.pham@example.com", "EXPIRED", DateTime.Now.AddMonths(-5), "Gói 1 Tháng Tiêu Chuẩn", DateTime.Now.AddDays(-5), 0, 0, "SUB004"),
+        new("USR005", "Vũ Minh Đức", "0944445555", "duc.vu@example.com", "ACTIVE", DateTime.Now.AddMonths(-1), "Gói 6 Tháng Platinum", DateTime.Now.AddDays(140), 62, 8, "SUB005")
     ];
 
     private readonly List<PackagePlanDto> _packages =
@@ -299,6 +299,30 @@ public class MockApiClient : IApiClient
 
     public Task<bool> CancelSubscriptionAsync(CancelSubscriptionRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new ValidationException("Lý do hủy gói tập là bắt buộc.");
+        }
+
+        var member = _members.FirstOrDefault(m =>
+            m.SubscriptionId == request.SubscriptionId ||
+            m.UserName == request.SubscriptionId);
+
+        if (member != null)
+        {
+            var index = _members.FindIndex(m => m.UserName == member.UserName);
+            _members[index] = member with
+            {
+                Status = "CANCELLED",
+                ActivePlanName = null,
+                EndDate = null,
+                RemainingCheckInSessions = 0,
+                RemainingPtSessions = 0
+            };
+        }
+
         return Task.FromResult(true);
     }
 
@@ -433,7 +457,22 @@ public class MockApiClient : IApiClient
 
     public Task<bool> FreezeSubscriptionAsync(FreezeSubscriptionRequest request)
     {
-        var member = _members.FirstOrDefault(m => m.UserName == request.SubscriptionId || m.UserName == "USR001");
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new ValidationException("Lý do bảo lưu là bắt buộc.");
+        }
+
+        if (request.Reason.Trim().Length < 3)
+        {
+            throw new ValidationException("Lý do bảo lưu phải có tối thiểu 3 ký tự.");
+        }
+
+        var member = _members.FirstOrDefault(m =>
+            m.SubscriptionId == request.SubscriptionId ||
+            m.UserName == request.SubscriptionId ||
+            m.UserName == "USR001");
         if (member == null)
         {
             return Task.FromResult(false);

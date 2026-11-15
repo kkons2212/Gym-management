@@ -3,6 +3,7 @@ using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.Entities;
+using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
 using GymManagement.Server.Core.Services;
 using Microsoft.Extensions.Logging;
@@ -347,6 +348,106 @@ public class MemberServiceTests
             .WithMessage("*kết thúc*");
     }
 
+    [Fact]
+    public async Task FreezeSubscriptionAsync_WhenTargetIsSubscriptionId_SuccessfullyFreezes()
+    {
+        // Arrange
+        var request = new FreezeSubscriptionRequest(
+            SubscriptionId: "SUB-00001",
+            FreezeStartDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            FreezeEndDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)),
+            Reason: "Đi công tác",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+        SetupSubscriptionRepo(sub);
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.FreezeSubscriptionAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+        sub.Status.Should().Be("FROZEN");
+    }
+
+    [Fact]
+    public async Task FreezeSubscriptionAsync_WhenTargetIsUserName_SuccessfullyResolvesAndFreezes()
+    {
+        // Arrange
+        var request = new FreezeSubscriptionRequest(
+            SubscriptionId: "MBR-0001", // Truyền UserName thay vì SubscriptionId
+            FreezeStartDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            FreezeEndDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)),
+            Reason: "Nghỉ dưỡng bệnh",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .Returns<Expression<Func<MemberSubscription, bool>>, CancellationToken>((expr, _) =>
+            {
+                var compiled = expr.Compile();
+                if (compiled(sub))
+                {
+                    return Task.FromResult<MemberSubscription?>(sub);
+                }
+                return Task.FromResult<MemberSubscription?>(null);
+            });
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.FreezeSubscriptionAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.SubscriptionId.Should().Be("SUB-00001");
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+        sub.Status.Should().Be("FROZEN");
+    }
+
+    [Fact]
+    public async Task CancelSubscriptionAsync_WhenTargetIsUserName_SuccessfullyResolvesAndCancels()
+    {
+        // Arrange
+        var request = new CancelSubscriptionRequest(
+            SubscriptionId: "MBR-0001",
+            Reason: "Chuyển nơi ở",
+            AdminUserName: "admin01");
+
+        var sub = BuildSubscription("SUB-00001", "MBR-0001", status: "ACTIVE");
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .Returns<Expression<Func<MemberSubscription, bool>>, CancellationToken>((expr, _) =>
+            {
+                var compiled = expr.Compile();
+                if (compiled(sub))
+                {
+                    return Task.FromResult<MemberSubscription?>(sub);
+                }
+                return Task.FromResult<MemberSubscription?>(null);
+            });
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+        SetupExecuteTransaction();
+
+        // Act
+        Func<Task> act = () => _sut.CancelSubscriptionAsync(request);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+        sub.Status.Should().Be("CANCELLED");
+    }
+
     // =========================================================================
     // NHÓM 4 — HỦY GÓI TẬP (UC02.5)
     // =========================================================================
@@ -402,6 +503,231 @@ public class MemberServiceTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task SearchMembersAsync_WhenSubscriptionFrozen_ReturnsFrozenStatusAndRetainsPlanDetails()
+    {
+        // Arrange
+        var user = new User
+        {
+            UserName = "MBR-0001",
+            RoleId = "MEMBER",
+            FullName = "Nguyễn Văn Bảo Lưu",
+            Phone = "0901112233",
+            Email = "baoluu@gym.vn",
+            Status = "ACTIVE"
+        };
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock
+            .Setup(r => r.FindAsync(
+                It.IsAny<Expression<Func<User, bool>>>(), default))
+            .ReturnsAsync(new List<User> { user });
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync(frozenSub);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        // Act
+        var results = await _sut.SearchMembersAsync(null);
+
+        // Assert
+        results.Should().NotBeNull();
+        results.Should().HaveCount(1);
+        var member = results[0];
+        member.UserName.Should().Be("MBR-0001");
+        member.Status.Should().Be("FROZEN");
+        member.ActivePlanName.Should().Be("PKG-VIP");
+        member.SubscriptionEndDate.Should().Be(frozenSub.EndDate);
+        member.RemainingCheckInSessions.Should().Be(25);
+        member.RemainingPtSessions.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task GetActiveSubscriptionAsync_WhenSubscriptionFrozen_ReturnsSubscriptionDetail()
+    {
+        // Arrange
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        SetupSubscriptionRepo(frozenSub);
+
+        // Act
+        var result = await _sut.GetActiveSubscriptionAsync("MBR-0001");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.SubscriptionId.Should().Be("SUB-00001");
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+    }
+
+    [Fact]
+    public async Task GetMemberProfileAsync_WhenSubscriptionFrozen_IncludesActiveSubscriptionAndReflectsFrozenStatus()
+    {
+        // Arrange
+        SetupUserRepoFindExisting("MBR-0001");
+
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(5)),
+            RemainingCheckInSessions = 25,
+            RemainingPtSessions = 5
+        };
+
+        SetupSubscriptionRepo(frozenSub);
+
+        // Act
+        var profile = await _sut.GetMemberProfileAsync("MBR-0001");
+
+        // Assert
+        profile.Should().NotBeNull();
+        profile.Status.Should().Be("FROZEN");
+        profile.ActiveSubscription.Should().NotBeNull();
+        profile.ActiveSubscription!.Status.Should().Be(SubscriptionStatus.Frozen);
+    }
+
+    [Fact]
+    public async Task CancelSubscriptionAsync_WhenUserHasMultipleSubscriptions_CancelsActiveOrFrozenSubscriptionSuccessfully()
+    {
+        // Arrange
+        SetupExecuteTransaction();
+
+        var expiredSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-OLD",
+            Status = "EXPIRED",
+            CreatedAt = new DateOnly(2025, 1, 1)
+        };
+
+        var frozenSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00002",
+            UserName = "MBR-0001",
+            PlanId = "PKG-NEW",
+            Status = "FROZEN",
+            CreatedAt = new DateOnly(2025, 6, 1)
+        };
+
+        SetupSubscriptionRepoList(new[] { expiredSub, frozenSub });
+
+        var request = new CancelSubscriptionRequest("MBR-0001", "Chuyển nơi ở", "admin");
+
+        // Act
+        await _sut.CancelSubscriptionAsync(request);
+
+        // Assert
+        frozenSub.Status.Should().Be("CANCELLED");
+        expiredSub.Status.Should().Be("EXPIRED");
+    }
+
+    [Fact]
+    public async Task FreezeSubscriptionAsync_WhenUserHasMultipleSubscriptions_FreezesActiveSubscriptionSuccessfully()
+    {
+        // Arrange
+        SetupExecuteTransaction();
+
+        var oldExpiredSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-OLD",
+            Status = "EXPIRED",
+            CreatedAt = new DateOnly(2025, 1, 1)
+        };
+
+        var activeSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00002",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "ACTIVE",
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-10)),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(80)),
+            CreatedAt = new DateOnly(2025, 6, 1)
+        };
+
+        SetupSubscriptionRepoList(new[] { oldExpiredSub, activeSub });
+
+        var request = new FreezeSubscriptionRequest(
+            "MBR-0001",
+            DateOnly.FromDateTime(DateTime.Today),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(14)),
+            "Đi công tác nước ngoài",
+            "admin");
+
+        // Act
+        var result = await _sut.FreezeSubscriptionAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.SubscriptionId.Should().Be("SUB-00002");
+        result.Status.Should().Be(SubscriptionStatus.Frozen);
+        activeSub.Status.Should().Be("FROZEN");
+    }
+
+    [Fact]
+    public async Task GetActiveSubscriptionAsync_WhenUserHasMultipleActiveOrFrozenSubs_ReturnsLatestWithoutCrashing()
+    {
+        // Arrange
+        var olderSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00001",
+            UserName = "MBR-0001",
+            PlanId = "PKG-BASIC",
+            Status = "ACTIVE",
+            CreatedAt = new DateOnly(2025, 1, 1)
+        };
+
+        var newerSub = new MemberSubscription
+        {
+            SubscriptionId = "SUB-00002",
+            UserName = "MBR-0001",
+            PlanId = "PKG-VIP",
+            Status = "FROZEN",
+            CreatedAt = new DateOnly(2025, 6, 1)
+        };
+
+        SetupSubscriptionRepoList(new[] { olderSub, newerSub });
+
+        // Act
+        var result = await _sut.GetActiveSubscriptionAsync("MBR-0001");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.SubscriptionId.Should().Be("SUB-00002");
     }
 
     // =========================================================================
@@ -483,6 +809,43 @@ public class MemberServiceTests
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
             .ReturnsAsync(sub);
+
+        var list = new List<MemberSubscription>();
+        if (sub != null)
+        {
+            list.Add(sub);
+        }
+        subRepoMock
+            .Setup(r => r.FindAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync(list);
+
+        subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+    }
+
+    private void SetupSubscriptionRepoList(IEnumerable<MemberSubscription> subs)
+    {
+        var subList = subs.ToList();
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync((Expression<Func<MemberSubscription, bool>> pred, CancellationToken _) =>
+            {
+                var compiled = pred.Compile();
+                return subList.SingleOrDefault(compiled);
+            });
+
+        subRepoMock
+            .Setup(r => r.FindAsync(
+                It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default))
+            .ReturnsAsync((Expression<Func<MemberSubscription, bool>> pred, CancellationToken _) =>
+            {
+                var compiled = pred.Compile();
+                return subList.Where(compiled).ToList();
+            });
+
         subRepoMock.Setup(r => r.Update(It.IsAny<MemberSubscription>()));
         _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
     }

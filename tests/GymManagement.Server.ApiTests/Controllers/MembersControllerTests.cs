@@ -86,4 +86,47 @@ public sealed class MembersControllerTests
         response.Success.Should().BeTrue();
         response.Data!.UserName.Should().Be("MEM01");
     }
+
+    [Fact]
+    public void FreezeSubscriptionRequest_CanDeserializeFromJson()
+    {
+        var json = """
+        {
+            "subscriptionId": "SUB01",
+            "freezeStartDate": "2026-11-15",
+            "freezeEndDate": "2026-11-29",
+            "reason": "Đi công tác",
+            "adminUserName": "admin"
+        }
+        """;
+
+        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var result = System.Text.Json.JsonSerializer.Deserialize<FreezeSubscriptionRequest>(json, options);
+
+        result.Should().NotBeNull();
+        result!.SubscriptionId.Should().Be("SUB01");
+        result.FreezeStartDate.Should().Be(new DateOnly(2026, 11, 15));
+        result.FreezeEndDate.Should().Be(new DateOnly(2026, 11, 29));
+        result.Reason.Should().Be("Đi công tác");
+    }
+
+    [Fact]
+    public void CancelSubscriptionResponse_CanDeserializeAsApiResponseBool()
+    {
+        var json = """
+        {
+            "success": true,
+            "message": "Hủy gói tập thành công.",
+            "data": true
+        }
+        """;
+
+        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<bool>>(json, options);
+
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Data.Should().BeTrue();
+        result.Message.Should().Be("Hủy gói tập thành công.");
+    }
 }

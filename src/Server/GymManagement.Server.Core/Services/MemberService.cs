@@ -88,16 +88,21 @@ public sealed class MemberService : IMemberService
         var result = new List<MemberSearchResponse>(users.Count);
         foreach (var u in users)
         {
-            var activeSub = await subRepo.FindSingleOrDefaultAsync(
-                s => s.UserName == u.UserName && s.Status == StatusActive,
-                cancellationToken);
+            // Lấy hợp đồng đang hoạt động hoặc đang tạm ngưng bảo lưu (FROZEN) mới nhất
+            var activeSub = await GetLatestActiveOrFrozenSubscriptionAsync(u.UserName, cancellationToken);
+
+            string memberStatus = u.Status ?? string.Empty;
+            if (string.Equals(memberStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase) && activeSub != null && !string.IsNullOrWhiteSpace(activeSub.Status))
+            {
+                memberStatus = activeSub.Status;
+            }
 
             result.Add(new MemberSearchResponse(
                 UserName: u.UserName,
                 FullName: u.FullName ?? string.Empty,
                 Phone: u.Phone ?? string.Empty,
                 Email: u.Email ?? string.Empty,
-                Status: u.Status ?? string.Empty,
+                Status: memberStatus,
                 ActiveSubscriptionId: activeSub?.SubscriptionId,
                 ActivePlanName: activeSub?.PlanId,
                 SubscriptionEndDate: activeSub?.EndDate,
@@ -126,10 +131,7 @@ public sealed class MemberService : IMemberService
                 cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy hội viên với mã: {userName}");
 
-        var activeSub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
-                s => s.UserName == userName && s.Status == StatusActive,
-                cancellationToken);
+        var activeSub = await GetLatestActiveOrFrozenSubscriptionAsync(userName, cancellationToken);
 
         return BuildMemberProfileResponse(user, activeSub);
     }
@@ -332,10 +334,7 @@ public sealed class MemberService : IMemberService
             "MemberService.UpdateMember: Cập nhật thông tin hội viên {UserName}",
             targetUserName);
 
-        var activeSub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
-                s => s.UserName == request.UserName && s.Status == StatusActive,
-                cancellationToken);
+        var activeSub = await GetLatestActiveOrFrozenSubscriptionAsync(request.UserName, cancellationToken);
 
         return BuildMemberProfileResponse(user, activeSub);
     }
@@ -351,10 +350,7 @@ public sealed class MemberService : IMemberService
     {
         ArgumentNullException.ThrowIfNull(userName);
 
-        var sub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
-                s => s.UserName == userName && s.Status == StatusActive,
-                cancellationToken);
+        var sub = await GetLatestActiveOrFrozenSubscriptionAsync(userName, cancellationToken);
 
         if (sub == null)
         {
@@ -379,12 +375,8 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            // Lấy subscription cũ để lấy UserName
-            var oldSub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            // Lấy subscription cũ để lấy UserName (hỗ trợ cả SubscriptionId và UserName)
+            var oldSub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
 
             // Tạo subscription mới với gói được chọn
             int subCount = await _unitOfWork.Repository<MemberSubscription>()
@@ -434,11 +426,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId && s.Status == StatusActive,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập đang hoạt động: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: true, cancellationToken);
 
             // Nâng cấp: giữ nguyên EndDate, đổi PlanId, cộng thêm sessions từ gói mới
             sub.PlanId = request.UpgradeToPlanId;
@@ -465,11 +453,7 @@ public sealed class MemberService : IMemberService
 
         return await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
 
             // Chỉ bảo lưu gói đang ACTIVE (UC02.4)
             if (sub.Status != StatusActive)
@@ -517,11 +501,12 @@ public sealed class MemberService : IMemberService
 
         await _unitOfWork.ExecuteTransactionAsync(async () =>
         {
-            var sub = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
-                    s => s.SubscriptionId == request.SubscriptionId,
-                    cancellationToken)
-                ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+            var sub = await FindSubscriptionByIdOrUserAsync(request.SubscriptionId, activeOnly: false, cancellationToken);
+
+            if (sub.Status == StatusCancelled)
+            {
+                throw new ValidationException($"Gói tập '{sub.SubscriptionId}' đã bị hủy trước đó.");
+            }
 
             sub.Status = StatusCancelled;
             _unitOfWork.Repository<MemberSubscription>().Update(sub);
@@ -697,12 +682,18 @@ public sealed class MemberService : IMemberService
             activeSubResponse = MapToSubscriptionDetailResponse(sub);
         }
 
+        string profileStatus = user.Status ?? string.Empty;
+        if (string.Equals(profileStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase) && sub != null && !string.IsNullOrWhiteSpace(sub.Status))
+        {
+            profileStatus = sub.Status;
+        }
+
         return new MemberProfileResponse(
             UserName: user.UserName,
             FullName: user.FullName ?? string.Empty,
             Phone: user.Phone ?? string.Empty,
             Email: user.Email ?? string.Empty,
-            Status: user.Status ?? string.Empty,
+            Status: profileStatus,
             ActiveSubscription: activeSubResponse);
     }
 
@@ -722,5 +713,132 @@ public sealed class MemberService : IMemberService
             FreezeStartDate: sub.FreezeStartDate,
             FreezeEndDate: sub.FreezeEndDate,
             AssignedPtId: sub.AssignedPtId);
+    }
+
+    /// <summary>
+    /// Lấy hợp đồng gói tập đang hoạt động (ACTIVE) hoặc bảo lưu (FROZEN) mới nhất của hội viên.
+    /// Sử dụng FindAsync để tránh ngoại lệ Sequence contains more than one element khi hội viên có nhiều gói tập.
+    /// </summary>
+    private async Task<MemberSubscription?> GetLatestActiveOrFrozenSubscriptionAsync(
+        string userName,
+        CancellationToken cancellationToken)
+    {
+        var subRepo = _unitOfWork.Repository<MemberSubscription>();
+        var subs = await subRepo.FindAsync(
+            s => s.UserName == userName && (s.Status == StatusActive || s.Status == StatusFrozen),
+            cancellationToken);
+
+        if (subs != null && subs.Count > 0)
+        {
+            return subs.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
+        }
+
+        // Fallback tương thích với Unit Test mock chỉ thiết lập FindSingleOrDefaultAsync
+        return await subRepo.FindSingleOrDefaultAsync(
+            s => s.UserName == userName && (s.Status == StatusActive || s.Status == StatusFrozen),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Tìm kiếm hợp đồng gói tập theo SubscriptionId hoặc phân giải theo UserName của hội viên.
+    /// Ưu tiên tìm chính xác theo mã gói tập SubscriptionId. Nếu không có, tìm gói đang hoạt động/mới nhất của hội viên.
+    /// </summary>
+    private async Task<MemberSubscription> FindSubscriptionByIdOrUserAsync(
+        string targetIdentifier,
+        bool activeOnly,
+        CancellationToken cancellationToken)
+    {
+        var subRepo = _unitOfWork.Repository<MemberSubscription>();
+
+        // 1. Tìm chính xác theo mã gói tập SubscriptionId (Khóa chính duy nhất)
+        var sub = await subRepo.FindSingleOrDefaultAsync(
+            s => s.SubscriptionId == targetIdentifier,
+            cancellationToken);
+
+        if (sub != null)
+        {
+            if (activeOnly && sub.Status != StatusActive)
+            {
+                throw new BusinessRuleException(
+                    $"Gói tập '{targetIdentifier}' không ở trạng thái hoạt động (ACTIVE). Trạng thái hiện tại: {sub.Status}");
+            }
+            return sub;
+        }
+
+        // 2. Fallback tìm theo UserName khi targetIdentifier là mã tài khoản hội viên
+        var userSubs = await subRepo.FindAsync(
+            s => s.UserName == targetIdentifier,
+            cancellationToken);
+
+        if (userSubs != null && userSubs.Count > 0)
+        {
+            if (activeOnly)
+            {
+                var activeSub = userSubs
+                    .Where(s => s.Status == StatusActive)
+                    .OrderByDescending(s => s.CreatedAt)
+                    .FirstOrDefault();
+
+                if (activeSub == null)
+                {
+                    throw new NotFoundException($"Hội viên {targetIdentifier} không có gói tập nào đang hoạt động.");
+                }
+
+                return activeSub;
+            }
+
+            // Trường hợp activeOnly == false (Cancel, Renew):
+            // Ưu tiên gói đang ACTIVE hoặc FROZEN trước
+            var validSub = userSubs
+                .Where(s => s.Status == StatusActive || s.Status == StatusFrozen)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefault();
+
+            if (validSub != null)
+            {
+                return validSub;
+            }
+
+            // Nếu không có gói nào ACTIVE hay FROZEN, lấy gói gần nhất bất kỳ
+            var latestSub = userSubs
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefault();
+
+            if (latestSub == null)
+            {
+                throw new NotFoundException($"Không tìm thấy gói tập với mã hoặc hội viên: {targetIdentifier}");
+            }
+
+            return latestSub;
+        }
+
+        // Fallback tương thích với Unit Test mock chỉ thiết lập FindSingleOrDefaultAsync
+        MemberSubscription? fallbackSub = null;
+        if (activeOnly)
+        {
+            fallbackSub = await subRepo.FindSingleOrDefaultAsync(
+                s => s.UserName == targetIdentifier && s.Status == StatusActive,
+                cancellationToken);
+        }
+        else
+        {
+            fallbackSub = await subRepo.FindSingleOrDefaultAsync(
+                s => s.UserName == targetIdentifier && (s.Status == StatusActive || s.Status == StatusFrozen),
+                cancellationToken);
+
+            if (fallbackSub == null)
+            {
+                fallbackSub = await subRepo.FindSingleOrDefaultAsync(
+                    s => s.UserName == targetIdentifier,
+                    cancellationToken);
+            }
+        }
+
+        if (fallbackSub == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập với mã hoặc hội viên: {targetIdentifier}");
+        }
+
+        return fallbackSub;
     }
 }

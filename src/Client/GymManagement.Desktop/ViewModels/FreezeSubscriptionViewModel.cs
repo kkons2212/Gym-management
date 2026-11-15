@@ -14,6 +14,9 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     private string _memberId = string.Empty;
 
     [ObservableProperty]
+    private string _subscriptionId = string.Empty;
+
+    [ObservableProperty]
     private string _memberName = string.Empty;
 
     [ObservableProperty]
@@ -23,7 +26,7 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     private DateTimeOffset _freezeEndDate = DateTimeOffset.Now.AddDays(30);
 
     [ObservableProperty]
-    private string _reason = "Bảo lưu theo nhu cầu cá nhân";
+    private string _reason = string.Empty;
 
     [ObservableProperty]
     private DateTimeOffset _projectedEndDate = DateTimeOffset.Now.AddDays(90);
@@ -48,6 +51,14 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
 
         MemberId = member.UserId;
         MemberName = member.FullName;
+        if (!string.IsNullOrWhiteSpace(member.SubscriptionId))
+        {
+            SubscriptionId = member.SubscriptionId;
+        }
+        else
+        {
+            SubscriptionId = member.UserId;
+        }
         FreezeStartDate = DateTimeOffset.Now;
         FreezeEndDate = DateTimeOffset.Now.AddDays(30);
 
@@ -87,13 +98,31 @@ public partial class FreezeSubscriptionViewModel : ObservableObject
     [RelayCommand]
     private async Task ConfirmFreezeAsync()
     {
+        if (string.IsNullOrWhiteSpace(Reason))
+        {
+            Message = "Lý do bảo lưu là bắt buộc.";
+            return;
+        }
+
+        if (Reason.Trim().Length < 3)
+        {
+            Message = "Lý do bảo lưu phải có tối thiểu 3 ký tự.";
+            return;
+        }
+
         IsLoading = true;
         Message = null;
 
         try
         {
+            string targetSubId = SubscriptionId;
+            if (string.IsNullOrWhiteSpace(targetSubId))
+            {
+                targetSubId = MemberId;
+            }
+
             var req = new FreezeSubscriptionRequest(
-                MemberId,
+                targetSubId,
                 FreezeStartDate.DateTime,
                 FreezeEndDate.DateTime,
                 Reason
