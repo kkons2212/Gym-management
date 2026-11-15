@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Common;
@@ -138,7 +139,9 @@ public sealed class HttpApiClient : IApiClient
                     ActivePlanName: m.ActivePlanName,
                     EndDate: endDate,
                     RemainingCheckInSessions: m.RemainingCheckInSessions,
-                    RemainingPtSessions: m.RemainingPtSessions
+                    RemainingPtSessions: m.RemainingPtSessions,
+                    ActiveSubscriptionId: m.ActiveSubscriptionId,
+                    AssignedPtId: m.AssignedPtId
                 ));
             }
         }
@@ -330,7 +333,7 @@ public sealed class HttpApiClient : IApiClient
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/book", request);
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/schedule/slots/book", request);
         return await HandleResponseAsync<PtSessionSlotDto>(response);
     }
 
@@ -374,7 +377,8 @@ public sealed class HttpApiClient : IApiClient
         ArgumentNullException.ThrowIfNull(request);
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/pt/sessions/confirm-result", request);
-        return await HandleResponseAsync<bool>(response);
+        var session = await HandleResponseAsync<PtSessionDto>(response);
+        return session != null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -488,7 +492,21 @@ public sealed class HttpApiClient : IApiClient
                 }
 
                 string role = u.RoleId;
-                if (!string.IsNullOrWhiteSpace(u.RoleName))
+                if (string.Equals(u.RoleId, "PT", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(u.RoleId, "TRAINER", StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(u.RoleName) && u.RoleName.Contains("Huấn luyện viên", StringComparison.OrdinalIgnoreCase)))
+                {
+                    role = "PT";
+                }
+                else if (string.Equals(u.RoleId, "SUPERADMIN", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "SuperAdmin";
+                }
+                else if (string.Equals(u.RoleId, "ADMIN", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "Admin";
+                }
+                else if (!string.IsNullOrWhiteSpace(u.RoleName))
                 {
                     role = u.RoleName;
                 }
@@ -669,11 +687,18 @@ public sealed class HttpApiClient : IApiClient
             }
         }
 
-        var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         string errorMessage = "Lỗi xử lý yêu cầu từ máy chủ.";
-        if (errorResult != null && !string.IsNullOrEmpty(errorResult.Message))
+        try
         {
-            errorMessage = errorResult.Message;
+            var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+            if (errorResult != null && !string.IsNullOrEmpty(errorResult.Message))
+            {
+                errorMessage = errorResult.Message;
+            }
+        }
+        catch (JsonException)
+        {
+            errorMessage = $"Máy chủ phản hồi mã lỗi {(int)response.StatusCode}: {response.ReasonPhrase}";
         }
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

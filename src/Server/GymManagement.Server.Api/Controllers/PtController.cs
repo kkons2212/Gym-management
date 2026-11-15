@@ -1,5 +1,6 @@
 using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -153,6 +154,33 @@ public sealed class PtController : ApiControllerBase
     {
         var sessions = await _ptService.GetSessionsAsync(ptId, memberUserName, fromDate, toDate, cancellationToken);
         return OkResponse(sessions, "Lấy danh sách ca tập thành công.");
+    }
+
+    /// <summary>
+    /// Lấy danh sách ca tập dạng slot phục vụ Desktop Lịch biểu PT (UC 4.2).
+    /// </summary>
+    [HttpGet("schedule/slots")]
+    [Authorize]
+    public async Task<IActionResult> GetScheduleSlots(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var slots = await _ptService.GetScheduleSlotsAsync(startDate, endDate, cancellationToken);
+        return OkResponse(slots, "Lấy danh sách lịch tập PT thành công.");
+    }
+
+    /// <summary>
+    /// Admin xếp lịch tập trực tiếp cho hội viên và PT (UC 4.6).
+    /// </summary>
+    [HttpPost("schedule/slots/book")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> BookScheduleSlot(
+        [FromBody] BookPtSlotRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var slot = await _ptService.BookScheduleSlotAsync(request, cancellationToken);
+        return OkResponse(slot, "Xếp lịch tập PT thành công.");
     }
 
     /// <summary>

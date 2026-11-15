@@ -2,6 +2,7 @@ using FluentAssertions;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
@@ -56,6 +57,41 @@ public class PtServiceTests
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*Số điện thoại*");
+    }
+
+    [Fact]
+    public async Task GetTrainersAsync_WhenCalled_ReturnsTrainersWithPtRole()
+    {
+        // Arrange
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        var subscriptionRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        var sessionRepoMock = new Mock<IGenericRepository<PTTrainingSession>>();
+
+        var users = new List<User>
+        {
+            new() { UserName = "pt01", FullName = "Nguyễn Văn Thành", RoleId = "PT", Status = "ACTIVE", Email = "pt01@gym.vn", Phone = "0901111111" }
+        };
+
+        userRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(users);
+        subscriptionRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(2);
+        sessionRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+        sessionRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PTTrainingSession>());
+
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subscriptionRepoMock.Object);
+        _uowMock.Setup(u => u.Repository<PTTrainingSession>()).Returns(sessionRepoMock.Object);
+
+        // Act
+        var result = await _sut.GetTrainersAsync(activeOnly: true);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].PtId.Should().Be("pt01");
+        result[0].FullName.Should().Be("Nguyễn Văn Thành");
     }
 
     [Fact]
@@ -230,6 +266,124 @@ public class PtServiceTests
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage("*không còn số buổi*");
+    }
+
+    [Fact]
+    public async Task GetScheduleSlotsAsync_WhenCalled_ReturnsMappedSlots()
+    {
+        // Arrange
+        var targetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
+        var session = new PTTrainingSession
+        {
+            PTSessionId = "SES-01",
+            PtId = "PT-01",
+            MemberId = "MB-01",
+            SessionStartTime = targetDate,
+            SessionEndTime = targetDate,
+            Status = nameof(PtSessionStatus.Booked),
+            AvailabilityId = "AVL-001"
+        };
+
+        var sessionRepoMock = new Mock<IGenericRepository<PTTrainingSession>>();
+        sessionRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PTTrainingSession> { session });
+        _uowMock.Setup(u => u.Repository<PTTrainingSession>()).Returns(sessionRepoMock.Object);
+
+        var slot = BuildSlot("AVL-001", "PT-01", isBooked: true, date: targetDate, startTime: new TimeOnly(9, 0));
+        var availRepoMock = new Mock<IGenericRepository<PTAvailability>>();
+        availRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<PTAvailability, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PTAvailability> { slot });
+        _uowMock.Setup(u => u.Repository<PTAvailability>()).Returns(availRepoMock.Object);
+
+        var users = new List<User>
+        {
+            new() { UserName = "PT-01", FullName = "HLV Nguyen Van A", RoleId = "PT" },
+            new() { UserName = "MB-01", FullName = "Hoi Vien Tran B", RoleId = "MEMBER" }
+        };
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(users);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        // Act
+        var result = await _sut.GetScheduleSlotsAsync();
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].SessionId.Should().Be("SES-01");
+        result[0].PtName.Should().Be("HLV Nguyen Van A");
+        result[0].MemberName.Should().Be("Hoi Vien Tran B");
+        result[0].StartTime.Should().Be(new TimeSpan(9, 0, 0));
+        result[0].EndTime.Should().Be(new TimeSpan(10, 0, 0));
+    }
+
+    [Fact]
+    public async Task BookScheduleSlotAsync_WhenPtNotFound_ThrowsNotFoundException()
+    {
+        // Arrange
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+        SetupExecuteTransaction();
+
+        var request = new BookPtSlotRequest("UNKNOWN", "MB-01", DateTime.UtcNow.AddDays(1), TimeSpan.FromHours(9), TimeSpan.FromHours(10));
+
+        // Act
+        Func<Task> act = () => _sut.BookScheduleSlotAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("*Không tìm thấy HLV*");
+    }
+
+    [Fact]
+    public async Task BookScheduleSlotAsync_WhenValid_CreatesAvailabilityAndSession()
+    {
+        // Arrange
+        var pt = new User { UserName = "PT-01", FullName = "HLV Nguyen Van A", RoleId = "PT", Status = "ACTIVE" };
+        var member = new User { UserName = "MB-01", FullName = "Hoi Vien Tran B", RoleId = "MEMBER", Status = "ACTIVE" };
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.SetupSequence(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pt)
+            .ReturnsAsync(member);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var subscription = BuildSubscription("SUB-01", "MB-01", "PT-01", remainingPtSessions: 5);
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock.Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subscription);
+        subRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<MemberSubscription> { subscription });
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        var availRepoMock = new Mock<IGenericRepository<PTAvailability>>();
+        availRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<PTAvailability, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PTAvailability>());
+        availRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<PTAvailability, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+        _uowMock.Setup(u => u.Repository<PTAvailability>()).Returns(availRepoMock.Object);
+
+        var sessionRepoMock = new Mock<IGenericRepository<PTTrainingSession>>();
+        sessionRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<PTTrainingSession, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+        _uowMock.Setup(u => u.Repository<PTTrainingSession>()).Returns(sessionRepoMock.Object);
+
+        SetupExecuteTransaction();
+
+        var request = new BookPtSlotRequest("PT-01", "MB-01", DateTime.UtcNow.AddDays(1), TimeSpan.FromHours(9), TimeSpan.FromHours(10));
+
+        // Act
+        var result = await _sut.BookScheduleSlotAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.PtId.Should().Be("PT-01");
+        result.PtName.Should().Be("HLV Nguyen Van A");
+        result.MemberId.Should().Be("MB-01");
+        result.MemberName.Should().Be("Hoi Vien Tran B");
+        result.SessionStatus.Should().Be(nameof(PtSessionStatus.Booked));
     }
 
     // =========================================================================
@@ -463,6 +617,12 @@ public class PtServiceTests
                 It.IsAny<Func<Task<PtProfileDto>>>(),
                 It.IsAny<CancellationToken>()))
             .Returns<Func<Task<PtProfileDto>>, CancellationToken>(async (action, _) => await action());
+
+        _uowMock
+            .Setup(u => u.ExecuteTransactionAsync(
+                It.IsAny<Func<Task<PtSessionSlotDto>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Func<Task<PtSessionSlotDto>>, CancellationToken>(async (action, _) => await action());
 
         _uowMock
             .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
