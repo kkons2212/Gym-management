@@ -178,20 +178,6 @@ public sealed partial class TrainerListDialog : ContentDialog
         ApplyFilter();
     }
 
-    private async void BtnAddNewTrainer_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new TrainerProfileDialog(_apiClient)
-        {
-            XamlRoot = this.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (dialog.SavedTrainer != null)
-        {
-            await LoadTrainersAsync();
-        }
-    }
-
     private async void BtnEditTrainer_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.DataContext is PtProfileDto trainer)

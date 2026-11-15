@@ -8,7 +8,7 @@
     DefaultButton="Close"
     Style="{StaticResource DefaultContentDialogStyle}">
 
-    <Grid Width="700" Height="500" RowSpacing="14">
+    <Grid Width="500" Height="480" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -17,15 +17,14 @@
 
         <!-- Description -->
         <TextBlock Grid.Row="0"
-                   Text="Xem danh sách, chuyên môn, chỉ số đánh giá và cập nhật hồ sơ huấn luyện viên cá nhân."
+                   Text="Xem danh sách, chỉ số đánh giá và cập nhật hồ sơ huấn luyện viên cá nhân."
                    FontSize="12"
                    Foreground="{StaticResource TextSecondaryBrush}" />
 
-        <!-- Toolbar: Search, Filter & Add -->
+        <!-- Toolbar: Search & Filter -->
         <Grid Grid.Row="1" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -40,13 +39,6 @@
                 <ComboBoxItem Content="Đang hoạt động" Tag="ACTIVE" />
                 <ComboBoxItem Content="Tạm ngừng" Tag="INACTIVE" />
             </ComboBox>
-
-            <Button Grid.Column="2" Click="BtnAddNewTrainer_Click" Height="36" Background="{StaticResource AccentPrimaryBrush}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon Glyph="&#xE710;" FontSize="12" Foreground="#FFFFFF" />
-                    <TextBlock Text="Thêm HLV Mới" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF" />
-                </StackPanel>
-            </Button>
         </Grid>
 
         <!-- List View of Trainers -->
@@ -66,12 +58,12 @@
                 </StackPanel>
 
                 <!-- List Content -->
-                <ListView x:Name="LvTrainers" Padding="8">
+                <ListView x:Name="LvTrainers" Padding="6">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="pt:PtProfileDto">
                             <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
-                                    BorderThickness="1" CornerRadius="8" Margin="0,4" Padding="12">
-                                <Grid ColumnSpacing="12">
+                                    BorderThickness="1" CornerRadius="8" Margin="0,3" Padding="10">
+                                <Grid ColumnSpacing="10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -80,48 +72,46 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Avatar placeholder -->
-                                    <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21"
-                                            Background="#1E293B" BorderBrush="{StaticResource AccentPrimaryBrush}" BorderThickness="1.5">
-                                        <FontIcon Glyph="&#xE77B;" FontSize="18" Foreground="{StaticResource AccentPrimaryBrush}"
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
+                                            Background="#1E293B" BorderBrush="{StaticResource AccentPrimaryBrush}" BorderThickness="1.5"
+                                            VerticalAlignment="Center">
+                                        <FontIcon Glyph="&#xE77B;" FontSize="16" Foreground="{StaticResource AccentPrimaryBrush}"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
 
                                     <!-- Trainer Info -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="{x:Bind FullName}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" />
-                                            <Border CornerRadius="4" Padding="6,2" Background="#1E293B" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1">
-                                                <TextBlock Text="{x:Bind Specialty}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource StatusPtBrush}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{x:Bind FullName}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <Border CornerRadius="4" Padding="5,1" Background="#1E293B" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1">
+                                                <TextBlock Text="HLV" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource StatusPtBrush}" />
                                             </Border>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="{x:Bind Phone}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="•" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind Email}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="•" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind ExperienceYears}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="năm kinh nghiệm" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                        </StackPanel>
+                                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                            <Run Text="{x:Bind Phone}" />
+                                            <Run Text=" • " />
+                                            <Run Text="{x:Bind Email}" />
+                                        </TextBlock>
                                     </StackPanel>
 
                                     <!-- Stats -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <FontIcon Glyph="&#xE735;" FontSize="12" Foreground="#F59E0B" />
-                                            <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
-                                            <TextBlock Text="(" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind ReviewCount}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="đánh giá)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="0,0,6,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                            <FontIcon Glyph="&#xE735;" FontSize="11" Foreground="#F59E0B" />
+                                            <TextBlock Text="{x:Bind RatingAverage}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="(" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind ReviewCount}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text=")" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock Text="Đang dạy:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind ActiveStudentsCount}" FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                            <TextBlock Text="học viên" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                            <TextBlock Text="Dạy:" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind ActiveStudentsCount}" FontWeight="SemiBold" FontSize="10" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                            <TextBlock Text="HV" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                         </StackPanel>
                                     </StackPanel>
 
                                     <!-- Action Button -->
-                                    <Button Grid.Column="3" Content="Sửa" Click="BtnEditTrainer_Click" Height="32" FontSize="12" Padding="12,0" VerticalAlignment="Center" />
+                                    <Button Grid.Column="3" Content="Sửa" Click="BtnEditTrainer_Click" Height="28" FontSize="11" Padding="10,0" VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
