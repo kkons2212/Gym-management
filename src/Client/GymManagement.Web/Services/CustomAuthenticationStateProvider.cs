@@ -13,6 +13,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     private ClaimsPrincipal _currentUser = Anonymous;
     private UserSessionDto? _userSession;
 
+    public string? Token { get; private set; }
     public UserSessionDto? CurrentUser => _userSession;
     public bool IsAuthenticated => _userSession != null;
     public bool IsMember => string.Equals(_userSession?.Role, "Member", StringComparison.OrdinalIgnoreCase);
@@ -26,11 +27,12 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     /// <summary>
     /// Thiết lập phiên làm việc sau khi đăng nhập thành công.
     /// </summary>
-    public void SetAuthenticated(UserSessionDto user)
+    public void SetAuthenticated(UserSessionDto user, string? token = null)
     {
         ArgumentNullException.ThrowIfNull(user);
 
         _userSession = user;
+        Token = token;
 
         var claims = new List<Claim>
         {
@@ -52,6 +54,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     public void SetAnonymous()
     {
         _userSession = null;
+        Token = null;
         _currentUser = Anonymous;
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
