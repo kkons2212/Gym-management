@@ -21,9 +21,17 @@ public sealed partial class TrainerListDialog : ContentDialog
         InitializeComponent();
         LvTrainers.ItemsSource = _displayedTrainers;
 
-        Loaded += async (s, e) =>
+        Opened += async (s, e) =>
         {
             await LoadTrainersAsync();
+        };
+
+        Loaded += async (s, e) =>
+        {
+            if (_allTrainers.Count == 0)
+            {
+                await LoadTrainersAsync();
+            }
         };
     }
 
@@ -34,6 +42,36 @@ public sealed partial class TrainerListDialog : ContentDialog
         {
             var list = await _apiClient.GetTrainersAsync();
             _allTrainers = list.ToList();
+
+            if (_allTrainers.Count == 0)
+            {
+                var users = await _apiClient.GetUsersAsync();
+                var fallbackList = new List<PtProfileDto>();
+                foreach (var u in users)
+                {
+                    bool isPt = string.Equals(u.Role, "PT", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(u.Role, "TRAINER", StringComparison.OrdinalIgnoreCase) ||
+                                (!string.IsNullOrWhiteSpace(u.FullName) && u.FullName.Contains("PT", StringComparison.OrdinalIgnoreCase));
+                    if (isPt)
+                    {
+                        fallbackList.Add(new PtProfileDto(
+                            PtId: u.UserId,
+                            FullName: u.FullName,
+                            Phone: string.Empty,
+                            Email: u.Email,
+                            Specialty: "HLV Thể Hình",
+                            ExperienceYears: 1,
+                            RatingAverage: 5.0m,
+                            ReviewCount: 0,
+                            IsActive: true,
+                            ActiveStudentsCount: 0,
+                            PendingSessionsCount: 0
+                        ));
+                    }
+                }
+                _allTrainers = fallbackList;
+            }
+
             ApplyFilter();
         }
         catch
@@ -59,10 +97,28 @@ public sealed partial class TrainerListDialog : ContentDialog
 
         foreach (var t in _allTrainers)
         {
+            string fullName = string.Empty;
+            if (t.FullName != null)
+            {
+                fullName = t.FullName.ToLowerInvariant();
+            }
+
+            string phone = string.Empty;
+            if (t.Phone != null)
+            {
+                phone = t.Phone;
+            }
+
+            string specialty = string.Empty;
+            if (t.Specialty != null)
+            {
+                specialty = t.Specialty.ToLowerInvariant();
+            }
+
             bool matchQuery = string.IsNullOrWhiteSpace(query) ||
-                              t.FullName.ToLowerInvariant().Contains(query) ||
-                              t.Phone.Contains(query) ||
-                              t.Specialty.ToLowerInvariant().Contains(query);
+                              fullName.Contains(query) ||
+                              phone.Contains(query) ||
+                              specialty.Contains(query);
 
             bool matchStatus = true;
             if (statusTag == "ACTIVE")
