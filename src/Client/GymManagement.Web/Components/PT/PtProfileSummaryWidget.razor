@@ -1,0 +1,122 @@
+@using GymManagement.Web.Services
+@inject IWebApiClient ApiClient
+
+@if (_isLoading)
+{
+    <div class="gym-card skeleton" style="height: 180px;"></div>
+}
+else if (_profile == null)
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Không Tìm Thấy Thông Tin HLV</div>
+        <div class="empty-state-text">Vui lòng kiểm tra lại trạng thái tài khoản huấn luyện viên.</div>
+    </div>
+}
+else
+{
+    <!-- PT Summary Card -->
+    <div class="gym-card" style="background: linear-gradient(145deg, #1E293B, #0F172A); border: 1px solid var(--border-strong); position: relative; overflow: hidden; padding: 16px;">
+        <!-- Header Row -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(192, 132, 252, 0.2); border: 1px solid #A855F7; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #C084FC;">
+                    PT
+                </div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 700; color: #F8FAFC;">
+                        @_profile.FullName
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                        Mã HLV:&nbsp;<span class="tabular-nums" style="color: #38BDF8; font-weight: 600;">@_profile.UserName</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                @if (string.Equals(_profile.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #34D399; background: rgba(6, 78, 59, 0.6); border: 1px solid #059669; border-radius: 9999px;">
+                        Đang hoạt động
+                    </span>
+                }
+                else
+                {
+                    <span style="display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; color: #F87171; background: rgba(127, 29, 29, 0.6); border: 1px solid #DC2626; border-radius: 9999px;">
+                        Tạm dừng
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Metric Grid (4 Real DB Counters) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+            <!-- Active Students -->
+            <div style="background: var(--bg-canvas); border-radius: 8px; padding: 10px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px;">👥 Học Viên Phụ Trách</div>
+                <div style="font-size: 18px; font-weight: 700; color: #38BDF8;">
+                    @_profile.ActiveStudentsCount <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">người</span>
+                </div>
+            </div>
+
+            <!-- Average Rating -->
+            <div style="background: var(--bg-canvas); border-radius: 8px; padding: 10px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px;">⭐ Đánh Giá HLV</div>
+                <div style="font-size: 18px; font-weight: 700; color: #FBBF24;">
+                    @_profile.RatingAverage&nbsp;★ <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">(@_profile.ReviewCount)</span>
+                </div>
+            </div>
+
+            <!-- Completed Sessions -->
+            <div style="background: var(--bg-canvas); border-radius: 8px; padding: 10px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px;">🏋️ Đã Hoàn Thành</div>
+                <div style="font-size: 18px; font-weight: 700; color: #34D399;">
+                    @_profile.CompletedSessionsCount <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">ca</span>
+                </div>
+            </div>
+
+            <!-- Upcoming Sessions -->
+            <div style="background: var(--bg-canvas); border-radius: 8px; padding: 10px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px;">📅 Ca Sắp Tới</div>
+                <div style="font-size: 18px; font-weight: 700; color: #C084FC;">
+                    @_profile.UpcomingSessionsCount <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">ca</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public PtMyProfileDto? Profile { get; set; }
+
+    private PtMyProfileDto? _profile;
+    private bool _isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Profile != null)
+        {
+            _profile = Profile;
+        }
+        else
+        {
+            await ReloadAsync();
+        }
+    }
+
+    public async Task ReloadAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _profile = await ApiClient.GetMyPtProfileAsync();
+        }
+        catch
+        {
+            // fallback gracefully
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

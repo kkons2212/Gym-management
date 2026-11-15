@@ -1,0 +1,349 @@
+@page "/pt/profile"
+@attribute [Authorize(Roles = "PT")]
+@inject IWebApiClient ApiClient
+@inject NavigationManager Nav
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Welcome Greeting Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: #F8FAFC;">
+                Xin chào, @_ptName
+            </h1>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Cổng thông tin &amp; Hồ sơ Huấn luyện viên (PT)
+            </div>
+        </div>
+        <button type="button"
+                @onclick="ReloadDataAsync"
+                class="btn-secondary"
+                style="padding: 6px 10px; font-size: 12px; min-height: 32px;"
+                title="Làm mới thông tin">
+            ↻
+        </button>
+    </div>
+
+    <!-- PT Profile Summary Widget -->
+    <PtProfileSummaryWidget @ref="_summaryWidget" Profile="_ptProfile" />
+
+    <!-- Personal Profile Information & Update Form -->
+    <div class="gym-card" style="padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 class="gym-card-title" style="font-size: 15px; margin: 0;">Thông Tin Cá Nhân &amp; Tài Khoản</h2>
+            <span class="badge" style="background: rgba(192, 132, 252, 0.15); color: #C084FC; font-size: 11px;">
+                Mã HLV: @_userName
+            </span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_profileMessage))
+        {
+            @if (_isProfileSuccess)
+            {
+                <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #6EE7B7; font-size: 12px; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px;">
+                    ✓ @_profileMessage
+                </div>
+            }
+            else
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px;">
+                    ✕ @_profileMessage
+                </div>
+            }
+        }
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- PT Code (Read-only / Locked) -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Mã huấn luyện viên (Cố định)
+                </label>
+                <div style="position: relative;">
+                    <input type="text"
+                           value="@_userName"
+                           disabled
+                           style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-muted); font-size: 13px; font-family: monospace; cursor: not-allowed;" />
+                    <span style="position: absolute; right: 10px; top: 9px; font-size: 12px; color: var(--text-muted);">🔒</span>
+                </div>
+            </div>
+
+            <!-- Full Name -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Họ và tên *
+                </label>
+                <input type="text"
+                       @bind="_fullName"
+                       placeholder="Nhập họ và tên..."
+                       style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+            </div>
+
+            <!-- Phone & Email Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Số điện thoại *
+                    </label>
+                    <input type="text"
+                           @bind="_phone"
+                           placeholder="0912345678"
+                           maxlength="10"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Địa chỉ Email *
+                    </label>
+                    <input type="email"
+                           @bind="_email"
+                           placeholder="pt@example.com"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                </div>
+            </div>
+
+            <!-- New Password -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                    Mật khẩu mới
+                </label>
+                <input type="password"
+                       @bind="_newPassword"
+                       placeholder="Nhập mật khẩu mới nếu muốn đổi..."
+                       style="width: 100%; box-sizing: border-box; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 13px; outline: none;" />
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                    Để trống nếu không có nhu cầu đổi mật khẩu (tối thiểu 6 ký tự).
+                </div>
+            </div>
+
+            <!-- Save Profile Button -->
+            <button type="button"
+                    class="btn-primary"
+                    disabled="@_isSavingProfile"
+                    @onclick="HandleUpdateProfileAsync"
+                    style="width: 100%; padding: 10px; font-size: 13px; font-weight: 600; margin-top: 4px;">
+                @if (_isSavingProfile)
+                {
+                    <span>Đang lưu thông tin...</span>
+                }
+                else
+                {
+                    <span>Cập Nhật Thông Tin Cá Nhân</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Actions (Tác Vụ Thường Dùng) -->
+    <div class="gym-card" style="padding: 14px;">
+        <h2 class="gym-card-title" style="font-size: 14px; margin-bottom: 12px;">Tác Vụ Thường Dùng</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <NavLink href="/pt/schedule"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">📅</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Lịch Dạy</span>
+            </NavLink>
+
+            <NavLink href="/pt/availability"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">🕒</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Lịch Rảnh</span>
+            </NavLink>
+
+            <NavLink href="/pt/students"
+                     class="btn-secondary"
+                     style="text-decoration: none; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-canvas);">
+                <span style="font-size: 22px;">👥</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Học Viên</span>
+            </NavLink>
+        </div>
+    </div>
+
+    <!-- Upcoming PT Session Alert/Card -->
+    @if (_upcomingSession != null)
+    {
+        <div class="gym-card" style="padding: 14px; border-left: 4px solid #C084FC;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="badge" style="background: rgba(192, 132, 252, 0.15); color: #C084FC; font-size: 11px;">
+                    Ca Dạy Kèm Sắp Tới
+                </span>
+                <span class="tabular-nums" style="font-size: 12px; color: var(--text-secondary);">
+                    @_upcomingSession.SessionStartTime.ToString("HH:mm dd/MM")
+                </span>
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 4px;">
+                Học viên:&nbsp;@_upcomingSession.MemberFullName
+            </div>
+            @if (!string.IsNullOrEmpty(_upcomingSession.WorkoutNotes))
+            {
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">
+                    Mục tiêu:&nbsp;@_upcomingSession.WorkoutNotes
+                </div>
+            }
+            <NavLink href="/pt/schedule"
+                     class="btn-secondary"
+                     style="width: 100%; min-height: 32px; font-size: 12px; padding: 6px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                Xem Chi Tiết Lịch Dạy
+            </NavLink>
+        </div>
+    }
+</div>
+
+@code {
+    private PtProfileSummaryWidget? _summaryWidget;
+    private PtMyProfileDto? _ptProfile;
+    private PtSessionDto? _upcomingSession;
+
+    private string _ptName = "Huấn Luyện Viên";
+    private string _userName = string.Empty;
+    private string _fullName = string.Empty;
+    private string _phone = string.Empty;
+    private string _email = string.Empty;
+    private string _newPassword = string.Empty;
+
+    private string _profileMessage = string.Empty;
+    private bool _isProfileSuccess = false;
+    private bool _isSavingProfile = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfileAsync();
+        await LoadUpcomingSessionAsync();
+    }
+
+    private async Task ReloadDataAsync()
+    {
+        await LoadProfileAsync();
+        await LoadUpcomingSessionAsync();
+        if (_summaryWidget != null)
+        {
+            await _summaryWidget.ReloadAsync();
+        }
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        try
+        {
+            _ptProfile = await ApiClient.GetMyPtProfileAsync();
+            if (_ptProfile != null)
+            {
+                _userName = _ptProfile.UserName;
+                _fullName = _ptProfile.FullName;
+                _phone = _ptProfile.Phone;
+                _email = _ptProfile.Email;
+                _ptName = _ptProfile.FullName;
+            }
+            else
+            {
+                var session = await ApiClient.GetCurrentUserSessionAsync();
+                if (session != null)
+                {
+                    _userName = session.UserId;
+                    _fullName = session.FullName;
+                    _email = session.Email;
+                    if (!string.IsNullOrWhiteSpace(session.Phone))
+                    {
+                        _phone = session.Phone;
+                    }
+                    _ptName = session.FullName;
+                }
+            }
+        }
+        catch
+        {
+            // fallback gracefully
+        }
+    }
+
+    private async Task LoadUpcomingSessionAsync()
+    {
+        try
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var sessions = await ApiClient.GetPtMyWeeklyScheduleAsync(today, today.AddDays(7));
+            _upcomingSession = sessions.FirstOrDefault(s => s.Status == GymManagement.Server.Core.Enums.PtSessionStatus.Booked && s.SessionStartTime >= DateTime.Now);
+        }
+        catch
+        {
+            // fallback gracefully
+        }
+    }
+
+    private async Task HandleUpdateProfileAsync()
+    {
+        _profileMessage = string.Empty;
+        _isProfileSuccess = false;
+
+        string trimmedName = _fullName.Trim();
+        string trimmedPhone = _phone.Trim();
+        string trimmedEmail = _email.Trim();
+        string? newPass = null;
+        if (!string.IsNullOrWhiteSpace(_newPassword))
+        {
+            newPass = _newPassword;
+        }
+
+        if (string.IsNullOrWhiteSpace(trimmedName) || trimmedName.Length < 2)
+        {
+            _profileMessage = "Họ và tên không được để trống (tối thiểu 2 ký tự).";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(trimmedPhone) || !System.Text.RegularExpressions.Regex.IsMatch(trimmedPhone, @"^0\d{9}$"))
+        {
+            _profileMessage = "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(trimmedEmail) || !trimmedEmail.Contains('@'))
+        {
+            _profileMessage = "Địa chỉ email không đúng định dạng.";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        if (newPass != null && newPass.Length < 6)
+        {
+            _profileMessage = "Mật khẩu mới phải có ít nhất 6 ký tự.";
+            _isProfileSuccess = false;
+            return;
+        }
+
+        _isSavingProfile = true;
+        try
+        {
+            var request = new UpdateMemberProfileRequest(trimmedName, trimmedPhone, trimmedEmail, newPass);
+            bool success = await ApiClient.UpdateMyProfileAsync(request);
+            if (success)
+            {
+                _profileMessage = "Cập nhật thông tin cá nhân thành công!";
+                _isProfileSuccess = true;
+                _ptName = trimmedName;
+                _newPassword = string.Empty;
+
+                await LoadProfileAsync();
+                if (_summaryWidget != null)
+                {
+                    await _summaryWidget.ReloadAsync();
+                }
+            }
+            else
+            {
+                _profileMessage = "Không thể cập nhật thông tin. Vui lòng thử lại sau.";
+                _isProfileSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _profileMessage = $"Lỗi: {ex.Message}";
+            _isProfileSuccess = false;
+        }
+        finally
+        {
+            _isSavingProfile = false;
+        }
+    }
+}

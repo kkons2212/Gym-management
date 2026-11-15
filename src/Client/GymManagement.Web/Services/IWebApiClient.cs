@@ -35,6 +35,22 @@ public record UpdateMemberProfileRequest(
 );
 
 /// <summary>
+/// Hồ sơ cá nhân và chỉ số hoạt động thực tế của Huấn luyện viên PT.
+/// </summary>
+public record PtMyProfileDto(
+    string UserName,
+    string FullName,
+    string Phone,
+    string Email,
+    string Status,
+    int ActiveStudentsCount,
+    decimal RatingAverage,
+    int ReviewCount,
+    int CompletedSessionsCount,
+    int UpcomingSessionsCount
+);
+
+/// <summary>
 /// Hợp đồng giao tiếp dữ liệu cho Cổng thông tin Hội viên & Huấn luyện viên PT.
 /// </summary>
 public interface IWebApiClient
@@ -68,6 +84,7 @@ public interface IWebApiClient
     Task<IReadOnlyList<CheckInLogDto>> GetMyCheckInHistoryAsync();
 
     // Cổng tác nghiệp dành cho Huấn luyện viên PT (UC08)
+    Task<PtMyProfileDto?> GetMyPtProfileAsync();
     Task<IReadOnlyList<PtSlotDto>> GetMyAvailabilitySlotsAsync(DateOnly startDate, DateOnly endDate);
     Task<bool> SavePtAvailabilitySlotsAsync(SavePtSlotsRequest request);
     Task<IReadOnlyList<PtSessionDto>> GetPtMyWeeklyScheduleAsync(DateOnly startDate, DateOnly endDate);

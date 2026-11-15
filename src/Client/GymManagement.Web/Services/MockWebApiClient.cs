@@ -482,6 +482,72 @@ public sealed class MockWebApiClient : IWebApiClient
     // ==========================================
     // 6. PT OPERATIONS (UC08)
     // ==========================================
+    public Task<PtMyProfileDto?> GetMyPtProfileAsync()
+    {
+        var current = _authStateProvider.CurrentUser;
+        if (current == null)
+        {
+            return Task.FromResult<PtMyProfileDto?>(null);
+        }
+
+        var existingUser = _users.FirstOrDefault(u => string.Equals(u.UserId, current.UserId, StringComparison.OrdinalIgnoreCase));
+        string phone = "0912345678";
+        if (existingUser != null && !string.IsNullOrWhiteSpace(existingUser.Phone))
+        {
+            phone = existingUser.Phone;
+        }
+
+        var ptSessions = _ptSessions.Where(s => string.Equals(s.PtId, current.UserId, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        int completedCount = 0;
+        int upcomingCount = 0;
+        int totalStars = 0;
+        int reviewCount = 0;
+
+        foreach (var s in ptSessions)
+        {
+            if (s.Status == PtSessionStatus.Completed)
+            {
+                completedCount++;
+            }
+            if (s.Status == PtSessionStatus.Booked)
+            {
+                if (s.SessionStartTime >= DateTime.Now)
+                {
+                    upcomingCount++;
+                }
+            }
+            if (s.RatingStars.HasValue)
+            {
+                totalStars += s.RatingStars.Value;
+                reviewCount++;
+            }
+        }
+
+        decimal ratingAvg = 5.0m;
+        if (reviewCount > 0)
+        {
+            ratingAvg = Math.Round((decimal)totalStars / reviewCount, 1);
+        }
+
+        int activeStudents = 2;
+
+        var profile = new PtMyProfileDto(
+            UserName: current.UserId,
+            FullName: current.FullName,
+            Phone: phone,
+            Email: current.Email,
+            Status: "ACTIVE",
+            ActiveStudentsCount: activeStudents,
+            RatingAverage: ratingAvg,
+            ReviewCount: reviewCount,
+            CompletedSessionsCount: completedCount,
+            UpcomingSessionsCount: upcomingCount
+        );
+
+        return Task.FromResult<PtMyProfileDto?>(profile);
+    }
+
     public Task<IReadOnlyList<PtSlotDto>> GetMyAvailabilitySlotsAsync(DateOnly startDate, DateOnly endDate)
     {
         return GetPtAvailableSlotsAsync("pt01", startDate, endDate);
