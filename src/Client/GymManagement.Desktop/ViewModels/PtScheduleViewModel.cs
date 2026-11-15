@@ -32,6 +32,39 @@ public partial class PtScheduleViewModel : ObservableObject
     private TimeSpan _endTime = new(10, 0, 0);
 
     [ObservableProperty]
+    private TimeSlotOption? _selectedStartTime;
+
+    [ObservableProperty]
+    private TimeSlotOption? _selectedEndTime;
+
+    partial void OnSelectedStartTimeChanged(TimeSlotOption? value)
+    {
+        if (value != null)
+        {
+            StartTime = value.Time;
+            if (EndTime <= StartTime || SelectedEndTime == null)
+            {
+                var targetEnd = StartTime.Add(TimeSpan.FromHours(1));
+                var matched = AvailableTimeSlots.FirstOrDefault(s => s.Time == targetEnd);
+                if (matched != null)
+                {
+                    SelectedEndTime = matched;
+                }
+            }
+        }
+        CheckForCollisions();
+    }
+
+    partial void OnSelectedEndTimeChanged(TimeSlotOption? value)
+    {
+        if (value != null)
+        {
+            EndTime = value.Time;
+        }
+        CheckForCollisions();
+    }
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -71,6 +104,7 @@ public partial class PtScheduleViewModel : ObservableObject
     public ObservableCollection<UserSessionDto> AvailablePts { get; } = [];
     public ObservableCollection<MemberDto> AvailableMembers { get; } = [];
     public ObservableCollection<PtSessionSlotDto> ScheduledSlots { get; } = [];
+    public ObservableCollection<TimeSlotOption> AvailableTimeSlots { get; } = [];
 
     public PtScheduleViewModel(IApiClient apiClient, IAdminSessionService sessionService)
     {
@@ -78,6 +112,43 @@ public partial class PtScheduleViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(sessionService);
         _apiClient = apiClient;
         _sessionService = sessionService;
+        PopulateTimeSlots();
+    }
+
+    private void PopulateTimeSlots()
+    {
+        AvailableTimeSlots.Clear();
+        var current = new TimeSpan(6, 0, 0);
+        var end = new TimeSpan(22, 0, 0);
+        while (current <= end)
+        {
+            string display = $"{current.Hours:D2}:{current.Minutes:D2}";
+            var option = new TimeSlotOption(current, display);
+            AvailableTimeSlots.Add(option);
+            current = current.Add(TimeSpan.FromMinutes(30));
+        }
+
+        var defaultStart = AvailableTimeSlots.FirstOrDefault(s => s.Time == StartTime);
+        if (defaultStart == null)
+        {
+            defaultStart = AvailableTimeSlots.FirstOrDefault(s => s.Time == new TimeSpan(9, 0, 0));
+        }
+        SelectedStartTime = defaultStart;
+        if (defaultStart != null)
+        {
+            StartTime = defaultStart.Time;
+        }
+
+        var defaultEnd = AvailableTimeSlots.FirstOrDefault(s => s.Time == EndTime);
+        if (defaultEnd == null)
+        {
+            defaultEnd = AvailableTimeSlots.FirstOrDefault(s => s.Time == new TimeSpan(10, 0, 0));
+        }
+        SelectedEndTime = defaultEnd;
+        if (defaultEnd != null)
+        {
+            EndTime = defaultEnd.Time;
+        }
     }
 
     [RelayCommand]
@@ -303,5 +374,22 @@ public partial class PtScheduleViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+}
+
+public sealed class TimeSlotOption
+{
+    public TimeSpan Time { get; set; }
+    public string DisplayText { get; set; } = string.Empty;
+
+    public TimeSlotOption(TimeSpan time, string displayText)
+    {
+        Time = time;
+        DisplayText = displayText;
+    }
+
+    public override string ToString()
+    {
+        return DisplayText;
     }
 }

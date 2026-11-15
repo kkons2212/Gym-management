@@ -465,10 +465,10 @@ public sealed class PtService : IPtService
                     }
 
                     // Tạo slot mới
-                    int count = await availRepo.CountAsync(s => s.PtId == request.PtId, cancellationToken);
+                    string newAvailId = await GenerateUniqueAvailabilityIdAsync(cancellationToken);
                     var newSlot = new PTAvailability
                     {
-                        AvailabilityId = $"AVL-{request.PtId}-{count + 1:D4}",
+                        AvailabilityId = newAvailId,
                         PtId = request.PtId,
                         AvailableDate = item.AvailableDate,
                         StartTime = item.StartTime,
@@ -656,19 +656,20 @@ public sealed class PtService : IPtService
                 throw new NotFoundException($"Không tìm thấy hội viên với mã: {request.MemberId}");
             }
 
-            var subscription = await _unitOfWork.Repository<MemberSubscription>()
-                .FindSingleOrDefaultAsync(
+            var subscriptions = await _unitOfWork.Repository<MemberSubscription>()
+                .FindAsync(
                     s => s.UserName == request.MemberId && s.Status == StatusActive,
                     cancellationToken);
 
-            if (subscription == null)
+            if (subscriptions.Count == 0)
             {
                 throw new BusinessRuleException("Hội viên chưa có gói tập đang hoạt động.");
             }
 
-            if (subscription.RemainingPtSessions <= 0)
+            var subscription = subscriptions.FirstOrDefault(s => s.RemainingPtSessions > 0);
+            if (subscription == null)
             {
-                throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng.");
+                throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng trong gói hiện tại.");
             }
 
             if (string.IsNullOrEmpty(subscription.AssignedPtId))
@@ -695,9 +696,7 @@ public sealed class PtService : IPtService
                 throw new BusinessRuleException("HLV đã có ca tập được xếp trong khung giờ này.");
             }
 
-            int availCount = await _unitOfWork.Repository<PTAvailability>()
-                .CountAsync(cancellationToken: cancellationToken);
-            string availId = $"AVL-{request.PtId}-{availCount + 1:D5}";
+            string availId = await GenerateUniqueAvailabilityIdAsync(cancellationToken);
 
             var newSlot = new PTAvailability
             {
@@ -710,9 +709,7 @@ public sealed class PtService : IPtService
             };
             await _unitOfWork.Repository<PTAvailability>().AddAsync(newSlot, cancellationToken);
 
-            int sessionCount = await _unitOfWork.Repository<PTTrainingSession>()
-                .CountAsync(cancellationToken: cancellationToken);
-            string sessionId = $"SES-{sessionCount + 1:D5}";
+            string sessionId = await GenerateUniqueSessionIdAsync(cancellationToken);
 
             var newSession = new PTTrainingSession
             {
@@ -802,9 +799,7 @@ public sealed class PtService : IPtService
             }
 
             // 5. Tạo ca tập mới
-            int sessionCount = await _unitOfWork.Repository<PTTrainingSession>()
-                .CountAsync(cancellationToken: cancellationToken);
-            string newSessionId = $"SES-{sessionCount + 1:D5}";
+            string newSessionId = await GenerateUniqueSessionIdAsync(cancellationToken);
 
             var newSession = new PTTrainingSession
             {
@@ -1299,10 +1294,16 @@ public sealed class PtService : IPtService
     /// <summary>Trừ 1 buổi RemainingPtSessions của hội viên (gói ACTIVE đầu tiên tìm được).</summary>
     private async Task DeductPtSessionAsync(string memberUserName, CancellationToken cancellationToken)
     {
-        var sub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
+        var subs = await _unitOfWork.Repository<MemberSubscription>()
+            .FindAsync(
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
+
+        var sub = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
+        if (sub == null)
+        {
+            sub = subs.FirstOrDefault();
+        }
 
         if (sub == null || sub.RemainingPtSessions <= 0)
         {
@@ -1316,10 +1317,12 @@ public sealed class PtService : IPtService
     /// <summary>Hoàn lại 1 buổi RemainingPtSessions của hội viên (gói ACTIVE đầu tiên tìm được).</summary>
     private async Task RestorePtSessionAsync(string memberUserName, CancellationToken cancellationToken)
     {
-        var sub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
+        var subs = await _unitOfWork.Repository<MemberSubscription>()
+            .FindAsync(
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
+
+        var sub = subs.FirstOrDefault();
 
         if (sub == null)
         {
@@ -1408,6 +1411,34 @@ public sealed class PtService : IPtService
             IsActive: u.Status == StatusActive,
             ActiveStudentsCount: students,
             PendingSessionsCount: pending);
+    }
+
+    private async Task<string> GenerateUniqueAvailabilityIdAsync(CancellationToken cancellationToken)
+    {
+        int count = await _unitOfWork.Repository<PTAvailability>().CountAsync(cancellationToken: cancellationToken);
+        string id = $"AVL{count + 1:D7}";
+        int attempts = 0;
+        while (await _unitOfWork.Repository<PTAvailability>().ExistsAsync(a => a.AvailabilityId == id, cancellationToken) && attempts < 100)
+        {
+            count++;
+            id = $"AVL{count + 1:D7}";
+            attempts++;
+        }
+        return id;
+    }
+
+    private async Task<string> GenerateUniqueSessionIdAsync(CancellationToken cancellationToken)
+    {
+        int count = await _unitOfWork.Repository<PTTrainingSession>().CountAsync(cancellationToken: cancellationToken);
+        string id = $"SES{count + 1:D7}";
+        int attempts = 0;
+        while (await _unitOfWork.Repository<PTTrainingSession>().ExistsAsync(s => s.PTSessionId == id, cancellationToken) && attempts < 100)
+        {
+            count++;
+            id = $"SES{count + 1:D7}";
+            attempts++;
+        }
+        return id;
     }
 
     private static PtSlotDto MapToSlotDto(PTAvailability s)
