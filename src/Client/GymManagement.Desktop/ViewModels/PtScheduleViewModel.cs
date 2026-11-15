@@ -101,6 +101,8 @@ public partial class PtScheduleViewModel : ObservableObject
     [ObservableProperty]
     private string? _collisionWarning;
 
+    private readonly List<MemberDto> _allMembers = [];
+
     public ObservableCollection<UserSessionDto> AvailablePts { get; } = [];
     public ObservableCollection<MemberDto> AvailableMembers { get; } = [];
     public ObservableCollection<PtSessionSlotDto> ScheduledSlots { get; } = [];
@@ -187,15 +189,16 @@ public partial class PtScheduleViewModel : ObservableObject
             }
 
             var members = await _apiClient.GetMembersAsync();
-            AvailableMembers.Clear();
-            foreach (var m in members.Where(m => m.Status == "ACTIVE" && m.RemainingPtSessions > 0))
+            _allMembers.Clear();
+            foreach (var m in members)
             {
-                AvailableMembers.Add(m);
+                if (m.Status == "ACTIVE" && m.RemainingPtSessions > 0)
+                {
+                    _allMembers.Add(m);
+                }
             }
-            if (AvailableMembers.Count > 0 && SelectedMember == null)
-            {
-                SelectedMember = AvailableMembers[0];
-            }
+
+            FilterMembersForSelectedPt();
 
             await LoadScheduleAsync();
         }
@@ -279,8 +282,49 @@ public partial class PtScheduleViewModel : ObservableObject
         CheckForCollisions();
     }
 
+    public void FilterMembersForSelectedPt()
+    {
+        AvailableMembers.Clear();
+        if (SelectedPt == null)
+        {
+            SelectedMember = null;
+            return;
+        }
+
+        // 1. Học viên do PT này phụ trách
+        foreach (var m in _allMembers)
+        {
+            if (m.AssignedPtId == SelectedPt.UserId)
+            {
+                AvailableMembers.Add(m);
+            }
+        }
+
+        // 2. Học viên chưa gán PT (để Admin có thể xếp lịch và tự động gán PT luôn)
+        foreach (var m in _allMembers)
+        {
+            if (string.IsNullOrEmpty(m.AssignedPtId))
+            {
+                AvailableMembers.Add(m);
+            }
+        }
+
+        if (AvailableMembers.Count > 0)
+        {
+            if (SelectedMember == null || !AvailableMembers.Contains(SelectedMember))
+            {
+                SelectedMember = AvailableMembers[0];
+            }
+        }
+        else
+        {
+            SelectedMember = null;
+        }
+    }
+
     partial void OnSelectedPtChanged(UserSessionDto? value)
     {
+        FilterMembersForSelectedPt();
         _ = LoadScheduleAsync();
     }
 

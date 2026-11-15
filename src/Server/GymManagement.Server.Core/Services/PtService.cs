@@ -319,8 +319,30 @@ public sealed class PtService : IPtService
         var subscription = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
                 s => s.SubscriptionId == request.SubscriptionId,
-                cancellationToken)
-            ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+                cancellationToken);
+
+        if (subscription == null)
+        {
+            var subs = await _unitOfWork.Repository<MemberSubscription>()
+                .FindAsync(
+                    s => s.UserName == request.SubscriptionId && s.Status == StatusActive,
+                    cancellationToken);
+            subscription = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
+            if (subscription == null)
+            {
+                subscription = subs.FirstOrDefault();
+            }
+        }
+
+        if (subscription == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập khả dụng với mã: {request.SubscriptionId}");
+        }
+
+        if (subscription.RemainingPtSessions <= 0)
+        {
+            throw new BusinessRuleException("Hội viên không còn buổi tập PT khả dụng trong gói hiện tại.");
+        }
 
         // Kiểm tra giới hạn số học viên của PT (UC 4.4 — phụ 4.1)
         int currentStudents = await _unitOfWork.Repository<MemberSubscription>().CountAsync(
@@ -670,6 +692,17 @@ public sealed class PtService : IPtService
             if (subscription == null)
             {
                 throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng trong gói hiện tại.");
+            }
+
+            if (!string.IsNullOrEmpty(subscription.AssignedPtId) && subscription.AssignedPtId != request.PtId)
+            {
+                string memberName = member.UserName;
+                if (!string.IsNullOrWhiteSpace(member.FullName))
+                {
+                    memberName = member.FullName;
+                }
+                throw new BusinessRuleException(
+                    $"Hội viên {memberName} đã được phân công cho HLV khác ({subscription.AssignedPtId}).");
             }
 
             if (string.IsNullOrEmpty(subscription.AssignedPtId))

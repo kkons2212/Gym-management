@@ -66,6 +66,7 @@
                         <TextBlock Text="Hội viên đặt ca:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
                         <ComboBox ItemsSource="{x:Bind ViewModel.AvailableMembers}"
                                   SelectedItem="{x:Bind ViewModel.SelectedMember, Mode=TwoWay}"
+                                  PlaceholderText="Chọn hội viên phụ trách..."
                                   HorizontalAlignment="Stretch">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="memdto:MemberDto">
