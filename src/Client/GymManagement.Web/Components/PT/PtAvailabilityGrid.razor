@@ -17,7 +17,7 @@
         </button>
     </div>
 
-    <!-- Day Carousel (7 days from Monday or Today) -->
+    <!-- Day Carousel (7 days from Today) -->
     <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">
         Chọn ngày thiết lập
     </label>
@@ -27,7 +27,7 @@
             var date = _weekStart.AddDays(i);
             var isSelected = _selectedDate == date;
             <button type="button"
-                    @onclick="() => _selectedDate = date"
+                    @onclick="() => SelectDate(date)"
                     class="tabular-nums"
                     style="flex: 0 0 66px; padding: 8px 4px; border-radius: 8px; text-align: center; border: 1px solid @(isSelected ? "#38BDF8" : "var(--border-subtle)"); background: @(isSelected ? "rgba(56, 189, 248, 0.15)" : "var(--bg-canvas)"); color: @(isSelected ? "#38BDF8" : "var(--text-primary)"); cursor: pointer;">
                 <div style="font-size: 10px; color: @(isSelected ? "#38BDF8" : "var(--text-secondary)");">
@@ -43,61 +43,132 @@
         }
     </div>
 
-    @if (_isLoading)
-    {
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
-            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
-            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
-            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
-            <div class="skeleton" style="height: 52px; border-radius: 8px;"></div>
-        </div>
-    }
-    else
-    {
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <!-- Time Range Selector (Giờ bắt đầu & Giờ kết thúc giống bên Admin) -->
+    <div style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
-                Khung giờ ngày&nbsp;<span class="tabular-nums" style="color: #38BDF8;">@_selectedDate.ToString("dd/MM/yyyy")</span>:
+                Thiết lập khung giờ: <span class="tabular-nums" style="color: #38BDF8;">@_selectedDate.ToString("dd/MM/yyyy")</span>
             </span>
-            <span style="font-size: 11px; color: var(--text-secondary);">
-                (Bấm để Bật/Tắt mở lịch)
-            </span>
-        </div>
-
-        <!-- Slots Grid for Selected Day -->
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
-            @foreach (var template in StandardSlots)
+            @if (_selectedDate == _today)
             {
-                var existing = _currentSlots.FirstOrDefault(s =>
-                    s.AvailableDate == _selectedDate &&
-                    s.StartTime == template.Start &&
-                    s.EndTime == template.End);
-
-                var isRegistered = existing != null;
-                var isBooked = existing?.IsBooked == true;
-
-                <button type="button"
-                        @onclick="() => ToggleSlot(template)"
-                        class="tabular-nums"
-                        style="padding: 10px 8px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; transition: all 0.15s; border: 1px solid @GetSlotBorder(isRegistered, isBooked); background: @GetSlotBg(isRegistered, isBooked); color: @GetSlotColor(isRegistered, isBooked); cursor: @(isBooked ? "not-allowed" : "pointer");">
-                    <div>@template.Start.ToString("HH:mm") – @template.End.ToString("HH:mm")</div>
-                    <div style="font-size: 10px; font-weight: 400; margin-top: 2px;">
-                        @if (isBooked)
-                        {
-                            <span>🔒 Đã có học viên đặt</span>
-                        }
-                        else if (isRegistered)
-                        {
-                            <span>✓ Đang mở nhận lịch</span>
-                        }
-                        else
-                        {
-                            <span>+ Chưa mở</span>
-                        }
-                    </div>
-                </button>
+                <span class="tabular-nums" style="font-size: 11px; color: #94A3B8;">
+                    Hiện tại: @DateTime.Now.ToString("HH:mm")
+                </span>
             }
         </div>
-    }
+
+        @if (_selectedDate < _today)
+        {
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 12px; padding: 8px 10px; border-radius: 6px;">
+                ⚠️ Ngày này đã qua trong quá khứ. Không thể đăng ký thêm khung giờ rảnh mới.
+            </div>
+        }
+        else
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Giờ bắt đầu:
+                    </label>
+                    <input type="time"
+                           @bind="_newStartTime"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                        Giờ kết thúc:
+                    </label>
+                    <input type="time"
+                           @bind="_newEndTime"
+                           class="tabular-nums"
+                           style="width: 100%; box-sizing: border-box; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; outline: none;" />
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_validationWarning))
+            {
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #FCA5A5; font-size: 11px; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                    <span>⚠️ @_validationWarning</span>
+                </div>
+            }
+
+            <button type="button"
+                    @onclick="AddCustomSlot"
+                    class="btn-secondary"
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; border-color: #0284C7; color: #38BDF8; background: rgba(2, 132, 199, 0.1); cursor: pointer;">
+                <span>+ Mở Khung Giờ Này</span>
+            </button>
+        }
+    </div>
+
+    <!-- Danh Sách Khung Giờ Đã Mở Trong Ngày -->
+    <div style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                Các khung giờ ngày <span class="tabular-nums" style="color: #38BDF8;">@_selectedDate.ToString("dd/MM/yyyy")</span>:
+            </span>
+            <span class="tabular-nums" style="font-size: 11px; color: var(--text-secondary);">
+                (@DaySlots.Count khung giờ)
+            </span>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+                <div class="skeleton" style="height: 48px; border-radius: 8px;"></div>
+            </div>
+        }
+        else if (DaySlots.Count == 0)
+        {
+            <div style="text-align: center; padding: 18px 12px; background: var(--bg-canvas); border-radius: 8px; border: 1px dashed var(--border-subtle); color: var(--text-secondary); font-size: 12px;">
+                Chưa có khung giờ rảnh nào trong ngày này.<br />
+                <span style="font-size: 11px; color: var(--text-muted);">Chọn giờ bắt đầu & kết thúc ở trên rồi bấm <strong>"+ Mở Khung Giờ Này"</strong>.</span>
+            </div>
+        }
+        else
+        {
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                @foreach (var slot in DaySlots)
+                {
+                    var isPast = IsSlotPast(slot);
+                    <div class="tabular-nums"
+                         style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 8px; border: 1px solid @(isPast ? "#334155" : (slot.IsBooked ? "#475569" : "#0284C7")); background: @(isPast ? "rgba(15, 23, 42, 0.6)" : (slot.IsBooked ? "rgba(30, 41, 59, 0.7)" : "rgba(2, 132, 199, 0.15)")); opacity: @(isPast ? "0.6" : "1");">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 14px; font-weight: 700; color: @(isPast ? "#64748B" : (slot.IsBooked ? "#94A3B8" : "#38BDF8"));">
+                                @slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")
+                            </span>
+                            <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: @(isPast ? "rgba(100, 116, 139, 0.2)" : (slot.IsBooked ? "rgba(148, 163, 184, 0.15)" : "rgba(56, 189, 248, 0.2)")); color: @(isPast ? "#64748B" : (slot.IsBooked ? "#94A3B8" : "#38BDF8"));">
+                                @if (isPast)
+                                {
+                                    <span>⏱️ Đã qua</span>
+                                }
+                                else if (slot.IsBooked)
+                                {
+                                    <span>🔒 Đã có học viên đặt</span>
+                                }
+                                else
+                                {
+                                    <span>✓ Đang mở nhận lịch</span>
+                                }
+                            </span>
+                        </div>
+
+                        @if (!slot.IsBooked && !isPast)
+                        {
+                            <button type="button"
+                                    @onclick="() => RemoveSlot(slot)"
+                                    title="Hủy mở khung giờ này"
+                                    style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #FCA5A5; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;">
+                                ✕ Hủy mở
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
 
     @if (!string.IsNullOrEmpty(_statusMessage))
     {
@@ -124,48 +195,95 @@
 </div>
 
 @code {
-    private record SlotTemplate(TimeOnly Start, TimeOnly End);
-
-    private static readonly SlotTemplate[] StandardSlots =
-    [
-        new(new TimeOnly(6, 0), new TimeOnly(7, 0)),
-        new(new TimeOnly(7, 0), new TimeOnly(8, 0)),
-        new(new TimeOnly(8, 0), new TimeOnly(9, 0)),
-        new(new TimeOnly(9, 30), new TimeOnly(10, 30)),
-        new(new TimeOnly(14, 0), new TimeOnly(15, 0)),
-        new(new TimeOnly(15, 30), new TimeOnly(16, 30)),
-        new(new TimeOnly(17, 30), new TimeOnly(18, 30)),
-        new(new TimeOnly(19, 0), new TimeOnly(20, 0))
-    ];
-
     private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
     private DateOnly _weekStart;
     private DateOnly _selectedDate;
 
+    private TimeOnly _newStartTime = new(8, 0);
+    private TimeOnly _newEndTime = new(9, 0);
+    private string? _validationWarning;
+
     private List<PtSlotDto> _currentSlots = [];
-    private readonly Dictionary<string, bool> _pendingChanges = []; // Key: "yyyy-MM-dd_HH:mm_HH:mm", Value: register (true/false)
+    private List<PtSlotDto> _originalSlots = [];
+    private readonly Dictionary<string, bool> _pendingChanges = []; // Key: "yyyyMMdd_HHmm_HHmm", Value: register (true/false)
 
     private bool _isLoading = true;
     private bool _isSaving;
     private string? _statusMessage;
     private bool _isError;
 
+    private List<PtSlotDto> DaySlots => _currentSlots
+        .Where(s => s.AvailableDate == _selectedDate)
+        .OrderBy(s => s.StartTime)
+        .ToList();
+
     protected override async Task OnInitializedAsync()
     {
         _weekStart = _today;
         _selectedDate = _today;
+        SetDefaultTimeForDate(_today);
         await LoadWeekSlotsAsync();
+    }
+
+    private void SelectDate(DateOnly date)
+    {
+        _selectedDate = date;
+        _validationWarning = null;
+        SetDefaultTimeForDate(date);
+    }
+
+    private void SetDefaultTimeForDate(DateOnly date)
+    {
+        if (date == _today)
+        {
+            var now = DateTime.Now;
+            var nextHour = now.Minute >= 30 ? now.Hour + 1 : now.Hour;
+            var nextMin = now.Minute >= 30 ? 0 : 30;
+            if (nextHour >= 24)
+            {
+                _newStartTime = new TimeOnly(23, 0);
+                _newEndTime = new TimeOnly(23, 59);
+            }
+            else
+            {
+                _newStartTime = new TimeOnly(nextHour, nextMin);
+                var endHour = nextMin == 30 ? nextHour + 1 : nextHour + 1;
+                var endMin = nextMin == 30 ? 30 : 0;
+                if (endHour >= 24)
+                {
+                    _newEndTime = new TimeOnly(23, 59);
+                }
+                else
+                {
+                    _newEndTime = new TimeOnly(endHour, endMin);
+                }
+            }
+        }
+        else
+        {
+            _newStartTime = new TimeOnly(8, 0);
+            _newEndTime = new TimeOnly(9, 0);
+        }
+    }
+
+    private bool IsSlotPast(PtSlotDto slot)
+    {
+        var now = DateTime.Now;
+        return slot.AvailableDate < _today ||
+               (slot.AvailableDate == _today && slot.EndTime <= TimeOnly.FromDateTime(now));
     }
 
     private async Task LoadWeekSlotsAsync()
     {
         _isLoading = true;
         _statusMessage = null;
+        _validationWarning = null;
         try
         {
             var endDate = _weekStart.AddDays(7);
             var slots = await ApiClient.GetMyAvailabilitySlotsAsync(_weekStart, endDate);
             _currentSlots = slots.ToList();
+            _originalSlots = slots.ToList();
             _pendingChanges.Clear();
         }
         catch (Exception ex)
@@ -179,40 +297,93 @@
         }
     }
 
-    private void ToggleSlot(SlotTemplate template)
+    private void AddCustomSlot()
     {
-        var existing = _currentSlots.FirstOrDefault(s =>
-            s.AvailableDate == _selectedDate &&
-            s.StartTime == template.Start &&
-            s.EndTime == template.End);
+        _validationWarning = null;
+        _statusMessage = null;
 
-        if (existing?.IsBooked == true)
+        var now = DateTime.Now;
+
+        // Ràng buộc 1: Không được đăng ký ngày hoặc giờ trong quá khứ
+        if (_selectedDate < _today)
         {
-            _isError = true;
-            _statusMessage = $"Khung giờ {template.Start:HH:mm} ngày {_selectedDate:dd/MM} đã có học viên đặt lịch, không thể hủy.";
+            _validationWarning = "Không thể đăng ký khung giờ rảnh cho ngày đã qua.";
             return;
         }
 
-        string key = $"{_selectedDate:yyyyMMdd}_{template.Start:HHmm}_{template.End:HHmm}";
+        if (_selectedDate == _today && _newStartTime <= TimeOnly.FromDateTime(now))
+        {
+            _validationWarning = $"Không thể đăng ký khung giờ ở thời điểm đã qua (hiện tại: {now:HH\\:mm}).";
+            return;
+        }
 
-        if (existing != null)
+        // Ràng buộc 2: Giờ kết thúc phải lớn hơn giờ bắt đầu
+        if (_newEndTime <= _newStartTime)
         {
-            // Đang mở -> Huỷ mở
-            _currentSlots.Remove(existing);
-            _pendingChanges[key] = false;
+            _validationWarning = "Giờ kết thúc phải lớn hơn giờ bắt đầu.";
+            return;
         }
-        else
+
+        // Ràng buộc 3: Khung giờ tối thiểu 30 phút
+        if (_newEndTime - _newStartTime < TimeSpan.FromMinutes(30))
         {
-            // Chưa mở -> Mở mới
-            _currentSlots.Add(new PtSlotDto(
-                AvailabilityId: "TEMP_" + Guid.NewGuid().ToString("N")[..8],
-                AvailableDate: _selectedDate,
-                StartTime: template.Start,
-                EndTime: template.End,
-                IsBooked: false
-            ));
-            _pendingChanges[key] = true;
+            _validationWarning = "Khung giờ dạy tối thiểu là 30 phút.";
+            return;
         }
+
+        // Ràng buộc 4: Kiểm tra trùng / chồng lấn khung giờ (Collision guardrail giống bên Admin)
+        var collision = _currentSlots.FirstOrDefault(s =>
+            s.AvailableDate == _selectedDate &&
+            s.StartTime < _newEndTime &&
+            _newStartTime < s.EndTime);
+
+        if (collision != null)
+        {
+            _validationWarning = $"Khung giờ bị trùng/chồng lấn với ca ({collision.StartTime:HH\\:mm} – {collision.EndTime:HH\\:mm}) đã mở.";
+            return;
+        }
+
+        var newSlot = new PtSlotDto(
+            AvailabilityId: "TEMP_" + Guid.NewGuid().ToString("N")[..8],
+            AvailableDate: _selectedDate,
+            StartTime: _newStartTime,
+            EndTime: _newEndTime,
+            IsBooked: false
+        );
+
+        _currentSlots.Add(newSlot);
+        string key = $"{_selectedDate:yyyyMMdd}_{_newStartTime:HHmm}_{_newEndTime:HHmm}";
+        _pendingChanges[key] = true;
+
+        // Tự động gợi ý khung giờ tiếp theo (ví dụ: vừa thêm 8:00 - 9:00 -> gợi ý 9:00 - 10:00)
+        var duration = _newEndTime - _newStartTime;
+        _newStartTime = _newEndTime;
+        var nextEnd = _newEndTime.Add(duration);
+        if (nextEnd > _newEndTime)
+        {
+            _newEndTime = nextEnd;
+        }
+    }
+
+    private void RemoveSlot(PtSlotDto slot)
+    {
+        if (slot.IsBooked)
+        {
+            _isError = true;
+            _statusMessage = $"Khung giờ {slot.StartTime:HH\\:mm} ngày {slot.AvailableDate:dd/MM} đã có học viên đặt lịch, không thể hủy.";
+            return;
+        }
+
+        if (IsSlotPast(slot))
+        {
+            _isError = true;
+            _statusMessage = $"Khung giờ này đã kết thúc trong quá khứ, không thể hủy.";
+            return;
+        }
+
+        _currentSlots.Remove(slot);
+        string key = $"{slot.AvailableDate:yyyyMMdd}_{slot.StartTime:HHmm}_{slot.EndTime:HHmm}";
+        _pendingChanges[key] = false;
 
         _isError = false;
         _statusMessage = null;
@@ -239,7 +410,10 @@
                 var s = new TimeOnly(int.Parse(sStr[..2]), int.Parse(sStr.Substring(2, 2)));
                 var e = new TimeOnly(int.Parse(eStr[..2]), int.Parse(eStr.Substring(2, 2)));
 
-                upserts.Add(new PtSlotUpsertDto(null, d, s, e, kvp.Value));
+                var existingOriginal = _originalSlots.FirstOrDefault(x =>
+                    x.AvailableDate == d && x.StartTime == s && x.EndTime == e);
+
+                upserts.Add(new PtSlotUpsertDto(existingOriginal?.AvailabilityId, d, s, e, kvp.Value));
             }
 
             var session = await ApiClient.GetCurrentUserSessionAsync();
@@ -251,6 +425,7 @@
             _pendingChanges.Clear();
             _isError = false;
             _statusMessage = "Đã lưu thành công các khung giờ rảnh!";
+            await LoadWeekSlotsAsync();
         }
         catch (Exception ex)
         {
@@ -261,26 +436,5 @@
         {
             _isSaving = false;
         }
-    }
-
-    private string GetSlotBorder(bool isRegistered, bool isBooked)
-    {
-        if (isBooked) return "#475569";
-        if (isRegistered) return "#0284C7";
-        return "#334155";
-    }
-
-    private string GetSlotBg(bool isRegistered, bool isBooked)
-    {
-        if (isBooked) return "rgba(30, 41, 59, 0.7)";
-        if (isRegistered) return "rgba(2, 132, 199, 0.2)";
-        return "#1E293B";
-    }
-
-    private string GetSlotColor(bool isRegistered, bool isBooked)
-    {
-        if (isBooked) return "#94A3B8";
-        if (isRegistered) return "#38BDF8";
-        return "#CBD5E1";
     }
 }

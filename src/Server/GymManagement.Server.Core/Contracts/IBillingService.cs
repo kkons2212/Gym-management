@@ -24,4 +24,10 @@ public interface IBillingService
     Task<InvoiceDto> ProcessVietQrCallbackAsync(
         GymManagement.Server.Core.DTOs.Adapters.VietQrTransactionSyncRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(
+        string? searchQuery = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        CancellationToken cancellationToken = default);
 }

@@ -4,6 +4,7 @@ using GymManagement.Desktop.Dialogs;
 using GymManagement.Desktop.Services.Api;
 using GymManagement.Desktop.ViewModels;
 using GymManagement.Server.Core.DTOs.Billing;
+using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.PT;
@@ -143,11 +144,42 @@ public sealed partial class MembersPage : Page
             return;
         }
 
-        var api = App.GetService<IApiClient>();
-        var users = await api.GetUsersAsync();
-        var ptList = users.Where(u => u.Role == "PT").ToList();
+        if (member.RemainingPtSessions <= 0)
+        {
+            var noPtDialog = new ContentDialog
+            {
+                Title = "Thông báo",
+                Content = $"Hội viên {member.FullName} hiện không có gói tập kèm buổi PT nào khả dụng.",
+                CloseButtonText = "Đóng",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+            await noPtDialog.ShowAsync();
+            return;
+        }
 
-        var dialog = new PtAssignDialog(member.FullName, member.ActivePlanName ?? "Gói PT", ptList)
+        var api = App.GetService<IApiClient>();
+        var ptProfiles = await api.GetTrainersAsync(activeOnly: true);
+        var ptList = new List<UserSessionDto>();
+        foreach (var p in ptProfiles)
+        {
+            ptList.Add(new UserSessionDto(p.PtId, p.FullName, p.Email, "PT"));
+        }
+
+        if (ptList.Count == 0)
+        {
+            var users = await api.GetUsersAsync();
+            ptList = users.Where(u => u.Role == "PT").ToList();
+        }
+
+        string subInfo = "Gói PT";
+        if (!string.IsNullOrWhiteSpace(member.ActivePlanName))
+        {
+            subInfo = member.ActivePlanName;
+        }
+        subInfo = $"{subInfo} • Còn {member.RemainingPtSessions} buổi PT";
+
+        var dialog = new PtAssignDialog(member.FullName, subInfo, ptList)
         {
             XamlRoot = this.XamlRoot
         };
@@ -155,9 +187,40 @@ public sealed partial class MembersPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary && dialog.SelectedPt != null)
         {
-            var req = new AssignPtRequest(member.UserName, dialog.SelectedPt.UserId, "admin");
-            await api.AssignPtAsync(req);
-            await ViewModel.LoadMembersAsync();
+            try
+            {
+                string targetSubId = member.UserName;
+                if (!string.IsNullOrWhiteSpace(member.ActiveSubscriptionId))
+                {
+                    targetSubId = member.ActiveSubscriptionId;
+                }
+
+                var req = new AssignPtRequest(targetSubId, dialog.SelectedPt.UserId, "admin");
+                await api.AssignPtAsync(req);
+                await ViewModel.LoadMembersAsync();
+
+                var successDialog = new ContentDialog
+                {
+                    Title = "Thành công",
+                    Content = $"Đã phân công HLV {dialog.SelectedPt.FullName} cho hội viên {member.FullName} thành công!",
+                    CloseButtonText = "Đóng",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await successDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi phân công HLV",
+                    Content = ex.Message,
+                    CloseButtonText = "Đóng",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 

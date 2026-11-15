@@ -23,6 +23,8 @@ public record MemberDto(
     int RemainingCheckInSessions = 0,
     int RemainingPtSessions = 0,
     string? SubscriptionId = null
+    string? ActiveSubscriptionId = null,
+    string? AssignedPtId = null
 )
 {
     public string UserId => UserName;
@@ -42,7 +44,8 @@ public record MemberSearchResponse(
     string? ActivePlanName,
     DateOnly? SubscriptionEndDate,
     int RemainingCheckInSessions,
-    int RemainingPtSessions
+    int RemainingPtSessions,
+    string? AssignedPtId = null
 );
 
 /// <summary>

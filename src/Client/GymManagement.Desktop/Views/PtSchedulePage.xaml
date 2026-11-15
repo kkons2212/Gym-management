@@ -66,6 +66,7 @@
                         <TextBlock Text="Hội viên đặt ca:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
                         <ComboBox ItemsSource="{x:Bind ViewModel.AvailableMembers}"
                                   SelectedItem="{x:Bind ViewModel.SelectedMember, Mode=TwoWay}"
+                                  PlaceholderText="Chọn hội viên phụ trách..."
                                   HorizontalAlignment="Stretch">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="memdto:MemberDto">
@@ -87,12 +88,18 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Spacing="6">
-                            <TextBlock Text="Giờ bắt đầu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                            <TimePicker Time="{x:Bind ViewModel.StartTime, Mode=TwoWay}" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
+                            <TextBlock Text="Giờ bắt đầu:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                            <ComboBox ItemsSource="{x:Bind ViewModel.AvailableTimeSlots}"
+                                      SelectedItem="{x:Bind ViewModel.SelectedStartTime, Mode=TwoWay}"
+                                      DisplayMemberPath="DisplayText"
+                                      HorizontalAlignment="Stretch" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Spacing="6">
-                            <TextBlock Text="Giờ kết thúc:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                            <TimePicker Time="{x:Bind ViewModel.EndTime, Mode=TwoWay}" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
+                            <TextBlock Text="Giờ kết thúc:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" />
+                            <ComboBox ItemsSource="{x:Bind ViewModel.AvailableTimeSlots}"
+                                      SelectedItem="{x:Bind ViewModel.SelectedEndTime, Mode=TwoWay}"
+                                      DisplayMemberPath="DisplayText"
+                                      HorizontalAlignment="Stretch" />
                         </StackPanel>
                     </Grid>
 
@@ -140,6 +147,7 @@
             <Grid RowSpacing="16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
@@ -158,16 +166,22 @@
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Content="+ Thêm HLV Mới" Click="BtnAddNewTrainer_Click" Height="36"
+                        <Button Content="Danh Sách HLV" Click="BtnManageTrainers_Click" Height="36"
                                 Background="{StaticResource AccentPrimaryBrush}" Foreground="#FFFFFF" FontWeight="SemiBold" />
-                        <Button Content="Danh Sách HLV" Click="BtnManageTrainers_Click" Height="36" />
                         <Button Content="Tải Lại Lịch"
                                 Command="{x:Bind ViewModel.LoadScheduleCommand}"
                                 Height="36" />
                     </StackPanel>
                 </Grid>
 
-                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.ScheduledSlots}">
+                <!-- Feedback InfoBar -->
+                <InfoBar Grid.Row="1"
+                         IsOpen="{x:Bind ViewModel.HasStatusMessage, Mode=OneWay}"
+                         Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                         Severity="Informational"
+                         IsClosable="True" />
+
+                <ListView Grid.Row="2" ItemsSource="{x:Bind ViewModel.ScheduledSlots}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="dto:PtSessionSlotDto">
                             <Border Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}"
@@ -195,13 +209,14 @@
                                         <TextBlock Text="{x:Bind PtName}" FontSize="13" Foreground="{StaticResource StatusPtBrush}" />
                                     </StackPanel>
 
-                                    <!-- Status Tag & Review Action -->
+                                    <!-- Status Tag & Review Action (UC 4.5) -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                         <Border Background="#1E293B" BorderBrush="{StaticResource StatusPtBrush}" BorderThickness="1"
                                                 CornerRadius="6" Padding="8,4">
                                             <TextBlock Text="{x:Bind SessionStatus}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}" />
                                         </Border>
-                                        <Button Content="Đối soát" Click="BtnReviewSession_Click" Height="32" FontSize="11" Padding="8,0" />
+                                        <Button Content="Xác nhận ca tập" Click="BtnReviewSession_Click" Height="32" FontSize="11" Padding="10,0"
+                                                ToolTipService.ToolTip="Xác nhận kết quả buổi tập khi PT quên xác nhận (UC 4.5)" />
                                     </StackPanel>
                                 </Grid>
                             </Border>

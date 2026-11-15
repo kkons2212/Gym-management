@@ -1,4 +1,5 @@
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 
 namespace GymManagement.Server.Core.Contracts;
 
@@ -119,6 +120,21 @@ public interface IPtService
         string? memberUserName = null,
         DateTime? fromDate = null,
         DateTime? toDate = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lấy danh sách ca tập dạng slot phục vụ Desktop Lịch biểu PT (UC 4.2).
+    /// </summary>
+    Task<IReadOnlyList<PtSessionSlotDto>> GetScheduleSlotsAsync(
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Admin xếp lịch tập trực tiếp cho hội viên và PT (UC 4.6).
+    /// </summary>
+    Task<PtSessionSlotDto> BookScheduleSlotAsync(
+        BookPtSlotRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>

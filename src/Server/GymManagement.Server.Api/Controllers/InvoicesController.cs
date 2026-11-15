@@ -34,9 +34,24 @@ public sealed class InvoicesController : ApiControllerBase
         _logger = logger;
     }
 
-    // =========================================================================
+    // =========================================
     // 3. ACTION METHODS (ENDPOINTS)
     // =========================================================================
+
+    /// <summary>
+    /// Lấy danh sách lịch sử hóa đơn kèm tìm kiếm và lọc thời gian (UC05).
+    /// </summary>
+    [HttpGet]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetInvoices(
+        [FromQuery] string? search,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        CancellationToken cancellationToken = default)
+    {
+        var invoices = await _billingService.GetInvoicesAsync(search, fromDate, toDate, cancellationToken);
+        return OkResponse(invoices, "Lấy danh sách hóa đơn thành công.");
+    }
 
     /// <summary>
     /// Lập hóa đơn thanh toán mới cho gói tập (POS / VietQR) (UC 5.1).

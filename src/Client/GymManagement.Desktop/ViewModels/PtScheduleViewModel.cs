@@ -32,10 +32,56 @@ public partial class PtScheduleViewModel : ObservableObject
     private TimeSpan _endTime = new(10, 0, 0);
 
     [ObservableProperty]
+    private TimeSlotOption? _selectedStartTime;
+
+    [ObservableProperty]
+    private TimeSlotOption? _selectedEndTime;
+
+    partial void OnSelectedStartTimeChanged(TimeSlotOption? value)
+    {
+        if (value != null)
+        {
+            StartTime = value.Time;
+            if (EndTime <= StartTime || SelectedEndTime == null)
+            {
+                var targetEnd = StartTime.Add(TimeSpan.FromHours(1));
+                var matched = AvailableTimeSlots.FirstOrDefault(s => s.Time == targetEnd);
+                if (matched != null)
+                {
+                    SelectedEndTime = matched;
+                }
+            }
+        }
+        CheckForCollisions();
+    }
+
+    partial void OnSelectedEndTimeChanged(TimeSlotOption? value)
+    {
+        if (value != null)
+        {
+            EndTime = value.Time;
+        }
+        CheckForCollisions();
+    }
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
     private string? _statusMessage;
+
+    public bool HasStatusMessage
+    {
+        get
+        {
+            return !string.IsNullOrWhiteSpace(StatusMessage);
+        }
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasStatusMessage));
+    }
 
     [ObservableProperty]
     private bool _isSuccess;
@@ -55,9 +101,12 @@ public partial class PtScheduleViewModel : ObservableObject
     [ObservableProperty]
     private string? _collisionWarning;
 
+    private readonly List<MemberDto> _allMembers = [];
+
     public ObservableCollection<UserSessionDto> AvailablePts { get; } = [];
     public ObservableCollection<MemberDto> AvailableMembers { get; } = [];
     public ObservableCollection<PtSessionSlotDto> ScheduledSlots { get; } = [];
+    public ObservableCollection<TimeSlotOption> AvailableTimeSlots { get; } = [];
 
     public PtScheduleViewModel(IApiClient apiClient, IAdminSessionService sessionService)
     {
@@ -65,6 +114,43 @@ public partial class PtScheduleViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(sessionService);
         _apiClient = apiClient;
         _sessionService = sessionService;
+        PopulateTimeSlots();
+    }
+
+    private void PopulateTimeSlots()
+    {
+        AvailableTimeSlots.Clear();
+        var current = new TimeSpan(6, 0, 0);
+        var end = new TimeSpan(22, 0, 0);
+        while (current <= end)
+        {
+            string display = $"{current.Hours:D2}:{current.Minutes:D2}";
+            var option = new TimeSlotOption(current, display);
+            AvailableTimeSlots.Add(option);
+            current = current.Add(TimeSpan.FromMinutes(30));
+        }
+
+        var defaultStart = AvailableTimeSlots.FirstOrDefault(s => s.Time == StartTime);
+        if (defaultStart == null)
+        {
+            defaultStart = AvailableTimeSlots.FirstOrDefault(s => s.Time == new TimeSpan(9, 0, 0));
+        }
+        SelectedStartTime = defaultStart;
+        if (defaultStart != null)
+        {
+            StartTime = defaultStart.Time;
+        }
+
+        var defaultEnd = AvailableTimeSlots.FirstOrDefault(s => s.Time == EndTime);
+        if (defaultEnd == null)
+        {
+            defaultEnd = AvailableTimeSlots.FirstOrDefault(s => s.Time == new TimeSpan(10, 0, 0));
+        }
+        SelectedEndTime = defaultEnd;
+        if (defaultEnd != null)
+        {
+            EndTime = defaultEnd.Time;
+        }
     }
 
     [RelayCommand]
@@ -85,9 +171,15 @@ public partial class PtScheduleViewModel : ObservableObject
             if (AvailablePts.Count == 0)
             {
                 var users = await _apiClient.GetUsersAsync();
-                foreach (var pt in users.Where(u => u.Role == "PT"))
+                foreach (var pt in users)
                 {
-                    AvailablePts.Add(pt);
+                    bool isPt = string.Equals(pt.Role, "PT", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(pt.Role, "TRAINER", StringComparison.OrdinalIgnoreCase) ||
+                                pt.FullName.Contains("PT", StringComparison.OrdinalIgnoreCase);
+                    if (isPt)
+                    {
+                        AvailablePts.Add(pt);
+                    }
                 }
             }
 
@@ -97,15 +189,16 @@ public partial class PtScheduleViewModel : ObservableObject
             }
 
             var members = await _apiClient.GetMembersAsync();
-            AvailableMembers.Clear();
-            foreach (var m in members.Where(m => m.Status == "ACTIVE" && m.RemainingPtSessions > 0))
+            _allMembers.Clear();
+            foreach (var m in members)
             {
-                AvailableMembers.Add(m);
+                if (m.Status == "ACTIVE" && m.RemainingPtSessions > 0)
+                {
+                    _allMembers.Add(m);
+                }
             }
-            if (AvailableMembers.Count > 0 && SelectedMember == null)
-            {
-                SelectedMember = AvailableMembers[0];
-            }
+
+            FilterMembersForSelectedPt();
 
             await LoadScheduleAsync();
         }
@@ -189,8 +282,49 @@ public partial class PtScheduleViewModel : ObservableObject
         CheckForCollisions();
     }
 
+    public void FilterMembersForSelectedPt()
+    {
+        AvailableMembers.Clear();
+        if (SelectedPt == null)
+        {
+            SelectedMember = null;
+            return;
+        }
+
+        // 1. Học viên do PT này phụ trách
+        foreach (var m in _allMembers)
+        {
+            if (m.AssignedPtId == SelectedPt.UserId)
+            {
+                AvailableMembers.Add(m);
+            }
+        }
+
+        // 2. Học viên chưa gán PT (để Admin có thể xếp lịch và tự động gán PT luôn)
+        foreach (var m in _allMembers)
+        {
+            if (string.IsNullOrEmpty(m.AssignedPtId))
+            {
+                AvailableMembers.Add(m);
+            }
+        }
+
+        if (AvailableMembers.Count > 0)
+        {
+            if (SelectedMember == null || !AvailableMembers.Contains(SelectedMember))
+            {
+                SelectedMember = AvailableMembers[0];
+            }
+        }
+        else
+        {
+            SelectedMember = null;
+        }
+    }
+
     partial void OnSelectedPtChanged(UserSessionDto? value)
     {
+        FilterMembersForSelectedPt();
         _ = LoadScheduleAsync();
     }
 
@@ -284,5 +418,22 @@ public partial class PtScheduleViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+}
+
+public sealed class TimeSlotOption
+{
+    public TimeSpan Time { get; set; }
+    public string DisplayText { get; set; } = string.Empty;
+
+    public TimeSlotOption(TimeSpan time, string displayText)
+    {
+        Time = time;
+        DisplayText = displayText;
+    }
+
+    public override string ToString()
+    {
+        return DisplayText;
     }
 }

@@ -2,6 +2,7 @@ using GymManagement.Server.Core.Contracts;
 using GymManagement.Server.Core.Contracts.Adapters;
 using GymManagement.Server.Core.Contracts.Data;
 using GymManagement.Server.Core.DTOs.PT;
+using GymManagement.Server.Core.DTOs.PTSchedules;
 using GymManagement.Server.Core.Entities;
 using GymManagement.Server.Core.Enums;
 using GymManagement.Server.Core.Exceptions;
@@ -30,6 +31,7 @@ public sealed class PtService : IPtService
 
     /// <summary>Tiền tố RoleID trong bảng Role dùng để nhận diện PT.</summary>
     private const string RoleIdTrainer = "TRAINER";
+    private const string RoleIdPt = "PT";
 
     /// <summary>Trạng thái tài khoản đang hoạt động trong bảng [User].</summary>
     private const string StatusActive = "ACTIVE";
@@ -77,7 +79,7 @@ public sealed class PtService : IPtService
         var sessionRepo = _unitOfWork.Repository<PTTrainingSession>();
 
         var users = await userRepo.FindAsync(
-            u => u.RoleId == RoleIdTrainer &&
+            u => (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (activeOnly == null || (u.Status == StatusActive) == activeOnly.Value),
             cancellationToken);
 
@@ -96,9 +98,11 @@ public sealed class PtService : IPtService
                 s => s.PtId == u.UserName && s.RatingStars != null,
                 cancellationToken);
 
-            decimal avgRating = ratedSessions.Count > 0
-                ? (decimal)ratedSessions.Average(s => (double)s.RatingStars!.Value)
-                : 0m;
+            decimal avgRating = 0m;
+            if (ratedSessions.Count > 0)
+            {
+                avgRating = (decimal)ratedSessions.Average(s => (double)s.RatingStars!.Value);
+            }
 
             result.Add(MapToProfileDto(u, studentCount, pendingCount, ratedSessions.Count, avgRating));
         }
@@ -119,7 +123,7 @@ public sealed class PtService : IPtService
 
         var user = await _unitOfWork.Repository<User>()
             .FindSingleOrDefaultAsync(
-                u => u.UserName == ptId && u.RoleId == RoleIdTrainer,
+                u => u.UserName == ptId && (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer),
                 cancellationToken)
             ?? throw new NotFoundException($"Không tìm thấy PT với mã: {ptId}");
 
@@ -140,7 +144,7 @@ public sealed class PtService : IPtService
         // Kiểm tra trùng Phone với PT khác
         bool phoneConflict = await userRepo.ExistsAsync(
             u => u.Phone == request.Phone &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (isNew || u.UserName != request.PtId),
             cancellationToken);
 
@@ -152,7 +156,7 @@ public sealed class PtService : IPtService
         // Kiểm tra trùng Email với PT khác
         bool emailConflict = await userRepo.ExistsAsync(
             u => u.Email == request.Email &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  (isNew || u.UserName != request.PtId),
             cancellationToken);
 
@@ -167,7 +171,7 @@ public sealed class PtService : IPtService
 
             if (isNew)
             {
-                int count = await userRepo.CountAsync(u => u.RoleId == RoleIdTrainer, cancellationToken);
+                int count = await userRepo.CountAsync(u => u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer, cancellationToken);
                 string newId = $"PT-{count + 1:D2}";
 
                 string status;
@@ -183,7 +187,7 @@ public sealed class PtService : IPtService
                 entity = new User
                 {
                     UserName = newId,
-                    RoleId = RoleIdTrainer,
+                    RoleId = RoleIdPt,
                     FullName = request.FullName,
                     Phone = request.Phone,
                     Email = request.Email,
@@ -303,7 +307,7 @@ public sealed class PtService : IPtService
         // Kiểm tra PT tồn tại và đang hoạt động
         bool ptExists = await _unitOfWork.Repository<User>().ExistsAsync(
             u => u.UserName == request.PtId &&
-                 u.RoleId == RoleIdTrainer &&
+                 (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer) &&
                  u.Status == StatusActive,
             cancellationToken);
 
@@ -315,8 +319,30 @@ public sealed class PtService : IPtService
         var subscription = await _unitOfWork.Repository<MemberSubscription>()
             .FindSingleOrDefaultAsync(
                 s => s.SubscriptionId == request.SubscriptionId,
-                cancellationToken)
-            ?? throw new NotFoundException($"Không tìm thấy gói tập với mã: {request.SubscriptionId}");
+                cancellationToken);
+
+        if (subscription == null)
+        {
+            var subs = await _unitOfWork.Repository<MemberSubscription>()
+                .FindAsync(
+                    s => s.UserName == request.SubscriptionId && s.Status == StatusActive,
+                    cancellationToken);
+            subscription = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
+            if (subscription == null)
+            {
+                subscription = subs.FirstOrDefault();
+            }
+        }
+
+        if (subscription == null)
+        {
+            throw new NotFoundException($"Không tìm thấy gói tập khả dụng với mã: {request.SubscriptionId}");
+        }
+
+        if (subscription.RemainingPtSessions <= 0)
+        {
+            throw new BusinessRuleException("Hội viên không còn buổi tập PT khả dụng trong gói hiện tại.");
+        }
 
         // Kiểm tra giới hạn số học viên của PT (UC 4.4 — phụ 4.1)
         int currentStudents = await _unitOfWork.Repository<MemberSubscription>().CountAsync(
@@ -451,11 +477,20 @@ public sealed class PtService : IPtService
                 }
                 else if (item.Register)
                 {
+                    // Ràng buộc: Không được đăng ký thời gian đã qua
+                    var now = DateTime.Now;
+                    if (item.AvailableDate < DateOnly.FromDateTime(now) ||
+                        (item.AvailableDate == DateOnly.FromDateTime(now) && item.StartTime <= TimeOnly.FromDateTime(now)))
+                    {
+                        throw new BusinessRuleException(
+                            $"Không thể đăng ký khung giờ rảnh ở thời điểm đã qua ({item.AvailableDate:dd/MM/yyyy} {item.StartTime:hh\\:mm}).");
+                    }
+
                     // Tạo slot mới
-                    int count = await availRepo.CountAsync(s => s.PtId == request.PtId, cancellationToken);
+                    string newAvailId = await GenerateUniqueAvailabilityIdAsync(cancellationToken);
                     var newSlot = new PTAvailability
                     {
-                        AvailabilityId = $"AVL-{request.PtId}-{count + 1:D4}",
+                        AvailabilityId = newAvailId,
                         PtId = request.PtId,
                         AvailableDate = item.AvailableDate,
                         StartTime = item.StartTime,
@@ -498,6 +533,268 @@ public sealed class PtService : IPtService
             .OrderBy(s => s.SessionStartTime)
             .Select(s => MapToSessionDto(s))
             .ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<PtSessionSlotDto>> GetScheduleSlotsAsync(
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        DateOnly? fromDate = null;
+        if (startDate.HasValue)
+        {
+            fromDate = DateOnly.FromDateTime(startDate.Value.Date);
+        }
+
+        DateOnly? toDate = null;
+        if (endDate.HasValue)
+        {
+            toDate = DateOnly.FromDateTime(endDate.Value.Date);
+        }
+
+        var sessions = await _unitOfWork.Repository<PTTrainingSession>()
+            .FindAsync(
+                s => (!fromDate.HasValue || s.SessionStartTime >= fromDate.Value) &&
+                     (!toDate.HasValue || s.SessionStartTime <= toDate.Value),
+                cancellationToken);
+
+        var availIds = sessions
+            .Where(s => !string.IsNullOrEmpty(s.AvailabilityId))
+            .Select(s => s.AvailabilityId!)
+            .Distinct()
+            .ToList();
+
+        var availabilities = new Dictionary<string, PTAvailability>();
+        if (availIds.Count > 0)
+        {
+            var avails = await _unitOfWork.Repository<PTAvailability>()
+                .FindAsync(a => availIds.Contains(a.AvailabilityId), cancellationToken);
+            foreach (var a in avails)
+            {
+                availabilities[a.AvailabilityId] = a;
+            }
+        }
+
+        var userNames = sessions
+            .SelectMany(s => new[] { s.PtId, s.MemberId })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Distinct()
+            .ToList();
+
+        var users = new Dictionary<string, User>();
+        if (userNames.Count > 0)
+        {
+            var userList = await _unitOfWork.Repository<User>()
+                .FindAsync(u => userNames.Contains(u.UserName), cancellationToken);
+            foreach (var u in userList)
+            {
+                users[u.UserName] = u;
+            }
+        }
+
+        var results = new List<PtSessionSlotDto>(sessions.Count);
+        foreach (var s in sessions.OrderBy(x => x.SessionStartTime))
+        {
+            string ptName = s.PtId;
+            if (users.TryGetValue(s.PtId, out var ptUser))
+            {
+                if (!string.IsNullOrWhiteSpace(ptUser.FullName))
+                {
+                    ptName = ptUser.FullName;
+                }
+            }
+
+            string memberName = s.MemberId;
+            if (users.TryGetValue(s.MemberId, out var memUser))
+            {
+                if (!string.IsNullOrWhiteSpace(memUser.FullName))
+                {
+                    memberName = memUser.FullName;
+                }
+            }
+
+            TimeSpan startTime = new TimeSpan(8, 0, 0);
+            TimeSpan endTime = new TimeSpan(9, 0, 0);
+
+            if (!string.IsNullOrEmpty(s.AvailabilityId) && availabilities.TryGetValue(s.AvailabilityId, out var avail))
+            {
+                startTime = avail.StartTime.ToTimeSpan();
+                endTime = avail.EndTime.ToTimeSpan();
+            }
+
+            string status = nameof(PtSessionStatus.Booked);
+            if (!string.IsNullOrEmpty(s.Status))
+            {
+                status = s.Status;
+            }
+
+            DateTime scheduledDate = s.SessionStartTime.ToDateTime(TimeOnly.MinValue);
+
+            results.Add(new PtSessionSlotDto(
+                SessionId: s.PTSessionId,
+                PtId: s.PtId,
+                PtName: ptName,
+                MemberId: s.MemberId,
+                MemberName: memberName,
+                ScheduledDate: scheduledDate,
+                StartTime: startTime,
+                EndTime: endTime,
+                SessionStatus: status,
+                Notes: s.WorkoutNotes
+            ));
+        }
+
+        return results;
+    }
+
+    /// <inheritdoc/>
+    public async Task<PtSessionSlotDto> BookScheduleSlotAsync(
+        BookPtSlotRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return await _unitOfWork.ExecuteTransactionAsync(async () =>
+        {
+            var pt = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(
+                    u => u.UserName == request.PtId &&
+                         (u.RoleId == RoleIdPt || u.RoleId == RoleIdTrainer),
+                    cancellationToken);
+
+            if (pt == null)
+            {
+                throw new NotFoundException($"Không tìm thấy HLV với mã: {request.PtId}");
+            }
+
+            var member = await _unitOfWork.Repository<User>()
+                .FindSingleOrDefaultAsync(
+                    u => u.UserName == request.MemberId,
+                    cancellationToken);
+
+            if (member == null)
+            {
+                throw new NotFoundException($"Không tìm thấy hội viên với mã: {request.MemberId}");
+            }
+
+            var subscriptions = await _unitOfWork.Repository<MemberSubscription>()
+                .FindAsync(
+                    s => s.UserName == request.MemberId && s.Status == StatusActive,
+                    cancellationToken);
+
+            MemberSubscription? subscription = null;
+            if (subscriptions != null && subscriptions.Count > 0)
+            {
+                subscription = subscriptions.FirstOrDefault(s => s.RemainingPtSessions > 0);
+                if (subscription == null)
+                {
+                    subscription = subscriptions.FirstOrDefault();
+                }
+            }
+            else
+            {
+                subscription = await _unitOfWork.Repository<MemberSubscription>()
+                    .FindSingleOrDefaultAsync(
+                        s => s.UserName == request.MemberId && s.Status == StatusActive,
+                        cancellationToken);
+            }
+
+            if (subscription == null)
+            {
+                throw new BusinessRuleException("Hội viên chưa có gói tập đang hoạt động.");
+            }
+
+            if (subscription.RemainingPtSessions <= 0)
+            {
+                throw new BusinessRuleException("Hội viên không còn số buổi tập PT khả dụng trong gói hiện tại.");
+            }
+
+            if (!string.IsNullOrEmpty(subscription.AssignedPtId) && subscription.AssignedPtId != request.PtId)
+            {
+                string memberName = member.UserName;
+                if (!string.IsNullOrWhiteSpace(member.FullName))
+                {
+                    memberName = member.FullName;
+                }
+                throw new BusinessRuleException(
+                    $"Hội viên {memberName} đã được phân công cho HLV khác ({subscription.AssignedPtId}).");
+            }
+
+            if (string.IsNullOrEmpty(subscription.AssignedPtId))
+            {
+                subscription.AssignedPtId = request.PtId;
+                _unitOfWork.Repository<MemberSubscription>().Update(subscription);
+            }
+
+            var targetDate = DateOnly.FromDateTime(request.ScheduledDate);
+            var startTime = new TimeOnly(request.StartTime.Hours, request.StartTime.Minutes, request.StartTime.Seconds);
+            var endTime = new TimeOnly(request.EndTime.Hours, request.EndTime.Minutes, request.EndTime.Seconds);
+
+            var existingSlots = await _unitOfWork.Repository<PTAvailability>()
+                .FindAsync(
+                    a => a.PtId == request.PtId &&
+                         a.AvailableDate == targetDate &&
+                         a.IsBooked == 1 &&
+                         a.StartTime < endTime &&
+                         a.EndTime > startTime,
+                    cancellationToken);
+
+            if (existingSlots.Count > 0)
+            {
+                throw new BusinessRuleException("HLV đã có ca tập được xếp trong khung giờ này.");
+            }
+
+            string availId = await GenerateUniqueAvailabilityIdAsync(cancellationToken);
+
+            var newSlot = new PTAvailability
+            {
+                AvailabilityId = availId,
+                PtId = request.PtId,
+                AvailableDate = targetDate,
+                StartTime = startTime,
+                EndTime = endTime,
+                IsBooked = 1
+            };
+            await _unitOfWork.Repository<PTAvailability>().AddAsync(newSlot, cancellationToken);
+
+            string sessionId = await GenerateUniqueSessionIdAsync(cancellationToken);
+
+            var newSession = new PTTrainingSession
+            {
+                PTSessionId = sessionId,
+                PtId = request.PtId,
+                MemberId = request.MemberId,
+                AvailabilityId = availId,
+                SessionStartTime = targetDate,
+                SessionEndTime = targetDate,
+                Status = nameof(PtSessionStatus.Booked),
+                WorkoutNotes = "Admin xếp lịch trực tiếp"
+            };
+            await _unitOfWork.Repository<PTTrainingSession>().AddAsync(newSession, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "PtService.BookScheduleSlot: Admin xếp lịch PT {PtId} cho hội viên {MemberId} vào {Date} {Start}-{End}",
+                request.PtId, request.MemberId, targetDate, startTime, endTime);
+
+            string ptDisplayName = pt.FullName ?? pt.UserName;
+            string memberDisplayName = member.FullName ?? member.UserName;
+
+            return new PtSessionSlotDto(
+                SessionId: sessionId,
+                PtId: request.PtId,
+                PtName: ptDisplayName,
+                MemberId: request.MemberId,
+                MemberName: memberDisplayName,
+                ScheduledDate: request.ScheduledDate,
+                StartTime: request.StartTime,
+                EndTime: request.EndTime,
+                SessionStatus: nameof(PtSessionStatus.Booked),
+                Notes: newSession.WorkoutNotes
+            );
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -551,9 +848,7 @@ public sealed class PtService : IPtService
             }
 
             // 5. Tạo ca tập mới
-            int sessionCount = await _unitOfWork.Repository<PTTrainingSession>()
-                .CountAsync(cancellationToken: cancellationToken);
-            string newSessionId = $"SES-{sessionCount + 1:D5}";
+            string newSessionId = await GenerateUniqueSessionIdAsync(cancellationToken);
 
             var newSession = new PTTrainingSession
             {
@@ -1048,10 +1343,27 @@ public sealed class PtService : IPtService
     /// <summary>Trừ 1 buổi RemainingPtSessions của hội viên (gói ACTIVE đầu tiên tìm được).</summary>
     private async Task DeductPtSessionAsync(string memberUserName, CancellationToken cancellationToken)
     {
-        var sub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
+        var subs = await _unitOfWork.Repository<MemberSubscription>()
+            .FindAsync(
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
+
+        MemberSubscription? sub = null;
+        if (subs != null && subs.Count > 0)
+        {
+            sub = subs.FirstOrDefault(s => s.RemainingPtSessions > 0);
+            if (sub == null)
+            {
+                sub = subs.FirstOrDefault();
+            }
+        }
+        else
+        {
+            sub = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(
+                    s => s.UserName == memberUserName && s.Status == StatusActive,
+                    cancellationToken);
+        }
 
         if (sub == null || sub.RemainingPtSessions <= 0)
         {
@@ -1065,10 +1377,23 @@ public sealed class PtService : IPtService
     /// <summary>Hoàn lại 1 buổi RemainingPtSessions của hội viên (gói ACTIVE đầu tiên tìm được).</summary>
     private async Task RestorePtSessionAsync(string memberUserName, CancellationToken cancellationToken)
     {
-        var sub = await _unitOfWork.Repository<MemberSubscription>()
-            .FindSingleOrDefaultAsync(
+        var subs = await _unitOfWork.Repository<MemberSubscription>()
+            .FindAsync(
                 s => s.UserName == memberUserName && s.Status == StatusActive,
                 cancellationToken);
+
+        MemberSubscription? sub = null;
+        if (subs != null && subs.Count > 0)
+        {
+            sub = subs.FirstOrDefault();
+        }
+        else
+        {
+            sub = await _unitOfWork.Repository<MemberSubscription>()
+                .FindSingleOrDefaultAsync(
+                    s => s.UserName == memberUserName && s.Status == StatusActive,
+                    cancellationToken);
+        }
 
         if (sub == null)
         {
@@ -1157,6 +1482,34 @@ public sealed class PtService : IPtService
             IsActive: u.Status == StatusActive,
             ActiveStudentsCount: students,
             PendingSessionsCount: pending);
+    }
+
+    private async Task<string> GenerateUniqueAvailabilityIdAsync(CancellationToken cancellationToken)
+    {
+        int count = await _unitOfWork.Repository<PTAvailability>().CountAsync(cancellationToken: cancellationToken);
+        string id = $"AVL{count + 1:D7}";
+        int attempts = 0;
+        while (await _unitOfWork.Repository<PTAvailability>().ExistsAsync(a => a.AvailabilityId == id, cancellationToken) && attempts < 100)
+        {
+            count++;
+            id = $"AVL{count + 1:D7}";
+            attempts++;
+        }
+        return id;
+    }
+
+    private async Task<string> GenerateUniqueSessionIdAsync(CancellationToken cancellationToken)
+    {
+        int count = await _unitOfWork.Repository<PTTrainingSession>().CountAsync(cancellationToken: cancellationToken);
+        string id = $"SES{count + 1:D7}";
+        int attempts = 0;
+        while (await _unitOfWork.Repository<PTTrainingSession>().ExistsAsync(s => s.PTSessionId == id, cancellationToken) && attempts < 100)
+        {
+            count++;
+            id = $"SES{count + 1:D7}";
+            attempts++;
+        }
+        return id;
     }
 
     private static PtSlotDto MapToSlotDto(PTAvailability s)

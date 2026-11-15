@@ -107,7 +107,8 @@ public sealed class MemberService : IMemberService
                 ActivePlanName: activeSub?.PlanId,
                 SubscriptionEndDate: activeSub?.EndDate,
                 RemainingCheckInSessions: activeSub?.RemainingCheckInSessions ?? 0,
-                RemainingPtSessions: activeSub?.RemainingPtSessions ?? 0));
+                RemainingPtSessions: activeSub?.RemainingPtSessions ?? 0,
+                AssignedPtId: activeSub?.AssignedPtId));
         }
 
         _logger.LogInformation(

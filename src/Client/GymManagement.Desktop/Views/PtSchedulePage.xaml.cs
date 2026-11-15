@@ -30,21 +30,6 @@ public sealed partial class PtSchedulePage : Page
         };
     }
 
-    private async void BtnAddNewTrainer_Click(object sender, RoutedEventArgs e)
-    {
-        var apiClient = App.GetService<IApiClient>();
-        var dialog = new TrainerProfileDialog(apiClient)
-        {
-            XamlRoot = this.XamlRoot
-        };
-
-        await dialog.ShowAsync();
-        if (dialog.SavedTrainer != null && ViewModel != null)
-        {
-            await ViewModel.InitializeAsync();
-        }
-    }
-
     private async void BtnManageTrainers_Click(object sender, RoutedEventArgs e)
     {
         var apiClient = App.GetService<IApiClient>();

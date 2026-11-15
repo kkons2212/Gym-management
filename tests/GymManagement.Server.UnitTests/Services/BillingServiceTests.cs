@@ -226,12 +226,26 @@ public sealed class BillingServiceTests
         await act.Should().ThrowAsync<BusinessRuleException>();
     }
 
+    [Fact]
+    public async Task GetInvoicesAsync_WhenCalled_ReturnsMappedInvoices()
+    {
+        var created = await _sut.CreateInvoiceAsync(CreateRequest("CASH"));
+
+        var invoices = await _sut.GetInvoicesAsync("MEMBER01");
+
+        invoices.Should().NotBeEmpty();
+        invoices[0].InvoiceCode.Should().Be(created.InvoiceCode);
+        invoices[0].MemberName.Should().Be("Test Member");
+        invoices[0].PlanName.Should().Be("Monthly");
+    }
+
     private CreateInvoiceRequest CreateRequest(string paymentMethod = "CASH")
         => new(_user.UserName, _plan.PlanId, paymentMethod, "SUBSCRIPTION_PURCHASE");
 
     private void SetupRepositories()
     {
         var invoiceRepository = new Mock<IGenericRepository<Invoice>>();
+        invoiceRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_invoices);
         invoiceRepository
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<Invoice, bool>>>(),
@@ -247,6 +261,7 @@ public sealed class BillingServiceTests
             });
 
         var subscriptionRepository = new Mock<IGenericRepository<MemberSubscription>>();
+        subscriptionRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_subscriptions);
         subscriptionRepository
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<MemberSubscription, bool>>>(),
@@ -269,6 +284,7 @@ public sealed class BillingServiceTests
             });
 
         var userRepository = new Mock<IGenericRepository<User>>();
+        userRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<User> { _user });
         userRepository
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<User, bool>>>(),
@@ -277,6 +293,7 @@ public sealed class BillingServiceTests
                 Task.FromResult(predicate.Compile()(_user) ? _user : null));
 
         var planRepository = new Mock<IGenericRepository<PackagePlan>>();
+        planRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<PackagePlan> { _plan });
         planRepository
             .Setup(r => r.FindSingleOrDefaultAsync(
                 It.IsAny<Expression<Func<PackagePlan, bool>>>(),
