@@ -65,7 +65,17 @@ public sealed class InvoicesController : ApiControllerBase
         _logger.LogInformation("InvoicesController: Tao hoa don cho hoi vien {UserId}, goi {PlanId}",
             request.UserId, request.PlanId);
 
-        var invoice = await _billingService.CreateInvoiceAsync(request, cancellationToken);
+        var effectiveRequest = request;
+        if (string.IsNullOrWhiteSpace(request.AdminUserName))
+        {
+            string currentAdmin = GetCurrentUserName();
+            if (!string.IsNullOrWhiteSpace(currentAdmin))
+            {
+                effectiveRequest = request with { AdminUserName = currentAdmin };
+            }
+        }
+
+        var invoice = await _billingService.CreateInvoiceAsync(effectiveRequest, cancellationToken);
         return CreatedResponse($"/api/v1/invoices/{invoice.InvoiceCode}", invoice, "Tạo hóa đơn thành công.");
     }
 

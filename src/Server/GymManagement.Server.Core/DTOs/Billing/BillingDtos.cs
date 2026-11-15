@@ -4,7 +4,8 @@ public record CreateInvoiceRequest(
     string UserId,
     string PlanId,
     string PaymentMethod,
-    string TransactionType
+    string TransactionType,
+    string? AdminUserName = null
 );
 
 public record InvoiceDto(

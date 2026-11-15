@@ -59,6 +59,11 @@ public abstract class ApiControllerBase : ControllerBase
     /// </summary>
     protected string GetCurrentUserName()
     {
+        if (User == null)
+        {
+            return string.Empty;
+        }
+
         Claim? nameIdentifierClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (nameIdentifierClaim != null && !string.IsNullOrWhiteSpace(nameIdentifierClaim.Value))
         {
@@ -85,6 +90,11 @@ public abstract class ApiControllerBase : ControllerBase
     /// </summary>
     protected string GetCurrentUserRole()
     {
+        if (User == null)
+        {
+            return string.Empty;
+        }
+
         Claim? roleClaim = User.FindFirst(ClaimTypes.Role);
         if (roleClaim != null && !string.IsNullOrWhiteSpace(roleClaim.Value))
         {

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymManagement.Desktop.Services.Api;
+using GymManagement.Desktop.Services.Session;
 using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.Members;
 using GymManagement.Server.Core.DTOs.Packages;
@@ -11,6 +12,7 @@ namespace GymManagement.Desktop.ViewModels;
 public partial class PosBillingViewModel : ObservableObject
 {
     private readonly IApiClient _apiClient;
+    private readonly IAdminSessionService? _sessionService;
 
     public ObservableCollection<PackagePlanDto> Packages { get; } = [];
     public ObservableCollection<MemberDto> Members { get; } = [];
@@ -123,10 +125,11 @@ public partial class PosBillingViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
-    public PosBillingViewModel(IApiClient apiClient)
+    public PosBillingViewModel(IApiClient apiClient, IAdminSessionService? sessionService = null)
     {
         ArgumentNullException.ThrowIfNull(apiClient);
         _apiClient = apiClient;
+        _sessionService = sessionService;
     }
 
     public IApiClient ApiClient
@@ -273,11 +276,18 @@ public partial class PosBillingViewModel : ObservableObject
         IsLoading = true;
         try
         {
+            string? adminUserName = null;
+            if (_sessionService != null && _sessionService.CurrentUser != null)
+            {
+                adminUserName = _sessionService.CurrentUser.UserId;
+            }
+
             var req = new CreateInvoiceRequest(
                 SelectedMember.UserId,
                 SelectedPackage.PlanId,
                 SelectedPaymentMethod,
-                TransactionType
+                TransactionType,
+                adminUserName
             );
 
             CreatedInvoice = await _apiClient.CreateInvoiceAsync(req);
