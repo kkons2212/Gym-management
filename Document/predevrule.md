@@ -29,7 +29,7 @@ Hệ thống được thiết kế theo chuẩn **Kiến trúc 3 Lớp (3-Tier A
 ┌────────────────────────────────────────▼────────────────────────────────────────┐
 │ TẦNG 3: DATA ACCESS LAYER (DAL / GymManagement.Infrastructure - Dữ Liệu)        │
 │  ├── 3.1 Entity Repositories & Unit of Work (Quản lý giao dịch ACID)            │
-│  ├── 3.2 Database Persistence (Chuẩn hóa đúng 9 bảng trong SQL Server)          │
+│  ├── 3.2 Database Persistence (Chuẩn hóa đúng 10 bảng trong SQL Server)         │
 │  └── 3.3 External Adapters (VietQR NAPAS, Camera Barcode/QR, Email/SMS)         │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -62,7 +62,7 @@ flowchart TB
         DesktopApp["<b>Desktop Application</b><br><i>[Container: C# .NET 8, WinUI 3 / Windows App SDK]</i><br>Ứng dụng quản trị Desktop: Quản lý hội viên, POS quầy, quét webcam QR check-in, điều phối lịch PT, báo cáo doanh thu"]
         WebApp["<b>Member & PT Portal</b><br><i>[Container: C# .NET 8, Blazor Server]</i><br>Cổng tác nghiệp Web/Mobile: Gói tập số QR, đặt/hủy lịch hẹn PT, theo dõi InBody, đánh giá sao, PT quản lý lịch rảnh"]
         ApiApp["<b>API Application / Core Backend</b><br><i>[Container: C# .NET 8, ASP.NET Core Web API]</i><br>Cung cấp toàn bộ nghiệp vụ tập trung (Auth, Member, CheckIn, PT, Billing, BI, Config) qua JSON/HTTPS"]
-        Database[("<b>Database Persistence</b><br><i>[Container: Microsoft SQL Server]</i><br>Lưu trữ 9 bảng dữ liệu quan hệ: Role, [User], PackagePlan, PTAvailability, PTTrainingSession, MemberSubscription, CheckInLog, Invoice, MemberBodyMetric")]
+        Database[("<b>Database Persistence</b><br><i>[Container: Microsoft SQL Server]</i><br>Lưu trữ 10 bảng dữ liệu quan hệ: Role, [User], PackagePlan, PTAvailability, PTTrainingSession, MemberSubscription, CheckInLog, Invoice, MemberBodyMetric, Notification")]
     end
 
     %% External Systems
@@ -119,7 +119,7 @@ flowchart TB
 | **Container** | **Desktop Application** | C# .NET 8, WinUI 3 (Windows App SDK) | Ứng dụng Desktop chạy trực tiếp trên máy tính Windows tại quầy lễ tân: Tối ưu cho thao tác nghiệp vụ liên tục, hỗ trợ phím tắt, in nhiệt hóa đơn K80 và kết nối webcam quét QR cục bộ. |
 | **Container** | **Member & PT Portal** | C# .NET 8, Blazor Server | Ứng dụng Web chuẩn Responsive (chạy tốt trên trình duyệt máy tính, máy tính bảng và điện thoại di động): Cho phép Hội viên và PT truy cập mọi lúc mọi nơi mà không cần cài đặt qua Store. |
 | **Container** | **API Application / Core Backend** | C# .NET 8, ASP.NET Core Web API | Bộ não xử lý nghiệp vụ trung tâm: Cung cấp API RESTful (JSON/HTTPS), điều phối xác thực JWT, phân quyền RBAC, kiểm tra xung đột lịch dạy, quy tắc phạt thời gian và quản lý giao dịch. |
-| **Container** | **Database** | Microsoft SQL Server (Relational DB) | Hệ quản trị cơ sở dữ liệu quan hệ lưu trữ **chính xác 9 bảng**: `Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`. |
+| **Container** | **Database** | Microsoft SQL Server (Relational DB) | Hệ quản trị cơ sở dữ liệu quan hệ lưu trữ **chính xác 10 bảng**: `Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`, `Notification`. |
 | **External** | **VietQR / Payment Gateway** | Web API (NAPAS 247) | Dịch vụ ngân hàng bên ngoài hỗ trợ sinh chuỗi VietQR động chứa sẵn số tài khoản, số tiền và nội dung chuyển khoản để thanh toán tức thì tại quầy. |
 | **External** | **E-mail & SMS System** | SMTP / SendGrid / Twilio API | Hệ thống gửi thư và tin nhắn tự động: Bắn thông báo kích hoạt tài khoản, hóa đơn điện tử cho Hội viên; thông báo ca tập mới hoặc hủy ca cho PT. |
 | **External** | **Camera / Barcode Scanner** | Phần cứng USB/Webcam + DirectShow Driver | Thiết bị thu nhận hình ảnh quang học giúp giải mã mã vạch/mã QR điểm danh của hội viên theo thời gian thực (< 1 giây). |
@@ -133,7 +133,7 @@ flowchart TB
    * Xác thực & Phân quyền: Cấp phát JWT Bearer Token tại endpoint `/api/v1/auth/login`. Mọi request tiếp theo đều gửi kèm header `Authorization: Bearer <token>`, tầng Middleware kiểm tra Claims (`Admin`, `PT`, `Member`) trước khi thực thi.
 2. **API Application $\rightarrow$ Database:**
    * Giao thức: `TDS (Tabular Data Stream) qua TCP Port 1433`.
-   * ORM: Entity Framework Core 8.0, truy xuất theo Repository Pattern & Unit of Work, đảm bảo transaction ACID trên 9 bảng vật lý.
+   * ORM: Entity Framework Core 8.0, truy xuất theo Repository Pattern & Unit of Work, đảm bảo transaction ACID trên 10 bảng vật lý.
 3. **Desktop App $\rightarrow$ Hardware Camera:**
    * Giao thức: `Windows.Media.Capture` / `DirectShow API` cục bộ đọc frame video thời gian thực từ webcam để thư viện ZXing giải mã chuỗi định danh.
 4. **API Application $\rightarrow$ VietQR Payment Gateway:**
@@ -190,8 +190,8 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
 ### 3.3. Tầng 3: Data Access Layer (DAL / `GymManagement.Infrastructure`)
 * **3.1 Repositories & Unit of Work:**
   * Quản trị phiên kết nối ORM (EF Core) tới SQL Server. Áp dụng mẫu thiết kế Unit of Work để đảm bảo tính toàn vẹn giao dịch (ACID Transaction) khi một nghiệp vụ tác động lên nhiều bảng đồng thời.
-* **3.2 Database Persistence (Chuẩn hóa 9 bảng SQL Server):**
-  * Toàn bộ dữ liệu được lưu trữ cố định trên 9 bảng theo đúng DDL trong `GymManagement_Physical_Model.sql`:
+* **3.2 Database Persistence (Chuẩn hóa 10 bảng SQL Server):**
+  * Toàn bộ dữ liệu được lưu trữ cố định trên 10 bảng theo đúng DDL trong `GymManagement_Physical_Model.sql`:
     1. `Role`: Danh mục vai trò hệ thống.
     2. `[User]`: Tài khoản người dùng dùng chung (Admin, PT, Member).
     3. `PackagePlan`: Danh mục gói tập.
@@ -201,10 +201,11 @@ Tầng xử lý toàn bộ quy tắc nghiệp vụ, tính toán thời hạn, ki
     7. `CheckInLog`: Nhật ký điểm danh ra/vào cơ sở.
     8. `Invoice`: Hóa đơn tài chính (gộp cả thông tin hoàn tiền).
     9. `MemberBodyMetric`: Chỉ số phát triển thể hình InBody.
+    10. `Notification`: Hệ thống thông báo trong ứng dụng (In-App Notification Center).
 * **3.3 External Adapters & Drivers:**
   * `Camera Scanner Adapter`: Kết nối webcam giải mã chuỗi QR điểm danh.
   * `VietQR Adapter`: Tích hợp chuẩn NAPAS sinh chuỗi thanh toán ngân hàng tự động.
-  * `Notification Adapter`: Cổng gửi SMS/Email chào mừng, hóa đơn và nhắc lịch tập.
+  * `Notification Service`: Quản lý thông báo trong ứng dụng cho Hội viên và PT (chào mừng, hóa đơn và nhắc lịch tập).
 
 ---
 
@@ -261,12 +262,12 @@ graph TD
     Billing -.->|Dữ liệu doanh thu thực thu| Report
     CheckIn -.->|Dữ liệu lưu lượng check-in| Report
     PT -.->|Dữ liệu đánh giá sao & số ca dạy| Report
-    Member -->|Gửi SMS/Email chào mừng kèm mã QR| Notify
-    PT -->|Gửi thông báo lịch tập mới/hủy ca| Notify
+    Member -->|Tạo thông báo chào mừng kèm mã QR| Notify
+    PT -->|Tạo thông báo lịch tập mới/hủy ca| Notify
 ```
 
 1. **Luồng Thanh toán & Kích hoạt Gói tập (UC02 + UC05):**
-   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo gói tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationAdapter` gửi Email hóa đơn và thông tin gói tập cho khách hàng.
+   * Admin xác nhận thu tiền $\rightarrow$ `BillingModule` tạo hóa đơn trạng thái `PAID` trong bảng `Invoice` $\rightarrow$ gọi `MemberModule` tạo gói tập `ACTIVE` trong bảng `MemberSubscription` và sinh chuỗi `QrCode` $\rightarrow$ kích hoạt `NotificationService` tạo thông báo hóa đơn và thông tin gói tập trong ứng dụng (In-App) cho khách hàng.
 2. **Luồng Điểm danh Check-in Vào phòng (UC03):**
    * Quét QR hoặc nhập SĐT $\rightarrow$ `CheckInModule` tiếp nhận $\rightarrow$ gọi `MemberModule` tra cứu bảng `MemberSubscription` để kiểm tra điều kiện (gói tập `ACTIVE`, không bị `FROZEN` hay `LOCKED`, còn hạn và số buổi) $\rightarrow$ gọi `ConfigModule` đối soát khung giờ mở cửa $\rightarrow$ nếu hợp lệ, tự động trừ 1 buổi tập (với gói theo lượt) và ghi bản ghi vào bảng `CheckInLog`.
 3. **Luồng Đặt, Đổi, Hủy & Hoàn tất Ca dạy PT (UC04 + UC08 + UC10):**
@@ -307,5 +308,5 @@ Trước khi tiến hành viết code, toàn bộ lập trình viên phải tuâ
   * `PT`: Chỉ có quyền thao tác trên lịch dạy của chính mình, học viên do mình phụ trách và nhập chỉ số InBody.
   * `Member`: Chỉ có quyền xem thông tin cá nhân của bản thân, xem gói tập cá nhân và đặt lịch với PT đã được phân công cố định.
 
-### Quy tắc 5: Quy chuẩn Đặt tên & Cấu trúc Mô hình CSDL Chuẩn 9 Bảng
-* Toàn bộ mã nguồn Data Access phải tuân thủ chuẩn xác 9 bảng vật lý trong `GymManagement_Physical_Model.sql`. Tuyệt đối không tự ý thêm các bảng độc lập nằm ngoài thiết kế nếu chưa được cập nhật chính thức vào mô hình DDL.
+### Quy tắc 5: Quy chuẩn Đặt tên & Cấu trúc Mô hình CSDL Chuẩn 10 Bảng
+* Toàn bộ mã nguồn Data Access phải tuân thủ chuẩn xác 10 bảng vật lý trong `GymManagement_Physical_Model.sql`. Tuyệt đối không tự ý thêm các bảng độc lập nằm ngoài thiết kế nếu chưa được cập nhật chính thức vào mô hình DDL.

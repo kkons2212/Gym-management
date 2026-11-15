@@ -180,7 +180,7 @@ flowchart LR
 * **Hàm ngắn gọn, đơn mục đích:** Mỗi hàm lý tưởng chỉ nên dài từ 20 đến 40 dòng, giải quyết trọn vẹn đúng 1 mục tiêu duy nhất. Thân hàm bắt buộc dùng khối `{ ... }`, cấm dùng Expression-bodied method `=>`.
 
 ### 2. YAGNI (You Aren't Gonna Need It) — Chỉ làm đúng những gì cần
-* Tuyệt đối **không lập trình đón đầu tương lai**: Chỉ hiện thực đúng các trường dữ liệu, phương thức và endpoint được quy định trong 37 Use Cases của [`PRD.md`](PRD.md) và đúng 9 bảng CSDL trong [`GymManagement_Physical_Model.sql`](GymManagement_Physical_Model.sql).
+* Tuyệt đối **không lập trình đón đầu tương lai**: Chỉ hiện thực đúng các trường dữ liệu, phương thức và endpoint được quy định trong 37 Use Cases của [`PRD.md`](PRD.md) và đúng 10 bảng CSDL trong [`GymManagement_Physical_Model.sql`](GymManagement_Physical_Model.sql).
 * Không tự ý thêm cột "dự phòng", không thêm bảng mở rộng, không thêm các API "tiện ích" chưa nằm trong Acceptance Criteria (AC).
 
 ### 3. DRY (Don't Repeat Yourself) — Không nhân bản logic
@@ -243,7 +243,7 @@ flowchart LR
      * `Services/`: Chứa các lớp cài đặt nghiệp vụ (Implementations).
      * `Contracts/`: Chứa các giao diện dịch vụ (Service Interfaces).
      * `DTOs/`: Chứa các đối tượng truyền nhận dữ liệu (`Requests/`, `Responses/`, `Common/`).
-     * `Entities/`: Chứa 9 lớp thực thể ánh xạ 9 bảng CSDL vật lý.
+     * `Entities/`: Chứa 10 lớp thực thể ánh xạ 10 bảng CSDL vật lý.
      * `Configurations/`: Chứa các lớp Fluent API EntityTypeConfiguration cho EF Core.
      * `Repositories/`: Chứa các lớp truy xuất kho dữ liệu.
      * `Adapters/`: Chứa các lớp chuyển đổi tích hợp bên thứ ba (VietQR, Email, Máy quét barcode).
@@ -269,7 +269,7 @@ flowchart LR
 | **Server Core** | Incoming Request Payload | `PascalCase.cs` | `<Action><Domain>Request.cs` | `RegisterMemberRequest.cs`, `CheckInRequest.cs`, `CreateInvoiceRequest.cs`, `BookPtSessionRequest.cs` |
 | **Server Core** | Outgoing Response Payload | `PascalCase.cs` | `<Domain><Action>Response.cs` | `MemberProfileResponse.cs`, `CheckInResultResponse.cs`, `RevenueReportResponse.cs`, `LoginResponse.cs` |
 | **Server Core** | Internal Data Transfer Object | `PascalCase.cs` | `<Domain>Dto.cs` | `MemberDto.cs`, `InvoiceDto.cs`, `SubscriptionDto.cs`, `PtSessionDto.cs` |
-| **Server Core** | Domain Entity (9 Bảng CSDL) | `PascalCase.cs` | `<EntityName>.cs` | `User.cs`, `Role.cs`, `PackagePlan.cs`, `MemberSubscription.cs`, `CheckInLog.cs`, `Invoice.cs`, `MemberBodyMetric.cs`, `PTAvailability.cs`, `PTTrainingSession.cs` |
+| **Server Core** | Domain Entity (10 Bảng CSDL) | `PascalCase.cs` | `<EntityName>.cs` | `User.cs`, `Role.cs`, `PackagePlan.cs`, `MemberSubscription.cs`, `CheckInLog.cs`, `Invoice.cs`, `MemberBodyMetric.cs`, `PTAvailability.cs`, `PTTrainingSession.cs`, `Notification.cs` |
 | **Server Core** | Domain Exception | `PascalCase.cs` | `<Condition>Exception.cs` | `SubscriptionExpiredException.cs`, `PtScheduleCollisionException.cs`, `ValidationException.cs`, `NotFoundException.cs` |
 | **Server Infra** | EF Core DbContext | `PascalCase.cs` | `<ContextName>DbContext.cs` | `GymManagementDbContext.cs` |
 | **Server Infra** | Entity Type Configuration | `PascalCase.cs` | `<Entity>Configuration.cs` | `UserConfiguration.cs`, `MemberSubscriptionConfiguration.cs`, `InvoiceConfiguration.cs` |
@@ -531,7 +531,7 @@ Chỉ cho phép sử dụng ký tự `=>` trong 3 trường hợp tiêu chuẩn 
 * **Xử lý giao dịch đa bảng (ACID):** Khi thực hiện các luồng nghiệp vụ phức tạp (ví dụ: Tạo hóa đơn + Kích hoạt gói tập), bắt buộc dùng `IUnitOfWork.ExecuteTransactionAsync` để tự động Rollback nếu có lỗi.
 
 ### 4.2. Thành phần `GymManagement.Server.Data` (Database API & Adapters)
-* **Chuẩn hóa 9 bảng SQL Server:** Chỉ tạo đúng 9 Entity tương ứng với DDL trong `GymManagement_Physical_Model.sql` (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`).
+* **Chuẩn hóa 10 bảng SQL Server:** Chỉ tạo đúng 10 Entity tương ứng với DDL trong `GymManagement_Physical_Model.sql` (`Role`, `[User]`, `PackagePlan`, `PTAvailability`, `PTTrainingSession`, `MemberSubscription`, `CheckInLog`, `Invoice`, `MemberBodyMetric`, `Notification`).
 * **Fluent API Configuration:** Tách riêng từng cấu hình bảng vào thư mục `Configurations/` bằng cách triển khai `IEntityTypeConfiguration<T>`. Không viết dồn toàn bộ vào `OnModelCreating`.
 * **Repository Pattern:** `IGenericRepository<T>` hỗ trợ các thao tác cơ bản; các truy vấn đặc thù (Aggregate, Report) đặt trong Repository chuyên biệt.
 * **External Adapters:** `VietQrAdapter` (cổng Payment API), `NotificationAdapter` (cổng SMS/Email), `CameraScannerAdapter` phải được cấu hình linh hoạt (hỗ trợ Mock khi chạy môi trường Dev/Test).
@@ -650,7 +650,7 @@ Một task trong `task.md` chỉ được phép chuyển trạng thái sang `[x]
 - [ ] **DoD 1 (Ranh giới Kiến trúc):** Không vi phạm quy tắc phụ thuộc 1 chiều (Presentation không tham chiếu Data/EF Core; Core không tham chiếu Presentation/Data).
 - [ ] **DoD 2 (Nghiệp vụ PRD):** Thỏa mãn đầy đủ Tiêu chí Chấp nhận (AC) của Use Case tương ứng.
 - [ ] **DoD 3 (Async & Cancellation):** Mọi hàm I/O đều là `async/await` và có `CancellationToken`.
-- [ ] **DoD 4 (CSDL Chuẩn):** Thao tác dữ liệu đúng 9 bảng, không tự tạo bảng mới ngoài DDL.
+- [ ] **DoD 4 (CSDL Chuẩn):** Thao tác dữ liệu đúng 10 bảng, không tự tạo bảng mới ngoài DDL.
 - [ ] **DoD 5 (Kiểm thử):** Có ít nhất 1 Unit/Integration Test tương ứng, test chạy Pass 100%.
 - [ ] **DoD 6 (Bố cục, Quy chuẩn Đặt tên & Cú pháp Rẽ nhánh):** Đặt tên thư mục, file, class, interface (`I*`), DTOs (`*Request`, `*Response`, `*Dto`), hàm (`Verb + Noun`), biến và ca test tuân thủ 100% Ma trận Chương 3 & Chương 6. Toàn bộ hằng số/biến toàn cục/fields **BẮT BUỘC nằm ở đầu file, không khai báo rải rác**. **CẤM 100% toán tử 3 ngôi `? :`** (bắt buộc dùng `if / else` hoặc Guard Clause phẳng); **CẤM expression-bodied methods `=>` trên các hàm nghiệp vụ**.
 - [ ] **DoD 7 (Code Cleanliness):** Chạy `dotnet format` không còn lỗi format hay warning nghiêm trọng.

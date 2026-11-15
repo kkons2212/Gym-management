@@ -182,7 +182,7 @@ GymManagement.sln
 
 #### 1.3. Cổng giao tiếp Third Party Service
 - [x] **Task 1.3.1:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`Payment API`**: Xây dựng `VietQrAdapter` gọi tới `VietQR Payment`.
-- [x] **Task 1.3.2:** `[Type: Adapter]` `[Module: Server / Data]` Hiện thực cổng **`SMS Sending Gateway`**: Xây dựng `NotificationAdapter` gửi Email hóa đơn/SMS tới `Email/SMS Provider`.
+- [x] **Task 1.3.2:** `[Type: Notification Center]` `[Module: Server & Web]` Hiện thực hệ thống **`In-App Notification Center`**: Xây dựng bảng `[Notification]` (6 trường), `NotificationService`, API endpoint và UI Quả chuông trên Cổng Web Blazor.
 - [x] **Task 1.3.3:** `[Type: Adapter]` `[Module: Server / Data]` Xây dựng `CameraScannerAdapter` giải mã QR điểm danh.
 
 ---
