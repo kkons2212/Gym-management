@@ -431,5 +431,39 @@ BEGIN
 END
 GO
 
+-- 4.4. Nạp hợp đồng gói tập và thông báo mẫu cho tài khoản thử nghiệm (member01 & pt01)
+IF NOT EXISTS (SELECT 1 FROM dbo.MemberSubscription WHERE UserName = 'member01')
+BEGIN
+    INSERT INTO dbo.MemberSubscription (
+        SubscriptionId, QrCode, StartDate, EndDate, 
+        RemainingCheckInSessions, RemainingPtSessions, 
+        Status, created_at, UserName, AssignedPtId, PlanId
+    )
+    VALUES (
+        'SUB-MEM01', 'GYM-member01-3D37D0F092E04571', 
+        CAST(GETDATE() AS DATE), CAST(DATEADD(day, 90, GETDATE()) AS DATE), 
+        30, 5, 
+        'ACTIVE', CAST(GETDATE() AS DATE), 'member01', 'pt01', 'PLAN02'
+    );
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Notification WHERE UserName = 'member01')
+BEGIN
+    INSERT INTO dbo.Notification (NotificationId, Title, Message, IsRead, CreatedAt, UserName)
+    VALUES 
+    ('NOTIF001', N'Chào mừng bạn đến với Gym Master!', N'Tài khoản của bạn đã được kích hoạt thành công. Thẻ hội viên và mã QR điểm danh đã sẵn sàng sử dụng.', 0, CAST(GETDATE() AS DATE), 'member01'),
+    ('NOTIF002', N'Nhắc lịch tập cá nhân', N'Bạn đã được phân công đồng hành cùng Huấn luyện viên Nguyễn Văn Thành (pt01). Hãy đặt lịch tập ngay trên hệ thống!', 0, CAST(GETDATE() AS DATE), 'member01');
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Notification WHERE UserName = 'pt01')
+BEGIN
+    INSERT INTO dbo.Notification (NotificationId, Title, Message, IsRead, CreatedAt, UserName)
+    VALUES 
+    ('NOTIF003', N'Phân công học viên mới', N'Bạn vừa được chỉ định hướng dẫn cho hội viên Trần Văn An (member01). Vui lòng cập nhật lịch rảnh để học viên đặt lịch tập.', 0, CAST(GETDATE() AS DATE), 'pt01');
+END
+GO
+
 PRINT N'✅ Khởi tạo CSDL GymManagementDb và nạp dữ liệu nền tảng hoàn tất thành công!';
 GO

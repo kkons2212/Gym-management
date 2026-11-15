@@ -48,6 +48,10 @@ public sealed class WebApiClient : IWebApiClient
         };
 
         var loginRes = await SendAsync<LoginResponse>(httpReq);
+        if (loginRes == null)
+        {
+            throw new BusinessRuleException("Không thể nhận phản hồi đăng nhập từ máy chủ.");
+        }
 
         var sessionUser = new UserSessionDto(
             UserId: loginRes.UserId,
@@ -119,6 +123,10 @@ public sealed class WebApiClient : IWebApiClient
         {
             var httpReq = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/members/{Uri.EscapeDataString(currentUser.UserId)}/active-subscription");
             var sub = await SendAsync<SubscriptionDetailResponse>(httpReq);
+            if (sub == null)
+            {
+                return null;
+            }
 
             return new MemberSubscriptionDetailDto(
                 SubscriptionId: sub.SubscriptionId,
@@ -138,6 +146,10 @@ public sealed class WebApiClient : IWebApiClient
             );
         }
         catch (NotFoundException)
+        {
+            return null;
+        }
+        catch (Exception)
         {
             return null;
         }
@@ -167,7 +179,7 @@ public sealed class WebApiClient : IWebApiClient
     public async Task<IReadOnlyList<PackagePlanDto>> GetPackagePlansAsync()
     {
         var httpReq = new HttpRequestMessage(HttpMethod.Get, "/api/v1/settings/packages?includeInactive=false");
-        return await SendAsync<IReadOnlyList<PackagePlanDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<PackagePlanDto>>(httpReq)) ?? [];
     }
 
     public async Task<VietQrPayloadDto> CreateVietQrInvoiceAsync(string planId)
@@ -188,9 +200,14 @@ public sealed class WebApiClient : IWebApiClient
         };
 
         var invoice = await SendAsync<InvoiceDto>(httpReq);
+        if (invoice == null)
+        {
+            throw new BusinessRuleException("Không thể tạo hóa đơn thanh toán.");
+        }
 
         var qrReq = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/invoices/{Uri.EscapeDataString(invoice.InvoiceCode)}/qr");
-        return await SendAsync<VietQrPayloadDto>(qrReq);
+        var qrResult = await SendAsync<VietQrPayloadDto>(qrReq);
+        return qrResult ?? throw new BusinessRuleException("Không thể lấy thông tin mã VietQR.");
     }
 
     public async Task<bool> SimulateVietQrPaymentAsync(string invoiceId)
@@ -208,7 +225,7 @@ public sealed class WebApiClient : IWebApiClient
     {
         string url = $"/api/v1/pt/trainers/{Uri.EscapeDataString(ptUserName)}/slots?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<PtSlotDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<PtSlotDto>>(httpReq)) ?? [];
     }
 
     public async Task<PtSessionDto> BookPtSlotAsync(BookSessionRequest request)
@@ -217,7 +234,8 @@ public sealed class WebApiClient : IWebApiClient
         {
             Content = JsonContent.Create(request)
         };
-        return await SendAsync<PtSessionDto>(httpReq);
+        var result = await SendAsync<PtSessionDto>(httpReq);
+        return result ?? throw new BusinessRuleException("Không thể đặt lịch tập.");
     }
 
     public async Task<bool> CancelPtBookingAsync(CancelSessionRequest request)
@@ -258,9 +276,9 @@ public sealed class WebApiClient : IWebApiClient
             return [];
         }
 
-        string url = $"/api/v1/pt/sessions?userName={Uri.EscapeDataString(currentUser.UserId)}";
+        string url = $"/api/v1/pt/sessions?memberUserName={Uri.EscapeDataString(currentUser.UserId)}";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<PtSessionDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<PtSessionDto>>(httpReq)) ?? [];
     }
 
     // ==========================================
@@ -277,7 +295,7 @@ public sealed class WebApiClient : IWebApiClient
 
         string url = $"/api/v1/pt/members/{Uri.EscapeDataString(currentUser.UserId)}/inbody";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<InBodyRecordDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<InBodyRecordDto>>(httpReq)) ?? [];
     }
 
     public async Task<IReadOnlyList<CheckInLogDto>> GetMyCheckInHistoryAsync()
@@ -290,7 +308,7 @@ public sealed class WebApiClient : IWebApiClient
 
         string url = $"/api/v1/members/{Uri.EscapeDataString(currentUser.UserId)}/history";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<CheckInLogDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<CheckInLogDto>>(httpReq)) ?? [];
     }
 
     // ==========================================
@@ -310,6 +328,10 @@ public sealed class WebApiClient : IWebApiClient
             string url = $"/api/v1/pt/trainers/{Uri.EscapeDataString(currentUser.UserId)}";
             var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
             var trainer = await SendAsync<PtProfileDto>(httpReq);
+            if (trainer == null)
+            {
+                return null;
+            }
 
             string status = "INACTIVE";
             if (trainer.IsActive)
@@ -367,7 +389,7 @@ public sealed class WebApiClient : IWebApiClient
 
         string url = $"/api/v1/pt/sessions?ptId={Uri.EscapeDataString(currentUser.UserId)}";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<PtSessionDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<PtSessionDto>>(httpReq)) ?? [];
     }
 
     public async Task<bool> CompletePtSessionAsync(PtCompleteSessionRequest request)
@@ -390,7 +412,7 @@ public sealed class WebApiClient : IWebApiClient
 
         string url = $"/api/v1/pt/trainers/{Uri.EscapeDataString(currentUser.UserId)}/students";
         var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-        return await SendAsync<IReadOnlyList<MemberSummaryDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<MemberSummaryDto>>(httpReq)) ?? [];
     }
 
     public async Task<bool> RecordInBodyAsync(RecordInBodyRequest request)
@@ -410,7 +432,7 @@ public sealed class WebApiClient : IWebApiClient
     public async Task<IReadOnlyList<NotificationDto>> GetNotificationsAsync()
     {
         var httpReq = new HttpRequestMessage(HttpMethod.Get, "/api/v1/notifications");
-        return await SendAsync<IReadOnlyList<NotificationDto>>(httpReq);
+        return (await SendAsync<IReadOnlyList<NotificationDto>>(httpReq)) ?? [];
     }
 
     public async Task<int> GetUnreadNotificationCountAsync()
@@ -437,7 +459,7 @@ public sealed class WebApiClient : IWebApiClient
     // PRIVATE HELPER METHODS
     // ==========================================
 
-    private async Task<T> SendAsync<T>(HttpRequestMessage request)
+    private async Task<T?> SendAsync<T>(HttpRequestMessage request)
     {
         if (!string.IsNullOrEmpty(_authStateProvider.Token))
         {
@@ -448,20 +470,30 @@ public sealed class WebApiClient : IWebApiClient
         return await HandleResponseAsync<T>(response);
     }
 
-    private static async Task<T> HandleResponseAsync<T>(HttpResponseMessage response)
+    private static async Task<T?> HandleResponseAsync<T>(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)
         {
-            var apiResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-            if (apiResult != null && apiResult.Success && apiResult.Data != null)
+            if (response.StatusCode == HttpStatusCode.NoContent)
             {
-                return apiResult.Data;
+                return default;
             }
 
-            if (apiResult != null && !string.IsNullOrEmpty(apiResult.Message))
+            var apiResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
+            if (apiResult != null)
             {
-                throw new BusinessRuleException(apiResult.Message);
+                if (apiResult.Success)
+                {
+                    return apiResult.Data;
+                }
+
+                if (!string.IsNullOrEmpty(apiResult.Message))
+                {
+                    throw new BusinessRuleException(apiResult.Message);
+                }
             }
+
+            return default;
         }
 
         string errorMessage = "Lỗi xử lý yêu cầu từ máy chủ.";

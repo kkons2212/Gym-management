@@ -186,6 +186,10 @@ else
         {
             _subscription = await ApiClient.GetMySubscriptionAsync();
         }
+        catch
+        {
+            _subscription = null;
+        }
         finally
         {
             _isLoading = false;
