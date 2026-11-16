@@ -108,6 +108,17 @@ public sealed partial class SettingsPage : Page
         }
     }
 
+    public void OnNewGenderSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ViewModel != null && CboNewGender?.SelectedItem is ComboBoxItem item && item.Tag != null)
+        {
+            if (byte.TryParse(item.Tag.ToString(), out byte g))
+            {
+                ViewModel.NewGender = g;
+            }
+        }
+    }
+
     public void OnNewPasswordChanged(object sender, RoutedEventArgs e)
     {
         if (ViewModel != null && sender is PasswordBox pb)

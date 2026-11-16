@@ -632,7 +632,7 @@ public sealed class HttpApiClient : IApiClient
                 }
 
                 bool isLocked = string.Equals(u.Status, "LOCKED", StringComparison.OrdinalIgnoreCase);
-                list.Add(new UserSessionDto(u.UserName, fullName, email, role, phone, isLocked));
+                list.Add(new UserSessionDto(u.UserName, fullName, email, role, phone, isLocked, u.Gender));
             }
         }
         return list;
@@ -687,7 +687,7 @@ public sealed class HttpApiClient : IApiClient
         return await HandleResponseAsync<PackagePlanDto>(response);
     }
 
-    public async Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password)
+    public async Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password, byte? gender = null)
     {
         var request = new CreateUserRequest(
             UserName: username,
@@ -695,7 +695,8 @@ public sealed class HttpApiClient : IApiClient
             FullName: fullName,
             Phone: phone,
             Email: email,
-            Password: password
+            Password: password,
+            Gender: gender
         );
 
         var response = await _httpClient.PostAsJsonAsync("/api/v1/admin/users", request);
@@ -705,7 +706,7 @@ public sealed class HttpApiClient : IApiClient
         {
             assignedRole = userDto.RoleName;
         }
-        return new UserSessionDto(username, fullName, email, assignedRole);
+        return new UserSessionDto(username, fullName, email, assignedRole, phone, false, gender);
     }
 
     public async Task<UserSessionDto> UpdateUserAsync(string userName, UpdateUserRequest request)

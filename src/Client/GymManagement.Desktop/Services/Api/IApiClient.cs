@@ -65,5 +65,5 @@ public interface IApiClient
     Task<PackagePlanDto> CreatePackagePlanAsync(PackagePlanDto plan);
     Task<PackagePlanDto> UpdatePackagePlanAsync(string planId, UpdatePackagePlanRequest request);
     Task<DeletePackageResultDto> DeletePackagePlanAsync(string planId);
-    Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password);
+    Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password, byte? gender = null);
 }
