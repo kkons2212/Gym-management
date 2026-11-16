@@ -163,45 +163,6 @@
                                 FontWeight="SemiBold"
                                 Height="38" />
                     </Grid>
-
-                    <!-- Quick Actions: Manual Override Dialog & Gate Diagnostics -->
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0"
-                                Click="BtnOpenOverrideDialog_Click"
-                                HorizontalAlignment="Stretch"
-                                Background="#3B2610"
-                                BorderBrush="{StaticResource StatusWarningBrush}"
-                                BorderThickness="1"
-                                Height="38">
-                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                <FontIcon Glyph="&#xE77B;" FontSize="14" Foreground="{StaticResource StatusWarningBrush}" />
-                                <TextBlock Text="Cho vào thủ công" FontWeight="SemiBold" Foreground="{StaticResource StatusWarningBrush}" FontSize="12" />
-                            </StackPanel>
-                        </Button>
-                        <Button Grid.Column="1"
-                                Command="{x:Bind ViewModel.TestGateCommand}"
-                                HorizontalAlignment="Stretch"
-                                Background="{StaticResource BgCardBrush}"
-                                BorderBrush="{StaticResource BorderSubtleBrush}"
-                                BorderThickness="1"
-                                Height="38">
-                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                <TextBlock Text="Mở cổng kiểm tra" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12" />
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-
-                    <!-- Gate Status Feedback -->
-                    <Border Visibility="{x:Bind ViewModel.HasGateMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                            Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6" Padding="8,6">
-                        <TextBlock Text="{x:Bind ViewModel.GateStatusMessage, Mode=OneWay}"
-                                   Foreground="#34D399" FontSize="11" FontWeight="SemiBold" TextAlignment="Center" />
-                    </Border>
                 </StackPanel>
             </Border>
         </Grid>

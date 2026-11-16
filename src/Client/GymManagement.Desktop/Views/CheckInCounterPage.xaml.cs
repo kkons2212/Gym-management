@@ -237,23 +237,6 @@ public sealed partial class CheckInCounterPage : Page
         }
     }
 
-    private async void BtnOpenOverrideDialog_Click(object sender, RoutedEventArgs e)
-    {
-        OverrideCheckInDialog dialog;
-        ContentDialogResult result;
-        string prefill;
-
-        prefill = ViewModel.SearchQuery;
-        dialog = new OverrideCheckInDialog(prefill);
-        dialog.XamlRoot = this.XamlRoot;
-
-        result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.ExecuteOverrideCheckInAsync(dialog.MemberIdentifier, dialog.FullOverrideReason);
-        }
-    }
-
     private void CboShift_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         ComboBox? combo;

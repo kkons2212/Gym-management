@@ -94,12 +94,6 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _selectedShift = "ALL";
 
-    [ObservableProperty]
-    private string _gateStatusMessage = string.Empty;
-
-    [ObservableProperty]
-    private bool _hasGateMessage;
-
     public ObservableCollection<CheckInLogDto> TodayLogs { get; } = new();
 
     public ObservableCollection<CameraDeviceInfo> AvailableCameras { get; } = new();
@@ -366,36 +360,6 @@ public partial class CheckInCounterViewModel : ObservableObject, IDisposable
     private async Task CheckInByPhoneAsync()
     {
         await CheckInManualAsync();
-    }
-
-    public async Task ExecuteOverrideCheckInAsync(string memberIdentifier, string fullReason)
-    {
-        if (string.IsNullOrWhiteSpace(memberIdentifier))
-        {
-            return;
-        }
-
-        string input;
-        input = memberIdentifier.Trim();
-        MemberCode = input;
-
-        await ProcessCheckInAsync(new CheckInRequest(
-            MemberCode: input,
-            Phone: input,
-            Notes: fullReason,
-            VerifiedByAdminId: "USR_ADMIN"));
-    }
-
-    [RelayCommand]
-    public async Task TestGateAsync()
-    {
-        HasGateMessage = true;
-        GateStatusMessage = "Đang gửi xung kích hoạt rơ-le mở chốt cổng...";
-        await Task.Delay(1200);
-        GateStatusMessage = "Cổng turnstile đã nhả chốt thành công trong 5 giây!";
-        await Task.Delay(4000);
-        GateStatusMessage = string.Empty;
-        HasGateMessage = false;
     }
 
     [RelayCommand]
