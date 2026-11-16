@@ -21,6 +21,8 @@
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:TimeOnlyFormatterConverter x:Key="TimeOnlyFormatterConverter" />
+            <converters:StatusTextConverter x:Key="StatusTextConverter" />
+            <converters:PaymentMethodConverter x:Key="PaymentMethodConverter" />
 
             <!-- Global Control Styles for Clean 100% Dark Layout -->
             <Style TargetType="ListViewItem">

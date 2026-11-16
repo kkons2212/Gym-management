@@ -251,8 +251,9 @@ public sealed class MemberService : IMemberService
                 "MemberService.RegisterMember: Tạo hội viên {UserName} với gói {PlanId}",
                 newUserName, request.PlanId);
 
-            // Gửi Email chào mừng kèm QR code (fire-and-forget)
+            // Gửi thông báo chào mừng (In-App và Email nếu có)
             await SendWelcomeNotificationSafeAsync(
+                newUserName,
                 newUser.Email ?? string.Empty,
                 newUser.FullName ?? newUserName,
                 qrCode,
@@ -433,6 +434,33 @@ public sealed class MemberService : IMemberService
             sub.RemainingCheckInSessions += newPlan.MaxCheckInSessions ?? 0;
             sub.RemainingPtSessions += newPlan.TotalPtSessions ?? 0;
             _unitOfWork.Repository<MemberSubscription>().Update(sub);
+
+            // Tạo thông báo In-App cho hội viên khi nâng cấp gói tập thành công
+            try
+            {
+                string planName = newPlan.PlanId;
+                if (!string.IsNullOrWhiteSpace(newPlan.Name))
+                {
+                    planName = newPlan.Name;
+                }
+
+                var upgradeNotif = new Notification
+                {
+                    NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                    Title = "Nâng cấp gói tập thành công",
+                    Message = $"Gói tập của bạn đã được nâng cấp lên gói {planName}.",
+                    IsRead = false,
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    UserName = sub.UserName
+                };
+
+                await _unitOfWork.Repository<Notification>().AddAsync(upgradeNotif, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "MemberService.UpgradeSubscription: Tạo thông báo In-App nâng cấp thất bại cho {UserName}", sub.UserName);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -478,6 +506,27 @@ public sealed class MemberService : IMemberService
             sub.FreezeEndDate = request.FreezeEndDate;
             sub.EndDate = newEndDate;
             _unitOfWork.Repository<MemberSubscription>().Update(sub);
+
+            // Tạo thông báo In-App cho hội viên khi bảo lưu gói tập thành công
+            try
+            {
+                var freezeNotif = new Notification
+                {
+                    NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                    Title = "Bảo lưu gói tập thành công",
+                    Message = $"Gói tập của bạn đã được bảo lưu thành công {freezeDays} ngày (từ {request.FreezeStartDate:dd/MM/yyyy} đến {request.FreezeEndDate:dd/MM/yyyy}). Thời hạn gói tập đã được tự động gia hạn tương ứng.",
+                    IsRead = false,
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    UserName = sub.UserName
+                };
+
+                await _unitOfWork.Repository<Notification>().AddAsync(freezeNotif, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "MemberService.FreezeSubscription: Tạo thông báo In-App bảo lưu thất bại cho {UserName}", sub.UserName);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -510,6 +559,27 @@ public sealed class MemberService : IMemberService
 
             sub.Status = StatusCancelled;
             _unitOfWork.Repository<MemberSubscription>().Update(sub);
+
+            // Tạo thông báo In-App cho hội viên khi hủy gói tập
+            try
+            {
+                var cancelNotif = new Notification
+                {
+                    NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                    Title = "Gói tập đã bị hủy",
+                    Message = $"Gói tập {sub.SubscriptionId} của bạn đã bị hủy. Lý do: {request.Reason}.",
+                    IsRead = false,
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    UserName = sub.UserName
+                };
+
+                await _unitOfWork.Repository<Notification>().AddAsync(cancelNotif, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "MemberService.CancelSubscription: Tạo thông báo In-App hủy gói thất bại cho {UserName}", sub.UserName);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -649,12 +719,38 @@ public sealed class MemberService : IMemberService
     /// Lỗi gửi email không làm rollback transaction nghiệp vụ chính.
     /// </summary>
     private async Task SendWelcomeNotificationSafeAsync(
+        string userName,
         string email,
         string fullName,
         string qrCode,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(email)) return;
+        // 1. Tạo thông báo trong ứng dụng (In-App Notification)
+        try
+        {
+            var notif = new Notification
+            {
+                NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                Title = "Chào mừng hội viên mới",
+                Message = $"Chào mừng bạn {fullName} đã tham gia GymManagement! Mã hội viên của bạn là {userName}. Bạn có thể sử dụng mã này hoặc mã QR cá nhân trên Web để điểm danh khi đến phòng tập.",
+                IsRead = false,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                UserName = userName
+            };
+
+            await _unitOfWork.Repository<Notification>().AddAsync(notif, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "MemberService.SendWelcome: Tạo thông báo In-App chào mừng thất bại cho {UserName}", userName);
+        }
+
+        // 2. Gửi email nếu có
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
 
         try
         {
