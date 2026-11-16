@@ -228,6 +228,17 @@ public sealed class SystemSettingService : ISystemSettingService
             throw new NotFoundException($"Không tìm thấy tài khoản '{cleanUserName}'.");
         }
 
+        bool isTargetSuperAdmin = string.Equals(user.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+        if (isTargetSuperAdmin)
+        {
+            var caller = await userRepo.GetByIdAsync(currentUserName.Trim(), cancellationToken);
+            bool isCallerSuperAdmin = caller != null && string.Equals(caller.RoleId, RoleIdSuperAdmin, StringComparison.OrdinalIgnoreCase);
+            if (!isCallerSuperAdmin)
+            {
+                throw new BusinessRuleException("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền chỉnh sửa tài khoản SuperAdmin.");
+            }
+        }
+
         string newRoleId = request.RoleId.Trim().ToUpperInvariant();
 
         // Chốt chặn an toàn: Super Admin không thể tự tước quyền Quản trị của chính mình
@@ -800,8 +811,6 @@ public sealed class SystemSettingService : ISystemSettingService
 
     private static string HashPassword(string password)
     {
-        byte[] bytes = Encoding.UTF8.GetBytes(password);
-        byte[] hash = SHA256.HashData(bytes);
-        return Convert.ToHexString(hash);
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 }

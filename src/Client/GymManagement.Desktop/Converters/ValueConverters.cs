@@ -364,3 +364,24 @@ public class LockButtonActionBrushConverter : IValueConverter
     }
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
 }
+
+public class CanManageUserConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is string role)
+        {
+            bool isTargetSuperAdmin = string.Equals(role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            if (isTargetSuperAdmin)
+            {
+                var sessionService = App.GetService<Services.Session.IAdminSessionService>();
+                bool isCallerSuperAdmin = sessionService?.CurrentUser != null &&
+                    string.Equals(sessionService.CurrentUser.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+                return isCallerSuperAdmin;
+            }
+        }
+        return true;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
