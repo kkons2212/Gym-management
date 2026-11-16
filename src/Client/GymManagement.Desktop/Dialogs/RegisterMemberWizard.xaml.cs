@@ -72,6 +72,28 @@ public sealed partial class RegisterMemberWizard : ContentDialog
         }
     }
 
+    public byte GenderValue
+    {
+        get
+        {
+            ComboBoxItem? item;
+            item = CboGender.SelectedItem as ComboBoxItem;
+            if (item != null && item.Content != null)
+            {
+                string text = item.Content.ToString()!;
+                if (string.Equals(text, "Nữ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
+                }
+                if (string.Equals(text, "Khác", StringComparison.OrdinalIgnoreCase))
+                {
+                    return 2;
+                }
+            }
+            return 1;
+        }
+    }
+
     public PackagePlanDto? SelectedPackage
     {
         get

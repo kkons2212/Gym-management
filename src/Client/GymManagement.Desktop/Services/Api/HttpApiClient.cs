@@ -142,7 +142,8 @@ public sealed class HttpApiClient : IApiClient
                     RemainingPtSessions: m.RemainingPtSessions,
                     SubscriptionId: m.ActiveSubscriptionId,
                     ActiveSubscriptionId: m.ActiveSubscriptionId,
-                    AssignedPtId: m.AssignedPtId
+                    AssignedPtId: m.AssignedPtId,
+                    Gender: m.Gender
                 ));
             }
         }

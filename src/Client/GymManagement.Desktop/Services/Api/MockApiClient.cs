@@ -214,7 +214,8 @@ public class MockApiClient : IApiClient
             "Gói Tập Mới",
             DateTime.Today.AddDays(30),
             30,
-            0
+            0,
+            Gender: request.Gender
         );
         _members.Add(member);
 
@@ -224,7 +225,8 @@ public class MockApiClient : IApiClient
             member.Phone,
             member.Email,
             member.Status,
-            null
+            null,
+            request.Gender
         ));
     }
 

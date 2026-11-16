@@ -24,7 +24,8 @@ public record MemberDto(
     int RemainingPtSessions = 0,
     string? SubscriptionId = null,
     string? ActiveSubscriptionId = null,
-    string? AssignedPtId = null
+    string? AssignedPtId = null,
+    byte? Gender = null
 )
 {
     public string UserId => UserName;
@@ -45,7 +46,8 @@ public record MemberSearchResponse(
     DateOnly? SubscriptionEndDate,
     int RemainingCheckInSessions,
     int RemainingPtSessions,
-    string? AssignedPtId = null
+    string? AssignedPtId = null,
+    byte? Gender = null
 );
 
 /// <summary>
@@ -58,7 +60,8 @@ public record MemberProfileResponse(
     string Phone,
     string Email,
     string Status,
-    SubscriptionDetailResponse? ActiveSubscription
+    SubscriptionDetailResponse? ActiveSubscription,
+    byte? Gender = null
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,7 +135,8 @@ public record RegisterMemberRequest(
     DateOnly StartDate,
     string AdminUserName,
     string? CustomMemberCode = null,
-    string? Password = null
+    string? Password = null,
+    byte? Gender = null
 );
 
 /// <summary>
@@ -144,7 +148,8 @@ public record UpdateMemberRequest(
     string Phone,
     string Email,
     string? NewUserName = null,
-    string? NewPassword = null
+    string? NewPassword = null,
+    byte? Gender = null
 );
 
 /// <summary>
