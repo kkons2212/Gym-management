@@ -138,19 +138,23 @@ public class UnitOfWork : IUnitOfWork
         ArgumentNullException.ThrowIfNull(action);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        await BeginTransactionAsync(cancellationToken);
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            TResult result = await action();
-            await CommitTransactionAsync(cancellationToken);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Transaction nghiệp vụ thất bại và đã được hoàn tác: {Message}", ex.Message);
-            await RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+            await BeginTransactionAsync(cancellationToken);
+            try
+            {
+                TResult result = await action();
+                await CommitTransactionAsync(cancellationToken);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Transaction nghiệp vụ thất bại và đã được hoàn tác: {Message}", ex.Message);
+                await RollbackTransactionAsync(cancellationToken);
+                throw;
+            }
+        });
     }
 
     /// <inheritdoc />

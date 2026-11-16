@@ -170,7 +170,8 @@ public sealed partial class PosBillingPage : Page
                 "Admin",
                 dialog.MemberCode,
                 dialog.Password,
-                dialog.GenderValue
+                dialog.GenderValue,
+                dialog.Password
             );
 
             await api.RegisterMemberAsync(req);

@@ -35,6 +35,21 @@ public sealed partial class SettingsPage : Page
     {
         if (sender is Button btn && btn.DataContext is UserSessionDto user && ViewModel != null)
         {
+            bool isTargetSuperAdmin = string.Equals(user.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            if (isTargetSuperAdmin && !ViewModel.IsSuperAdmin)
+            {
+                var alert = new ContentDialog
+                {
+                    Title = "TỪ CHỐI TRUY CẬP",
+                    Content = "Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền chỉnh sửa tài khoản SuperAdmin!",
+                    CloseButtonText = "Đã hiểu",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await alert.ShowAsync();
+                return;
+            }
+
             var sessionService = App.GetService<IAdminSessionService>();
             bool isSelf = false;
             if (sessionService.CurrentUser != null)
@@ -63,6 +78,21 @@ public sealed partial class SettingsPage : Page
     {
         if (sender is Button btn && btn.DataContext is UserSessionDto user && ViewModel != null)
         {
+            bool isTargetSuperAdmin = string.Equals(user.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            if (isTargetSuperAdmin && !ViewModel.IsSuperAdmin)
+            {
+                var alert = new ContentDialog
+                {
+                    Title = "TỪ CHỐI TRUY CẬP",
+                    Content = "Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền khóa hoặc mở khóa tài khoản SuperAdmin!",
+                    CloseButtonText = "Đã hiểu",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await alert.ShowAsync();
+                return;
+            }
+
             var sessionService = App.GetService<IAdminSessionService>();
             if (sessionService.CurrentUser != null)
             {
