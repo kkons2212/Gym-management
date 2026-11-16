@@ -108,7 +108,8 @@ public sealed class MemberService : IMemberService
                 SubscriptionEndDate: activeSub?.EndDate,
                 RemainingCheckInSessions: activeSub?.RemainingCheckInSessions ?? 0,
                 RemainingPtSessions: activeSub?.RemainingPtSessions ?? 0,
-                AssignedPtId: activeSub?.AssignedPtId));
+                AssignedPtId: activeSub?.AssignedPtId,
+                Gender: u.Gender));
         }
 
         _logger.LogInformation(
@@ -209,6 +210,7 @@ public sealed class MemberService : IMemberService
                 Phone = request.Phone.Trim(),
                 Email = request.Email.Trim(),
                 PasswordHash = passwordHash,
+                Gender = request.Gender,
                 Status = StatusActive,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };
@@ -308,6 +310,11 @@ public sealed class MemberService : IMemberService
         user.FullName = request.FullName.Trim();
         user.Phone = request.Phone.Trim();
         user.Email = request.Email.Trim();
+
+        if (request.Gender.HasValue)
+        {
+            user.Gender = request.Gender.Value;
+        }
 
         if (!string.IsNullOrWhiteSpace(request.NewPassword))
         {
@@ -790,7 +797,8 @@ public sealed class MemberService : IMemberService
             Phone: user.Phone ?? string.Empty,
             Email: user.Email ?? string.Empty,
             Status: profileStatus,
-            ActiveSubscription: activeSubResponse);
+            ActiveSubscription: activeSubResponse,
+            Gender: user.Gender);
     }
 
     private static SubscriptionDetailResponse MapToSubscriptionDetailResponse(MemberSubscription sub)

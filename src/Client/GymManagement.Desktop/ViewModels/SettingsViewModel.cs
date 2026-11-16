@@ -16,6 +16,9 @@ public partial class SettingsViewModel : ObservableObject
     private string _newFullName = string.Empty;
 
     [ObservableProperty]
+    private byte? _newGender = 1;
+
+    [ObservableProperty]
     private string _newEmail = string.Empty;
 
     [ObservableProperty]
@@ -198,7 +201,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             IsLoading = true;
-            var created = await _apiClient.CreateUserAsync(NewFullName.Trim(), NewEmail.Trim(), NewPhone.Trim(), NewUsername.Trim(), NewRole, NewPassword);
+            var created = await _apiClient.CreateUserAsync(NewFullName.Trim(), NewEmail.Trim(), NewPhone.Trim(), NewUsername.Trim(), NewRole, NewPassword, NewGender);
             Users.Add(created);
 
             StatusMessage = $"Đã tạo tài khoản {created.FullName} ({created.Role}) thành công!";
@@ -211,6 +214,7 @@ public partial class SettingsViewModel : ObservableObject
             NewUsername = string.Empty;
             NewPassword = string.Empty;
             NewRole = "PT";
+            NewGender = 1;
         }
         catch (Exception ex)
         {

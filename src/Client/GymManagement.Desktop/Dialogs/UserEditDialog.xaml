@@ -26,6 +26,16 @@
             <TextBox x:Name="TxtFullName" PlaceholderText="Nhập họ và tên..." Height="36" />
         </StackPanel>
 
+        <!-- Gender -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Giới tính" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+            <ComboBox x:Name="CboGender" HorizontalAlignment="Stretch" SelectedIndex="0" Height="36">
+                <ComboBoxItem Content="Nam" Tag="1" />
+                <ComboBoxItem Content="Nữ" Tag="0" />
+                <ComboBoxItem Content="Khác" Tag="2" />
+            </ComboBox>
+        </StackPanel>
+
         <!-- Email & Phone -->
         <Grid ColumnSpacing="12">
             <Grid.ColumnDefinitions>

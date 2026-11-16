@@ -214,7 +214,8 @@ public class MockApiClient : IApiClient
             "Gói Tập Mới",
             DateTime.Today.AddDays(30),
             30,
-            0
+            0,
+            Gender: request.Gender
         );
         _members.Add(member);
 
@@ -224,7 +225,8 @@ public class MockApiClient : IApiClient
             member.Phone,
             member.Email,
             member.Status,
-            null
+            null,
+            request.Gender
         ));
     }
 
@@ -973,14 +975,14 @@ public class MockApiClient : IApiClient
         return Task.FromResult(plan);
     }
 
-    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password)
+    public Task<UserSessionDto> CreateUserAsync(string fullName, string email, string phone, string username, string role, string password, byte? gender = null)
     {
         string uId = username;
         if (string.IsNullOrWhiteSpace(uId))
         {
             uId = $"USR{DateTime.Now:mmss}";
         }
-        var newUser = new UserSessionDto(uId, fullName, email, role, null, false);
+        var newUser = new UserSessionDto(uId, fullName, email, role, phone, false, gender);
         _users.Add(newUser);
         return Task.FromResult(newUser);
     }
@@ -993,12 +995,12 @@ public class MockApiClient : IApiClient
         if (existing != null)
         {
             int index = _users.IndexOf(existing);
-            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId, existing.Phone, existing.IsLocked);
+            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId, existing.Phone, existing.IsLocked, request.Gender);
             _users[index] = updated;
             return Task.FromResult(updated);
         }
 
-        var fallback = new UserSessionDto(userName, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+        var fallback = new UserSessionDto(userName, request.FullName.Trim(), request.Email.Trim(), request.RoleId, null, false, request.Gender);
         _users.Add(fallback);
         return Task.FromResult(fallback);
     }

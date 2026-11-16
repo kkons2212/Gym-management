@@ -169,7 +169,8 @@ public sealed partial class PosBillingPage : Page
                 DateOnly.FromDateTime(DateTime.Today),
                 "Admin",
                 dialog.MemberCode,
-                dialog.Password
+                dialog.Password,
+                dialog.GenderValue
             );
 
             await api.RegisterMemberAsync(req);

@@ -68,6 +68,15 @@
                     </StackPanel>
 
                     <StackPanel Spacing="6">
+                        <TextBlock Text="Giới tính:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="CboNewGender" SelectionChanged="OnNewGenderSelectionChanged" HorizontalAlignment="Stretch" SelectedIndex="0" Height="38">
+                            <ComboBoxItem Content="Nam" Tag="1" />
+                            <ComboBoxItem Content="Nữ" Tag="0" />
+                            <ComboBoxItem Content="Khác" Tag="2" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
                         <TextBlock Text="Email (*):" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                         <TextBox Text="{x:Bind ViewModel.NewEmail, Mode=TwoWay}" PlaceholderText="email@gymsystem.vn" Height="38" />
                     </StackPanel>

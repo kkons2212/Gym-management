@@ -16,7 +16,8 @@ public record UserSessionDto(
     string Email,
     string Role,
     string? Phone = null,
-    bool IsLocked = false
+    bool IsLocked = false,
+    byte? Gender = null
 );
 
 

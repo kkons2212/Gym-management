@@ -106,6 +106,49 @@ public class MemberServiceTests
     }
 
     [Fact]
+    public async Task RegisterMemberAsync_WhenGenderProvided_SetsGenderOnUserEntity()
+    {
+        // Arrange
+        var request = new RegisterMemberRequest(
+            FullName: "Lê Thị C",
+            Phone: "0933333333",
+            Email: "c@gym.vn",
+            PlanId: "PKG-01",
+            StartDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            AdminUserName: "admin01",
+            Gender: 0);
+
+        SetupUserRepoPhoneExists(exists: false);
+
+        var planRepoMock = new Mock<IGenericRepository<PackagePlan>>();
+        planRepoMock
+            .Setup(r => r.FindSingleOrDefaultAsync(It.IsAny<Expression<Func<PackagePlan, bool>>>(), default))
+            .ReturnsAsync(new PackagePlan { PlanId = "PKG-01", IsActive = 1, DurationDays = 30 });
+        _uowMock.Setup(u => u.Repository<PackagePlan>()).Returns(planRepoMock.Object);
+
+        var userRepoMock = new Mock<IGenericRepository<User>>();
+        userRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<User, bool>>>(), default)).ReturnsAsync(0);
+        userRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), default)).ReturnsAsync(false);
+        userRepoMock.Setup(r => r.AddAsync(It.IsAny<User>(), default)).Returns(Task.CompletedTask);
+        _uowMock.Setup(u => u.Repository<User>()).Returns(userRepoMock.Object);
+
+        var subRepoMock = new Mock<IGenericRepository<MemberSubscription>>();
+        subRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default)).ReturnsAsync(0);
+        subRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<MemberSubscription, bool>>>(), default)).ReturnsAsync(false);
+        subRepoMock.Setup(r => r.AddAsync(It.IsAny<MemberSubscription>(), default)).Returns(Task.CompletedTask);
+        _uowMock.Setup(u => u.Repository<MemberSubscription>()).Returns(subRepoMock.Object);
+
+        SetupExecuteTransaction();
+
+        // Act
+        var result = await _sut.RegisterMemberAsync(request);
+
+        // Assert
+        result.Gender.Should().Be(0);
+        userRepoMock.Verify(r => r.AddAsync(It.Is<User>(u => u.Gender == 0), default), Times.Once);
+    }
+
+    [Fact]
     public async Task RegisterMemberAsync_WhenCustomMemberCodeExceeds10Chars_ThrowsValidationException()
     {
         // Arrange

@@ -371,7 +371,8 @@ public sealed partial class MembersPage : Page
                     DateOnly.FromDateTime(DateTime.Today),
                     "Admin",
                     dialog.MemberCode,
-                    dialog.Password
+                    dialog.Password,
+                    dialog.GenderValue
                 );
 
                 InvoiceDto? confirmedInvoice = null;

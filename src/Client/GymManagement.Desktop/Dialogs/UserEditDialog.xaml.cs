@@ -43,6 +43,22 @@ public sealed partial class UserEditDialog : ContentDialog
 
         SelectRole(user.Role);
 
+        if (user.Gender.HasValue)
+        {
+            if (user.Gender.Value == 0)
+            {
+                CboGender.SelectedIndex = 1;
+            }
+            else if (user.Gender.Value == 2)
+            {
+                CboGender.SelectedIndex = 2;
+            }
+            else
+            {
+                CboGender.SelectedIndex = 0;
+            }
+        }
+
         if (_isSelf)
         {
             CboRole.IsEnabled = false;
@@ -196,13 +212,23 @@ public sealed partial class UserEditDialog : ContentDialog
         PrSaving.Visibility = Visibility.Visible;
         PrSaving.IsActive = true;
 
+        byte? gender = null;
+        if (CboGender.SelectedItem is ComboBoxItem genderItem && genderItem.Tag != null)
+        {
+            if (byte.TryParse(genderItem.Tag.ToString(), out byte gVal))
+            {
+                gender = gVal;
+            }
+        }
+
         try
         {
             var request = new UpdateUserRequest(
                 fullName,
                 phone,
                 email,
-                roleId
+                roleId,
+                gender
             );
 
             SavedUser = await _apiClient.UpdateUserAsync(_targetUser.UserId, request);
