@@ -60,7 +60,7 @@ public sealed class WebApiClient : IWebApiClient
             Role: loginRes.Role
         );
 
-        _authStateProvider.SetAuthenticated(sessionUser, loginRes.Token);
+        await _authStateProvider.SetAuthenticatedAsync(sessionUser, loginRes.Token);
         return loginRes;
     }
 
