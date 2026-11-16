@@ -302,3 +302,65 @@ public class PaymentMethodConverter : IValueConverter
     }
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
 }
+public class LockStatusTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool isLocked)
+        {
+            return isLocked ? "Đang bị khóa" : "Đang hoạt động";
+        }
+        return "Đang hoạt động";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+
+public class LockButtonTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool isLocked)
+        {
+            return isLocked ? "Mở khóa" : "Khóa";
+        }
+        return "Khóa";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+
+public class LockButtonBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool isLocked)
+        {
+            if (isLocked)
+            {
+                // Red for locked status
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 220, 38, 38));
+            }
+            // Green for active status
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 22, 163, 74));
+        }
+        return new SolidColorBrush(ColorHelper.FromArgb(255, 22, 163, 74));
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+public class LockButtonActionBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool isLocked)
+        {
+            if (isLocked)
+            {
+                // Green for unlock button (opposite of status)
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 22, 163, 74));
+            }
+            // Red for lock button (opposite of status)
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 220, 38, 38));
+        }
+        return new SolidColorBrush(ColorHelper.FromArgb(255, 220, 38, 38));
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
