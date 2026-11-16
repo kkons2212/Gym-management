@@ -45,49 +45,56 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Mobile-First Shell */
+/* ====================================================================
+   RESPONSIVE DUAL-MODE APPLICATION SHELL & NAVBAR
+   Mobile (< 768px): Fluid Bottom Nav + Compact Top Bar
+   Desktop (>= 768px): Top Header Nav + Centered 1120px Container
+   ==================================================================== */
+
+.app-shell,
 .mobile-shell {
-  max-width: 440px;
-  margin: 0 auto;
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-canvas);
   position: relative;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-  padding-bottom: 72px; /* Space for Bottom Nav Bar */
+  transition: all 0.2s ease;
 }
 
-/* Top App Bar */
+/* Base Top App Bar */
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  background-color: rgba(30, 41, 59, 0.85);
-  backdrop-filter: blur(8px);
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 40;
 }
 
-.top-bar-title {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
+.top-bar-brand {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .role-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
+  font-weight: 700;
   border-radius: 9999px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .role-member {
@@ -102,49 +109,259 @@ html, body {
   border: 1px solid rgba(192, 132, 252, 0.4);
 }
 
-/* Bottom Navigation Bar */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 440px;
-  height: 64px;
-  background-color: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border-subtle);
+.top-bar-user-actions {
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  z-index: 50;
-  padding: 0 8px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
+.user-name-display {
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  min-height: 48px;
-  min-width: 48px;
+  background-color: var(--bg-surface-elevated);
   color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
   transition: all 0.15s ease;
-  gap: 4px;
 }
 
-.nav-item:hover {
+.btn-logout:hover {
+  background-color: #475569;
   color: var(--text-primary);
 }
 
-.nav-item.active {
-  color: var(--accent-primary);
-  font-weight: 700;
+.main-content {
+  flex: 1;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------
+   MOBILE VIEWPORT (< 768px)
+   -------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  .app-shell,
+  .mobile-shell {
+    max-width: 100%;
+    margin: 0 auto;
+    padding-bottom: 68px; /* Space for Mobile Bottom Nav */
+    box-shadow: none;
+  }
+
+  .desktop-nav-host {
+    display: none !important;
+  }
+
+  .mobile-nav-host {
+    display: block;
+  }
+
+  .top-bar {
+    padding: 10px 12px;
+  }
+
+  .brand-title {
+    font-size: 13px;
+  }
+
+  .role-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .top-bar-user-actions {
+    gap: 6px;
+  }
+
+  .user-name-display {
+    font-size: 12px;
+    max-width: 80px;
+  }
+
+  .btn-logout {
+    min-height: 32px;
+    padding: 0 8px;
+    gap: 0;
+  }
+
+  .btn-logout-label {
+    display: none; /* Hide label text on mobile to avoid overflow */
+  }
+
+  .main-content {
+    padding: 14px 12px;
+  }
+
+  /* Bottom Navigation Bar */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+    padding: 0 4px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    touch-action: manipulation;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 48px;
+    min-width: 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 10.5px;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 3px 2px;
+    transition: all 0.15s ease;
+    gap: 3px;
+  }
+
+  .nav-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.1;
+  }
+
+  .nav-item:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    color: var(--accent-primary);
+    font-weight: 700;
+  }
+
+  .bottom-nav.role-pt-nav .nav-item.active {
+    color: #C084FC !important;
+  }
+}
+
+/* --------------------------------------------------------------------
+   TABLET & DESKTOP VIEWPORT (>= 768px)
+   -------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .app-shell,
+  .mobile-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-bottom: 28px;
+    box-shadow: none;
+  }
+
+  .mobile-nav-host,
+  .bottom-nav {
+    display: none !important;
+  }
+
+  .desktop-nav-host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    margin: 0 16px;
+  }
+
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .desktop-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .desktop-nav-link:hover {
+    color: var(--text-primary);
+    background-color: rgba(51, 65, 85, 0.4);
+  }
+
+  .desktop-nav-link.active {
+    color: var(--accent-primary);
+    background-color: rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.35);
+    font-weight: 600;
+  }
+
+  .desktop-nav.role-pt-nav .desktop-nav-link.active {
+    color: #C084FC !important;
+    background-color: rgba(192, 132, 252, 0.15) !important;
+    border-color: rgba(192, 132, 252, 0.35) !important;
+  }
+
+  .top-bar {
+    padding: 12px 20px;
+  }
+
+  .brand-title {
+    font-size: 15px;
+  }
+
+  .role-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .top-bar-user-actions {
+    gap: 10px;
+  }
+
+  .user-name-display {
+    font-size: 13px;
+    max-width: 140px;
+  }
+
+  .btn-logout {
+    min-height: 34px;
+    padding: 0 10px;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .btn-logout-label {
+    display: inline;
+  }
+
+  .main-content {
+    padding: 24px 16px;
+  }
 }
 
 /* UI Cards */

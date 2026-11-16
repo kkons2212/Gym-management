@@ -2,36 +2,48 @@
 @inject CustomAuthenticationStateProvider AuthState
 @inject NavigationManager Navigation
 
-<div class="mobile-shell">
+<div class="app-shell">
     <AuthorizeView>
         <Authorized>
             <header class="top-bar">
-                <div class="top-bar-title">
-                    <span>PHÒNG TẬP THỂ THAO</span>
+                <div class="top-bar-brand">
+                    <span class="brand-title">PHÒNG TẬP THỂ THAO</span>
                     <span class="role-badge @(context.User.IsInRole("PT") ? "role-pt" : "role-member")">
                         @(context.User.IsInRole("PT") ? "HLV PT" : "HỘI VIÊN")
                     </span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+
+                <div class="desktop-nav-host">
+                    <NavMenu IsDesktop="true" />
+                </div>
+
+                <div class="top-bar-user-actions">
                     <NotificationBell />
-                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="user-name-display" title="@context.User.Identity?.Name">
                         @context.User.Identity?.Name
                     </span>
-                    <button type="button" @onclick="HandleLogout" class="btn-secondary" style="min-height: 32px; padding: 0 10px; font-size: 11px;">
-                        Đăng xuất
+                    <button type="button" @onclick="HandleLogout" class="btn-logout" title="Đăng xuất khỏi hệ thống">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        <span class="btn-logout-label">Đăng xuất</span>
                     </button>
                 </div>
             </header>
         </Authorized>
     </AuthorizeView>
 
-    <main style="padding: 16px; flex: 1;">
+    <main class="main-content">
         @Body
     </main>
 
     <AuthorizeView>
         <Authorized>
-            <NavMenu />
+            <div class="mobile-nav-host">
+                <NavMenu IsDesktop="false" />
+            </div>
         </Authorized>
     </AuthorizeView>
 </div>
