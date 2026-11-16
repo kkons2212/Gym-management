@@ -4,6 +4,7 @@
 -- ====================================================================
 
 -- 1. XÓA BẢNG NẾU ĐÃ TỒN TẠI (Theo thứ tự từ bảng con đến bảng cha)
+IF OBJECT_ID('dbo.Notification', 'U') IS NOT NULL DROP TABLE dbo.Notification;
 IF OBJECT_ID('dbo.MemberBodyMetric', 'U') IS NOT NULL DROP TABLE dbo.MemberBodyMetric;
 IF OBJECT_ID('dbo.Invoice', 'U') IS NOT NULL DROP TABLE dbo.Invoice;
 IF OBJECT_ID('dbo.CheckInLog', 'U') IS NOT NULL DROP TABLE dbo.CheckInLog;
@@ -158,6 +159,18 @@ CREATE TABLE dbo.MemberBodyMetric (
 );
 GO
 
+-- 10. Bảng Notification
+CREATE TABLE dbo.Notification (
+    NotificationId VARCHAR(10) NOT NULL,
+    Title NVARCHAR(255) NOT NULL,
+    Message NVARCHAR(2000) NOT NULL,
+    IsRead BIT NOT NULL CONSTRAINT DF_Notification_IsRead DEFAULT (0),
+    CreatedAt DATE NOT NULL CONSTRAINT DF_Notification_CreatedAt DEFAULT (CAST(GETDATE() AS DATE)),
+    UserName VARCHAR(10) NOT NULL,
+    CONSTRAINT PK_Notification PRIMARY KEY (NotificationId)
+);
+GO
+
 -- --------------------------------------------------------------------
 -- 3. RÀNG BUỘC KHÓA NGOẠI (FOREIGN KEY CONSTRAINTS)
 -- --------------------------------------------------------------------
@@ -201,4 +214,13 @@ ALTER TABLE dbo.MemberBodyMetric
     ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_MemberBodyMetric_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId),
     CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserName);
+GO
+
+-- Notification -> User
+ALTER TABLE dbo.Notification
+    ADD CONSTRAINT FK_Notification_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON DELETE CASCADE;
+GO
+
+CREATE NONCLUSTERED INDEX IX_Notification_UserName_IsRead 
+ON dbo.Notification (UserName, IsRead);
 GO

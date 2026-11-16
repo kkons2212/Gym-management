@@ -153,13 +153,13 @@
                                 <TextBlock Grid.Column="4" Text="{x:Bind TotalAmount, Converter={StaticResource CurrencyFormatterConverter}}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource StatusSuccessBrush}" VerticalAlignment="Center" />
 
                                 <!-- Payment Method -->
-                                <TextBlock Grid.Column="5" Text="{x:Bind PaymentMethod}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="5" Text="{x:Bind PaymentMethod, Converter={StaticResource PaymentMethodConverter}}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
 
                                 <!-- Status Chip -->
                                 <Border Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Left"
                                         Background="{x:Bind Status, Converter={StaticResource StatusToBrushConverter}}"
                                         CornerRadius="12" Padding="8,4">
-                                    <TextBlock Text="{x:Bind Status}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" />
+                                    <TextBlock Text="{x:Bind Status, Converter={StaticResource StatusTextConverter}}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" />
                                 </Border>
 
                                 <!-- Actions -->
@@ -177,4 +177,5 @@
         </Border>
     </Grid>
 </Page>
+
 

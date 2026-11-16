@@ -133,7 +133,17 @@ public sealed partial class MembersPage : Page
             }
             else
             {
-                var req = new RenewSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, DateOnly.FromDateTime(DateTime.Today), "admin");
+                DateOnly startDate = DateOnly.FromDateTime(DateTime.Today);
+                if (member.EndDate.HasValue)
+                {
+                    DateOnly currentEnd = DateOnly.FromDateTime(member.EndDate.Value);
+                    if (currentEnd >= startDate)
+                    {
+                        startDate = currentEnd.AddDays(1);
+                    }
+                }
+
+                var req = new RenewSubscriptionRequest(targetSubId, dialog.SelectedPlan.PlanId, startDate, "admin");
                 await api.RenewSubscriptionAsync(member.UserName, req);
             }
 

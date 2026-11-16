@@ -32,7 +32,7 @@
         <!-- Row 0: Header & Action Buttons -->
         <Grid Grid.Row="0">
             <StackPanel Spacing="4">
-                <TextBlock Text="BÁO CÁO &amp; THỐNG KÊ DOANH THU BI"
+                <TextBlock Text="BÁO CÁO &amp; THỐNG KÊ DOANH THU"
                            FontSize="20" FontWeight="Bold"
                            Foreground="{StaticResource TextPrimaryBrush}" />
                 <TextBlock Text="Tổng quan chỉ số kinh doanh, tỷ trọng gói tập và lưu lượng check-in theo giờ"
@@ -95,7 +95,7 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                         <FontIcon Glyph="&#xE71C;" FontSize="15" Foreground="{StaticResource AccentPrimaryBrush}" />
-                        <TextBlock Text="BỘ LỌC DỮ LIỆU &amp; DANH MỤC (UC06)"
+                        <TextBlock Text="BỘ LỌC DỮ LIỆU &amp; DANH MỤC"
                                    FontSize="12" FontWeight="Bold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    VerticalAlignment="Center" />
@@ -929,3 +929,4 @@
         </Grid>
     </Grid>
 </Page>
+

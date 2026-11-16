@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="GymManagement.Web.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
 <body style="background-color: #0B1120; margin: 0; padding: 0;">
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js"></script>
 </body>
 

@@ -1,7 +1,7 @@
 -- ====================================================================
 -- HỆ THỐNG QUẢN LÝ PHÒNG TẬP THỂ THAO (GYM MANAGEMENT SYSTEM)
 -- SCRIPT KHỞI TẠO CƠ SỞ DỮ LIỆU DOCKER SQL SERVER (INIT DOCKER DB)
--- Chuẩn hóa: 9 bảng vật lý DDL + Ràng buộc Foreign Keys + Dữ liệu nền tảng
+-- Chuẩn hóa: 10 bảng vật lý DDL + Ràng buộc Foreign Keys + Dữ liệu nền tảng
 -- ====================================================================
 
 -- 1. TẠO CƠ SỞ DỮ LIỆU NẾU CHƯA TỒN TẠI
@@ -182,6 +182,21 @@ BEGIN
 END
 GO
 
+-- 2.10. Bảng Notification (Hệ thống thông báo trong ứng dụng)
+IF OBJECT_ID('dbo.Notification', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Notification (
+        NotificationId VARCHAR(10) NOT NULL,
+        Title NVARCHAR(255) NOT NULL,
+        Message NVARCHAR(2000) NOT NULL,
+        IsRead BIT NOT NULL CONSTRAINT DF_Notification_IsRead DEFAULT (0),
+        CreatedAt DATE NOT NULL CONSTRAINT DF_Notification_CreatedAt DEFAULT (CAST(GETDATE() AS DATE)),
+        UserName VARCHAR(10) NOT NULL,
+        CONSTRAINT PK_Notification PRIMARY KEY (NotificationId)
+    );
+END
+GO
+
 -- 3. THIẾT LẬP RÀNG BUỘC KHÓA NGOẠI (FOREIGN KEYS) NẾU CHƯA CÓ
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_User_Role')
@@ -240,6 +255,12 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_RecordedByPt')
     ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_RecordedByPt FOREIGN KEY (RecordedByPtId) REFERENCES dbo.[User] (UserName);
+
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Notification_User')
+    ALTER TABLE dbo.Notification ADD CONSTRAINT FK_Notification_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON DELETE CASCADE;
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Notification_UserName_IsRead' AND object_id = OBJECT_ID('dbo.Notification'))
+    CREATE NONCLUSTERED INDEX IX_Notification_UserName_IsRead ON dbo.Notification (UserName, IsRead);
 GO
 
 -- 4. NẠP DỮ LIỆU NỀN TẢNG (SEED DATA) & CẬP NHẬT UNICODE (NVARCHAR)
@@ -330,7 +351,7 @@ BEGIN
         N'Nguyễn Văn Thành (PT)',
         '0912345678',
         'thanh.pt@gymsystem.vn',
-        '$2a$11$zHVoiwSnJ8lNoqdDi11jCubfv5Q7aiecT7kpeSCTOY4FKMeYlWjyu',
+        '$2a$11$r58Gvigp4dk.ItmzDGiHg.CGNdE9r9UzD8nrnzeGCsyguC/C.FuKu', -- trainer123
         1,
         'ACTIVE',
         CAST(GETDATE() AS DATE)
@@ -338,7 +359,10 @@ BEGIN
 END
 ELSE
 BEGIN
-    UPDATE dbo.[User] SET FullName = N'Nguyễn Văn Thành (PT)' WHERE UserName = 'pt01';
+    UPDATE dbo.[User] 
+    SET FullName = N'Nguyễn Văn Thành (PT)', 
+        PasswordHash = '$2a$11$r58Gvigp4dk.ItmzDGiHg.CGNdE9r9UzD8nrnzeGCsyguC/C.FuKu' 
+    WHERE UserName = 'pt01';
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserName = 'member01')
@@ -350,7 +374,7 @@ BEGIN
         N'Trần Văn An',
         '0987654321',
         'an.tran@example.com',
-        '$2a$11$zHVoiwSnJ8lNoqdDi11jCubfv5Q7aiecT7kpeSCTOY4FKMeYlWjyu',
+        '$2a$11$3TJwUM2sR5AQA2XX7Io15esquziOZIQdKSZtti2TUEbcyK7DzbIwu', -- member123
         1,
         'ACTIVE',
         CAST(GETDATE() AS DATE)
@@ -358,7 +382,10 @@ BEGIN
 END
 ELSE
 BEGIN
-    UPDATE dbo.[User] SET FullName = N'Trần Văn An' WHERE UserName = 'member01';
+    UPDATE dbo.[User] 
+    SET FullName = N'Trần Văn An', 
+        PasswordHash = '$2a$11$3TJwUM2sR5AQA2XX7Io15esquziOZIQdKSZtti2TUEbcyK7DzbIwu' 
+    WHERE UserName = 'member01';
 END
 GO
 
@@ -401,6 +428,40 @@ END
 ELSE
 BEGIN
     UPDATE dbo.PackagePlan SET Name = N'Gói 1 Năm VIP', Description = N'Tập gym 365 ngày kèm 20 buổi PT và phòng xông hơi' WHERE PlanId = 'PLAN04';
+END
+GO
+
+-- 4.4. Nạp hợp đồng gói tập và thông báo mẫu cho tài khoản thử nghiệm (member01 & pt01)
+IF NOT EXISTS (SELECT 1 FROM dbo.MemberSubscription WHERE UserName = 'member01')
+BEGIN
+    INSERT INTO dbo.MemberSubscription (
+        SubscriptionId, QrCode, StartDate, EndDate, 
+        RemainingCheckInSessions, RemainingPtSessions, 
+        Status, created_at, UserName, AssignedPtId, PlanId
+    )
+    VALUES (
+        'SUB-MEM01', 'GYM-member01-3D37D0F092E04571', 
+        CAST(GETDATE() AS DATE), CAST(DATEADD(day, 90, GETDATE()) AS DATE), 
+        30, 5, 
+        'ACTIVE', CAST(GETDATE() AS DATE), 'member01', 'pt01', 'PLAN02'
+    );
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Notification WHERE UserName = 'member01')
+BEGIN
+    INSERT INTO dbo.Notification (NotificationId, Title, Message, IsRead, CreatedAt, UserName)
+    VALUES 
+    ('NOTIF001', N'Chào mừng bạn đến với Gym Master!', N'Tài khoản của bạn đã được kích hoạt thành công. Thẻ hội viên và mã QR điểm danh đã sẵn sàng sử dụng.', 0, CAST(GETDATE() AS DATE), 'member01'),
+    ('NOTIF002', N'Nhắc lịch tập cá nhân', N'Bạn đã được phân công đồng hành cùng Huấn luyện viên Nguyễn Văn Thành (pt01). Hãy đặt lịch tập ngay trên hệ thống!', 0, CAST(GETDATE() AS DATE), 'member01');
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Notification WHERE UserName = 'pt01')
+BEGIN
+    INSERT INTO dbo.Notification (NotificationId, Title, Message, IsRead, CreatedAt, UserName)
+    VALUES 
+    ('NOTIF003', N'Phân công học viên mới', N'Bạn vừa được chỉ định hướng dẫn cho hội viên Trần Văn An (member01). Vui lòng cập nhật lịch rảnh để học viên đặt lịch tập.', 0, CAST(GETDATE() AS DATE), 'pt01');
 END
 GO
 

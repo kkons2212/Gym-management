@@ -923,6 +923,36 @@ public sealed class PtService : IPtService
             // Giải phóng slot PT
             await ReleaseSlotAsync(session.AvailabilityId, cancellationToken);
 
+            // Tạo thông báo In-App thông báo hủy ca tập cho cả PT và Hội viên
+            try
+            {
+                var cancelNotifPt = new Notification
+                {
+                    NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                    Title = "Lịch tập PT đã bị hủy",
+                    Message = $"Ca tập ngày {session.SessionStartTime:dd/MM/yyyy} với học viên {session.MemberId} đã bị hủy. Khung giờ này đã được mở lại.",
+                    IsRead = false,
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    UserName = session.PtId
+                };
+                await _unitOfWork.Repository<Notification>().AddAsync(cancelNotifPt, cancellationToken);
+
+                var cancelNotifMem = new Notification
+                {
+                    NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                    Title = "Lịch tập PT đã bị hủy",
+                    Message = $"Ca tập ngày {session.SessionStartTime:dd/MM/yyyy} với Huấn luyện viên {session.PtId} đã được hủy thành công.",
+                    IsRead = false,
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    UserName = session.MemberId
+                };
+                await _unitOfWork.Repository<Notification>().AddAsync(cancelNotifMem, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "PtService.CancelSession: Tạo thông báo In-App hủy ca thất bại cho ca {SessionId}", session.PTSessionId);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
@@ -1441,12 +1471,50 @@ public sealed class PtService : IPtService
             var ptUser = await _unitOfWork.Repository<User>()
                 .FindSingleOrDefaultAsync(u => u.UserName == ptId, cancellationToken);
 
+            string memberName = memberUserName;
+            if (memberUser != null && !string.IsNullOrWhiteSpace(memberUser.FullName))
+            {
+                memberName = memberUser.FullName;
+            }
+
+            string ptName = ptId;
+            if (ptUser != null && !string.IsNullOrWhiteSpace(ptUser.FullName))
+            {
+                ptName = ptUser.FullName;
+            }
+
+            // 1. Tạo thông báo In-App cho Huấn luyện viên PT
+            var ptNotif = new Notification
+            {
+                NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                Title = "Lịch tập PT mới",
+                Message = $"Học viên {memberName} đã đặt lịch tập vào ngày {sessionStart:dd/MM/yyyy} lúc {sessionStart:HH:mm}. Vui lòng kiểm tra lịch làm việc của bạn.",
+                IsRead = false,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                UserName = ptId
+            };
+            await _unitOfWork.Repository<Notification>().AddAsync(ptNotif, cancellationToken);
+
+            // 2. Tạo thông báo In-App cho Hội viên
+            var memberNotif = new Notification
+            {
+                NotificationId = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+                Title = "Đặt lịch PT thành công",
+                Message = $"Bạn đã đặt thành công lịch tập cùng Huấn luyện viên {ptName} vào ngày {sessionStart:dd/MM/yyyy} lúc {sessionStart:HH:mm}.",
+                IsRead = false,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                UserName = memberUserName
+            };
+            await _unitOfWork.Repository<Notification>().AddAsync(memberNotif, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // 3. Gửi SMS nếu có số điện thoại
             if (memberUser?.Phone != null && ptUser != null)
             {
                 await _notification.SendPtSessionReminderAsync(
                     memberUser.Phone,
-                    memberUser.FullName ?? memberUserName,
-                    ptUser.FullName ?? ptId,
+                    memberName,
+                    ptName,
                     sessionStart,
                     cancellationToken);
             }
@@ -1454,7 +1522,7 @@ public sealed class PtService : IPtService
         catch (Exception ex)
         {
             _logger.LogWarning(ex,
-                "PtService.SendSessionReminder: Gửi SMS thất bại cho hội viên {Member}",
+                "PtService.SendSessionReminder: Gửi thông báo thất bại cho hội viên {Member}",
                 memberUserName);
         }
     }

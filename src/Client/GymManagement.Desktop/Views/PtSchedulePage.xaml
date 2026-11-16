@@ -110,7 +110,7 @@
                         <StackPanel Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <FontIcon Glyph="&#xE783;" FontSize="16" Foreground="{StaticResource StatusDangerBrush}" />
-                                <TextBlock Text="CẢNH BÁO TRÙNG LỊCH PT" FontWeight="Bold" FontSize="12" Foreground="{StaticResource StatusDangerBrush}" />
+                                <TextBlock Text="CẢNH BÁO TRÙNG LỊCH HLV" FontWeight="Bold" FontSize="12" Foreground="{StaticResource StatusDangerBrush}" />
                             </StackPanel>
                             <TextBlock Text="{x:Bind ViewModel.CollisionWarning, Mode=OneWay}"
                                        Foreground="#FCA5A5" FontSize="12" TextWrapping="Wrap" />
@@ -123,7 +123,7 @@
                                FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" />
 
                     <!-- Book Slot Action -->
-                    <Button Content="Xếp Lịch Tập PT (F5)"
+                    <Button Content="Xếp Lịch HLV"
                             Command="{x:Bind ViewModel.BookSlotCommand}"
                             IsEnabled="{x:Bind ViewModel.CanBookSlot, Mode=OneWay}"
                             HorizontalAlignment="Stretch"
@@ -228,3 +228,5 @@
         </Border>
     </Grid>
 </Page>
+
+

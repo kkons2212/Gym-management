@@ -22,13 +22,13 @@ public sealed class GymDbContextAllEntitiesModelTests
     }
 
     [Fact]
-    public void Model_WhenLoaded_ShouldContainAll9PhysicalEntitiesWithCorrectTableNames()
+    public void Model_WhenLoaded_ShouldContainAll10PhysicalEntitiesWithCorrectTableNames()
     {
         // Arrange & Act
         using var context = CreateContext();
         var model = context.Model;
 
-        // Assert: 9 Thực thể bắt buộc theo DDL
+        // Assert: 10 Thực thể bắt buộc theo DDL
         var role = model.FindEntityType(typeof(Role));
         var user = model.FindEntityType(typeof(User));
         var plan = model.FindEntityType(typeof(PackagePlan));
@@ -38,6 +38,7 @@ public sealed class GymDbContextAllEntitiesModelTests
         var checkInLog = model.FindEntityType(typeof(CheckInLog));
         var invoice = model.FindEntityType(typeof(Invoice));
         var metric = model.FindEntityType(typeof(MemberBodyMetric));
+        var notification = model.FindEntityType(typeof(Notification));
 
         Assert.NotNull(role);
         Assert.NotNull(user);
@@ -48,6 +49,7 @@ public sealed class GymDbContextAllEntitiesModelTests
         Assert.NotNull(checkInLog);
         Assert.NotNull(invoice);
         Assert.NotNull(metric);
+        Assert.NotNull(notification);
 
         Assert.Equal("Role", role!.GetTableName());
         Assert.Equal("User", user!.GetTableName());
@@ -58,6 +60,7 @@ public sealed class GymDbContextAllEntitiesModelTests
         Assert.Equal("CheckInLog", checkInLog!.GetTableName());
         Assert.Equal("Invoice", invoice!.GetTableName());
         Assert.Equal("MemberBodyMetric", metric!.GetTableName());
+        Assert.Equal("Notification", notification!.GetTableName());
     }
 
     [Fact]
@@ -77,6 +80,7 @@ public sealed class GymDbContextAllEntitiesModelTests
         Assert.Equal(nameof(CheckInLog.CheckInId), model.FindEntityType(typeof(CheckInLog))!.FindPrimaryKey()!.Properties.Single().Name);
         Assert.Equal(nameof(Invoice.InvoiceId), model.FindEntityType(typeof(Invoice))!.FindPrimaryKey()!.Properties.Single().Name);
         Assert.Equal(nameof(MemberBodyMetric.BodyMetricId), model.FindEntityType(typeof(MemberBodyMetric))!.FindPrimaryKey()!.Properties.Single().Name);
+        Assert.Equal(nameof(Notification.NotificationId), model.FindEntityType(typeof(Notification))!.FindPrimaryKey()!.Properties.Single().Name);
     }
 
     [Fact]
@@ -171,6 +175,56 @@ public sealed class GymDbContextAllEntitiesModelTests
         {
             Assert.Equal(DeleteBehavior.Restrict, fk.DeleteBehavior);
         }
+    }
+
+    [Fact]
+    public void Model_WhenLoaded_ShouldConfigureNotificationEntityWithExact6FieldsAndCascadeDelete()
+    {
+        // Arrange & Act
+        using var context = CreateContext();
+        var model = context.Model;
+
+        var notif = model.FindEntityType(typeof(Notification));
+        Assert.NotNull(notif);
+        Assert.Equal("Notification", notif!.GetTableName());
+
+        // Kiểm tra đúng 6 trường vật lý duy nhất
+        var properties = notif.GetProperties().ToList();
+        Assert.Equal(6, properties.Count);
+
+        var idProp = notif.FindProperty(nameof(Notification.NotificationId))!;
+        Assert.Equal("varchar(10)", idProp.GetColumnType());
+        Assert.False(idProp.IsNullable);
+
+        var titleProp = notif.FindProperty(nameof(Notification.Title))!;
+        Assert.Equal("nvarchar(255)", titleProp.GetColumnType());
+        Assert.False(titleProp.IsNullable);
+
+        var messageProp = notif.FindProperty(nameof(Notification.Message))!;
+        Assert.Equal("nvarchar(2000)", messageProp.GetColumnType());
+        Assert.False(messageProp.IsNullable);
+
+        var isReadProp = notif.FindProperty(nameof(Notification.IsRead))!;
+        Assert.Equal("bit", isReadProp.GetColumnType());
+        Assert.False(isReadProp.IsNullable);
+
+        var createdAtProp = notif.FindProperty(nameof(Notification.CreatedAt))!;
+        Assert.Equal("date", createdAtProp.GetColumnType());
+        Assert.False(createdAtProp.IsNullable);
+
+        var userProp = notif.FindProperty(nameof(Notification.UserName))!;
+        Assert.Equal("varchar(10)", userProp.GetColumnType());
+        Assert.False(userProp.IsNullable);
+
+        // Khóa ngoại liên kết [User](UserName) với ON DELETE CASCADE
+        var fk = notif.GetForeignKeys().Single();
+        Assert.Equal(typeof(User), fk.PrincipalEntityType.ClrType);
+        Assert.Equal(DeleteBehavior.Cascade, fk.DeleteBehavior);
+
+        // Index IX_Notification_UserName_IsRead
+        var index = notif.GetIndexes().FirstOrDefault(i => i.GetDatabaseName() == "IX_Notification_UserName_IsRead");
+        Assert.NotNull(index);
+        Assert.Equal(2, index!.Properties.Count);
     }
 }
 

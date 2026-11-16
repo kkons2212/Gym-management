@@ -4,6 +4,7 @@ using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.DTOs.CheckIn;
+using GymManagement.Server.Core.DTOs.Notifications;
 
 namespace GymManagement.Web.Services;
 
@@ -91,5 +92,11 @@ public interface IWebApiClient
     Task<bool> CompletePtSessionAsync(PtCompleteSessionRequest request);
     Task<IReadOnlyList<MemberSummaryDto>> GetPtAssignedStudentsAsync();
     Task<bool> RecordInBodyAsync(RecordInBodyRequest request);
+
+    // Trung tâm thông báo In-App (Notification Center)
+    Task<IReadOnlyList<NotificationDto>> GetNotificationsAsync();
+    Task<int> GetUnreadNotificationCountAsync();
+    Task<bool> MarkNotificationAsReadAsync(string notificationId);
+    Task<bool> MarkAllNotificationsAsReadAsync();
 }
 
