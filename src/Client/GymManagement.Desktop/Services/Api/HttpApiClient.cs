@@ -630,7 +630,8 @@ public sealed class HttpApiClient : IApiClient
                     phone = u.Phone;
                 }
 
-                list.Add(new UserSessionDto(u.UserName, fullName, email, role, phone));
+                bool isLocked = string.Equals(u.Status, "LOCKED", StringComparison.OrdinalIgnoreCase);
+                list.Add(new UserSessionDto(u.UserName, fullName, email, role, phone, isLocked));
             }
         }
         return list;
@@ -815,3 +816,4 @@ public sealed class HttpApiClient : IApiClient
         throw new BusinessRuleException(errorMessage);
     }
 }
+

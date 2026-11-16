@@ -15,6 +15,8 @@ public record UserSessionDto(
     string FullName,
     string Email,
     string Role,
-    string? Phone = null
+    string? Phone = null,
+    bool IsLocked = false
 );
+
 
