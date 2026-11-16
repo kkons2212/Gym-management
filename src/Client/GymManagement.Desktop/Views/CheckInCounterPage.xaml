@@ -42,7 +42,7 @@
                         <!-- Camera Selection & Status -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xE722;" FontSize="15" Foreground="{StaticResource AccentPrimaryBrush}" />
-                            <TextBlock Text="WEBCAM QUÉT MÃ QR" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="WEBCAM QU├ëT M├â QR" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
                             
                             <ComboBox x:Name="CboCamera"
                                       ItemsSource="{x:Bind ViewModel.AvailableCameras, Mode=OneWay}"
@@ -61,16 +61,16 @@
                                     Height="32" Padding="8,4" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderSubtleBrush}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE714;" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Text="Bật / Tắt" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="Bß║¡t / Tß║»t" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" />
                                 </StackPanel>
                             </Button>
 
                             <Button Click="BtnScanFromFile_Click"
                                     Height="32" Padding="8,4" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
-                                    ToolTipService.ToolTip="Chọn ảnh chứa mã QR từ máy tính">
+                                    ToolTipService.ToolTip="Chß╗ìn ß║únh chß╗⌐a m├ú QR tß╗½ m├íy t├¡nh">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xEB9F;" FontSize="12" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                    <TextBlock Text="Chọn file ảnh..." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="Chß╗ìn file ß║únh..." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -79,7 +79,7 @@
                     <!-- Camera Viewport Area -->
                     <Border Grid.Row="1" Background="#070B12" CornerRadius="8" MinHeight="260">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <!-- Live Camera Video Image Stream (Căn giữa hoàn toàn, cố định vị trí, hỗ trợ xoay và lật gương) -->
+                            <!-- Live Camera Video Image Stream (C─ân giß╗»a ho├án to├án, cß╗æ ─æß╗ïnh vß╗ï tr├¡, hß╗ù trß╗ú xoay v├á lß║¡t g╞░╞íng) -->
                             <Image x:Name="ImgCameraPreview"
                                    Stretch="Uniform"
                                    HorizontalAlignment="Center"
@@ -98,7 +98,7 @@
                                            TextAlignment="Center"
                                            MaxWidth="280" />
                                 <Button Click="BtnRetryCamera_Click"
-                                        Content="Khởi động lại Camera"
+                                        Content="Khß╗ƒi ─æß╗Öng lß║íi Camera"
                                         HorizontalAlignment="Center"
                                         Background="{StaticResource AccentPrimaryBrush}"
                                         Foreground="#FFFFFF"
@@ -111,7 +111,7 @@
                             <Grid Visibility="{x:Bind ViewModel.IsCameraRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <!-- Guide Text -->
                                 <Border Background="#AA090D16" CornerRadius="6" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,12,0,0">
-                                    <TextBlock Text="Đưa mã QR trên điện thoại vào giữa khung vuông" Foreground="#E2E8F0" FontSize="11" />
+                                    <TextBlock Text="─É╞░a m├ú QR tr├¬n ─æiß╗çn thoß║íi v├áo giß╗»a khung vu├┤ng" Foreground="#E2E8F0" FontSize="11" />
                                 </Border>
 
                                 <!-- Central Reticle (Changes to bright green on QR detection flash) -->
@@ -141,7 +141,7 @@
                     CornerRadius="12"
                     Padding="16">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Tra Cứu &amp; Điểm Danh Thủ Công (Quên / Hết Pin Điện Thoại):"
+                    <TextBlock Text="Tra Cß╗⌐u &amp; ─Éiß╗âm Danh Thß╗º C├┤ng (Qu├¬n / Hß║┐t Pin ─Éiß╗çn Thoß║íi):"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="12"
                                FontWeight="SemiBold" />
@@ -152,11 +152,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="TxtSearchInput"
                                  Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"
-                                 PlaceholderText="Nhập mã hội viên hoặc SĐT (USR001 / 0901234567)"
+                                 PlaceholderText="Nhß║¡p m├ú hß╗Öi vi├¬n hoß║╖c S─ÉT (USR001 / 0901234567)"
                                  KeyDown="TxtSearchInput_KeyDown"
                                  Height="38" />
                         <Button Grid.Column="1"
-                                Content="Điểm Danh"
+                                Content="─Éiß╗âm Danh"
                                 Command="{x:Bind ViewModel.CheckInManualCommand}"
                                 Background="{StaticResource AccentPrimaryBrush}"
                                 Foreground="#FFFFFF"
@@ -179,7 +179,7 @@
                                 Height="38">
                             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
                                 <FontIcon Glyph="&#xE77B;" FontSize="14" Foreground="{StaticResource StatusWarningBrush}" />
-                                <TextBlock Text="Cho vào thủ công" FontWeight="SemiBold" Foreground="{StaticResource StatusWarningBrush}" FontSize="12" />
+                                <TextBlock Text="Cho v├áo thß╗º c├┤ng" FontWeight="SemiBold" Foreground="{StaticResource StatusWarningBrush}" FontSize="12" />
                             </StackPanel>
                         </Button>
                         <Button Grid.Column="1"
@@ -191,7 +191,7 @@
                                 Height="38">
                             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
                                 <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="{StaticResource AccentPrimaryBrush}" />
-                                <TextBlock Text="Mở cổng kiểm tra" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12" />
+                                <TextBlock Text="Mß╗ƒ cß╗òng kiß╗âm tra" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12" />
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -224,11 +224,11 @@
                         Padding="28">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
                         <FontIcon Glyph="&#xE8B9;" FontSize="48" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Text="SẴN SÀNG TIẾP NHẬN HỘI VIÊN"
+                        <TextBlock Text="Sß║┤N S├ÇNG TIß║╛P NHß║¼N Hß╗ÿI VI├èN"
                                    FontSize="17" FontWeight="Bold"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    HorizontalAlignment="Center" />
-                        <TextBlock Text="Hội viên quét mã QR trên cổng hoặc đọc SĐT để xác minh"
+                        <TextBlock Text="Hß╗Öi vi├¬n qu├⌐t m├ú QR tr├¬n cß╗òng hoß║╖c ─æß╗ìc S─ÉT ─æß╗â x├íc minh"
                                    FontSize="12"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    HorizontalAlignment="Center" />
@@ -258,7 +258,7 @@
                                        HorizontalAlignment="Center" />
                         </Border>
 
-                        <!-- Member Core Details: Mã hội viên (UserName) & Họ tên (FullName) -->
+                        <!-- Member Core Details: M├ú hß╗Öi vi├¬n (UserName) & Hß╗ì t├¬n (FullName) -->
                         <StackPanel Grid.Row="1" Padding="20" Spacing="14" VerticalAlignment="Center">
                             <!-- Two Core Fields: UserName and FullName (No photo) -->
                             <StackPanel HorizontalAlignment="Center" Spacing="4">
@@ -297,7 +297,7 @@
                                         Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
                                         CornerRadius="10" Padding="14">
                                     <StackPanel Spacing="4" HorizontalAlignment="Center">
-                                        <TextBlock Text="LƯỢT TẬP GYM CÒN LẠI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="L╞»ß╗óT Tß║¼P GYM C├ÆN Lß║áI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind ViewModel.RemainingGymSessions, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
                                                    FontSize="26" FontWeight="Bold" Foreground="{StaticResource AccentPrimaryBrush}"
                                                    HorizontalAlignment="Center" />
@@ -309,7 +309,7 @@
                                         Background="#0F172A" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
                                         CornerRadius="10" Padding="14">
                                     <StackPanel Spacing="4" HorizontalAlignment="Center">
-                                        <TextBlock Text="BUỔI TẬP PT CÒN LẠI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="BUß╗öI Tß║¼P PT C├ÆN Lß║áI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind ViewModel.RemainingPtSessions, Mode=OneWay, Converter={StaticResource StringFormatConverter}}"
                                                    FontSize="26" FontWeight="Bold" Foreground="{StaticResource StatusPtBrush}"
                                                    HorizontalAlignment="Center" />
@@ -346,7 +346,7 @@
                         <!-- Section Title -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xE9D2;" FontSize="16" Foreground="{StaticResource AccentPrimaryBrush}" />
-                            <TextBlock Text="NHẬT KÝ ĐIỂM DANH HÔM NAY" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="NHß║¼T K├¥ ─ÉIß╗éM DANH H├öM NAY" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
                         </StackPanel>
 
                         <!-- Live Attendance Badge -->
@@ -355,9 +355,9 @@
                                 CornerRadius="12" Padding="10,4" Margin="12,0,0,0">
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <Ellipse Width="8" Height="8" Fill="#34D399" />
-                                <TextBlock Text="Hiện diện trong phòng: " FontSize="12" Foreground="#D1FAE5" />
+                                <TextBlock Text="Hiß╗çn diß╗çn trong ph├▓ng: " FontSize="12" Foreground="#D1FAE5" />
                                 <TextBlock Text="{x:Bind ViewModel.AttendanceCount, Mode=OneWay}" FontSize="12" FontWeight="Bold" Foreground="#34D399" />
-                                <TextBlock Text=" người" FontSize="12" Foreground="#D1FAE5" />
+                                <TextBlock Text=" ng╞░ß╗¥i" FontSize="12" Foreground="#D1FAE5" />
                             </StackPanel>
                         </Border>
 
@@ -365,10 +365,10 @@
                         <ComboBox Grid.Column="2" SelectedIndex="0"
                                   SelectionChanged="CboShift_SelectionChanged"
                                   Height="32" FontSize="12">
-                            <ComboBoxItem Content="Tất cả các ca" Tag="ALL" />
-                            <ComboBoxItem Content="Ca Sáng (06:00 - 12:00)" Tag="MORNING" />
-                            <ComboBoxItem Content="Ca Chiều (12:00 - 17:00)" Tag="AFTERNOON" />
-                            <ComboBoxItem Content="Ca Tối (17:00 - 22:00)" Tag="EVENING" />
+                            <ComboBoxItem Content="Tß║Ñt cß║ú c├íc ca" Tag="ALL" />
+                            <ComboBoxItem Content="Ca S├íng (06:00 - 12:00)" Tag="MORNING" />
+                            <ComboBoxItem Content="Ca Chiß╗üu (12:00 - 17:00)" Tag="AFTERNOON" />
+                            <ComboBoxItem Content="Ca Tß╗æi (17:00 - 22:00)" Tag="EVENING" />
                         </ComboBox>
 
                         <!-- Refresh Button -->
@@ -398,11 +398,11 @@
                                     <ColumnDefinition Width="110" />
                                     <ColumnDefinition Width="120" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="GIỜ VÀO" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock Grid.Column="1" Text="HỘI VIÊN" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock Grid.Column="2" Text="PHƯƠNG THỨC" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock Grid.Column="3" Text="NGƯỜI DUYỆT" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock Grid.Column="4" Text="TRẠNG THÁI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="0" Text="GIß╗£ V├ÇO" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="1" Text="Hß╗ÿI VI├èN" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" Text="PH╞»╞áNG THß╗¿C" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="3" Text="NG╞»ß╗£I DUYß╗åT" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="4" Text="TRß║áNG TH├üI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
                             </Grid>
 
                             <!-- Table Rows -->

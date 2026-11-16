@@ -21,7 +21,7 @@
                                    FontSize="11" FontWeight="Bold"
                                    Foreground="{StaticResource AccentPrimaryBrush}"
                                    CharacterSpacing="100" />
-                        <TextBlock Text="Cổng Quản Trị Viên"
+                        <TextBlock Text="Cß╗òng Quß║ún Trß╗ï Vi├¬n"
                                    FontSize="16" FontWeight="Bold"
                                    Foreground="{StaticResource TextPrimaryBrush}" />
                     </StackPanel>
@@ -30,49 +30,49 @@
 
             <!-- Menu Items: 7 Functional Modules per PRD & ui_rules.md 3.1 -->
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Quầy Điểm Danh &amp; Cổng Tự Động" Tag="CheckIn">
+                <NavigationViewItem Content="Quß║ºy ─Éiß╗âm Danh &amp; Cß╗òng Tß╗▒ ─Éß╗Öng" Tag="CheckIn">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8B9;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Bán Gói &amp; Thanh Toán POS (F2)" Tag="Pos">
+                <NavigationViewItem Content="B├ín G├│i &amp; Thanh To├ín POS (F2)" Tag="Pos">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE7BF;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Lịch Sử &amp; In Hóa Đơn (F6)" Tag="Invoices">
+                <NavigationViewItem Content="Lß╗ïch Sß╗¡ &amp; In H├│a ─É╞ín (F6)" Tag="Invoices">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8A1;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Lý Hội Viên &amp; Gói Tập (F3)" Tag="Members">
+                <NavigationViewItem Content="Quß║ún L├╜ Hß╗Öi Vi├¬n &amp; G├│i Tß║¡p (F3)" Tag="Members">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE716;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Lịch Biểu HLV PT (F5)" Tag="Schedule">
+                <NavigationViewItem Content="Lß╗ïch Biß╗âu HLV PT (F5)" Tag="Schedule">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE787;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Báo Cáo &amp; Thống Kê Doanh Thu" Tag="Dashboard">
+                <NavigationViewItem Content="B├ío C├ío &amp; Thß╗æng K├¬ Doanh Thu" Tag="Dashboard">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9D2;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Quản Lý Nhân Sự (RBAC)" Tag="Staff">
+                <NavigationViewItem Content="Quß║ún L├╜ Nh├ón Sß╗▒ (RBAC)" Tag="Staff">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE77B;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Danh Mục Gói Dịch Vụ" Tag="Packages">
+                <NavigationViewItem Content="Danh Mß╗Ñc G├│i Dß╗ïch Vß╗Ñ" Tag="Packages">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8F1;" />
                     </NavigationViewItem.Icon>
@@ -100,7 +100,7 @@
                         </StackPanel>
 
                         <Button Grid.Column="1"
-                                ToolTipService.ToolTip="Đăng xuất"
+                                ToolTipService.ToolTip="─É─âng xuß║Ñt"
                                 Click="BtnLogout_Click"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="8">
