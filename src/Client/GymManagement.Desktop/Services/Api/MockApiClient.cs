@@ -37,10 +37,10 @@ public class MockApiClient : IApiClient
 
     private readonly List<UserSessionDto> _users =
     [
-        new("ADMIN01", "Quản Trị Viên Trưởng", "admin@gymsystem.vn", "SuperAdmin"),
-        new("ADMIN02", "Quản Lý Vận Hành", "manager@gymsystem.vn", "Admin"),
-        new("PT001", "HLV Nguyễn Quốc Huy", "huy.pt@gymsystem.vn", "PT"),
-        new("PT002", "HLV Hoàng Tuấn Anh", "anh.pt@gymsystem.vn", "PT")
+        new("ADMIN01", "Quản Trị Viên Trưởng", "admin@gymsystem.vn", "SuperAdmin", null, false),
+        new("ADMIN02", "Quản Lý Vận Hành", "manager@gymsystem.vn", "Admin", null, false),
+        new("PT001", "HLV Nguyễn Quốc Huy", "huy.pt@gymsystem.vn", "PT", null, false),
+        new("PT002", "HLV Hoàng Tuấn Anh", "anh.pt@gymsystem.vn", "PT", null, true)
     ];
 
     private readonly List<PtSessionSlotDto> _ptSlots =
@@ -980,7 +980,7 @@ public class MockApiClient : IApiClient
         {
             uId = $"USR{DateTime.Now:mmss}";
         }
-        var newUser = new UserSessionDto(uId, fullName, email, role);
+        var newUser = new UserSessionDto(uId, fullName, email, role, null, false);
         _users.Add(newUser);
         return Task.FromResult(newUser);
     }
@@ -993,7 +993,7 @@ public class MockApiClient : IApiClient
         if (existing != null)
         {
             int index = _users.IndexOf(existing);
-            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId);
+            var updated = new UserSessionDto(existing.UserId, request.FullName.Trim(), request.Email.Trim(), request.RoleId, existing.Phone, existing.IsLocked);
             _users[index] = updated;
             return Task.FromResult(updated);
         }
@@ -1088,3 +1088,4 @@ public class MockApiClient : IApiClient
         ));
     }
 }
+
