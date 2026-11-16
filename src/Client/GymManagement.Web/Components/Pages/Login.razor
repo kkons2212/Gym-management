@@ -100,9 +100,10 @@
     private string? _errorMessage;
     private string? _usernameError;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (AuthState.IsAuthenticated)
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
         {
             RedirectByRole();
         }

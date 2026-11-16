@@ -183,7 +183,7 @@ public sealed class MockWebApiClient : IWebApiClient
     // ==========================================
     // 1. AUTHENTICATION (UC01)
     // ==========================================
-    public Task<LoginResponse> LoginAsync(LoginRequest request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = _users.FirstOrDefault(u =>
             string.Equals(u.UserId, request.Username, StringComparison.OrdinalIgnoreCase) ||
@@ -213,15 +213,15 @@ public sealed class MockWebApiClient : IWebApiClient
             throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
         }
 
-        _authStateProvider.SetAuthenticated(user);
+        await _authStateProvider.SetAuthenticatedAsync(user);
 
-        return Task.FromResult(new LoginResponse(
+        return new LoginResponse(
             Token: "mock-jwt-token",
             RefreshToken: "mock-refresh-token",
             UserId: user.UserId,
             FullName: user.FullName,
             Role: user.Role
-        ));
+        );
     }
 
     public Task<UserSessionDto?> GetCurrentUserSessionAsync()

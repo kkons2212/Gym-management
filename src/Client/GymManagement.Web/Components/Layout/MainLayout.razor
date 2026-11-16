@@ -34,9 +34,9 @@
 </div>
 
 @code {
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
-        AuthState.SetAnonymous();
+        await AuthState.SetAnonymousAsync();
         Navigation.NavigateTo("/login");
     }
 }
