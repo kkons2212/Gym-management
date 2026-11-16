@@ -12,13 +12,13 @@ public partial class LoginViewModel : ObservableObject
     private readonly IAdminSessionService _sessionService;
 
     [ObservableProperty]
-    private string _username = "admin@gymsystem.vn";
+    private string _username = string.Empty;
 
     [ObservableProperty]
-    private string _password = "admin";
+    private string _password = string.Empty;
 
     [ObservableProperty]
-    private bool _rememberMe = true;
+    private bool _rememberMe = false;
 
     [ObservableProperty]
     private bool _isLoading;
@@ -45,6 +45,13 @@ public partial class LoginViewModel : ObservableObject
     {
         if (IsLoading)
         {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+        {
+            HasError = true;
+            ErrorMessage = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.";
             return;
         }
 

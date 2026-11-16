@@ -67,7 +67,13 @@ public static class DependencyInjection
 
         services.AddDbContext<GymDbContext>(options =>
         {
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorNumbersToAdd: null);
+            });
         });
 
         // 2. Đăng ký Generic Repository và Unit of Work

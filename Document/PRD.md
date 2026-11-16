@@ -165,7 +165,7 @@ graph TD
   * Nhập: Họ tên, Số điện thoại, Email, CCCD, Ngày sinh, Ngày bắt đầu hiệu lực và Gói tập.
   * Kiểm tra trùng lặp: Nếu SĐT hoặc CCCD đã tồn tại trong hệ thống, báo lỗi *"Hội viên đã tồn tại trong hệ thống"*.
   * Tự động tính tiền, ghi nhận phương thức thanh toán (Tiền mặt / Chuyển khoản QR / Quẹt thẻ POS).
-  * Kích hoạt gói tập trạng thái `ACTIVE`, tự động tính ngày hết hạn, sinh chuỗi mã định danh kèm mã QR duy nhất và kích hoạt gửi SMS/Email xác nhận.
+  * Kích hoạt gói tập trạng thái `ACTIVE`, tự động tính ngày hết hạn, sinh chuỗi mã định danh kèm mã QR duy nhất và kích hoạt gửi thông báo chào mừng trong ứng dụng (In-App Notification).
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Wizard biểu mẫu đăng ký 2 bước (Thông tin cá nhân $\rightarrow$ Gói tập & Thu tiền).
   * *(Business Logic):* Transaction kích hoạt: Tạo Member $\rightarrow$ Tạo Gói tập $\rightarrow$ Tạo Hóa đơn $\rightarrow$ Tạo QR string.
@@ -229,7 +229,7 @@ graph TD
 * **Tiêu chí chấp nhận (AC):**
   * Chọn hội viên, chọn gói tập niêm yết và tính tổng thanh toán theo giá gói (khớp 100% bảng Invoice: SubtotalAmount, TotalAmount).
   * Hỗ trợ 3 phương thức thanh toán: Tiền mặt, Chuyển khoản VietQR (hiển thị mã QR động có sẵn số tiền và nội dung chuyển khoản chuẩn NAPAS), và Quẹt thẻ POS.
-  * Sau khi xác nhận: Lưu hóa đơn trạng thái `PAID`, kích hoạt dịch vụ tương ứng và tự động phát hành hóa đơn điện tử gửi qua Email cho hội viên.
+  * Sau khi xác nhận: Lưu hóa đơn trạng thái `PAID`, kích hoạt dịch vụ tương ứng và tự động phát hành hóa đơn điện tử gửi thông báo xác nhận thanh toán trong ứng dụng (In-App Notification).
 * **Danh sách task triển khai 3 lớp:**
   * *(Presentation):* Giao diện quầy POS bán gói: chọn gói tập, hiển thị QR thanh toán động.
   * *(Business Logic):* Tích hợp thư viện sinh chuỗi VietQR chuẩn, xử lý kích hoạt dịch vụ sau thanh toán.
@@ -550,9 +550,9 @@ graph TD
 
 # PHẦN III: MA TRẬN TRUY VẾT YÊU CẦU (REQUIREMENTS TRACEABILITY MATRIX - RTM)
 
-Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Phân hệ Use Case Cấp cao**, **37 Use Cases Chi tiết**, **User Stories Backlog** và **Kiến trúc 3 Lớp (với 9 bảng CSDL vật lý chuẩn)**:
+Bảng ma trận truy vết đảm bảo tính nhất quán 100% giữa **10 Phân hệ Use Case Cấp cao**, **37 Use Cases Chi tiết**, **User Stories Backlog** và **Kiến trúc 3 Lớp (với 10 bảng CSDL vật lý chuẩn)**:
 
-| Phân hệ Cấp cao | Mã Use Case Chi Tiết | Tên Use Case Chi Tiết | Mã User Story | Tầng Presentation | Tầng Business Logic (Core) | Tầng Data Access (DAL / 9 Bảng) |
+| Phân hệ Cấp cao | Mã Use Case Chi Tiết | Tên Use Case Chi Tiết | Mã User Story | Tầng Presentation | Tầng Business Logic (Core) | Tầng Data Access (DAL / 10 Bảng) |
 | :--- | :---: | :--- | :---: | :--- | :--- | :--- |
 | **UC01: Đăng nhập & Xác thực** | **UC01** | Đăng nhập | US 01.1 | Login View (Desktop & Web) | `IAuthService` | `[User]`, `Role` |
 | **UC02: Quản lý Hội viên & Gói tập** | **UC02.1** | Đăng ký hội viên mới cùng gói tập | US 02.1 | Member Registration Wizard | `IMemberService`, `IBillingService` | `[User]`, `MemberSubscription`, `Invoice` |

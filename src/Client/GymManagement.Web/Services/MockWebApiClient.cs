@@ -2,6 +2,7 @@ using GymManagement.Server.Core.DTOs.Billing;
 using GymManagement.Server.Core.DTOs.CheckIn;
 using GymManagement.Server.Core.DTOs.Identity;
 using GymManagement.Server.Core.DTOs.Members;
+using GymManagement.Server.Core.DTOs.Notifications;
 using GymManagement.Server.Core.DTOs.Packages;
 using GymManagement.Server.Core.DTOs.PT;
 using GymManagement.Server.Core.Enums;
@@ -54,6 +55,7 @@ public sealed class MockWebApiClient : IWebApiClient
     private readonly List<PtSessionDto> _ptSessions = [];
     private readonly List<InBodyRecordDto> _inBodyRecords = [];
     private readonly List<CheckInLogDto> _checkInLogs = [];
+    private readonly List<NotificationDto> _notifications = [];
 
     public MockWebApiClient(CustomAuthenticationStateProvider authStateProvider)
     {
@@ -142,31 +144,84 @@ public sealed class MockWebApiClient : IWebApiClient
         _checkInLogs.Add(new CheckInLogDto("CK001", DateTime.Today.AddDays(-3).AddHours(17).AddMinutes(15), "Quét camera tại quầy", null, "Trần Văn An", "Lễ Tân 01", "SUCCESS"));
         _checkInLogs.Add(new CheckInLogDto("CK002", DateTime.Today.AddDays(-5).AddHours(18).AddMinutes(0), "Quét camera tại quầy", null, "Trần Văn An", "Lễ Tân 01", "SUCCESS"));
         _checkInLogs.Add(new CheckInLogDto("CK003", DateTime.Today.AddDays(-8).AddHours(7).AddMinutes(30), "Quét camera tại quầy", null, "Trần Văn An", "Lễ Tân 02", "SUCCESS"));
+
+        // Dữ liệu mẫu thông báo In-App (6 trường dữ liệu chuẩn)
+        _notifications.Add(new NotificationDto(
+            NotificationId: "NOTIF001",
+            Title: "Chào mừng hội viên mới",
+            Message: "Chào mừng bạn đến với hệ thống Gym Management! Chúc bạn có trải nghiệm tập luyện tuyệt vời.",
+            IsRead: true,
+            CreatedAt: today.AddDays(-15),
+            UserName: "member01"
+        ));
+        _notifications.Add(new NotificationDto(
+            NotificationId: "NOTIF002",
+            Title: "Thanh toán thành công",
+            Message: "Hóa đơn đăng ký Gói Gym & PT Cao Cấp 3 Tháng đã được ghi nhận thanh toán thành công.",
+            IsRead: false,
+            CreatedAt: today.AddDays(-15),
+            UserName: "member01"
+        ));
+        _notifications.Add(new NotificationDto(
+            NotificationId: "NOTIF003",
+            Title: "Nhắc lịch tập PT sắp tới",
+            Message: "Bạn có buổi tập PT với HLV Nguyễn Văn Thành vào ngày mai lúc 08:00 - 09:00. Vui lòng đến trước 10 phút.",
+            IsRead: false,
+            CreatedAt: today,
+            UserName: "member01"
+        ));
+        _notifications.Add(new NotificationDto(
+            NotificationId: "NOTIF004",
+            Title: "Học viên mới đặt lịch hẹn",
+            Message: "Học viên Trần Văn An đã đặt lịch tập 1-1 với bạn vào ngày mai lúc 08:00 - 09:00.",
+            IsRead: false,
+            CreatedAt: today,
+            UserName: "pt01"
+        ));
     }
 
     // ==========================================
     // 1. AUTHENTICATION (UC01)
     // ==========================================
-    public Task<LoginResponse> LoginAsync(LoginRequest request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = _users.FirstOrDefault(u =>
             string.Equals(u.UserId, request.Username, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(u.Email, request.Username, StringComparison.OrdinalIgnoreCase));
 
-        if (user == null || request.Password != "123456")
+        if (user == null)
         {
             throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
         }
 
-        _authStateProvider.SetAuthenticated(user);
+        bool isPasswordValid = false;
+        if (string.Equals(user.Role, "PT", StringComparison.OrdinalIgnoreCase) && request.Password == "trainer123")
+        {
+            isPasswordValid = true;
+        }
+        else if (string.Equals(user.Role, "Member", StringComparison.OrdinalIgnoreCase) && request.Password == "member123")
+        {
+            isPasswordValid = true;
+        }
+        else if (request.Password == "admin123" || request.Password == "123456")
+        {
+            isPasswordValid = true;
+        }
 
-        return Task.FromResult(new LoginResponse(
+        if (!isPasswordValid)
+        {
+            throw new BusinessRuleException("Tên đăng nhập hoặc mật khẩu không chính xác.");
+        }
+
+        await _authStateProvider.SetAuthenticatedAsync(user);
+
+        return new LoginResponse(
             Token: "mock-jwt-token",
             RefreshToken: "mock-refresh-token",
             UserId: user.UserId,
             FullName: user.FullName,
             Role: user.Role
-        ));
+        );
     }
 
     public Task<UserSessionDto?> GetCurrentUserSessionAsync()
@@ -326,6 +381,16 @@ public sealed class MockWebApiClient : IWebApiClient
             RemainingCheckInSessions = _memberSubscription.RemainingCheckInSessions + 30,
             RemainingPtSessions = _memberSubscription.RemainingPtSessions + 12
         };
+
+        _notifications.Insert(0, new NotificationDto(
+            NotificationId: $"N_{Guid.NewGuid():N}"[..10].ToUpperInvariant(),
+            Title: "Thanh toán thành công",
+            Message: $"Hóa đơn {invoiceId} cho gói tập {_memberSubscription.PlanName} đã được thanh toán thành công.",
+            IsRead: false,
+            CreatedAt: DateOnly.FromDateTime(DateTime.Today),
+            UserName: _memberSubscription.UserName
+        ));
+
         return Task.FromResult(true);
     }
 
@@ -386,6 +451,16 @@ public sealed class MockWebApiClient : IWebApiClient
         );
 
         _ptSessions.Add(newSession);
+
+        _notifications.Insert(0, new NotificationDto(
+            NotificationId: $"N_{Guid.NewGuid():N}"[..10].ToUpperInvariant(),
+            Title: "Đặt lịch PT thành công",
+            Message: $"Bạn đã đặt thành công buổi tập với HLV {_memberSubscription.AssignedPtName} vào ngày {slot.AvailableDate:dd/MM/yyyy} lúc {slot.StartTime:HH\\:mm}.",
+            IsRead: false,
+            CreatedAt: DateOnly.FromDateTime(DateTime.Today),
+            UserName: request.MemberUserName
+        ));
+
         return Task.FromResult(newSession);
     }
 
@@ -660,6 +735,80 @@ public sealed class MockWebApiClient : IWebApiClient
         );
 
         _inBodyRecords.Insert(0, record);
+        return Task.FromResult(true);
+    }
+
+    // ==========================================
+    // 7. IN-APP NOTIFICATIONS (NOTIFICATION CENTER)
+    // ==========================================
+    public Task<IReadOnlyList<NotificationDto>> GetNotificationsAsync()
+    {
+        var currentUser = _authStateProvider.CurrentUser;
+        if (currentUser == null)
+        {
+            return Task.FromResult<IReadOnlyList<NotificationDto>>([]);
+        }
+
+        var list = _notifications
+            .Where(n => string.Equals(n.UserName, currentUser.UserId, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(n => n.CreatedAt)
+            .ThenByDescending(n => n.NotificationId)
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<NotificationDto>>(list);
+    }
+
+    public Task<int> GetUnreadNotificationCountAsync()
+    {
+        var currentUser = _authStateProvider.CurrentUser;
+        if (currentUser == null)
+        {
+            return Task.FromResult(0);
+        }
+
+        int count = _notifications.Count(n =>
+            string.Equals(n.UserName, currentUser.UserId, StringComparison.OrdinalIgnoreCase) && !n.IsRead);
+
+        return Task.FromResult(count);
+    }
+
+    public Task<bool> MarkNotificationAsReadAsync(string notificationId)
+    {
+        var currentUser = _authStateProvider.CurrentUser;
+        if (currentUser == null)
+        {
+            return Task.FromResult(false);
+        }
+
+        var notif = _notifications.FirstOrDefault(n =>
+            n.NotificationId == notificationId &&
+            string.Equals(n.UserName, currentUser.UserId, StringComparison.OrdinalIgnoreCase));
+
+        if (notif != null && !notif.IsRead)
+        {
+            int index = _notifications.IndexOf(notif);
+            _notifications[index] = notif with { IsRead = true };
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> MarkAllNotificationsAsReadAsync()
+    {
+        var currentUser = _authStateProvider.CurrentUser;
+        if (currentUser == null)
+        {
+            return Task.FromResult(false);
+        }
+
+        for (int i = 0; i < _notifications.Count; i++)
+        {
+            if (string.Equals(_notifications[i].UserName, currentUser.UserId, StringComparison.OrdinalIgnoreCase) && !_notifications[i].IsRead)
+            {
+                _notifications[i] = _notifications[i] with { IsRead = true };
+            }
+        }
+
         return Task.FromResult(true);
     }
 }

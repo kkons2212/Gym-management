@@ -15,11 +15,11 @@ public partial class DashboardViewModel : ObservableObject
 
     public IReadOnlyList<ReportTypeOption> ReportTypeOptions { get; } = new List<ReportTypeOption>
     {
-        new("OVERVIEW", "Tổng quan Dashboard"),
+        new("OVERVIEW", "Tổng quan"),
         new("REVENUE", "Báo cáo Doanh thu"),
         new("MEMBER", "Báo cáo Hội viên"),
         new("CHECKIN", "Báo cáo Điểm danh"),
-        new("PT", "Hiệu suất HLV (PT)")
+        new("PT", "Hiệu suất HLV")
     };
 
     [ObservableProperty]
@@ -113,7 +113,7 @@ public partial class DashboardViewModel : ObservableObject
                 toStr = SelectedToDate.Value.ToString("dd/MM/yyyy");
             }
 
-            string reportName = "Tổng quan Dashboard";
+            string reportName = "Tổng quan";
             if (SelectedReportTypeOption != null)
             {
                 reportName = SelectedReportTypeOption.DisplayName;
@@ -577,3 +577,5 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 }
+
+

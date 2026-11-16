@@ -67,7 +67,7 @@
             <!-- Status Filter Buttons (Plain Text Status, No Icons per ui_rules.md) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                 <Button Content="Tất cả" Tag="ALL" Click="OnFilterClicked" Height="40" />
-                <Button Content="Đang hoạt động" Tag="ACTIVE" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusSuccessBrush}" />
+                <Button Content="Đang Hoạt Động" Tag="ACTIVE" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusSuccessBrush}" />
                 <Button Content="Đang bảo lưu" Tag="FROZEN" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusWarningBrush}" />
                 <Button Content="Đã hết hạn" Tag="EXPIRED" Click="OnFilterClicked" Height="40" Foreground="{StaticResource StatusDangerBrush}" />
             </StackPanel>
@@ -164,7 +164,7 @@
                                 <Border Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Left"
                                         Background="{x:Bind Status, Converter={StaticResource StatusToBrushConverter}}"
                                         CornerRadius="12" Padding="8,4">
-                                    <TextBlock Text="{x:Bind Status}" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
+                                    <TextBlock Text="{x:Bind Status, Converter={StaticResource StatusTextConverter}}" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
                                 </Border>
 
                                 <!-- Actions Toolbar (UC02, UC04) -->
@@ -191,3 +191,6 @@
         </Border>
     </Grid>
 </Page>
+
+
+

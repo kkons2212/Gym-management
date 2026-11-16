@@ -38,7 +38,7 @@
                         <TextBox x:Name="TxtUsername"
                                  Text="{x:Bind ViewModel.Username, Mode=TwoWay}"
                                  KeyDown="Input_KeyDown"
-                                 PlaceholderText="admin@gymsystem.vn"
+                                 PlaceholderText="Nhập tên đăng nhập hoặc email…"
                                  Height="40" />
                     </StackPanel>
 
