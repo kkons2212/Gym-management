@@ -2,6 +2,7 @@
     x:Class="GymManagement.Desktop.Dialogs.RenewUpgradeModal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pkg="using:GymManagement.Server.Core.DTOs.Packages"
     Title="GIA HẠN / NÂNG CẤP GÓI TẬP"
     PrimaryButtonText="Xác Nhận Thanh Toán"
     CloseButtonText="Hủy Bỏ"
@@ -52,7 +53,30 @@
             <ComboBox x:Name="CboPackages"
                       HorizontalAlignment="Stretch"
                       Height="36"
-                      SelectionChanged="CboPackages_SelectionChanged" />
+                      SelectionChanged="CboPackages_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="pkg:PackagePlanDto">
+                        <Grid ColumnSpacing="16" HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="13" />
+                                <TextBlock Text="•" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{x:Bind DurationDays}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                <TextBlock Text="ngày" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{x:Bind Price, Converter={StaticResource CurrencyFormatterConverter}}"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource StatusSuccessBrush}"
+                                       FontSize="13"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </StackPanel>
 
         <!-- Payment Calculation Card -->
@@ -68,7 +92,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Spacing="2">
                     <TextBlock Text="TỔNG TIỀN THANH TOÁN:" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <TextBlock Text="Đơn giá niêm yết cố định (0 chiết khấu)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock x:Name="TxtPriceExplanation" Text="Đơn giá niêm yết cố định (0 chiết khấu)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" x:Name="TxtPaymentAmount"
                            Text="0 VNĐ"
