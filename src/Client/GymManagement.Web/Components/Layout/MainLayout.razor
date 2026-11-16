@@ -7,17 +7,14 @@
         <Authorized>
             <header class="top-bar">
                 <div class="top-bar-title">
-                    <span>PHÒNG TẬP THỂ THAO</span>
+                    <span class="top-bar-brand">PHÒNG TẬP THỂ THAO</span>
+                </div>
+                <div class="top-bar-actions">
                     <span class="role-badge @(context.User.IsInRole("PT") ? "role-pt" : "role-member")">
                         @(context.User.IsInRole("PT") ? "HLV PT" : "HỘI VIÊN")
                     </span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
                     <NotificationBell />
-                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        @context.User.Identity?.Name
-                    </span>
-                    <button type="button" @onclick="HandleLogout" class="btn-secondary" style="min-height: 32px; padding: 0 10px; font-size: 11px;">
+                    <button type="button" @onclick="HandleLogout" class="btn-secondary top-bar-logout">
                         Đăng xuất
                     </button>
                 </div>
