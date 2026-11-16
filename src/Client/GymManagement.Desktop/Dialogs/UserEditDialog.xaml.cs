@@ -55,11 +55,20 @@ public sealed partial class UserEditDialog : ContentDialog
                 CbiAdminRole.IsEnabled = false;
             }
 
-            bool isTargetAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase) ||
-                                 string.Equals(user.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            bool isTargetSuperAdmin = string.Equals(user.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            bool isTargetAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase) || isTargetSuperAdmin;
             if (isTargetAdmin)
             {
                 CboRole.IsEnabled = false;
+            }
+
+            if (isTargetSuperAdmin)
+            {
+                TxtFullName.IsEnabled = false;
+                TxtEmail.IsEnabled = false;
+                TxtPhone.IsEnabled = false;
+                IsPrimaryButtonEnabled = false;
+                ShowError("Chỉ Quản trị viên cấp cao (SuperAdmin) mới có quyền chỉnh sửa tài khoản này.");
             }
         }
 

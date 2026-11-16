@@ -12,13 +12,15 @@ public sealed record PersistedUserSession(UserSessionDto User, string? Token);
 
 /// <summary>
 /// Quản lý trạng thái xác thực và phân quyền người dùng trong phiên làm việc Blazor Server (UC01).
-/// Hỗ trợ phục hồi phiên làm việc qua ProtectedLocalStorage khi người dùng làm mới (F5) trang.
+/// Hỗ trợ phục hồi phiên làm việc qua ProtectedSessionStorage khi người dùng làm mới (F5) trang.
+/// Tự động kết thúc phiên khi đóng tab/trình duyệt để ngăn ngừa tự động đăng nhập ngoài ý muốn.
 /// </summary>
 public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
     private const string SessionStorageKey = "gym_user_session";
     private static readonly ClaimsPrincipal Anonymous = new(new ClaimsIdentity());
 
+    private readonly ProtectedSessionStorage? _sessionStorage;
     private readonly ProtectedLocalStorage? _localStorage;
     private ClaimsPrincipal _currentUser = Anonymous;
     private UserSessionDto? _userSession;
@@ -30,8 +32,11 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     public bool IsMember => string.Equals(_userSession?.Role, "Member", StringComparison.OrdinalIgnoreCase);
     public bool IsPt => string.Equals(_userSession?.Role, "PT", StringComparison.OrdinalIgnoreCase);
 
-    public CustomAuthenticationStateProvider(ProtectedLocalStorage? localStorage = null)
+    public CustomAuthenticationStateProvider(
+        ProtectedSessionStorage? sessionStorage = null,
+        ProtectedLocalStorage? localStorage = null)
     {
+        _sessionStorage = sessionStorage;
         _localStorage = localStorage;
     }
 
@@ -42,24 +47,42 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
             return new AuthenticationState(_currentUser);
         }
 
-        if (!_isInitialized && _localStorage != null)
+        if (!_isInitialized)
         {
             _isInitialized = true;
-            try
+
+            // 1. Dọn dẹp legacy session kẹt trong LocalStorage cũ (nếu có)
+            if (_localStorage != null)
             {
-                var result = await _localStorage.GetAsync<PersistedUserSession>(SessionStorageKey);
-                if (result.Success && result.Value?.User != null)
+                try
                 {
-                    var user = result.Value.User;
-                    _userSession = user;
-                    Token = result.Value.Token;
-                    _currentUser = CreateClaimsPrincipal(user);
-                    return new AuthenticationState(_currentUser);
+                    await _localStorage.DeleteAsync(SessionStorageKey);
+                }
+                catch (Exception)
+                {
+                    // Bỏ qua lỗi JS interop khi prerender
                 }
             }
-            catch (Exception)
+
+            // 2. Phục hồi phiên làm việc của tab hiện tại qua SessionStorage (chỉ giữ khi F5)
+            if (_sessionStorage != null)
             {
-                // Fallback nếu storage trống, lỗi giải mã hoặc JS Interop chưa sẵn sàng
+                try
+                {
+                    var result = await _sessionStorage.GetAsync<PersistedUserSession>(SessionStorageKey);
+                    if (result.Success && result.Value?.User != null)
+                    {
+                        var user = result.Value.User;
+                        _userSession = user;
+                        Token = result.Value.Token;
+                        _currentUser = CreateClaimsPrincipal(user);
+                        return new AuthenticationState(_currentUser);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Fallback nếu storage trống, lỗi giải mã hoặc JS Interop chưa sẵn sàng
+                }
             }
         }
 
@@ -70,7 +93,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     }
 
     /// <summary>
-    /// Thiết lập phiên làm việc sau khi đăng nhập thành công và lưu vào ProtectedLocalStorage.
+    /// Thiết lập phiên làm việc sau khi đăng nhập thành công và lưu vào ProtectedSessionStorage.
     /// </summary>
     public async Task SetAuthenticatedAsync(UserSessionDto user, string? token = null)
     {
@@ -83,11 +106,11 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
 
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_currentUser)));
 
-        if (_localStorage != null)
+        if (_sessionStorage != null)
         {
             try
             {
-                await _localStorage.SetAsync(SessionStorageKey, new PersistedUserSession(user, token));
+                await _sessionStorage.SetAsync(SessionStorageKey, new PersistedUserSession(user, token));
             }
             catch (Exception)
             {
@@ -115,6 +138,18 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         _isInitialized = true;
 
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_currentUser)));
+
+        if (_sessionStorage != null)
+        {
+            try
+            {
+                await _sessionStorage.DeleteAsync(SessionStorageKey);
+            }
+            catch (Exception)
+            {
+                // Bỏ qua lỗi nếu storage không khả dụng
+            }
+        }
 
         if (_localStorage != null)
         {

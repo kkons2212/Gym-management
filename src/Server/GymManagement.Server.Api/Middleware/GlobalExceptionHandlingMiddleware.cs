@@ -58,7 +58,7 @@ public sealed class GlobalExceptionHandlingMiddleware
             UnauthorizedAccessException => (
                 StatusCodes.Status401Unauthorized,
                 "UNAUTHORIZED",
-                "Authentication is required."),
+                string.IsNullOrWhiteSpace(exception.Message) ? "Authentication is required." : exception.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "INTERNAL_SERVER_ERROR",

@@ -164,13 +164,48 @@ public sealed class AuthService : IAuthService
             return false;
         }
 
+        // 1. Kiểm tra chuẩn BCrypt ($2a$, $2b$, $2y$)
+        if (passwordHash.StartsWith("$2a$") || passwordHash.StartsWith("$2b$") || passwordHash.StartsWith("$2y$"))
+        {
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(plainPassword, passwordHash);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "AuthService.VerifyPassword: Lỗi giải mã mật khẩu BCrypt.");
+                return false;
+            }
+        }
+
+        // 2. Tương thích ngược: Kiểm tra mã băm SHA-256 (64 ký tự Hex)
+        if (passwordHash.Length == 64)
+        {
+            try
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(plainPassword);
+                byte[] hash = SHA256.HashData(bytes);
+                string sha256Hex = Convert.ToHexString(hash);
+                if (string.Equals(sha256Hex, passwordHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogInformation("AuthService.VerifyPassword: Xác thực thành công tài khoản sử dụng mã băm SHA-256 cũ.");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "AuthService.VerifyPassword: Lỗi kiểm tra mật khẩu SHA-256.");
+            }
+        }
+
+        // Fallback kiểm tra BCrypt nếu định dạng khác
         try
         {
             return BCrypt.Net.BCrypt.Verify(plainPassword, passwordHash);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "AuthService.VerifyPassword: Lỗi giải mã mật khẩu BCrypt.");
+            _logger.LogWarning(ex, "AuthService.VerifyPassword: Lỗi giải mã mật khẩu.");
             return false;
         }
     }
