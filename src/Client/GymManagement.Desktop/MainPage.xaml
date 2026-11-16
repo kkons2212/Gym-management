@@ -30,7 +30,7 @@
 
             <!-- Menu Items: 7 Functional Modules per PRD & ui_rules.md 3.1 -->
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Quầy Điểm Danh &amp; Cổng Tự Động" Tag="CheckIn">
+                <NavigationViewItem Content="Quầy Điểm Danh" Tag="CheckIn">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8B9;" />
                     </NavigationViewItem.Icon>
