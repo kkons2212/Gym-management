@@ -99,7 +99,7 @@ public sealed class ReportServiceTests
         _invoices.Add(new Invoice
         {
             InvoiceId = "INV01",
-            SubtotalAmount = 1500000m,
+            TotalAmount = 1500000m,
             RefundAmount = 100000m,
             Status = "PAID",
             PaidAt = today
@@ -107,7 +107,7 @@ public sealed class ReportServiceTests
         _invoices.Add(new Invoice
         {
             InvoiceId = "INV02",
-            SubtotalAmount = 500000m,
+            TotalAmount = 500000m,
             Status = "PENDING",
             PaidAt = today
         });
@@ -170,7 +170,7 @@ public sealed class ReportServiceTests
         {
             InvoiceId = "INV01",
             SubscriptionId = "SUB01",
-            SubtotalAmount = 2000000m,
+            TotalAmount = 2000000m,
             RefundAmount = 200000m,
             PaymentMethod = "VIETQR",
             Status = "PAID",
@@ -180,7 +180,7 @@ public sealed class ReportServiceTests
         {
             InvoiceId = "INV02",
             SubscriptionId = "SUB01",
-            SubtotalAmount = 1000000m,
+            TotalAmount = 1000000m,
             RefundAmount = 0m,
             PaymentMethod = "CASH",
             Status = "PAID",
@@ -474,7 +474,7 @@ public sealed class ReportServiceTests
         _invoices.Add(new Invoice
         {
             InvoiceId = "INV01",
-            SubtotalAmount = 1000000m,
+            TotalAmount = 1000000m,
             Status = "PAID",
             PaidAt = new DateOnly(2026, 11, 5)
         });

@@ -152,12 +152,11 @@ public sealed class GymDbContextAllEntitiesModelTests
         using var context = CreateContext();
         var model = context.Model;
 
-        // Foreign keys của MemberSubscription (User, PackagePlan, PTTrainingSession)
+        // Foreign keys của MemberSubscription (User, PackagePlan)
         var subscription = model.FindEntityType(typeof(MemberSubscription))!;
         var subFks = subscription.GetForeignKeys().ToList();
         Assert.Contains(subFks, fk => fk.PrincipalEntityType.ClrType == typeof(User) && fk.Properties.Any(p => p.Name == nameof(MemberSubscription.UserName)));
         Assert.Contains(subFks, fk => fk.PrincipalEntityType.ClrType == typeof(PackagePlan) && fk.Properties.Any(p => p.Name == nameof(MemberSubscription.PlanId)));
-        Assert.Contains(subFks, fk => fk.PrincipalEntityType.ClrType == typeof(PTTrainingSession) && fk.Properties.Any(p => p.Name == nameof(MemberSubscription.PTSessionId)));
 
         // Foreign keys của PTTrainingSession
         var session = model.FindEntityType(typeof(PTTrainingSession))!;
