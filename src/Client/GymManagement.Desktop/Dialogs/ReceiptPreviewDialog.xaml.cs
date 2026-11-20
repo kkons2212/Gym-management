@@ -33,7 +33,7 @@ public sealed partial class ReceiptPreviewDialog : ContentDialog
 
         TxtStaffName.Text = staffName;
         TxtItemName.Text = invoice.PlanName ?? "Gói tập gym";
-        TxtItemPrice.Text = $"{invoice.SubtotalAmount:N0} đ";
+        TxtItemPrice.Text = $"{invoice.TotalAmount:N0} đ";
         TxtTotalAmount.Text = $"{invoice.TotalAmount:N0} đ";
 
         if (invoice.PaymentMethod == "VIETQR")

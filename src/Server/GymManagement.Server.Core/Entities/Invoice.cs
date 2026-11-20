@@ -11,9 +11,7 @@ public sealed class Invoice
 
     public string? TransactionType { get; set; }
 
-    public decimal? SubtotalAmount { get; set; }
-
-    public int? TotalAmount { get; set; }
+    public decimal? TotalAmount { get; set; }
 
     public string? PaymentMethod { get; set; }
 
@@ -54,7 +52,5 @@ public sealed class Invoice
             CreatedByAdminId = value;
         }
     }
-
-    public string? CheckInLogCheckInId { get; set; }
 }
 

@@ -85,12 +85,6 @@ public class MemberSubscriptionConfiguration : IEntityTypeConfiguration<MemberSu
             .HasMaxLength(10)
             .IsRequired();
 
-        builder.Property(s => s.PTSessionId)
-            .HasColumnName("PTSessionId")
-            .HasColumnType("varchar(10)")
-            .HasMaxLength(10)
-            .IsRequired(false);
-
         // Unique Constraint (Filtered Index to allow multiple NULLs for pending subscriptions)
         builder.HasIndex(s => s.QrCode)
             .IsUnique()
@@ -114,12 +108,6 @@ public class MemberSubscriptionConfiguration : IEntityTypeConfiguration<MemberSu
             .WithMany()
             .HasForeignKey(s => s.PlanId)
             .HasConstraintName("FK_MemberSubscription_PackagePlan")
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne<PTTrainingSession>()
-            .WithMany()
-            .HasForeignKey(s => s.PTSessionId)
-            .HasConstraintName("FK_MemberSubscription_PTSession")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(s => s.created_at);

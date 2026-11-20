@@ -102,7 +102,6 @@ CREATE TABLE dbo.MemberSubscription (
     UserName VARCHAR(10) NOT NULL,
     AssignedPtId VARCHAR(10) NULL,
     PlanId VARCHAR(10) NOT NULL,
-    PTSessionId VARCHAR(10) NULL,
     CONSTRAINT PK_MemberSubscription PRIMARY KEY (SubscriptionId)
 );
 CREATE UNIQUE NONCLUSTERED INDEX UQ_MemberSubscription_QrCode ON dbo.MemberSubscription (QrCode) WHERE QrCode IS NOT NULL;
@@ -126,8 +125,7 @@ CREATE TABLE dbo.Invoice (
     InvoiceId VARCHAR(10) NOT NULL,
     InvoiceCode VARCHAR(255) NULL,
     TransactionType NVARCHAR(50) NULL,
-    SubtotalAmount DECIMAL(19, 0) NULL,
-    TotalAmount INT NULL,
+    TotalAmount DECIMAL(19, 0) NULL,
     PaymentMethod NVARCHAR(100) NULL,
     Status VARCHAR(20) NULL,
     RefundAmount DECIMAL(19, 0) NULL,
@@ -136,7 +134,6 @@ CREATE TABLE dbo.Invoice (
     UserName VARCHAR(10) NOT NULL,
     SubscriptionId VARCHAR(10) NOT NULL,
     CreatedByAdminId VARCHAR(10) NULL,
-    CheckInLogCheckInId VARCHAR(10) NULL,
     CONSTRAINT PK_Invoice PRIMARY KEY (InvoiceId),
     CONSTRAINT UQ_Invoice_InvoiceCode UNIQUE (InvoiceCode)
 );
@@ -189,12 +186,11 @@ ALTER TABLE dbo.PTTrainingSession
     CONSTRAINT FK_PTTrainingSession_PT FOREIGN KEY (PtID) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_PTTrainingSession_Availability FOREIGN KEY (AvailabilityId) REFERENCES dbo.PTAvailability (AvailabilityId);
 
--- MemberSubscription -> User, PackagePlan & PTTrainingSession
+-- MemberSubscription -> User & PackagePlan
 ALTER TABLE dbo.MemberSubscription
     ADD CONSTRAINT FK_MemberSubscription_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_MemberSubscription_AssignedPt FOREIGN KEY (AssignedPtId) REFERENCES dbo.[User] (UserName),
-    CONSTRAINT FK_MemberSubscription_PackagePlan FOREIGN KEY (PlanId) REFERENCES dbo.PackagePlan (PlanId),
-    CONSTRAINT FK_MemberSubscription_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId);
+    CONSTRAINT FK_MemberSubscription_PackagePlan FOREIGN KEY (PlanId) REFERENCES dbo.PackagePlan (PlanId);
 
 -- CheckInLog -> MemberSubscription & User
 ALTER TABLE dbo.CheckInLog
@@ -202,12 +198,11 @@ ALTER TABLE dbo.CheckInLog
     CONSTRAINT FK_CheckInLog_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_CheckInLog_Admin FOREIGN KEY (VerifiedByAdminId) REFERENCES dbo.[User] (UserName);
 
--- Invoice -> User, MemberSubscription & CheckInLog
+-- Invoice -> User, MemberSubscription & Admin
 ALTER TABLE dbo.Invoice
     ADD CONSTRAINT FK_Invoice_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName),
     CONSTRAINT FK_Invoice_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId),
-    CONSTRAINT FK_Invoice_Admin FOREIGN KEY (CreatedByAdminId) REFERENCES dbo.[User] (UserName),
-    CONSTRAINT FK_Invoice_CheckInLog FOREIGN KEY (CheckInLogCheckInId) REFERENCES dbo.CheckInLog (CheckInId);
+    CONSTRAINT FK_Invoice_Admin FOREIGN KEY (CreatedByAdminId) REFERENCES dbo.[User] (UserName);
 
 -- MemberBodyMetric -> User & PTTrainingSession
 ALTER TABLE dbo.MemberBodyMetric
