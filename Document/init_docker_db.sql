@@ -115,7 +115,6 @@ BEGIN
         UserName VARCHAR(10) NOT NULL,
         AssignedPtId VARCHAR(10) NULL,
         PlanId VARCHAR(10) NOT NULL,
-        PTSessionId VARCHAR(10) NULL,
         CONSTRAINT PK_MemberSubscription PRIMARY KEY (SubscriptionId)
     );
     CREATE UNIQUE NONCLUSTERED INDEX UQ_MemberSubscription_QrCode ON dbo.MemberSubscription (QrCode) WHERE QrCode IS NOT NULL;
@@ -145,8 +144,7 @@ BEGIN
         InvoiceId VARCHAR(10) NOT NULL,
         InvoiceCode VARCHAR(255) NULL,
         TransactionType NVARCHAR(50) NULL,
-        SubtotalAmount DECIMAL(19, 0) NULL,
-        TotalAmount INT NULL,
+        TotalAmount DECIMAL(19, 0) NULL,
         PaymentMethod NVARCHAR(100) NULL,
         Status VARCHAR(20) NULL,
         RefundAmount DECIMAL(19, 0) NULL,
@@ -155,7 +153,6 @@ BEGIN
         UserName VARCHAR(10) NOT NULL,
         SubscriptionId VARCHAR(10) NOT NULL,
         CreatedByAdminId VARCHAR(10) NULL,
-        CheckInLogCheckInId VARCHAR(10) NULL,
         CONSTRAINT PK_Invoice PRIMARY KEY (InvoiceId),
         CONSTRAINT UQ_Invoice_InvoiceCode UNIQUE (InvoiceCode)
     );
@@ -223,9 +220,6 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberSubscriptio
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberSubscription_PackagePlan')
     ALTER TABLE dbo.MemberSubscription ADD CONSTRAINT FK_MemberSubscription_PackagePlan FOREIGN KEY (PlanId) REFERENCES dbo.PackagePlan (PlanId);
 
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberSubscription_PTSession')
-    ALTER TABLE dbo.MemberSubscription ADD CONSTRAINT FK_MemberSubscription_PTSession FOREIGN KEY (PTSessionId) REFERENCES dbo.PTTrainingSession (PTSessionId);
-
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_CheckInLog_Subscription')
     ALTER TABLE dbo.CheckInLog ADD CONSTRAINT FK_CheckInLog_Subscription FOREIGN KEY (SubscriptionId) REFERENCES dbo.MemberSubscription (SubscriptionId);
 
@@ -243,9 +237,6 @@ IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_Subscript
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_Admin')
     ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_Admin FOREIGN KEY (CreatedByAdminId) REFERENCES dbo.[User] (UserName);
-
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Invoice_CheckInLog')
-    ALTER TABLE dbo.Invoice ADD CONSTRAINT FK_Invoice_CheckInLog FOREIGN KEY (CheckInLogCheckInId) REFERENCES dbo.CheckInLog (CheckInId);
 
 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_MemberBodyMetric_User')
     ALTER TABLE dbo.MemberBodyMetric ADD CONSTRAINT FK_MemberBodyMetric_User FOREIGN KEY (UserName) REFERENCES dbo.[User] (UserName) ON UPDATE CASCADE;
