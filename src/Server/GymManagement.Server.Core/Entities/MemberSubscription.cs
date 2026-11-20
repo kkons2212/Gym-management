@@ -42,7 +42,5 @@ public sealed class MemberSubscription
     public string? AssignedPtId { get; set; }
 
     public string PlanId { get; set; } = string.Empty;
-
-    public string? PTSessionId { get; set; }
 }
 

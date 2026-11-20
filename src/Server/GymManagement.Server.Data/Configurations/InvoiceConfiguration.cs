@@ -34,14 +34,9 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasMaxLength(50)
             .IsRequired(false);
 
-        builder.Property(i => i.SubtotalAmount)
-            .HasColumnName("SubtotalAmount")
-            .HasColumnType("decimal(19, 0)")
-            .IsRequired(false);
-
         builder.Property(i => i.TotalAmount)
             .HasColumnName("TotalAmount")
-            .HasColumnType("int")
+            .HasColumnType("decimal(19, 0)")
             .IsRequired(false);
 
         builder.Property(i => i.PaymentMethod)
@@ -90,12 +85,6 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasMaxLength(10)
             .IsRequired(false);
 
-        builder.Property(i => i.CheckInLogCheckInId)
-            .HasColumnName("CheckInLogCheckInId")
-            .HasColumnType("varchar(10)")
-            .HasMaxLength(10)
-            .IsRequired(false);
-
         // Unique Constraint
         builder.HasIndex(i => i.InvoiceCode)
             .IsUnique()
@@ -118,12 +107,6 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(i => i.CreatedByAdminId)
             .HasConstraintName("FK_Invoice_Admin")
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne<CheckInLog>()
-            .WithMany()
-            .HasForeignKey(i => i.CheckInLogCheckInId)
-            .HasConstraintName("FK_Invoice_CheckInLog")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(i => i.paid_at);
