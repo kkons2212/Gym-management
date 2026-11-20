@@ -97,8 +97,7 @@ public sealed class BillingService : IBillingService
 
         if (plan.Price is not decimal price ||
             price <= 0 ||
-            decimal.Truncate(price) != price ||
-            price > int.MaxValue)
+            decimal.Truncate(price) != price)
         {
             throw new BusinessRuleException("Giá gói tập phải là số nguyên dương phù hợp với hóa đơn.");
         }
@@ -118,8 +117,7 @@ public sealed class BillingService : IBillingService
             InvoiceId = NewId(),
             InvoiceCode = $"HD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid():N}".ToUpperInvariant(),
             TransactionType = transactionType,
-            SubtotalAmount = price,
-            TotalAmount = decimal.ToInt32(price),
+            TotalAmount = price,
             PaymentMethod = paymentMethod,
             Status = PendingStatus,
             UserName = user.UserName,
@@ -599,25 +597,12 @@ public sealed class BillingService : IBillingService
                 }
             }
 
-            decimal subtotal = 0;
-            if (inv.SubtotalAmount.HasValue)
-            {
-                subtotal = inv.SubtotalAmount.Value;
-            }
-            else if (inv.TotalAmount.HasValue)
-            {
-                subtotal = inv.TotalAmount.Value;
-            }
-
             decimal total = 0;
             if (inv.TotalAmount.HasValue)
             {
                 total = inv.TotalAmount.Value;
             }
-            else if (inv.SubtotalAmount.HasValue)
-            {
-                total = inv.SubtotalAmount.Value;
-            }
+            decimal subtotal = total;
 
             string paymentMethod = "CASH";
             if (!string.IsNullOrWhiteSpace(inv.PaymentMethod))
@@ -795,8 +780,8 @@ public sealed class BillingService : IBillingService
 
     private static InvoiceDto MapToDto(Invoice invoice, User user, PackagePlan plan, string? adminName = null)
     {
-        decimal subtotal = invoice.SubtotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có thành tiền hợp lệ.");
         decimal total = invoice.TotalAmount ?? throw new BusinessRuleException("Hóa đơn chưa có tổng tiền hợp lệ.");
+        decimal subtotal = total;
         string paymentMethod = invoice.PaymentMethod ?? throw new BusinessRuleException("Hóa đơn chưa có phương thức thanh toán.");
         string transactionType = invoice.TransactionType ?? throw new BusinessRuleException("Hóa đơn chưa có loại giao dịch.");
         string status = invoice.Status ?? throw new BusinessRuleException("Hóa đơn chưa có trạng thái hợp lệ.");

@@ -965,11 +965,6 @@ public sealed class ReportService : IReportService
 
     private static decimal ExtractInvoiceGrossAmount(Invoice invoice)
     {
-        if (invoice.SubtotalAmount.HasValue)
-        {
-            return invoice.SubtotalAmount.Value;
-        }
-
         if (invoice.TotalAmount.HasValue)
         {
             return invoice.TotalAmount.Value;
